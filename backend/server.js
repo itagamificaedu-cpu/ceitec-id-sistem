@@ -15,8 +15,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-initDatabase();
-
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/alunos', require('./routes/alunos'));
 app.use('/api/turmas', require('./routes/turmas'));
@@ -31,22 +29,23 @@ app.use('/api/itagame', require('./routes/itagame'));
 app.use('/api/ia', require('./routes/ia'));
 
 app.get('/api/status', (req, res) => {
-  const { isWhatsAppReady } = require('./whatsapp');
-  res.json({ ok: true, whatsapp: isWhatsAppReady(), versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });
+  res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });
 });
 
 io.on('connection', (socket) => {
-  console.log('Cliente conectado:', socket.id);
-  socket.on('disconnect', () => console.log('Cliente desconectado:', socket.id));
+  socket.on('disconnect', () => {});
 });
-
 app.set('io', io);
 
+initDatabase().catch(console.error);
+
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`\n🚀 ITA TECNOLOGIA EDUCACIONAL — Backend v2.0`);
-  console.log(`📡 API: http://localhost:${PORT}/api`);
-  console.log(`\n🔄 Iniciando cliente WhatsApp...`);
-  const { inicializarWhatsApp } = require('./whatsapp');
-  inicializarWhatsApp();
-});
+
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`\n🚀 ITA TECNOLOGIA EDUCACIONAL — Backend v2.0`);
+    console.log(`📡 API: http://localhost:${PORT}/api`);
+  });
+}
+
+module.exports = app;

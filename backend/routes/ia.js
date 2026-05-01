@@ -5,7 +5,7 @@ const { gerarPlanoAula } = require('../ia/planoAula');
 const { gerarQuestoes } = require('../ia/criadorQuestoes');
 const { interpretarFolhaResposta, corrigirRespostas } = require('../ia/corretorProvas');
 const { gerarDiagnostico, gerarConteudo } = require('../ia/diagnosticoAluno');
-const { getDb } = require('../database');
+const db = require('../db');
 
 const router = express.Router();
 router.use(autenticar);
@@ -14,7 +14,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 
 function checkApiKey(res) {
   if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'sua_chave_aqui') {
-    res.status(503).json({ erro: 'ANTHROPIC_API_KEY não configurada. Adicione sua chave no arquivo .env do backend.' });
+    res.status(503).json({ erro: 'ANTHROPIC_API_KEY não configurada.' });
     return false;
   }
   return true;
@@ -25,8 +25,7 @@ router.post('/plano-aula', async (req, res) => {
   try {
     const resultado = await gerarPlanoAula(req.body);
     if (req.body.salvar) {
-      const db = getDb();
-      db.prepare('INSERT INTO planos_aula (professor_id, turma_id, disciplina, tema, objetivo, conteudo_json, gerado_por_ia, data_aula) VALUES (?, ?, ?, ?, ?, ?, 1, ?)').run(req.body.professor_id || null, req.body.turma_id || null, req.body.disciplina, req.body.tema, req.body.objetivos || null, JSON.stringify({ texto: resultado }), req.body.data_aula || null);
+      await db.run('INSERT INTO planos_aula (professor_id, turma_id, disciplina, tema, objetivo, conteudo_json, gerado_por_ia, data_aula) VALUES (?, ?, ?, ?, ?, ?, 1, ?)', [req.body.professor_id || null, req.body.turma_id || null, req.body.disciplina, req.body.tema, req.body.objetivos || null, JSON.stringify({ texto: resultado }), req.body.data_aula || null]);
     }
     res.json({ texto: resultado });
   } catch (err) {
@@ -70,18 +69,13 @@ router.post('/corretor/calcular', (req, res) => {
 router.post('/diagnostico', async (req, res) => {
   if (!checkApiKey(res)) return;
   try {
-    const db = getDb();
     const { turma_id, disciplina } = req.body;
-    const dadosRoute = require('./desempenho');
-    const notas = db.prepare('SELECT n.*, a.nome FROM notas n JOIN alunos a ON n.aluno_id = a.id WHERE n.turma_id = ? AND n.disciplina = ? ORDER BY n.nota_final DESC').all(turma_id, disciplina);
+    const notas = await db.all('SELECT n.*, a.nome FROM notas n JOIN alunos a ON n.aluno_id = a.id WHERE n.turma_id = ? AND n.disciplina = ? ORDER BY n.nota_final DESC', [turma_id, disciplina]);
     const total = notas.length;
     const aprovados = notas.filter(n => n.nota_final >= 5).length;
     const percentualAprovacao = total > 0 ? Math.round((aprovados / total) * 100) : 0;
-    const emReforco = notas.filter(n => n.nota_final < 5);
-    const destaque = notas.filter(n => n.nota_final >= 8);
-    const turma = db.prepare('SELECT * FROM turmas WHERE id = ?').get(turma_id);
-    const dados = { notas, total, aprovados, percentualAprovacao, emReforco, destaque, topicosComErro: [] };
-    const resultado = await gerarDiagnostico({ disciplina, turma: turma?.nome || turma_id, dados });
+    const turma = await db.get('SELECT * FROM turmas WHERE id = ?', [turma_id]);
+    const resultado = await gerarDiagnostico({ disciplina, turma: turma?.nome || turma_id, dados: { notas, total, aprovados, percentualAprovacao, emReforco: notas.filter(n => n.nota_final < 5), destaque: notas.filter(n => n.nota_final >= 8), topicosComErro: [] } });
     res.json({ texto: resultado });
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -98,15 +92,13 @@ router.post('/conteudo', async (req, res) => {
   }
 });
 
-// Diagnóstico pedagógico por aluno (GET)
 router.get('/diagnostico/:aluno_id', async (req, res) => {
   if (!checkApiKey(res)) return;
   try {
-    const db = getDb();
-    const aluno = db.prepare('SELECT * FROM alunos WHERE id = ?').get(req.params.aluno_id);
+    const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.aluno_id]);
     if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
 
-    const notas = db.prepare('SELECT n.*, av.titulo, av.disciplina FROM notas n JOIN avaliacoes av ON n.avaliacao_id = av.id WHERE n.aluno_id = ? ORDER BY av.data_aplicacao DESC').all(req.params.aluno_id);
+    const notas = await db.all('SELECT n.*, av.titulo, av.disciplina FROM notas n JOIN avaliacoes av ON n.avaliacao_id = av.id WHERE n.aluno_id = ? ORDER BY av.data_aplicacao DESC', [req.params.aluno_id]);
     const disciplinas = {};
     notas.forEach(n => {
       if (!disciplinas[n.disciplina]) disciplinas[n.disciplina] = [];
@@ -119,16 +111,14 @@ router.get('/diagnostico/:aluno_id', async (req, res) => {
     const pior = mediasPorDisc.reduce((m, d) => !m || d.media < m.media ? d : m, null);
     const melhor = mediasPorDisc.reduce((m, d) => !m || d.media > m.media ? d : m, null);
 
-    const dados = { aluno: { ...aluno, media_geral }, notas, mediasPorDisc, pior, melhor };
     const { gerarDiagnosticoAluno } = require('../ia/diagnosticoAluno');
-    const diagnostico = await gerarDiagnosticoAluno(dados);
+    const diagnostico = await gerarDiagnosticoAluno({ aluno: { ...aluno, media_geral }, notas, mediasPorDisc, pior, melhor });
     res.json(diagnostico);
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
 });
 
-// Corretor unificado (texto ou imagem)
 router.post('/corrigir-prova', upload.single('imagem'), async (req, res) => {
   try {
     const gabarito = (req.body.gabarito || '').toUpperCase().replace(/\s/g, '');
@@ -138,8 +128,7 @@ router.post('/corrigir-prova', upload.single('imagem'), async (req, res) => {
     if (req.file) {
       if (!checkApiKey(res)) return;
       const base64 = req.file.buffer.toString('base64');
-      respostasStr = await require('../ia/corretorProvas').interpretarFolhaResposta(base64);
-      respostasStr = respostasStr.toUpperCase().replace(/\s/g, '');
+      respostasStr = (await require('../ia/corretorProvas').interpretarFolhaResposta(base64)).toUpperCase().replace(/\s/g, '');
     } else {
       respostasStr = (req.body.respostas || '').toUpperCase().replace(/\s/g, '');
     }
@@ -151,10 +140,9 @@ router.post('/corrigir-prova', upload.single('imagem'), async (req, res) => {
     }));
     const acertos = detalhes.filter(d => d.acertou).length;
     const total = gabarito.length;
-    const percentual = Math.round((acertos / total) * 100);
     const nota = Math.round((acertos / total) * 10 * 10) / 10;
 
-    res.json({ acertos, total, percentual, nota, detalhes, aluno_nome: req.body.aluno_nome || '' });
+    res.json({ acertos, total, percentual: Math.round((acertos / total) * 100), nota, detalhes, aluno_nome: req.body.aluno_nome || '' });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
