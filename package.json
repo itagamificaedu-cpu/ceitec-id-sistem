@@ -1,0 +1,19 @@
+{
+  "name": "ceitec-id-system",
+  "version": "1.0.0",
+  "description": "Sistema de Identificação Estudantil CEITEC",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "start": "cd backend && npm start"
+  },
+  "dependencies": {
+    "serverless-http": "^3.2.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
