@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% block title %}Dashboard — ITA Tecnologia Educacional{% endblock %}
+{% block content %}
+<section style="min-height:90vh;padding:60px 0;background:radial-gradient(ellipse at 20% 30%,rgba(124,58,237,.12) 0%,transparent 60%),var(--dark)">
+<div class="container">
+
+  <div class="mb-5 fade-up">
+    <span class="hero-badge"><i class="fa fa-bolt me-1"></i> Painel do Professor</span>
+    <h1 class="section-title mt-2">Olá, <span class="gradient-text">{{ professor.get_full_name|default:professor.username }}</span> 👋</h1>
+    <p class="section-subtitle">Selecione uma ferramenta para começar.</p>
+  </div>
+
+  <div class="row g-4 mb-5">
+
+    <div class="col-md-3 fade-up">
+      <div class="card-3d h-100">
+        <div class="icon-3d purple"><i class="fa fa-gamepad"></i></div>
+        <h4 class="fw-800 mb-2">ItagGame</h4>
+        <p style="color:rgba(255,255,255,.55);font-size:.9rem">Gamificação com XP, missões, badges e ranking de alunos.</p>
+        <a href="/itagame/" class="btn-glow-purple btn w-100 mt-3" style="padding:11px;font-size:.9rem">
+          <i class="fa fa-rocket me-2"></i>Acessar
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-3 fade-up">
+      <div class="card-3d orange h-100">
+        <div class="icon-3d orange"><i class="fa fa-qrcode"></i></div>
+        <h4 class="fw-800 mb-2">Corretor de Provas</h4>
+        <p style="color:rgba(255,255,255,.55);font-size:.9rem">Gabaritos com QR Code e correção automática.</p>
+        <a href="/corretor/" class="btn w-100 mt-3" style="background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:30px;padding:11px;font-weight:800;color:#fff">
+          <i class="fa fa-qrcode me-2"></i>Acessar
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-3 fade-up">
+      <div class="card-3d cyan h-100">
+        <div class="icon-3d cyan"><i class="fa fa-book-open"></i></div>
+        <h4 class="fw-800 mb-2">Repositório</h4>
+        <p style="color:rgba(255,255,255,.55);font-size:.9rem">Planos de aula, atividades e recursos prontos.</p>
+        <a href="/ferramentas/" class="btn mt-3 w-100" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);border:none;border-radius:30px;padding:11px;font-weight:800;color:#fff">
+          <i class="fa fa-folder-open me-2"></i>Ver Repositório
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-3 fade-up">
+      <div class="card-3d h-100" style="border-color:rgba(245,166,35,.3)">
+        <div class="icon-3d" style="background:rgba(245,166,35,.2);color:#f5a623"><i class="fa fa-trophy"></i></div>
+        <h4 class="fw-800 mb-2">Ranking</h4>
+        <p style="color:rgba(255,255,255,.55);font-size:.9rem">Veja o ranking de XP dos alunos por turma.</p>
+        <a href="/itagame/ranking/" class="btn w-100 mt-3" style="background:linear-gradient(135deg,#f5a623,#d4891f);border:none;border-radius:30px;padding:11px;font-weight:800;color:#fff">
+          <i class="fa fa-list-ol me-2"></i>Ver Ranking
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row g-3 fade-up">
+    <div class="col-12">
+      <div class="stat-card d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <div class="fw-700" style="color:rgba(255,255,255,.7);font-size:.85rem;text-transform:uppercase">Sua conta</div>
+          <div class="fw-800 fs-5 mt-1">{{ professor.email }}</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="/perfil/" class="btn" style="background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);color:#a78bfa;border-radius:20px;font-weight:700;padding:8px 20px">
+            <i class="fa fa-user-circle me-1"></i> Meu Perfil
+          </a>
+          <a href="/accounts/logout/" class="btn" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:20px;font-weight:700;padding:8px 20px">
+            <i class="fa fa-sign-out-alt me-1"></i> Sair
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>
+{% endblock %}
