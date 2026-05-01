@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
-const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'http://localhost:8000'
+const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.pythonanywhere.com'
 
 const secoes = [
   {
