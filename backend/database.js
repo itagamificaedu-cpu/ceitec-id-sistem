@@ -28,55 +28,63 @@ async function initDatabase() {
     await db.exec(sql);
   }
 
-  const adminExiste = await db.get('SELECT id FROM usuarios WHERE email = $1', ['admin@ita.com']);
-  if (!adminExiste) {
-    const senhaHash = bcrypt.hashSync('ita2024', 10);
-    const senhaHashCeitec = bcrypt.hashSync('ceitec2024', 10);
+  const hoje = new Date().toISOString().split('T')[0];
 
-    await db.run('INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)', ['Administrador', 'admin@ita.com', senhaHash, 'admin']);
-    await db.run('INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)', ['Secretaria', 'secretaria@ita.com', senhaHash, 'secretaria']);
-    await db.run('INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)', ['Admin CEITEC', 'admin@ceitec.com', senhaHashCeitec, 'admin']);
-    await db.run('INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)', ['Secretaria CEITEC', 'secretaria@ceitec.com', senhaHashCeitec, 'secretaria']);
+  const senhaHash = bcrypt.hashSync('ita2024', 10);
+  const senhaHashCeitec = bcrypt.hashSync('ceitec2024', 10);
 
-    const hoje = new Date().toISOString().split('T')[0];
+  const usuarios = [
+    ['Administrador',     'admin@ita.com',         senhaHash,       'admin'],
+    ['Secretaria',        'secretaria@ita.com',    senhaHash,       'secretaria'],
+    ['Admin CEITEC',      'admin@ceitec.com',      senhaHashCeitec, 'admin'],
+    ['Secretaria CEITEC', 'secretaria@ceitec.com', senhaHashCeitec, 'secretaria'],
+  ];
 
-    const profs = [
-      { nome: 'Dr. Carlos Eduardo', email: 'carlos@ita.com', telefone: '558599100001', especialidade: 'Robotica e Eletronica', formacao: 'Engenharia Eletrica - UFCE' },
-      { nome: 'Profa. Ana Beatriz', email: 'ana@ita.com', telefone: '558599100002', especialidade: 'Programacao e Desenvolvimento', formacao: 'Ciencia da Computacao - UFC' },
-      { nome: 'Prof. Marcos Vieira', email: 'marcos@ita.com', telefone: '558599100003', especialidade: 'Design e Maker', formacao: 'Design Industrial - UNIFOR' },
-    ];
-    for (const p of profs) {
-      await db.run('INSERT INTO professores (nome, email, telefone, especialidade, formacao) VALUES (?, ?, ?, ?, ?)', [p.nome, p.email, p.telefone, p.especialidade, p.formacao]);
-      const senha = bcrypt.hashSync(p.telefone.slice(0, 6), 10);
-      try { await db.run('INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)', [p.nome, p.email, senha, 'professor']); } catch {}
-    }
-
-    for (const [nome, curso, turno, pid] of [
-      ['Robotica 9A', 'Robotica Educacional', 'manha', 1],
-      ['Programacao 8B', 'Desenvolvimento Web', 'tarde', 2],
-      ['Maker 7C', 'Design e Fabricacao Digital', 'manha', 3],
-    ]) {
-      await db.run('INSERT INTO turmas (nome, curso, turno, professor_id) VALUES (?, ?, ?, ?)', [nome, curso, turno, pid]);
-    }
-
-    for (const [pid, tid, disc] of [[1,1,'Robotica'],[1,1,'Eletronica'],[2,2,'Programacao Web'],[2,2,'Banco de Dados'],[3,3,'Design Digital'],[3,3,'Fabricacao 3D']]) {
-      await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [pid, tid, disc]);
-    }
-
-    const alunos = [
-      { codigo: 'ITA-0001', nome: 'Ana Clara Souza', turma: 'Robotica 9A', turma_id: 1, curso: 'Robotica Educacional', email: 'resp.ana@email.com', tel: '5585999110001' },
-      { codigo: 'ITA-0002', nome: 'Bruno Henrique Lima', turma: 'Robotica 9A', turma_id: 1, curso: 'Robotica Educacional', email: 'resp.bruno@email.com', tel: '5585999110002' },
-      { codigo: 'ITA-0003', nome: 'Carla Mendes Rocha', turma: 'Programacao 8B', turma_id: 2, curso: 'Desenvolvimento Web', email: 'resp.carla@email.com', tel: '5585999110003' },
-      { codigo: 'ITA-0004', nome: 'Diego Ferreira Costa', turma: 'Programacao 8B', turma_id: 2, curso: 'Desenvolvimento Web', email: 'resp.diego@email.com', tel: '5585999110004' },
-      { codigo: 'ITA-0005', nome: 'Eduarda Alves Santos', turma: 'Maker 7C', turma_id: 3, curso: 'Design e Fabricacao Digital', email: 'resp.edu@email.com', tel: '5585999110005' },
-    ];
-    for (const a of alunos) {
-      await db.run('INSERT INTO alunos (codigo, nome, turma, turma_id, curso, email_responsavel, telefone_responsavel, data_matricula) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [a.codigo, a.nome, a.turma, a.turma_id, a.curso, a.email, a.tel, hoje]);
-    }
-
-    console.log('✅ Banco PostgreSQL inicializado com dados de exemplo');
+  for (const [nome, email, senha_hash, perfil] of usuarios) {
+    await db.exec(
+      `INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES ('${nome.replace(/'/g, "''")}', '${email}', '${senha_hash}', '${perfil}') ON CONFLICT (email) DO NOTHING`
+    );
   }
 
+  const profs = [
+    { nome: 'Dr. Carlos Eduardo', email: 'carlos@ita.com', telefone: '558599100001', especialidade: 'Robotica e Eletronica', formacao: 'Engenharia Eletrica - UFCE' },
+    { nome: 'Profa. Ana Beatriz',  email: 'ana@ita.com',    telefone: '558599100002', especialidade: 'Programacao e Desenvolvimento', formacao: 'Ciencia da Computacao - UFC' },
+    { nome: 'Prof. Marcos Vieira', email: 'marcos@ita.com', telefone: '558599100003', especialidade: 'Design e Maker', formacao: 'Design Industrial - UNIFOR' },
+  ];
+  for (const p of profs) {
+    await db.exec(
+      `INSERT INTO professores (nome, email, telefone, especialidade, formacao) VALUES ('${p.nome}', '${p.email}', '${p.telefone}', '${p.especialidade}', '${p.formacao}') ON CONFLICT (email) DO NOTHING`
+    );
+    const senha = bcrypt.hashSync(p.telefone.slice(0, 6), 10);
+    await db.exec(
+      `INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES ('${p.nome}', '${p.email}', '${senha}', 'professor') ON CONFLICT (email) DO NOTHING`
+    );
+  }
+
+  for (const [nome, curso, turno] of [
+    ['Robotica 9A',     'Robotica Educacional',      'manha'],
+    ['Programacao 8B',  'Desenvolvimento Web',        'tarde'],
+    ['Maker 7C',        'Design e Fabricacao Digital','manha'],
+  ]) {
+    await db.exec(
+      `INSERT INTO turmas (nome, curso, turno) VALUES ('${nome}', '${curso}', '${turno}') ON CONFLICT DO NOTHING`
+    );
+  }
+
+  const alunos = [
+    { codigo: 'ITA-0001', nome: 'Ana Clara Souza',        turma: 'Robotica 9A',    turma_id: 1, curso: 'Robotica Educacional',       email: 'resp.ana@email.com',   tel: '5585999110001' },
+    { codigo: 'ITA-0002', nome: 'Bruno Henrique Lima',    turma: 'Robotica 9A',    turma_id: 1, curso: 'Robotica Educacional',       email: 'resp.bruno@email.com', tel: '5585999110002' },
+    { codigo: 'ITA-0003', nome: 'Carla Mendes Rocha',     turma: 'Programacao 8B', turma_id: 2, curso: 'Desenvolvimento Web',         email: 'resp.carla@email.com', tel: '5585999110003' },
+    { codigo: 'ITA-0004', nome: 'Diego Ferreira Costa',   turma: 'Programacao 8B', turma_id: 2, curso: 'Desenvolvimento Web',         email: 'resp.diego@email.com', tel: '5585999110004' },
+    { codigo: 'ITA-0005', nome: 'Eduarda Alves Santos',   turma: 'Maker 7C',       turma_id: 3, curso: 'Design e Fabricacao Digital', email: 'resp.edu@email.com',   tel: '5585999110005' },
+  ];
+  for (const a of alunos) {
+    await db.exec(
+      `INSERT INTO alunos (codigo, nome, turma, turma_id, curso, email_responsavel, telefone_responsavel, data_matricula) VALUES ('${a.codigo}', '${a.nome}', '${a.turma}', ${a.turma_id}, '${a.curso}', '${a.email}', '${a.tel}', '${hoje}') ON CONFLICT (codigo) DO NOTHING`
+    );
+  }
+
+  console.log('Banco PostgreSQL inicializado');
   initialized = true;
 }
 

@@ -32,6 +32,17 @@ app.get('/api/status', (req, res) => {
   res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });
 });
 
+app.get('/api/debug-db', async (req, res) => {
+  try {
+    const db = require('./db');
+    const usuarios = await db.all('SELECT id, nome, email, perfil FROM usuarios ORDER BY id');
+    const alunos = await db.all('SELECT COUNT(*) as total FROM alunos');
+    res.json({ usuarios, total_alunos: alunos[0]?.total || 0 });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
