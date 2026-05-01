@@ -1,0 +1,171 @@
+import React, { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+
+const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'http://localhost:8000'
+
+const secoes = [
+  {
+    titulo: 'ESCOLA',
+    itens: [
+      { path: '/dashboard', label: 'Dashboard Geral', icon: '🏠' },
+      { path: '/scanner', label: 'Scanner de Presença', icon: '📷' },
+    ]
+  },
+  {
+    titulo: 'ALUNOS',
+    itens: [
+      { path: '/turmas', label: 'Turmas e Alunos', icon: '👥' },
+      { path: '/alunos/novo', label: 'Cadastrar Aluno', icon: '➕' },
+      { path: '/justificativas', label: 'Justificativas', icon: '📋' },
+    ]
+  },
+  {
+    titulo: 'PROFESSORES',
+    itens: [
+      { path: '/professores', label: 'Professores', icon: '👨‍🏫' },
+      { path: '/ia/plano-aula', label: 'Planos de Aula (IA)', icon: '📚' },
+    ]
+  },
+  {
+    titulo: 'PEDAGÓGICO',
+    itens: [
+      { path: '/avaliacoes', label: 'Avaliações', icon: '📝' },
+      { path: '/desempenho', label: 'Desempenho', icon: '📊' },
+      { path: '/diagnostico', label: 'Diagnóstico por Disciplina', icon: '🔬' },
+      { path: '/ocorrencias', label: 'Ocorrências', icon: '⚠️' },
+    ]
+  },
+  {
+    titulo: 'IA EDUCACIONAL',
+    itens: [
+      { path: '/ia/questoes', label: 'Criar Questões (IA)', icon: '🤖' },
+      { path: '/ia/corretor', label: 'Corrigir Provas (IA)', icon: '✅' },
+      { path: '/ia/conteudo', label: 'Criar Conteúdo (IA)', icon: '📄' },
+    ]
+  },
+  {
+    titulo: 'ITAGAME',
+    itens: [
+      { path: '/itagame', label: 'ItagGame Dashboard', icon: '🎮' },
+    ]
+  },
+  {
+    titulo: 'PLATAFORMA DJANGO',
+    externo: true,
+    itens: [
+      { href: `${DJANGO_URL}/dashboard/`, label: 'GamificaEdu', icon: '🌟' },
+      { href: `${DJANGO_URL}/corretor/`, label: 'Corretor de Provas', icon: '📋' },
+      { href: `${DJANGO_URL}/ferramentas/`, label: 'Repositório', icon: '📁' },
+      { href: `${DJANGO_URL}/gamification/ranking/`, label: 'Ranking Professores', icon: '🏆' },
+    ]
+  },
+  {
+    titulo: 'RELATÓRIOS',
+    itens: [
+      { path: '/relatorios', label: 'Relatórios Gerais', icon: '📈' },
+      { path: '/planos', label: 'Planos de Assinatura', icon: '💳' },
+    ]
+  },
+]
+
+export default function Navbar() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [aberto, setAberto] = useState(false)
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+
+  function sair() {
+    localStorage.removeItem('token')
+    localStorage.removeItem('usuario')
+    navigate('/login')
+  }
+
+  const isAtivo = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-primary text-white flex items-center justify-between px-4 h-14 shadow-md">
+        <div>
+          <span className="font-bold text-secondary text-sm">ITA</span>
+          <span className="font-bold text-white text-xs ml-1">TECNOLOGIA</span>
+        </div>
+        <button onClick={() => setAberto(!aberto)} className="text-xl p-1">☰</button>
+      </div>
+
+      {/* Sidebar */}
+      <aside className={`fixed top-0 left-0 h-full w-64 bg-primary text-white z-40 flex flex-col transition-transform duration-300 shadow-2xl
+        ${aberto ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+
+        {/* Logo */}
+        <div className="p-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">🎓</span>
+            </div>
+            <div>
+              <div className="text-secondary font-black text-sm leading-tight">ITA TECNOLOGIA</div>
+              <div className="text-white/60 text-xs leading-tight">EDUCACIONAL</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Usuário */}
+        <div className="px-4 py-2.5 border-b border-white/10 flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm flex-shrink-0">👤</div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{usuario.nome}</p>
+            <p className="text-white/50 text-xs capitalize">{usuario.perfil}</p>
+          </div>
+        </div>
+
+        {/* Menu com scroll */}
+        <nav className="flex-1 overflow-y-auto py-2">
+          {secoes.map(secao => (
+            <div key={secao.titulo} className="mb-1">
+              <p className="text-white/30 text-xs font-bold tracking-widest px-4 py-2">{secao.titulo}</p>
+              {secao.itens.map(item => (
+                secao.externo || item.href ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setAberto(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-sm transition-colors mx-2 rounded-lg text-white/70 hover:bg-white/8 hover:text-white"
+                  >
+                    <span className="text-base w-5 flex-shrink-0">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                    <span className="ml-auto text-white/30 text-xs">↗</span>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setAberto(false)}
+                    className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-colors mx-2 rounded-lg
+                      ${isAtivo(item.path)
+                        ? 'bg-secondary/20 text-secondary font-semibold border-l-2 border-secondary'
+                        : 'text-white/70 hover:bg-white/8 hover:text-white'}`}
+                  >
+                    <span className="text-base w-5 flex-shrink-0">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                )
+              ))}
+            </div>
+          ))}
+        </nav>
+
+        {/* Sair */}
+        <div className="p-3 border-t border-white/10">
+          <button onClick={sair} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors">
+            <span>🚪</span><span>Sair do Sistema</span>
+          </button>
+        </div>
+      </aside>
+
+      {aberto && <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={() => setAberto(false)} />}
+    </>
+  )
+}

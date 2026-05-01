@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ceitec-id-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: ./database.sqlite
+      - key: ANTHROPIC_API_KEY
+        sync: false

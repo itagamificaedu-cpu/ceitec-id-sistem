@@ -1,0 +1,47 @@
+# Dependências
+node_modules/
+*/node_modules/
+
+# Builds
+frontend/dist/
+frontend/build/
+
+# Banco de dados local
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+backend/database.sqlite
+
+# Uploads locais
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Variáveis de ambiente (NUNCA commitar)
+.env
+.env.local
+.env.production
+backend/.env
+plataforma/.env
+
+# Python
+plataforma/**/__pycache__/
+plataforma/**/*.pyc
+plataforma/**/*.pyo
+plataforma/db.sqlite3
+plataforma/staticfiles/
+plataforma/media/
+
+# Logs
+logs/
+*.log
+
+# WhatsApp session (dados sensíveis)
+backend/.wwebjs_auth/
+backend/.wwebjs_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Puppeteer cache
+.cache/
