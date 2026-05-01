@@ -54,7 +54,7 @@ const secoes = [
     externo: true,
     itens: [
       { href: `${DJANGO_URL}/dashboard/`, label: 'GamificaEdu', icon: '🌟' },
-      { href: `${DJANGO_URL}/corretor/`, label: 'Corretor de Provas', icon: '📋' },
+      { href: 'https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/', label: 'Corretor de Provas', icon: '📋' },
       { href: `${DJANGO_URL}/ferramentas/`, label: 'Repositório', icon: '📁' },
       { href: `${DJANGO_URL}/gamification/ranking/`, label: 'Ranking Professores', icon: '🏆' },
     ]
