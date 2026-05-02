@@ -80,6 +80,18 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    await db.run('DELETE FROM presencas WHERE aluno_id IN (SELECT id FROM alunos WHERE turma_id = ?)', [req.params.id]);
+    await db.run('DELETE FROM alunos WHERE turma_id = ?', [req.params.id]);
+    await db.run('DELETE FROM professor_turma_disciplina WHERE turma_id = ?', [req.params.id]);
+    await db.run('DELETE FROM turmas WHERE id = ?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 router.get('/:id/frequencia', async (req, res) => {
   try {
     const alunos = await db.all('SELECT * FROM alunos WHERE turma_id = ? AND ativo = 1 ORDER BY nome', [req.params.id]);

@@ -1,13 +1,13 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-export default function CardTurma({ turma }) {
+export default function CardTurma({ turma, onEditar, onExcluir }) {
   const corFreq = turma.frequencia_media >= 75 ? '#27ae60' : turma.frequencia_media >= 50 ? '#e67e22' : '#e74c3c'
   const corMedia = turma.media_desempenho >= 7 ? '#27ae60' : turma.media_desempenho >= 5 ? '#e67e22' : '#e74c3c'
 
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-      <div className="h-2" style={{ background: `linear-gradient(90deg, #1e3a5f, #f5a623)` }} />
+      <div className="h-2" style={{ background: 'linear-gradient(90deg, #1e3a5f, #f5a623)' }} />
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -40,9 +40,24 @@ export default function CardTurma({ turma }) {
           </div>
         </div>
 
-        <Link to={`/turmas/${turma.id}`} className="block w-full text-center py-2 rounded-lg text-sm font-medium transition-colors bg-primary/10 text-primary hover:bg-primary hover:text-white">
+        <Link to={`/turmas/${turma.id}`} className="block w-full text-center py-2 rounded-lg text-sm font-medium transition-colors bg-primary/10 text-primary hover:bg-primary hover:text-white mb-2">
           Ver Turma →
         </Link>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEditar && onEditar(turma)}
+            className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors border border-yellow-200"
+          >
+            ✏️ Editar
+          </button>
+          <button
+            onClick={() => onExcluir && onExcluir(turma)}
+            className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors border border-red-200"
+          >
+            🗑️ Excluir
+          </button>
+        </div>
       </div>
     </div>
   )
