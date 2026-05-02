@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+{% block title %}Meu Perfil{% endblock %}
+{% block content %}
+<section style="padding:60px 0">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-7">
+    <h2 class="section-title mb-4">Meu Perfil</h2>
+    <div class="card-3d p-4 mb-4">
+        <div class="d-flex align-items-center gap-4 mb-4">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900">
+                {{ professor.first_name|first|upper }}
+            </div>
+            <div>
+                <div class="fw-800 fs-5">{{ professor.get_full_name }}</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:0.9rem">{{ professor.email }}</div>
+                <div class="mt-1">
+                    <span style="background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);border-radius:20px;padding:3px 12px;font-size:0.8rem;color:#10b981">Conta Ativa</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div style="color:rgba(255,255,255,0.4);font-size:0.8rem">Escola</div>
+                <div>{{ professor.escola|default:'—' }}</div>
+            </div>
+            <div class="col-md-6">
+                <div style="color:rgba(255,255,255,0.4);font-size:0.8rem">Disciplina</div>
+                <div>{{ professor.disciplina|default:'—' }}</div>
+            </div>
+            <div class="col-md-6">
+                <div style="color:rgba(255,255,255,0.4);font-size:0.8rem">Cidade / Estado</div>
+                <div>{{ professor.cidade|default:'—' }} {{ professor.estado }}</div>
+            </div>
+            <div class="col-md-6">
+                <div style="color:rgba(255,255,255,0.4);font-size:0.8rem">Email confirmado</div>
+                <div>{% if professor.email_confirmado %}✅ Sim{% else %}⚠️ Pendente{% endif %}</div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex gap-3 flex-wrap">
+        {% if professor.pode_acessar %}
+            <a href="https://projetoitagame.pythonanywhere.com/painel/" target="_blank" class="btn-glow-purple btn">🎮 Acessar Itagame</a>
+            <a href="https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/" target="_blank" class="btn-glow-orange btn">📱 Corretor de Provas</a>
+        {% endif %}
+        <a href="/accounts/logout/" class="btn" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:25px;color:#fca5a5;padding:10px 24px;font-weight:700">Sair</a>
+    </div>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}
