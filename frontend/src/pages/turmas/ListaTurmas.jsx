@@ -79,7 +79,7 @@ export default function ListaTurmas() {
   }
 
   function baixarModelo() {
-    const conteudo = 'nome,curso,email_responsavel,telefone_responsavel\nJoão da Silva,Ensino Médio,resp@email.com,5585999990000\nMaria Souza,Ensino Médio,,\n'
+    const conteudo = 'nome,serie\nJoão da Silva,1º Ano\nMaria Souza,2º Ano\n'
     const blob = new Blob([conteudo], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -91,7 +91,8 @@ export default function ListaTurmas() {
     if (!csvLinhas.length || !modalImport) return
     setImportando(true)
     try {
-      const { data } = await api.post('/alunos/importar', { alunos: csvLinhas, turma_id: modalImport.id })
+      const alunosFormatados = csvLinhas.map(a => ({ ...a, curso: a.serie || a.curso || '' }))
+      const { data } = await api.post('/alunos/importar', { alunos: alunosFormatados, turma_id: modalImport.id })
       setResultImport(data)
       setCsvLinhas([])
       if (fileRef.current) fileRef.current.value = ''
@@ -124,6 +125,7 @@ export default function ListaTurmas() {
             <option value="manhã">Manhã</option>
             <option value="tarde">Tarde</option>
             <option value="noite">Noite</option>
+            <option value="integral">Tempo Integral</option>
           </select>
         </div>
         <div>
@@ -252,7 +254,7 @@ export default function ListaTurmas() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-xs text-blue-700">
                   <p className="font-semibold mb-1">Formato do arquivo CSV:</p>
                   <code className="block bg-white border border-blue-200 rounded px-2 py-1 text-xs">
-                    nome, curso, email_responsavel, telefone_responsavel
+                    nome, serie
                   </code>
                   <button onClick={baixarModelo} className="mt-2 text-blue-600 underline font-medium">
                     ⬇ Baixar modelo CSV
@@ -276,16 +278,14 @@ export default function ListaTurmas() {
                         <thead className="bg-gray-50 sticky top-0">
                           <tr>
                             <th className="text-left px-3 py-2 text-gray-600">Nome</th>
-                            <th className="text-left px-3 py-2 text-gray-600">Curso</th>
-                            <th className="text-left px-3 py-2 text-gray-600">Responsável</th>
+                            <th className="text-left px-3 py-2 text-gray-600">Série</th>
                           </tr>
                         </thead>
                         <tbody>
                           {csvLinhas.slice(0, 10).map((a, i) => (
                             <tr key={i} className="border-t">
                               <td className="px-3 py-1.5">{a.nome}</td>
-                              <td className="px-3 py-1.5 text-gray-500">{a.curso || '—'}</td>
-                              <td className="px-3 py-1.5 text-gray-500">{a.email_responsavel || '—'}</td>
+                              <td className="px-3 py-1.5 text-gray-500">{a.serie || '—'}</td>
                             </tr>
                           ))}
                           {csvLinhas.length > 10 && (
