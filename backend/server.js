@@ -15,6 +15,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Vercel strips /api prefix — add it back if missing
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api/') && req.path !== '/api') {
+    req.url = '/api' + req.url;
+  }
+  next();
+});
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/alunos', require('./routes/alunos'));
 app.use('/api/turmas', require('./routes/turmas'));
