@@ -1,41 +1,45 @@
 import React, { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
-
-const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'http://localhost:8000'
+import api from '../api'
 
 export default function Planos() {
   const [planos, setPlanos] = useState([])
   const [carregando, setCarregando] = useState(true)
-  const [assinando, setAssinando] = useState(null)
+  const [modal, setModal] = useState(null) // { plano_id, nome, preco }
+  const [form, setForm] = useState({ nome: '', email: '' })
+  const [enviando, setEnviando] = useState(false)
+  const [erro, setErro] = useState('')
 
   useEffect(() => {
-    fetch(`${DJANGO_URL}/api/planos/`)
-      .then(r => r.json())
-      .then(data => { setPlanos(data.planos || []); setCarregando(false) })
+    api.get('/pagamento/planos')
+      .then(r => { setPlanos(r.data.planos || []); setCarregando(false) })
       .catch(() => setCarregando(false))
   }, [])
 
-  async function assinar(planoId) {
-    setAssinando(planoId)
-    const token = localStorage.getItem('token')
+  function abrirModal(plano) {
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+    setForm({ nome: usuario.nome || '', email: usuario.email || '' })
+    setErro('')
+    setModal(plano)
+  }
+
+  async function assinar() {
+    if (!form.nome.trim() || !form.email.trim()) {
+      setErro('Preencha nome e email.')
+      return
+    }
+    setEnviando(true)
+    setErro('')
     try {
-      const res = await fetch(`${DJANGO_URL}/api/assinar/${planoId}/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      const res = await api.post('/pagamento/criar', {
+        plano_id: modal.id,
+        nome: form.nome.trim(),
+        email: form.email.trim(),
       })
-      const data = await res.json()
-      if (data.link_pagamento) {
-        window.open(data.link_pagamento, '_blank')
-      } else {
-        alert('Erro ao gerar link de pagamento. Tente novamente.')
-      }
-    } catch {
-      alert('Erro de conexão com o servidor de pagamentos.')
-    } finally {
-      setAssinando(null)
+      window.location.href = res.data.link_pagamento
+    } catch (err) {
+      setErro(err.response?.data?.erro || 'Erro ao gerar link de pagamento.')
+      setEnviando(false)
     }
   }
 
@@ -71,6 +75,9 @@ export default function Planos() {
                   <h2 className={`text-xl font-black mb-1 ${plano.destaque ? 'text-white' : 'text-primary'}`}>
                     {plano.nome}
                   </h2>
+                  <p className={`text-sm mb-3 ${plano.destaque ? 'text-white/70' : 'text-gray-500'}`}>
+                    {plano.descricao}
+                  </p>
 
                   <div className="flex items-end gap-1 my-4">
                     <span className={`text-4xl font-black ${plano.destaque ? 'text-secondary' : 'text-primary'}`}>
@@ -91,14 +98,13 @@ export default function Planos() {
                   </ul>
 
                   <button
-                    onClick={() => assinar(plano.id)}
-                    disabled={assinando === plano.id}
+                    onClick={() => abrirModal(plano)}
                     className={`w-full py-3 rounded-xl font-bold text-sm transition-all
                       ${plano.destaque
                         ? 'bg-secondary hover:bg-yellow-400 text-primary'
                         : 'bg-primary hover:bg-blue-900 text-white'}`}
                   >
-                    {assinando === plano.id ? 'Aguarde...' : 'Assinar Agora'}
+                    Assinar Agora
                   </button>
                 </div>
               ))}
@@ -106,12 +112,67 @@ export default function Planos() {
           )}
 
           <div className="mt-10 text-center text-sm text-gray-400">
-            <p>Pagamento seguro via Mercado Pago. Cancele quando quiser.</p>
-            <p className="mt-1">Dúvidas? WhatsApp: <a href="https://wa.me/5500000000000" className="text-primary underline">fale conosco</a></p>
+            <p>Pagamento 100% seguro via Mercado Pago • Após confirmação, você recebe o acesso por email automaticamente</p>
           </div>
 
         </div>
       </main>
+
+      {/* Modal de dados */}
+      {modal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <h2 className="text-xl font-black text-primary mb-1">Assinar — {modal.nome}</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              R$ {modal.preco.toFixed(2).replace('.', ',')} / {modal.periodo} • Pago via Mercado Pago
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
+                <input
+                  type="text"
+                  value={form.nome}
+                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Seu nome ou da escola"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email para acesso</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="email@escola.com"
+                />
+              </div>
+              {erro && <p className="text-red-500 text-sm">{erro}</p>}
+            </div>
+
+            <p className="text-xs text-gray-400 mt-4">
+              Após o pagamento confirmado, uma conta será criada automaticamente e você receberá as credenciais de acesso neste email.
+            </p>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setModal(null)}
+                className="flex-1 py-2.5 rounded-lg border text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={assinar}
+                disabled={enviando}
+                className="flex-1 py-2.5 rounded-lg bg-secondary text-primary font-bold text-sm hover:bg-yellow-400 disabled:opacity-60"
+              >
+                {enviando ? 'Aguarde...' : 'Ir para Pagamento →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
