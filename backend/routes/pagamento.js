@@ -9,7 +9,7 @@ const router = express.Router();
 const MP_TOKEN = process.env.MP_ACCESS_TOKEN || 'APP_USR-97948385900636-031422-b459084aa93d30f79e89518602866f87-835607568';
 const BASE_URL = process.env.BASE_URL || 'https://ceitec-id-sistem.vercel.app';
 const EMAIL_USER = 'itagamificaedu@gmail.com';
-const EMAIL_PASS = process.env.EMAIL_PASS || 'thyfeaqgawulrwkk';
+const EMAIL_PASS = process.env.EMAIL_PASS || 'ikzfihmnwluhbijo';
 
 const PLANOS = [
   {
