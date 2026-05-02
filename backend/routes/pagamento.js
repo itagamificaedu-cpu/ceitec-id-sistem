@@ -69,32 +69,46 @@ router.post('/criar', async (req, res) => {
 });
 
 router.post('/webhook', async (req, res) => {
-  res.sendStatus(200);
-
+  // Always respond 200 at the end — process everything first
+  // (Vercel/serverless: res.send() before async work kills execution)
   try {
     const payment_id = req.query['data.id'] || req.query.id || req.body?.data?.id;
-    if (!payment_id) return;
+    if (!payment_id) return res.sendStatus(200);
+
+    console.log(`[webhook-pix] recebido payment_id=${payment_id}`);
 
     const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
     const paymentClient = new Payment(client);
     const info = await paymentClient.get({ id: payment_id });
 
-    if (info.status !== 'approved') return;
+    console.log(`[webhook-pix] status=${info.status} ref=${info.external_reference}`);
+
+    if (info.status !== 'approved') return res.sendStatus(200);
 
     const ref = JSON.parse(info.external_reference || '{}');
     const { nome, email, plano_id } = ref;
-    if (!email) return;
+    if (!email) return res.sendStatus(200);
 
-    const existe = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
-    if (existe) return;
+    const plano = PLANOS.find(p => p.id === plano_id);
+    const plano_nome = plano?.nome || plano_id || 'Escola';
 
+    // Generate new password (always — handles both new users and retry after failure)
     const senha = Math.random().toString(36).slice(-8).toUpperCase() + Math.floor(Math.random() * 100);
     const senha_hash = bcrypt.hashSync(senha, 10);
 
-    await db.run(
-      'INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)',
-      [nome, email, senha_hash, 'admin']
-    );
+    const existe = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (existe) {
+      // User already exists (webhook retry or previous test): update password and resend
+      await db.run(
+        'UPDATE usuarios SET senha_hash = ?, plano = ?, pagamento_mp_id = ? WHERE email = ?',
+        [senha_hash, plano_id || 'escola', String(payment_id), email]
+      );
+    } else {
+      await db.run(
+        'INSERT INTO usuarios (nome, email, senha_hash, perfil, plano, pagamento_mp_id) VALUES (?, ?, ?, ?, ?, ?)',
+        [nome, email, senha_hash, 'admin', plano_id || 'escola', String(payment_id)]
+      );
+    }
 
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -115,14 +129,14 @@ router.post('/webhook', async (req, res) => {
           <div style="padding:30px">
             <h2 style="color:#1e3a5f">Pagamento confirmado! 🎉</h2>
             <p>Olá, <strong>${nome}</strong>!</p>
-            <p>Seu acesso à plataforma foi liberado. Use as credenciais abaixo para entrar:</p>
+            <p>Seu <strong>${plano_nome}</strong> está ativo. Use as credenciais abaixo para acessar a plataforma:</p>
             <div style="background:#fff;border:2px solid #f5a623;border-radius:8px;padding:20px;margin:20px 0">
               <p style="margin:5px 0"><strong>🌐 Link:</strong> <a href="${BASE_URL}/login" style="color:#1e3a5f">${BASE_URL}/login</a></p>
               <p style="margin:5px 0"><strong>📧 Email:</strong> ${email}</p>
-              <p style="margin:5px 0"><strong>🔑 Senha:</strong> <span style="font-size:18px;font-weight:bold;color:#1e3a5f">${senha}</span></p>
+              <p style="margin:5px 0"><strong>🔑 Senha:</strong> <span style="font-size:20px;font-weight:bold;color:#1e3a5f;letter-spacing:2px">${senha}</span></p>
             </div>
             <p style="color:#666;font-size:13px">Recomendamos alterar a senha após o primeiro acesso.</p>
-            <a href="${BASE_URL}/login" style="display:inline-block;background:#f5a623;color:#fff;text-decoration:none;padding:12px 30px;border-radius:8px;font-weight:bold;margin-top:10px">Acessar Plataforma →</a>
+            <a href="${BASE_URL}/login" style="display:inline-block;background:#f5a623;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;margin-top:10px">Acessar Plataforma →</a>
           </div>
           <div style="background:#eee;padding:15px;text-align:center;font-size:12px;color:#999">
             ITA Tecnologia Educacional © 2025
@@ -130,8 +144,162 @@ router.post('/webhook', async (req, res) => {
         </div>
       `,
     });
+
+    console.log(`[webhook-pix] acesso liberado: ${email} | plano: ${plano_id}`);
   } catch (err) {
-    console.error('Webhook pagamento erro:', err.message);
+    console.error('[webhook-pix] erro:', err.message);
+  }
+
+  res.sendStatus(200);
+});
+
+// Admin: reprocessar pagamento por ID (ex: PIX aprovado mas email falhou)
+// Uso: POST /api/pagamento/reprocessar  body: { payment_id, admin_key }
+router.post('/reprocessar', async (req, res) => {
+  const { payment_id, admin_key } = req.body;
+  if (admin_key !== (process.env.ADMIN_KEY || 'ita-admin-2025')) {
+    return res.status(403).json({ erro: 'Não autorizado' });
+  }
+  if (!payment_id) return res.status(400).json({ erro: 'payment_id obrigatório' });
+
+  try {
+    const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
+    const paymentClient = new Payment(client);
+    const info = await paymentClient.get({ id: payment_id });
+
+    if (info.status !== 'approved') {
+      return res.status(400).json({ erro: `Pagamento não aprovado: status=${info.status}` });
+    }
+
+    const ref = JSON.parse(info.external_reference || '{}');
+    const { nome, email, plano_id } = ref;
+    if (!email) return res.status(400).json({ erro: 'external_reference sem email' });
+
+    const plano = PLANOS.find(p => p.id === plano_id);
+    const plano_nome = plano?.nome || plano_id || 'Escola';
+
+    const senha = Math.random().toString(36).slice(-8).toUpperCase() + Math.floor(Math.random() * 100);
+    const senha_hash = bcrypt.hashSync(senha, 10);
+
+    const existe = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (existe) {
+      await db.run(
+        'UPDATE usuarios SET senha_hash = ?, plano = ?, pagamento_mp_id = ? WHERE email = ?',
+        [senha_hash, plano_id || 'escola', String(payment_id), email]
+      );
+    } else {
+      await db.run(
+        'INSERT INTO usuarios (nome, email, senha_hash, perfil, plano, pagamento_mp_id) VALUES (?, ?, ?, ?, ?, ?)',
+        [nome, email, senha_hash, 'admin', plano_id || 'escola', String(payment_id)]
+      );
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    });
+
+    await transporter.sendMail({
+      from: `ITA Tecnologia Educacional <${EMAIL_USER}>`,
+      to: email,
+      subject: '✅ Acesso liberado — ITA Tecnologia Educacional',
+      html: `
+        <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#f9f9f9;border-radius:12px;overflow:hidden">
+          <div style="background:#1e3a5f;padding:30px;text-align:center">
+            <h1 style="color:#f5a623;margin:0;font-size:22px">🎓 ITA TECNOLOGIA EDUCACIONAL</h1>
+          </div>
+          <div style="padding:30px">
+            <h2 style="color:#1e3a5f">Pagamento confirmado! 🎉</h2>
+            <p>Olá, <strong>${nome}</strong>!</p>
+            <p>Seu <strong>${plano_nome}</strong> está ativo. Use as credenciais abaixo para acessar a plataforma:</p>
+            <div style="background:#fff;border:2px solid #f5a623;border-radius:8px;padding:20px;margin:20px 0">
+              <p style="margin:5px 0"><strong>🌐 Link:</strong> <a href="${BASE_URL}/login" style="color:#1e3a5f">${BASE_URL}/login</a></p>
+              <p style="margin:5px 0"><strong>📧 Email:</strong> ${email}</p>
+              <p style="margin:5px 0"><strong>🔑 Senha:</strong> <span style="font-size:20px;font-weight:bold;color:#1e3a5f;letter-spacing:2px">${senha}</span></p>
+            </div>
+            <p style="color:#666;font-size:13px">Recomendamos alterar a senha após o primeiro acesso.</p>
+            <a href="${BASE_URL}/login" style="display:inline-block;background:#f5a623;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;margin-top:10px">Acessar Plataforma →</a>
+          </div>
+          <div style="background:#eee;padding:15px;text-align:center;font-size:12px;color:#999">
+            ITA Tecnologia Educacional © 2025
+          </div>
+        </div>
+      `,
+    });
+
+    res.json({ ok: true, mensagem: `Acesso liberado e email enviado para ${email}`, plano: plano_nome });
+  } catch (err) {
+    console.error('[reprocessar] erro:', err.message);
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// Admin: reenviar credenciais por email (sem precisar do payment_id)
+// Uso: POST /api/pagamento/reenviar  body: { email, nome, plano_id, admin_key }
+router.post('/reenviar', async (req, res) => {
+  const { email, nome, plano_id, admin_key } = req.body;
+  if (admin_key !== (process.env.ADMIN_KEY || 'ita-admin-2025')) {
+    return res.status(403).json({ erro: 'Não autorizado' });
+  }
+  if (!email) return res.status(400).json({ erro: 'email obrigatório' });
+
+  try {
+    const plano = PLANOS.find(p => p.id === plano_id);
+    const plano_nome = plano?.nome || plano_id || 'Escola';
+
+    const senha = Math.random().toString(36).slice(-8).toUpperCase() + Math.floor(Math.random() * 100);
+    const senha_hash = bcrypt.hashSync(senha, 10);
+    const nomeUsar = nome || email.split('@')[0];
+
+    const existe = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (existe) {
+      await db.run('UPDATE usuarios SET senha_hash = ?, plano = ? WHERE email = ?', [senha_hash, plano_id || 'escola', email]);
+    } else {
+      await db.run(
+        'INSERT INTO usuarios (nome, email, senha_hash, perfil, plano) VALUES (?, ?, ?, ?, ?)',
+        [nomeUsar, email, senha_hash, 'admin', plano_id || 'escola']
+      );
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587, secure: false,
+      auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    });
+
+    await transporter.sendMail({
+      from: `ITA Tecnologia Educacional <${EMAIL_USER}>`,
+      to: email,
+      subject: '✅ Acesso liberado — ITA Tecnologia Educacional',
+      html: `
+        <div style="font-family:sans-serif;max-width:500px;margin:0 auto;background:#f9f9f9;border-radius:12px;overflow:hidden">
+          <div style="background:#1e3a5f;padding:30px;text-align:center">
+            <h1 style="color:#f5a623;margin:0;font-size:22px">🎓 ITA TECNOLOGIA EDUCACIONAL</h1>
+          </div>
+          <div style="padding:30px">
+            <h2 style="color:#1e3a5f">Pagamento confirmado! 🎉</h2>
+            <p>Olá, <strong>${nomeUsar}</strong>!</p>
+            <p>Seu <strong>${plano_nome}</strong> está ativo. Use as credenciais abaixo para acessar a plataforma:</p>
+            <div style="background:#fff;border:2px solid #f5a623;border-radius:8px;padding:20px;margin:20px 0">
+              <p style="margin:5px 0"><strong>🌐 Link:</strong> <a href="${BASE_URL}/login" style="color:#1e3a5f">${BASE_URL}/login</a></p>
+              <p style="margin:5px 0"><strong>📧 Email:</strong> ${email}</p>
+              <p style="margin:5px 0"><strong>🔑 Senha:</strong> <span style="font-size:20px;font-weight:bold;color:#1e3a5f;letter-spacing:2px">${senha}</span></p>
+            </div>
+            <p style="color:#666;font-size:13px">Recomendamos alterar a senha após o primeiro acesso.</p>
+            <a href="${BASE_URL}/login" style="display:inline-block;background:#f5a623;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;font-size:16px;margin-top:10px">Acessar Plataforma →</a>
+          </div>
+          <div style="background:#eee;padding:15px;text-align:center;font-size:12px;color:#999">
+            ITA Tecnologia Educacional © 2025
+          </div>
+        </div>
+      `,
+    });
+
+    res.json({ ok: true, mensagem: `Credenciais enviadas para ${email}`, plano: plano_nome });
+  } catch (err) {
+    console.error('[reenviar] erro:', err.message);
+    res.status(500).json({ erro: err.message });
   }
 });
 

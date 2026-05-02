@@ -6,8 +6,17 @@ let initialized = false;
 async function initDatabase() {
   if (initialized) return;
 
+  // Migrations: add columns if missing (idempotent)
+  const migrations = [
+    `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano TEXT DEFAULT 'escola'`,
+    `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pagamento_mp_id TEXT`,
+  ];
+  for (const sql of migrations) {
+    try { await db.exec(sql); } catch (_) {}
+  }
+
   const tabelas = [
-    `CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, senha_hash TEXT NOT NULL, perfil TEXT NOT NULL DEFAULT 'secretaria', criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, senha_hash TEXT NOT NULL, perfil TEXT NOT NULL DEFAULT 'secretaria', plano TEXT DEFAULT 'escola', pagamento_mp_id TEXT, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS professores (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, telefone TEXT, foto_path TEXT, especialidade TEXT, formacao TEXT, ativo INTEGER DEFAULT 1, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS turmas (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, curso TEXT NOT NULL, ano_letivo TEXT DEFAULT '2024', turno TEXT DEFAULT 'manha', professor_id INTEGER, max_alunos INTEGER DEFAULT 30, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS professor_turma_disciplina (id SERIAL PRIMARY KEY, professor_id INTEGER NOT NULL, turma_id INTEGER NOT NULL, disciplina TEXT NOT NULL, criado_em TIMESTAMP DEFAULT NOW())`,
