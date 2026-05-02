@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.pythonanywhere.com'
 
-const secoes = [
+const SECOES_ESTATICAS = [
   {
     titulo: 'ESCOLA',
     itens: [
@@ -50,15 +50,6 @@ const secoes = [
     ]
   },
   {
-    titulo: 'PLATAFORMA DJANGO',
-    itens: [
-      { href: `${DJANGO_URL}/dashboard/`, label: 'GamificaEdu', icon: '🌟' },
-      { href: 'https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/login/', label: 'Corretor de Provas', icon: '📋' },
-      { href: `${DJANGO_URL}/ferramentas/`, label: 'Repositório', icon: '📁' },
-      { href: `${DJANGO_URL}/gamification/ranking/`, label: 'Ranking Professores', icon: '🏆' },
-    ]
-  },
-  {
     titulo: 'RELATÓRIOS',
     itens: [
       { path: '/relatorios', label: 'Relatórios Gerais', icon: '📈' },
@@ -72,6 +63,21 @@ export default function Navbar() {
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+
+  const corretorUrl = `https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/login-magico/?user=${encodeURIComponent(usuario.email || '')}&email=${encodeURIComponent(usuario.email || '')}&nome=${encodeURIComponent(usuario.nome || '')}&chave=gamificaedu_secreto_2026`
+
+  const secoes = [
+    ...SECOES_ESTATICAS,
+    {
+      titulo: 'PLATAFORMA DJANGO',
+      itens: [
+        { href: `${DJANGO_URL}/dashboard/`, label: 'GamificaEdu', icon: '🌟' },
+        { href: corretorUrl, label: 'Corretor de Provas', icon: '📋' },
+        { href: `${DJANGO_URL}/ferramentas/`, label: 'Repositório', icon: '📁' },
+        { href: `${DJANGO_URL}/gamification/ranking/`, label: 'Ranking Professores', icon: '🏆' },
+      ]
+    },
+  ]
 
   function sair() {
     localStorage.removeItem('token')
