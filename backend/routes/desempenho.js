@@ -8,8 +8,9 @@ router.use(autenticar);
 router.get('/', async (req, res) => {
   try {
     const { turma_id, disciplina } = req.query;
-    let sql = 'SELECT * FROM alunos WHERE ativo = 1';
-    const params = [];
+    const eid = req.usuario.escola_id;
+    let sql = 'SELECT * FROM alunos WHERE ativo = 1 AND escola_id = ?';
+    const params = [eid];
     if (turma_id) { sql += ' AND turma_id = ?'; params.push(turma_id); }
     sql += ' ORDER BY nome';
     const alunos = await db.all(sql, params);
@@ -32,7 +33,8 @@ router.get('/', async (req, res) => {
 router.get('/turma/:turma_id', async (req, res) => {
   try {
     const { disciplina } = req.query;
-    const turma = await db.get('SELECT * FROM turmas WHERE id = ?', [req.params.turma_id]);
+    const eid = req.usuario.escola_id;
+    const turma = await db.get('SELECT * FROM turmas WHERE id = ? AND escola_id = ?', [req.params.turma_id, eid]);
     if (!turma) return res.status(404).json({ erro: 'Turma não encontrada' });
 
     const alunos = await db.all('SELECT * FROM alunos WHERE turma_id = ? AND ativo = 1 ORDER BY nome', [req.params.turma_id]);
@@ -64,7 +66,8 @@ router.get('/turma/:turma_id', async (req, res) => {
 
 router.get('/aluno/:id', async (req, res) => {
   try {
-    const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.id]);
+    const eid = req.usuario.escola_id;
+    const aluno = await db.get('SELECT * FROM alunos WHERE id = ? AND escola_id = ?', [req.params.id, eid]);
     if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
 
     const notas = await db.all('SELECT n.*, av.titulo, av.tipo, av.data_aplicacao FROM notas n JOIN avaliacoes av ON n.avaliacao_id = av.id WHERE n.aluno_id = ? ORDER BY av.data_aplicacao DESC', [req.params.id]);
@@ -84,7 +87,7 @@ router.get('/aluno/:id', async (req, res) => {
     const critica = mediasPorDisc.reduce((m, d) => d.media < (m?.media || 99) ? d : m, null);
 
     const xp = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [req.params.id]);
-    const ocorrencias = await db.all('SELECT * FROM ocorrencias WHERE aluno_id = ? ORDER BY criado_em DESC', [req.params.id]);
+    const ocorrencias = await db.all('SELECT * FROM ocorrencias WHERE aluno_id = ? AND escola_id = ? ORDER BY criado_em DESC', [req.params.id, eid]);
 
     res.json({ aluno, notas, mediasPorDisc, media_geral, melhor_disciplina: melhor, disciplina_critica: critica, itagame: xp, ocorrencias });
   } catch (err) {
@@ -94,8 +97,9 @@ router.get('/aluno/:id', async (req, res) => {
 
 router.get('/geral', async (req, res) => {
   try {
-    const alunos = await db.all('SELECT * FROM alunos WHERE ativo = 1');
-    const notas = await db.all('SELECT n.*, a.turma_id, t.nome as turma_nome FROM notas n JOIN alunos a ON n.aluno_id = a.id LEFT JOIN turmas t ON a.turma_id = t.id');
+    const eid = req.usuario.escola_id;
+    const alunos = await db.all('SELECT * FROM alunos WHERE ativo = 1 AND escola_id = ?', [eid]);
+    const notas = await db.all('SELECT n.*, a.turma_id, t.nome as turma_nome FROM notas n JOIN alunos a ON n.aluno_id = a.id LEFT JOIN turmas t ON a.turma_id = t.id WHERE a.escola_id = ?', [eid]);
 
     const total_alunos = alunos.length;
     const media_geral = notas.length > 0 ? Math.round((notas.reduce((s, n) => s + n.nota_final, 0) / notas.length) * 10) / 10 : null;
@@ -149,8 +153,9 @@ router.get('/diagnostico', async (req, res) => {
   try {
     const { turma_id, disciplina } = req.query;
     if (!turma_id || !disciplina) return res.status(400).json({ erro: 'turma_id e disciplina são obrigatórios' });
+    const eid = req.usuario.escola_id;
 
-    const notas = await db.all('SELECT n.*, a.nome FROM notas n JOIN alunos a ON n.aluno_id = a.id WHERE n.turma_id = ? AND n.disciplina = ? ORDER BY n.nota_final DESC', [turma_id, disciplina]);
+    const notas = await db.all('SELECT n.*, a.nome FROM notas n JOIN alunos a ON n.aluno_id = a.id WHERE n.turma_id = ? AND n.disciplina = ? AND a.escola_id = ? ORDER BY n.nota_final DESC', [turma_id, disciplina, eid]);
     const total = notas.length;
     const aprovados = notas.filter(n => n.nota_final >= 5).length;
     const percentualAprovacao = total > 0 ? Math.round((aprovados / total) * 100) : 0;
@@ -162,9 +167,9 @@ router.get('/diagnostico', async (req, res) => {
       FROM questoes q
       JOIN avaliacoes av ON q.avaliacao_id = av.id
       LEFT JOIN respostas_alunos r ON r.questao_id = q.id
-      WHERE av.turma_id = ? AND av.disciplina = ?
+      WHERE av.turma_id = ? AND av.disciplina = ? AND av.escola_id = ?
       GROUP BY q.id, q.enunciado, q.gabarito, q.dificuldade
-    `, [turma_id, disciplina]);
+    `, [turma_id, disciplina, eid]);
 
     const topicosComErro = questoes
       .filter(q => q.total_respostas > 0)

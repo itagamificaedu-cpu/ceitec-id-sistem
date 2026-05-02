@@ -7,13 +7,15 @@ router.use(autenticar);
 
 router.get('/', async (req, res) => {
   try {
+    const eid = req.usuario.escola_id;
     const turmas = await db.all(`
       SELECT t.*, p.nome as professor_nome,
         (SELECT COUNT(*) FROM alunos a WHERE a.turma_id = t.id AND a.ativo = 1) as total_alunos
       FROM turmas t
       LEFT JOIN professores p ON t.professor_id = p.id
+      WHERE t.escola_id = ?
       ORDER BY t.nome
-    `);
+    `, [eid]);
 
     const hoje = new Date().toISOString().split('T')[0];
     const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -42,11 +44,12 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
+    const eid = req.usuario.escola_id;
     const turma = await db.get(`
       SELECT t.*, p.nome as professor_nome, p.especialidade as professor_especialidade
       FROM turmas t LEFT JOIN professores p ON t.professor_id = p.id
-      WHERE t.id = ?
-    `, [req.params.id]);
+      WHERE t.id = ? AND t.escola_id = ?
+    `, [req.params.id, eid]);
     if (!turma) return res.status(404).json({ erro: 'Turma não encontrada' });
 
     const alunos = await db.all('SELECT * FROM alunos WHERE turma_id = ? AND ativo = 1 ORDER BY nome', [req.params.id]);
@@ -63,7 +66,10 @@ router.post('/', async (req, res) => {
   try {
     const { nome, curso, ano_letivo, turno, professor_id, max_alunos } = req.body;
     if (!nome || !curso) return res.status(400).json({ erro: 'Nome e curso são obrigatórios' });
-    const result = await db.run('INSERT INTO turmas (nome, curso, ano_letivo, turno, professor_id, max_alunos) VALUES (?, ?, ?, ?, ?, ?)', [nome, curso, ano_letivo || '2024', turno || 'manhã', professor_id || null, max_alunos || 30]);
+    const result = await db.run(
+      'INSERT INTO turmas (nome, curso, ano_letivo, turno, professor_id, max_alunos, escola_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, curso, ano_letivo || '2024', turno || 'manhã', professor_id || null, max_alunos || 30, req.usuario.escola_id]
+    );
     res.status(201).json(await db.get('SELECT * FROM turmas WHERE id = ?', [result.lastInsertRowid]));
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -73,7 +79,10 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { nome, curso, ano_letivo, turno, professor_id, max_alunos } = req.body;
-    await db.run('UPDATE turmas SET nome=?, curso=?, ano_letivo=?, turno=?, professor_id=?, max_alunos=? WHERE id=?', [nome, curso, ano_letivo, turno, professor_id, max_alunos, req.params.id]);
+    await db.run(
+      'UPDATE turmas SET nome=?, curso=?, ano_letivo=?, turno=?, professor_id=?, max_alunos=? WHERE id=? AND escola_id=?',
+      [nome, curso, ano_letivo, turno, professor_id, max_alunos, req.params.id, req.usuario.escola_id]
+    );
     res.json(await db.get('SELECT * FROM turmas WHERE id = ?', [req.params.id]));
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -82,6 +91,9 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
+    const eid = req.usuario.escola_id;
+    const turma = await db.get('SELECT id FROM turmas WHERE id = ? AND escola_id = ?', [req.params.id, eid]);
+    if (!turma) return res.status(403).json({ erro: 'Sem permissão' });
     await db.run('DELETE FROM presencas WHERE aluno_id IN (SELECT id FROM alunos WHERE turma_id = ?)', [req.params.id]);
     await db.run('DELETE FROM alunos WHERE turma_id = ?', [req.params.id]);
     await db.run('DELETE FROM professor_turma_disciplina WHERE turma_id = ?', [req.params.id]);

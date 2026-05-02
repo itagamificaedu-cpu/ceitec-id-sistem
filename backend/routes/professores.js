@@ -10,7 +10,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 
 router.get('/', async (req, res) => {
   try {
-    const profs = await db.all('SELECT * FROM professores WHERE ativo = 1 ORDER BY nome');
+    const eid = req.usuario.escola_id;
+    const profs = await db.all('SELECT * FROM professores WHERE ativo = 1 AND escola_id = ? ORDER BY nome', [eid]);
     const result = await Promise.all(profs.map(async p => {
       const turmas = await db.all(`
         SELECT ptd.disciplina, t.nome as turma_nome, t.id as turma_id
@@ -28,7 +29,8 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const prof = await db.get('SELECT * FROM professores WHERE id = ?', [req.params.id]);
+    const eid = req.usuario.escola_id;
+    const prof = await db.get('SELECT * FROM professores WHERE id = ? AND escola_id = ?', [req.params.id, eid]);
     if (!prof) return res.status(404).json({ erro: 'Professor não encontrado' });
     const turmas = await db.all(`SELECT ptd.*, t.nome as turma_nome FROM professor_turma_disciplina ptd JOIN turmas t ON ptd.turma_id = t.id WHERE ptd.professor_id = ?`, [req.params.id]);
     const planos = await db.all('SELECT * FROM planos_aula WHERE professor_id = ? ORDER BY criado_em DESC LIMIT 10', [req.params.id]);
@@ -44,18 +46,30 @@ router.post('/', upload.single('foto'), async (req, res) => {
   try {
     const { nome, email, telefone, especialidade, formacao, turmas_disciplinas } = req.body;
     if (!nome || !email) return res.status(400).json({ erro: 'Nome e email são obrigatórios' });
-    const result = await db.run('INSERT INTO professores (nome, email, telefone, especialidade, formacao) VALUES (?, ?, ?, ?, ?)', [nome, email, telefone || null, especialidade || null, formacao || null]);
+    const eid = req.usuario.escola_id;
+
+    const result = await db.run(
+      'INSERT INTO professores (nome, email, telefone, especialidade, formacao, escola_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [nome, email, telefone || null, especialidade || null, formacao || null, eid]
+    );
     const profId = result.lastInsertRowid;
 
     if (telefone && telefone.length >= 6) {
       const senhaHash = bcrypt.hashSync(telefone.slice(0, 6), 10);
-      try { await db.run('INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)', [nome, email, senhaHash, 'professor']); } catch {}
+      try {
+        await db.run(
+          'INSERT INTO usuarios (nome, email, senha_hash, perfil, escola_id) VALUES (?, ?, ?, ?, ?)',
+          [nome, email, senhaHash, 'professor', eid]
+        );
+      } catch {}
     }
 
     if (turmas_disciplinas) {
       const td = typeof turmas_disciplinas === 'string' ? JSON.parse(turmas_disciplinas) : turmas_disciplinas;
       for (const item of td) {
-        if (item.turma_id && item.disciplina) await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [profId, item.turma_id, item.disciplina]);
+        if (item.turma_id && item.disciplina) {
+          await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [profId, item.turma_id, item.disciplina]);
+        }
       }
     }
 
@@ -68,13 +82,18 @@ router.post('/', upload.single('foto'), async (req, res) => {
 router.put('/:id', upload.single('foto'), async (req, res) => {
   try {
     const { nome, email, telefone, especialidade, formacao, turmas_disciplinas } = req.body;
-    await db.run('UPDATE professores SET nome=?, email=?, telefone=?, especialidade=?, formacao=? WHERE id=?', [nome, email, telefone, especialidade, formacao, req.params.id]);
+    await db.run(
+      'UPDATE professores SET nome=?, email=?, telefone=?, especialidade=?, formacao=? WHERE id=? AND escola_id=?',
+      [nome, email, telefone, especialidade, formacao, req.params.id, req.usuario.escola_id]
+    );
 
     if (turmas_disciplinas) {
       await db.run('DELETE FROM professor_turma_disciplina WHERE professor_id = ?', [req.params.id]);
       const td = typeof turmas_disciplinas === 'string' ? JSON.parse(turmas_disciplinas) : turmas_disciplinas;
       for (const item of td) {
-        if (item.turma_id && item.disciplina) await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [req.params.id, item.turma_id, item.disciplina]);
+        if (item.turma_id && item.disciplina) {
+          await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [req.params.id, item.turma_id, item.disciplina]);
+        }
       }
     }
 
@@ -86,7 +105,7 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await db.run('UPDATE professores SET ativo = 0 WHERE id = ?', [req.params.id]);
+    await db.run('UPDATE professores SET ativo = 0 WHERE id = ? AND escola_id = ?', [req.params.id, req.usuario.escola_id]);
     res.json({ mensagem: 'Professor desativado' });
   } catch (err) {
     res.status(500).json({ erro: err.message });

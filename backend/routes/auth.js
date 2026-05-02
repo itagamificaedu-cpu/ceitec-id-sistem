@@ -16,13 +16,16 @@ router.post('/login', async (req, res) => {
     const senhaValida = bcrypt.compareSync(senha, usuario.senha_hash);
     if (!senhaValida) return res.status(401).json({ erro: 'Credenciais inválidas' });
 
+    // Admin: escola_id = próprio id. Outros: herdam escola_id do admin que os criou.
+    const escola_id = usuario.perfil === 'admin' ? usuario.id : (usuario.escola_id || usuario.id);
+
     const token = jwt.sign(
-      { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil },
+      { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, escola_id },
       process.env.JWT_SECRET || 'ceitec_secret_key_2024',
       { expiresIn: '8h' }
     );
 
-    res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil } });
+    res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, escola_id } });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
