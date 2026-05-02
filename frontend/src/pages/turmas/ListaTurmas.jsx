@@ -55,15 +55,36 @@ export default function ListaTurmas() {
   }
 
   function parseCsv(texto) {
-    const linhas = texto.trim().split('\n').filter(l => l.trim())
+    const norm = s => s.trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+
+    const NOMES_VALIDOS = ['nome','nome_completo','nome_do_aluno','aluno','estudante','name','nomealuno','nomedaluno','nomecompletodoaluno']
+    const SERIES_VALIDAS = ['serie','turma','ano','classe','curso','class','grade','ano_serie','serie_turma']
+
+    const clean = texto.replace(/^﻿/, '') // remove BOM
+    const linhas = clean.split(/\r?\n/).filter(l => l.trim())
     if (linhas.length < 2) return []
-    const cabecalho = linhas[0].split(',').map(c => c.trim().toLowerCase().replace(/[^a-z_]/g, ''))
+
+    // auto-detecta separador , ou ;
+    const sep = (linhas[0].match(/;/g) || []).length >= (linhas[0].match(/,/g) || []).length ? ';' : ','
+
+    const cabecalho = linhas[0].split(sep).map(norm)
+    const idxNome  = cabecalho.findIndex(h => NOMES_VALIDOS.includes(h))
+    const idxSerie = cabecalho.findIndex(h => SERIES_VALIDAS.includes(h))
+
     return linhas.slice(1).map(linha => {
-      const cols = linha.split(',').map(c => c.trim().replace(/^"|"$/g, ''))
+      const cols = linha.split(sep).map(c => c.trim().replace(/^["']|["']$/g, ''))
+      if (!cols.some(c => c)) return null
       const obj = {}
       cabecalho.forEach((h, i) => { obj[h] = cols[i] || '' })
+      // mapeia colunas flexíveis para nome/serie padrão
+      if (idxNome  >= 0 && cols[idxNome])  obj.nome  = cols[idxNome].trim()
+      if (idxSerie >= 0 && cols[idxSerie]) obj.serie = cols[idxSerie].trim()
+      // fallback: primeira coluna vira nome se não encontrou coluna de nome
+      if (!obj.nome && cols[0] && cols[0].trim()) obj.nome = cols[0].trim()
       return obj
-    }).filter(a => a.nome)
+    }).filter(a => a && a.nome && a.nome.trim())
   }
 
   function onCsvFile(e) {
@@ -71,10 +92,10 @@ export default function ListaTurmas() {
     if (!f) return
     const reader = new FileReader()
     reader.onload = ev => {
-      const linhas = parseCsv(ev.target.result)
-      setCsvLinhas(linhas)
+      setCsvLinhas(parseCsv(ev.target.result))
       setResultImport(null)
     }
+    // tenta UTF-8; se nomes ficarem estranhos, usuário deve salvar como "CSV UTF-8" no Excel
     reader.readAsText(f, 'UTF-8')
   }
 
