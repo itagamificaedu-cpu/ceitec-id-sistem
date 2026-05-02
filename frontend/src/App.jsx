@@ -26,6 +26,7 @@ import CorretorProvas from './pages/ia/CorretorProvas'
 import DiagnosticoAluno from './pages/ia/DiagnosticoAluno'
 import CriadorConteudo from './pages/ia/CriadorConteudo'
 import Planos from './pages/Planos'
+import Usuarios from './pages/Usuarios'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -86,6 +87,9 @@ export default function App() {
 
         {/* Planos de Assinatura */}
         <Route path="/planos" element={<P><Planos /></P>} />
+
+        {/* Usuários */}
+        <Route path="/usuarios" element={<P><Usuarios /></P>} />
       </Routes>
     </BrowserRouter>
   )
