@@ -1,0 +1,43 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container" style="padding-top: 100px; padding-bottom: 80px;">
+    <div class="row justify-content-center">
+        <div class="col-md-8 fade-up">
+
+            <div class="text-center mb-5">
+                <h2 style="color: white; font-weight: 900; font-size: 2.5rem;">Meu Perfil 🎮</h2>
+                <p style="color: rgba(255,255,255,0.6); font-size: 1.1rem;">Gerencie sua conta</p>
+            </div>
+
+            <div class="card-3d" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 40px;">
+
+                <!-- Seção: Dados Pessoais -->
+                <h4 style="color: white; font-weight: bold; margin-bottom: 20px;">
+                    <i class="fa fa-user me-2" style="color: #a78bfa;"></i> Dados da Conta
+                </h4>
+                <div style="color: rgba(255,255,255,0.8); font-size: 1.1rem; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px;">
+                    <p class="mb-2"><strong>Usuário:</strong> {{ user.username }}</p>
+                    <p class="mb-0"><strong>Email:</strong> {{ user.email }}</p>
+                </div>
+
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 40px 0;">
+
+                <!-- Seção: Status da Assinatura -->
+                <h4 style="color: white; font-weight: bold; margin-bottom: 20px;">
+                    <i class="fa fa-star me-2" style="color: #fb923c;"></i> Meu Plano Atual
+                </h4>
+
+                <div>
+                    <!-- Conta ativa — acesso completo para todos os usuários autenticados -->
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; padding: 25px; border-radius: 15px;">
+                        <h3 style="color: #10b981; margin: 0; font-weight: 800;">Conta Ativa ✅</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin-top: 10px; margin-bottom: 0;">Você tem acesso completo ao Itagame, Corretor de Provas e Repositório.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

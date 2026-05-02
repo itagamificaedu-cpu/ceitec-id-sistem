@@ -1,0 +1,240 @@
+{% extends 'core/base.html' %}
+{% block title %}ITA Tecnologia Educacional — Gamifique suas aulas{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-grid"></div>
+    <div class="container position-relative py-5">
+        <div class="text-center mb-5">
+            <div class="hero-badge">✨ Feito para educadores brasileiros</div>
+            <h1 class="mt-3">
+                Ensine mais.<br>
+                Corrija menos.<br>
+                <span class="gradient-text">Gamifique tudo.</span>
+            </h1>
+            <p class="mt-4 mb-5 mx-auto" style="font-size:1.15rem;color:rgba(255,255,255,0.65);line-height:1.7;max-width:620px">
+                Jogo educacional, corretor de provas com QR Code e repositório de atividades — tudo em um lugar, feito para professores de verdade.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="/accounts/cadastro/" class="btn-glow-orange btn">🚀 Começar grátis</a>
+                <a href="#ferramentas" class="btn-glow-purple btn">Ver ferramentas</a>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="row g-3 justify-content-center mt-2">
+            <div class="col-4 col-md-2">
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.5)">Plataformas</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.5)">Online</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-card">
+                    <div class="stat-number">BR</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.5)">Feito no Brasil</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLOATING CARDS VISUAIS -->
+        <div class="row g-3 justify-content-center mt-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card-3d p-3 text-center" style="animation: float 3s ease-in-out infinite;">
+                    <div style="color:#a78bfa;font-size:0.85rem;font-weight:700;margin-bottom:8px">🎮 Itagame</div>
+                    <div style="font-size:0.9rem;color:#ccc">Missão desbloqueada!</div>
+                    <div class="mt-2" style="background:rgba(124,58,237,0.2);border-radius:10px;padding:8px;font-size:0.85rem">
+                        🔥 +50 foguinhos conquistados
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card-3d orange p-3 text-center" style="animation: float 3s ease-in-out infinite; animation-delay:1s;">
+                    <div style="color:#fb923c;font-size:0.85rem;font-weight:700;margin-bottom:8px">📱 Corretor QR Code</div>
+                    <div style="font-size:0.9rem;color:#ccc">Turma 9°A — 30 provas</div>
+                    <div class="mt-2" style="background:rgba(249,115,22,0.15);border-radius:10px;padding:8px">
+                        <div style="font-size:0.8rem;color:#aaa">Corrigidas automaticamente</div>
+                        <div class="mt-2" style="background:rgba(249,115,22,0.4);border-radius:6px;height:8px;width:90%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card-3d cyan p-3 text-center" style="animation: float 3s ease-in-out infinite; animation-delay:2s;">
+                    <div style="color:#22d3ee;font-size:0.85rem;font-weight:700;margin-bottom:8px">📁 Repositório</div>
+                    <div style="font-size:0.9rem;color:#ccc">3 novos materiais</div>
+                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:6px">Matemática · 8° ano</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- FERRAMENTAS -->
+<section class="py-5" id="ferramentas">
+    <div class="container">
+        <div class="text-center mb-5 fade-up">
+            <div class="hero-badge">🛠️ Nossas plataformas</div>
+            <h2 class="section-title mt-3">Três ferramentas, uma missão</h2>
+            <p class="section-subtitle mt-2">Tudo que você precisa para transformar sua aula</p>
+        </div>
+        <div class="row g-4">
+
+            <!-- Itagame -->
+            <div class="col-12 col-md-4 fade-up">
+                <div class="card-3d h-100">
+                    <div class="icon-3d purple"><i class="fa fa-gamepad"></i></div>
+                    <h4 class="fw-800 mb-3">Itagame</h4>
+                    <p style="color:rgba(255,255,255,0.6);line-height:1.7">Jogo educacional gamificado com missões, desafios matemáticos, loja virtual de recompensas e sistema de foguinhos — igual ao Duolingo, mas para sala de aula.</p>
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <span style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#a78bfa">🔥 Foguinhos</span>
+                        <span style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#a78bfa">🏆 Missões</span>
+                        <span style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#a78bfa">🛒 Loja virtual</span>
+                    </div>
+                    <div class="mt-4">
+                    {% if user.is_authenticated %}
+                    <a href="/dashboard/" class="btn-glow-purple btn w-100">Acessar Itagame</a>
+                    {% else %}
+                    <a href="/accounts/login/" class="btn-glow-purple btn w-100">Entrar para acessar</a>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Corretor -->
+            <div class="col-12 col-md-4 fade-up">
+                <div class="card-3d orange h-100">
+                    <div class="icon-3d orange"><i class="fa fa-qrcode"></i></div>
+                    <h4 class="fw-800 mb-3">Corretor de Provas</h4>
+                    <p style="color:rgba(255,255,255,0.6);line-height:1.7">Crie gabaritos com QR Code, distribua para os alunos e corrija 30 provas em segundos com o celular. Chega de caneta vermelha.</p>
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <span style="background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#fb923c">📱 QR Code</span>
+                        <span style="background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#fb923c">⚡ Correção automática</span>
+                    </div>
+                    <div class="mt-4">
+    {% if user.is_authenticated %}
+        <a href="/dashboard/" class="btn-glow-orange btn w-100">Acessar Corretor</a>
+    {% else %}
+        <a href="/accounts/login/" class="btn-glow-orange btn w-100">Entrar para acessar</a>
+    {% endif %}
+</div>
+                </div>
+            </div>
+
+            <!-- Repositório -->
+<div class="col-12 col-md-4 fade-up">
+    <div class="card-3d cyan h-100">
+        <div class="icon-3d cyan"><i class="fa fa-folder-open"></i></div>
+        <h4 class="fw-800 mb-3">Repositório</h4>
+        <p style="color:rgba(255,255,255,0.6);line-height:1.7">Encontre e publique planos de aula, atividades, roteiros e jogos prontos. Filtre por área, nível escolar e tipo de material.</p>
+        <div class="mt-3 d-flex flex-wrap gap-2">
+            <span style="background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#22d3ee">📁 Upload PDF</span>
+            <span style="background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.3);border-radius:20px;padding:4px 12px;font-size:0.8rem;color:#22d3ee">🔓 Grátis ou Premium</span>
+        </div>
+        <div class="mt-4">
+    {% if user.is_authenticated %}
+        <a href="/ferramentas/" class="btn-glow-cyan btn w-100" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);border:none;border-radius:30px;padding:14px;font-weight:800;color:#000;box-shadow:0 0 25px rgba(6,182,212,0.3)">Ver repositório</a>
+    {% else %}
+        <a href="/accounts/login/" class="btn-glow-cyan btn w-100" style="background:linear-gradient(135deg,#06b6d4,#22d3ee);border:none;border-radius:30px;padding:14px;font-weight:800;color:#000;box-shadow:0 0 25px rgba(6,182,212,0.3)">Entrar para acessar</a>
+    {% endif %}
+</div>
+    </div>
+</div>
+</section>
+
+<div class="glow-divider"></div>
+
+{% if ferramentas %}
+<div class="glow-divider"></div>
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title fade-up">Atividades recentes</h2>
+            <a href="/ferramentas/" style="color:#a78bfa;font-weight:700;text-decoration:none">Ver todas →</a>
+        </div>
+        <div class="row g-3">
+            {% for f in ferramentas %}
+            <div class="col-12 col-md-4 fade-up">
+                <div class="card-3d p-4">
+                    <span class="badge-cat mb-3 d-inline-block">{{ f.get_categoria_display }}</span>
+                    <h6 class="fw-800 mb-2">{{ f.titulo }}</h6>
+                    <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:16px">{{ f.descricao|truncatewords:15 }}</p>
+                    <a href="/ferramentas/{{ f.pk }}/" style="color:#a78bfa;font-weight:700;text-decoration:none;font-size:0.9rem">Ver material →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- SEÇÃO DE PLANOS E PREÇOS -->
+<section id="planos" style="padding: 80px 0; background-color: var(--dark);">
+  <div class="container">
+    <div class="text-center mb-5 fade-up">
+      <span class="hero-badge" style="background: rgba(249,115,22,0.2); color: #fb923c; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+        <i class="fa fa-star me-1"></i> Planos Premium
+      </span>
+      <h2 class="section-title mt-3" style="font-weight: 900; font-size: 2.5rem; color: white;">
+        Desbloqueie todo o poder do <span class="gradient-text" style="background: linear-gradient(to right, #a78bfa, #fb923c); -webkit-background-clip: text; color: transparent;">ITA Tecnologia Educacional</span>
+      </h2>
+      <p class="section-subtitle" style="color: rgba(255,255,255,0.6); font-size: 1.1rem;">Escolha o plano ideal para transformar suas aulas e economizar horas de trabalho.</p>
+    </div>
+
+    <div class="row justify-content-center g-4 mt-4">
+
+      <!-- Plano Educador -->
+      <div class="col-md-5 fade-up">
+        <div class="card-3d h-100" style="background: rgba(255,255,255,0.03); border: 2px solid rgba(124,58,237,0.3); border-radius: 20px; padding: 40px; overflow: visible !important;">
+          <div class="text-center mb-4">
+            <h3 class="fw-800" style="color: #a78bfa; font-size: 1.8rem;">Educador</h3>
+            <div class="fs-1 fw-900 text-white mt-3" style="font-size: 3rem !important;">R$ 19<span class="fs-5" style="color: rgba(255,255,255,0.5);">/mês</span></div>
+          </div>
+          <ul class="list-unstyled mb-5" style="color: rgba(255,255,255,0.8); line-height: 2.5; font-size: 1.05rem;">
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Acesso total ao <strong>Itagame</strong></li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Acesso ao <strong>Corretor de Provas</strong></li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Downloads ilimitados no Repositório</li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Suporte por email</li>
+          </ul>
+          <a href="/assinar/educador/" class="btn-glow-purple btn w-100 py-3 fw-bold" style="border-radius: 30px; font-size: 1.1rem;">
+            Assinar Plano Educador
+          </a>
+        </div>
+      </div>
+
+      <!-- Plano Colaborador (COM MARGEM NO TOPO PARA O SELO NÃO CORTAR) -->
+      <div class="col-md-5 fade-up" style="margin-top: 25px;">
+        <div class="card-3d orange h-100" style="background: rgba(255,255,255,0.03); border: 2px solid rgba(249,115,22,0.3); border-radius: 20px; padding: 40px; position: relative; overflow: visible !important;">
+          <!-- Badge de Recomendado -->
+          <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 6px 24px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 5px 15px rgba(249,115,22,0.4); z-index: 10; white-space: nowrap;">
+            MAIS POPULAR
+          </div>
+
+          <div class="text-center mb-4">
+            <h3 class="fw-800" style="color: #fb923c; font-size: 1.8rem;">Colaborador</h3>
+            <div class="fs-1 fw-900 text-white mt-3" style="font-size: 3rem !important;">R$ 39<span class="fs-5" style="color: rgba(255,255,255,0.5);">/mês</span></div>
+          </div>
+          <ul class="list-unstyled mb-5" style="color: rgba(255,255,255,0.8); line-height: 2.5; font-size: 1.05rem;">
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>Tudo do plano Educador</strong></li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Selo exclusivo de Colaborador</li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Suporte prioritário via WhatsApp</li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Acesso antecipado a novidades</li>
+          </ul>
+          <a href="/assinar/colaborador/" class="btn-glow-orange btn w-100 py-3 fw-bold" style="border-radius: 30px; font-size: 1.1rem;">
+            Assinar Plano Colaborador
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
