@@ -53,7 +53,7 @@ const secoes = [
     titulo: 'PLATAFORMA DJANGO',
     itens: [
       { href: `${DJANGO_URL}/dashboard/`, label: 'GamificaEdu', icon: '🌟' },
-      { path: '/ia/corretor', label: 'Corretor de Provas', icon: '📋' },
+      { href: 'https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/login/', label: 'Corretor de Provas', icon: '📋' },
       { href: `${DJANGO_URL}/ferramentas/`, label: 'Repositório', icon: '📁' },
       { href: `${DJANGO_URL}/gamification/ranking/`, label: 'Ranking Professores', icon: '🏆' },
     ]
