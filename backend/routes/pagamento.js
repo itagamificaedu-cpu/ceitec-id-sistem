@@ -6,6 +6,11 @@ const db = require('../db');
 
 const router = express.Router();
 
+async function ensureColunas() {
+  try { await db.exec(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano TEXT DEFAULT 'escola'`); } catch (_) {}
+  try { await db.exec(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pagamento_mp_id TEXT`); } catch (_) {}
+}
+
 const MP_TOKEN = process.env.MP_ACCESS_TOKEN || 'APP_USR-97948385900636-031422-b459084aa93d30f79e89518602866f87-835607568';
 const BASE_URL = process.env.BASE_URL || 'https://ceitec-id-sistem.vercel.app';
 const EMAIL_USER = 'itagamificaedu@gmail.com';
@@ -69,6 +74,9 @@ router.post('/criar', async (req, res) => {
 });
 
 router.post('/webhook', async (req, res) => {
+  try {
+    await ensureColunas();
+  } catch (_) {}
   // Always respond 200 at the end — process everything first
   // (Vercel/serverless: res.send() before async work kills execution)
   try {
@@ -156,6 +164,7 @@ router.post('/webhook', async (req, res) => {
 // Admin: reprocessar pagamento por ID (ex: PIX aprovado mas email falhou)
 // Uso: POST /api/pagamento/reprocessar  body: { payment_id, admin_key }
 router.post('/reprocessar', async (req, res) => {
+  await ensureColunas().catch(() => {});
   const { payment_id, admin_key } = req.body;
   if (admin_key !== (process.env.ADMIN_KEY || 'ita-admin-2025')) {
     return res.status(403).json({ erro: 'Não autorizado' });
@@ -239,6 +248,7 @@ router.post('/reprocessar', async (req, res) => {
 // Admin: reenviar credenciais por email (sem precisar do payment_id)
 // Uso: POST /api/pagamento/reenviar  body: { email, nome, plano_id, admin_key }
 router.post('/reenviar', async (req, res) => {
+  await ensureColunas().catch(() => {});
   const { email, nome, plano_id, admin_key } = req.body;
   if (admin_key !== (process.env.ADMIN_KEY || 'ita-admin-2025')) {
     return res.status(403).json({ erro: 'Não autorizado' });
