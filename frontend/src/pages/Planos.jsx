@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import api from '../api'
 
 export default function Planos() {
+  const logado = !!localStorage.getItem('token')
   const [planos, setPlanos] = useState([])
   const [carregando, setCarregando] = useState(true)
-  const [modal, setModal] = useState(null) // { plano_id, nome, preco }
+  const [modal, setModal] = useState(null)
   const [form, setForm] = useState({ nome: '', email: '' })
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
@@ -45,8 +47,8 @@ export default function Planos() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Navbar />
-      <main className="flex-1 lg:ml-64 p-6">
+      {logado && <Navbar />}
+      <main className={`flex-1 p-6 ${logado ? 'lg:ml-64' : ''}`}>
         <div className="max-w-4xl mx-auto">
 
           <div className="text-center mb-10">
@@ -111,8 +113,11 @@ export default function Planos() {
             </div>
           )}
 
-          <div className="mt-10 text-center text-sm text-gray-400">
+          <div className="mt-10 text-center text-sm text-gray-400 space-y-2">
             <p>Pagamento 100% seguro via Mercado Pago • Após confirmação, você recebe o acesso por email automaticamente</p>
+            {!logado && (
+              <p>Já tem conta? <Link to="/login" className="text-primary underline font-medium">Entrar no sistema →</Link></p>
+            )}
           </div>
 
         </div>
