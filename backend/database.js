@@ -10,6 +10,29 @@ async function initDatabase() {
   const migrations = [
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano TEXT DEFAULT 'escola'`,
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pagamento_mp_id TEXT`,
+    // Multi-tenancy: cada admin é uma escola; escola_id = id do admin
+    `ALTER TABLE usuarios    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE turmas      ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE alunos      ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE professores ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE presencas   ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE avaliacoes  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE notas       ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE planos_aula ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE itagame_pontos    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE itagame_historico ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE justificativas    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    // Cada admin tem escola_id = próprio id
+    `UPDATE usuarios SET escola_id = id WHERE perfil = 'admin' AND escola_id IS NULL`,
+    // Demais usuários herdaram escola do admin ITA (dados demo)
+    `UPDATE usuarios SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
+    // Todos os dados já existentes pertencem ao ITA demo
+    `UPDATE turmas      SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
+    `UPDATE alunos      SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
+    `UPDATE professores SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
+    `UPDATE avaliacoes  SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
+    `UPDATE ocorrencias SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
   ];
   for (const sql of migrations) {
     try { await db.exec(sql); } catch (_) {}

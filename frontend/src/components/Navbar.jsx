@@ -65,6 +65,17 @@ export default function Navbar() {
   const [aberto, setAberto] = useState(false)
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
+  const ssoUrl = (next) => {
+    const base = `${DJANGO_URL}/accounts/login-magico/`
+    const params = new URLSearchParams({
+      email: usuario.email || '',
+      nome: usuario.nome || '',
+      chave: 'gamificaedu_secreto_2026',
+      next,
+    })
+    return `${base}?${params.toString()}`
+  }
+
   const corretorUrl = `https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/login-magico/?user=${encodeURIComponent(usuario.email || '')}&email=${encodeURIComponent(usuario.email || '')}&nome=${encodeURIComponent(usuario.nome || '')}&chave=gamificaedu_secreto_2026`
 
   const secoes = [
@@ -72,10 +83,10 @@ export default function Navbar() {
     {
       titulo: 'PLATAFORMA DJANGO',
       itens: [
-        { href: `${DJANGO_URL}/dashboard/`, label: 'GamificaEdu', icon: '🌟' },
-        { href: corretorUrl, label: 'Corretor de Provas', icon: '📋' },
-        { href: `${DJANGO_URL}/ferramentas/`, label: 'Repositório', icon: '📁' },
-        { href: `${DJANGO_URL}/gamification/ranking/`, label: 'Ranking Professores', icon: '🏆' },
+        { href: ssoUrl('/dashboard/'),            label: 'GamificaEdu',        icon: '🌟' },
+        { href: corretorUrl,                       label: 'Corretor de Provas', icon: '📋' },
+        { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
+        { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
       ]
     },
   ]
