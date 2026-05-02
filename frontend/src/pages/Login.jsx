@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import api from '../api'
 
 const CREDS = [
@@ -211,6 +211,9 @@ export default function Login() {
         .ita-tooltip::after{content:'';position:absolute;bottom:-5px;right:18px;width:10px;height:10px;background:#1e3a5f;transform:rotate(45deg)}
 
         .ita-copy{font-size:9px;color:rgba(255,255,255,.18);text-align:center;margin-top:20px;width:100%}
+
+        .ita-criar{display:block;width:100%;height:44px;background:transparent;border:1.5px solid rgba(245,166,35,.4);border-radius:9px;font-size:13px;font-weight:700;color:#f5a623;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:16px;transition:background .2s,border-color .2s}
+        .ita-criar:hover{background:rgba(245,166,35,.1);border-color:#f5a623}
       `}</style>
 
       <div className="ita-root">
@@ -337,6 +340,11 @@ export default function Login() {
                 {carregando ? <><span className="ita-spinner" /> Entrando...</> : '→ Entrar no Sistema'}
               </button>
             </form>
+
+            {/* Criar conta */}
+            <Link to="/planos" className="ita-criar">
+              🏫 Criar conta — ver planos
+            </Link>
 
             {/* Divisor */}
             <div className="ita-divider"><span>acesso rápido</span></div>

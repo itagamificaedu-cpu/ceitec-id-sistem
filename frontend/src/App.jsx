@@ -85,8 +85,8 @@ export default function App() {
         <Route path="/diagnostico" element={<P><DiagnosticoAluno /></P>} />
         <Route path="/ia/conteudo" element={<P><CriadorConteudo /></P>} />
 
-        {/* Planos de Assinatura */}
-        <Route path="/planos" element={<P><Planos /></P>} />
+        {/* Planos de Assinatura — público para novos clientes */}
+        <Route path="/planos" element={<Planos />} />
 
         {/* Usuários */}
         <Route path="/usuarios" element={<P><Usuarios /></P>} />
