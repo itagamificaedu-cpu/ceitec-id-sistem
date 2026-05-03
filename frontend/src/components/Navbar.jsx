@@ -120,18 +120,29 @@ export default function Navbar() {
     window.open(corretorSsoUrl(), '_blank')
   }
 
-  const secoes = [
-    ...SECOES_ESTATICAS,
-    {
-      titulo: 'FERRAMENTAS ITA',
-      itens: [
-        { onClick: abrirItagame,                   label: 'ItagGame',           icon: '🎮' },
-        { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
-        { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
-        { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
+  const isProfessor = usuario.perfil === 'professor'
+
+  const secoes = isProfessor
+    ? [
+        {
+          titulo: 'FERRAMENTAS ITA',
+          itens: [
+            { onClick: abrirItagame, label: 'ItagGame — Painel do Professor', icon: '🎮' },
+          ]
+        }
       ]
-    },
-  ]
+    : [
+        ...SECOES_ESTATICAS,
+        {
+          titulo: 'FERRAMENTAS ITA',
+          itens: [
+            { onClick: abrirItagame,                   label: 'ItagGame',           icon: '🎮' },
+            { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
+            { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
+            { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
+          ]
+        },
+      ]
 
   function sair() {
     localStorage.removeItem('token')

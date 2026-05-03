@@ -38,6 +38,14 @@ function P({ children }) {
   return <RotaProtegida>{children}</RotaProtegida>
 }
 
+function Admin({ children }) {
+  const token = localStorage.getItem('token')
+  if (!token) return <Navigate to="/login" replace />
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  if (usuario.perfil === 'professor') return <Navigate to="/dashboard" replace />
+  return children
+}
+
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -47,51 +55,51 @@ export default function App() {
 
         {/* Core */}
         <Route path="/dashboard" element={<P><Dashboard /></P>} />
-        <Route path="/alunos" element={<P><Alunos /></P>} />
-        <Route path="/alunos/novo" element={<P><CadastroAluno /></P>} />
-        <Route path="/alunos/:id/editar" element={<P><CadastroAluno /></P>} />
-        <Route path="/alunos/:id/carteirinha" element={<P><Carteirinha /></P>} />
-        <Route path="/alunos/:id/perfil" element={<P><PerfilAluno /></P>} />
-        <Route path="/scanner" element={<P><Scanner /></P>} />
-        <Route path="/relatorios" element={<P><Relatorios /></P>} />
-        <Route path="/justificativas" element={<P><Justificativas /></P>} />
-        <Route path="/desempenho" element={<P><Desempenho /></P>} />
+        <Route path="/alunos" element={<Admin><Alunos /></Admin>} />
+        <Route path="/alunos/novo" element={<Admin><CadastroAluno /></Admin>} />
+        <Route path="/alunos/:id/editar" element={<Admin><CadastroAluno /></Admin>} />
+        <Route path="/alunos/:id/carteirinha" element={<Admin><Carteirinha /></Admin>} />
+        <Route path="/alunos/:id/perfil" element={<Admin><PerfilAluno /></Admin>} />
+        <Route path="/scanner" element={<Admin><Scanner /></Admin>} />
+        <Route path="/relatorios" element={<Admin><Relatorios /></Admin>} />
+        <Route path="/justificativas" element={<Admin><Justificativas /></Admin>} />
+        <Route path="/desempenho" element={<Admin><Desempenho /></Admin>} />
 
         {/* Turmas */}
-        <Route path="/turmas" element={<P><ListaTurmas /></P>} />
-        <Route path="/turmas/:id" element={<P><DetalheTurma /></P>} />
+        <Route path="/turmas" element={<Admin><ListaTurmas /></Admin>} />
+        <Route path="/turmas/:id" element={<Admin><DetalheTurma /></Admin>} />
 
         {/* Professores */}
-        <Route path="/professores" element={<P><ListaProfessores /></P>} />
-        <Route path="/professores/novo" element={<P><CadastroProfessor /></P>} />
-        <Route path="/professores/:id/editar" element={<P><CadastroProfessor /></P>} />
+        <Route path="/professores" element={<Admin><ListaProfessores /></Admin>} />
+        <Route path="/professores/novo" element={<Admin><CadastroProfessor /></Admin>} />
+        <Route path="/professores/:id/editar" element={<Admin><CadastroProfessor /></Admin>} />
 
         {/* Avaliações */}
-        <Route path="/avaliacoes" element={<P><ListaAvaliacoes /></P>} />
-        <Route path="/avaliacoes/nova" element={<P><CriadorAvaliacao /></P>} />
-        <Route path="/avaliacoes/:id" element={<P><ResultadosAvaliacao /></P>} />
-        <Route path="/avaliacoes/:id/editar" element={<P><CriadorAvaliacao /></P>} />
+        <Route path="/avaliacoes" element={<Admin><ListaAvaliacoes /></Admin>} />
+        <Route path="/avaliacoes/nova" element={<Admin><CriadorAvaliacao /></Admin>} />
+        <Route path="/avaliacoes/:id" element={<Admin><ResultadosAvaliacao /></Admin>} />
+        <Route path="/avaliacoes/:id/editar" element={<Admin><CriadorAvaliacao /></Admin>} />
 
         {/* Ocorrências */}
-        <Route path="/ocorrencias" element={<P><ListaOcorrencias /></P>} />
-        <Route path="/ocorrencias/nova" element={<P><NovaOcorrencia /></P>} />
+        <Route path="/ocorrencias" element={<Admin><ListaOcorrencias /></Admin>} />
+        <Route path="/ocorrencias/nova" element={<Admin><NovaOcorrencia /></Admin>} />
 
         {/* ItagGame */}
-        <Route path="/itagame" element={<P><ItagameDashboard /></P>} />
+        <Route path="/itagame" element={<Admin><ItagameDashboard /></Admin>} />
         <Route path="/itagame/aluno" element={<ItagameAluno />} />
 
         {/* IA */}
-        <Route path="/ia/plano-aula" element={<P><PlanoDeAula /></P>} />
-        <Route path="/ia/questoes" element={<P><CriadorQuestoes /></P>} />
-        <Route path="/ia/corretor" element={<P><CorretorProvas /></P>} />
-        <Route path="/diagnostico" element={<P><DiagnosticoAluno /></P>} />
-        <Route path="/ia/conteudo" element={<P><CriadorConteudo /></P>} />
+        <Route path="/ia/plano-aula" element={<Admin><PlanoDeAula /></Admin>} />
+        <Route path="/ia/questoes" element={<Admin><CriadorQuestoes /></Admin>} />
+        <Route path="/ia/corretor" element={<Admin><CorretorProvas /></Admin>} />
+        <Route path="/diagnostico" element={<Admin><DiagnosticoAluno /></Admin>} />
+        <Route path="/ia/conteudo" element={<Admin><CriadorConteudo /></Admin>} />
 
         {/* Planos de Assinatura — público para novos clientes */}
         <Route path="/planos" element={<Planos />} />
 
         {/* Usuários */}
-        <Route path="/usuarios" element={<P><Usuarios /></P>} />
+        <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />
       </Routes>
     </BrowserRouter>
   )
