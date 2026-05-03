@@ -76,7 +76,15 @@ export default function Navbar() {
     return `${base}?${params.toString()}`
   }
 
-  const corretorUrl = `https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/login-magico/?user=${encodeURIComponent(usuario.email || '')}&email=${encodeURIComponent(usuario.email || '')}&nome=${encodeURIComponent(usuario.nome || '')}&chave=gamificaedu_secreto_2026`
+  const corretorUrl = (() => {
+    const params = new URLSearchParams({
+      email: usuario.email || '',
+      nome: usuario.nome || '',
+      chave: 'gamificaedu_secreto_2026',
+      next: '/home/',
+    })
+    return `https://correcaoonlineita.pythonanywhere.com/login-magico/?${params.toString()}`
+  })()
 
   const secoes = [
     ...SECOES_ESTATICAS,
