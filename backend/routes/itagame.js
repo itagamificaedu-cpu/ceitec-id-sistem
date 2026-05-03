@@ -14,7 +14,7 @@ router.get('/publico/:codigo', async (req, res) => {
     if (!aluno) return res.status(404).json({ erro: 'Código não encontrado' });
 
     await db.run(
-      "INSERT OR IGNORE INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]')",
+      "INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING",
       [aluno.id, aluno.turma_id]
     );
     const xp = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]);
@@ -91,7 +91,7 @@ router.post('/atribuir', async (req, res) => {
     let registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     if (!registro) {
       const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [aluno_id]);
-      await db.run("INSERT OR IGNORE INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]')", [aluno_id, aluno?.turma_id]);
+      await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno_id, aluno?.turma_id]);
       registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     }
     const novoXP = registro.xp_total + Number(xp);
