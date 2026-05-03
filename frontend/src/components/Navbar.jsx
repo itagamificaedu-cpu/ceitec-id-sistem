@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import api from '../api'
 
 const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.pythonanywhere.com'
 
@@ -76,7 +77,7 @@ export default function Navbar() {
     return `${base}?${params.toString()}`
   }
 
-  const corretorUrl = (() => {
+  const corretorSsoUrl = () => {
     const params = new URLSearchParams({
       email: usuario.email || '',
       nome: usuario.nome || '',
@@ -84,7 +85,23 @@ export default function Navbar() {
       next: '/home/',
     })
     return `https://correcaoonlineita.pythonanywhere.com/login-magico/?${params.toString()}`
-  })()
+  }
+
+  async function abrirCorretor() {
+    try {
+      const { data: alunos } = await api.get('/alunos')
+      await fetch('https://correcaoonlineita.pythonanywhere.com/api/sync-alunos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chave: 'gamificaedu_secreto_2026',
+          email: usuario.email || '',
+          alunos: alunos.map(a => ({ nome: a.nome, turma: a.turma })),
+        }),
+      })
+    } catch (_) {}
+    window.open(corretorSsoUrl(), '_blank')
+  }
 
   const secoes = [
     ...SECOES_ESTATICAS,
@@ -92,7 +109,7 @@ export default function Navbar() {
       titulo: 'PLATAFORMA DJANGO',
       itens: [
         { href: ssoUrl('/dashboard/'),            label: 'GamificaEdu',        icon: '🌟' },
-        { href: corretorUrl,                       label: 'Corretor de Provas', icon: '📋' },
+        { onClick: abrirCorretor,                   label: 'Corretor de Provas', icon: '📋' },
         { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
         { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
       ]
@@ -150,7 +167,17 @@ export default function Navbar() {
             <div key={secao.titulo} className="mb-1">
               <p className="text-white/30 text-xs font-bold tracking-widest px-4 py-2">{secao.titulo}</p>
               {secao.itens.map(item => (
-                secao.externo || item.href ? (
+                item.onClick ? (
+                  <button
+                    key={item.label}
+                    onClick={() => { setAberto(false); item.onClick() }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors mx-2 rounded-lg text-white/70 hover:bg-white/8 hover:text-white"
+                  >
+                    <span className="text-base w-5 flex-shrink-0">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                    <span className="ml-auto text-white/30 text-xs">↗</span>
+                  </button>
+                ) : secao.externo || item.href ? (
                   <a
                     key={item.href}
                     href={item.href}
