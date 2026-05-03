@@ -52,14 +52,19 @@ function calcularNivel(xp) {
 router.get('/ranking', async (req, res) => {
   try {
     const { turma_id } = req.query;
-    let sql = `SELECT ip.*, a.nome, a.foto_path, a.codigo, t.nome as turma_nome
-      FROM itagame_pontos ip
-      JOIN alunos a ON ip.aluno_id = a.id
-      LEFT JOIN turmas t ON ip.turma_id = t.id
-      WHERE a.ativo = 1`;
-    const params = [];
-    if (turma_id) { sql += ' AND ip.turma_id = ?'; params.push(turma_id); }
-    sql += ' ORDER BY ip.xp_total DESC';
+    const eid = req.usuario.escola_id;
+    let sql = `SELECT a.id, a.nome, a.foto_path, a.codigo, a.turma_id,
+      t.nome as turma_nome,
+      COALESCE(ip.xp_total, 0) as xp_total,
+      COALESCE(ip.nivel, 1) as nivel,
+      COALESCE(ip.badges_json, '[]') as badges_json
+      FROM alunos a
+      LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
+      LEFT JOIN turmas t ON a.turma_id = t.id
+      WHERE a.ativo = 1 AND a.escola_id = ?`;
+    const params = [eid];
+    if (turma_id) { sql += ' AND a.turma_id = ?'; params.push(turma_id); }
+    sql += ' ORDER BY xp_total DESC, a.nome';
     const ranking = (await db.all(sql, params)).map(r => ({ ...r, nivel_info: calcularNivel(r.xp_total) }));
     res.json(ranking);
   } catch (err) {

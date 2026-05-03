@@ -52,7 +52,10 @@ router.get('/:id', async (req, res) => {
     `, [req.params.id, eid]);
     if (!turma) return res.status(404).json({ erro: 'Turma não encontrada' });
 
-    const alunos = await db.all('SELECT * FROM alunos WHERE turma_id = ? AND ativo = 1 ORDER BY nome', [req.params.id]);
+    const alunos = await db.all(
+      'SELECT * FROM alunos WHERE (turma_id = ? OR (turma_id IS NULL AND turma = ?)) AND ativo = 1 ORDER BY nome',
+      [req.params.id, turma.nome]
+    );
     const disciplinas = (await db.all('SELECT DISTINCT disciplina FROM professor_turma_disciplina WHERE turma_id = ?', [req.params.id])).map(d => d.disciplina);
     const avaliacoes = await db.all('SELECT av.*, p.nome as professor_nome FROM avaliacoes av LEFT JOIN professores p ON av.professor_id = p.id WHERE av.turma_id = ? ORDER BY av.data_aplicacao DESC', [req.params.id]);
 
