@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import api from '../../api'
 
-const DISCIPLINAS_OPCOES = ['Matemática', 'Português', 'História', 'Geografia', 'Ciências', 'Física', 'Química', 'Biologia', 'Inglês', 'Artes', 'Educação Física', 'Filosofia', 'Sociologia', 'Informática']
+const DISCIPLINAS_OPCOES = ['Matemática', 'Português', 'História', 'Geografia', 'Ciências', 'Física', 'Química', 'Biologia', 'Inglês', 'Artes', 'Educação Física', 'Filosofia', 'Sociologia', 'Informática', 'Empreendedorismo Digital', 'Robótica Educacional']
 
 export default function CadastroProfessor() {
   const { id } = useParams()
@@ -16,16 +16,28 @@ export default function CadastroProfessor() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
 
+  // Turmas + disciplinas
+  const [turmasDb, setTurmasDb] = useState([])
+  // turmasSel: [{turma_id, disciplina}]
+  const [turmasSel, setTurmasSel] = useState([])
+
   // Acesso ao sistema
   const [criarAcesso, setCriarAcesso] = useState(false)
   const [senhaAcesso, setSenhaAcesso] = useState('')
-  const [acessoCriado, setAcessoCriado] = useState(false)
+
+  useEffect(() => {
+    api.get('/turmas').then(({ data }) => setTurmasDb(data)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (editando) {
       api.get(`/professores/${id}`).then(({ data }) => {
         setForm({ nome: data.nome || '', email: data.email || '', telefone: data.telefone || '', especialidade: data.especialidade || '', formacao: data.formacao || '', disciplinas: data.disciplinas || [] })
         if (data.foto_path) setPreview(data.foto_path)
+        // Carrega turmas vinculadas
+        if (data.turmas?.length) {
+          setTurmasSel(data.turmas.map(t => ({ turma_id: t.turma_id, disciplina: t.disciplina || '' })))
+        }
       })
     }
   }, [id])
@@ -34,15 +46,29 @@ export default function CadastroProfessor() {
     setForm(f => ({ ...f, disciplinas: f.disciplinas.includes(d) ? f.disciplinas.filter(x => x !== d) : [...f.disciplinas, d] }))
   }
 
+  function toggleTurma(turma_id) {
+    setTurmasSel(prev => {
+      const existe = prev.find(t => t.turma_id === turma_id)
+      if (existe) return prev.filter(t => t.turma_id !== turma_id)
+      return [...prev, { turma_id, disciplina: '' }]
+    })
+  }
+
+  function setDisciplinaTurma(turma_id, disciplina) {
+    setTurmasSel(prev => prev.map(t => t.turma_id === turma_id ? { ...t, disciplina } : t))
+  }
+
   async function salvar(e) {
     e.preventDefault()
     setErro('')
     if (!form.nome || !form.email) return setErro('Nome e e-mail são obrigatórios')
     if (criarAcesso && !senhaAcesso) return setErro('Informe a senha para criar o acesso')
+    if (turmasSel.some(t => !t.disciplina)) return setErro('Informe a disciplina para cada turma selecionada')
     setSalvando(true)
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, Array.isArray(v) ? JSON.stringify(v) : v))
+      fd.append('turmas_disciplinas', JSON.stringify(turmasSel))
       if (foto) fd.append('foto', foto)
 
       if (editando) {
@@ -51,20 +77,16 @@ export default function CadastroProfessor() {
         await api.post('/professores', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       }
 
-      // Cria conta de acesso se solicitado
       if (criarAcesso && senhaAcesso) {
         try {
           await api.post('/usuarios', { nome: form.nome, email: form.email, senha: senhaAcesso, perfil: 'professor' })
-          setAcessoCriado(true)
         } catch (errAcesso) {
-          const msgErro = errAcesso.response?.data?.erro || ''
-          if (msgErro.toLowerCase().includes('já existe') || msgErro.toLowerCase().includes('unique') || msgErro.toLowerCase().includes('duplicate')) {
-            setErro('Professor salvo, mas já existe uma conta com esse e-mail.')
-          } else {
-            setErro(`Professor salvo, mas erro ao criar acesso: ${msgErro}`)
+          const msg = errAcesso.response?.data?.erro || ''
+          if (!msg.toLowerCase().includes('já existe') && !msg.toLowerCase().includes('unique') && !msg.toLowerCase().includes('duplicate')) {
+            setErro(`Professor salvo, mas erro ao criar acesso: ${msg}`)
+            setSalvando(false)
+            return
           }
-          setSalvando(false)
-          return
         }
       }
 
@@ -125,9 +147,54 @@ export default function CadastroProfessor() {
               </div>
             </div>
 
-            {/* Disciplinas */}
+            {/* Turmas que leciona */}
             <div className="bg-white rounded-xl shadow-md p-5">
-              <h3 className="font-semibold text-textMain mb-3">Disciplinas que leciona</h3>
+              <h3 className="font-semibold text-textMain mb-1">Turmas que leciona</h3>
+              <p className="text-xs text-gray-400 mb-4">Selecione as turmas e informe a disciplina em cada uma</p>
+              {turmasDb.length === 0 ? (
+                <p className="text-sm text-gray-400">Nenhuma turma cadastrada ainda. <Link to="/turmas" className="text-primary hover:underline">Cadastrar turmas →</Link></p>
+              ) : (
+                <div className="space-y-3">
+                  {turmasDb.map(t => {
+                    const selecionada = turmasSel.find(s => s.turma_id === t.id)
+                    return (
+                      <div key={t.id} className={`border rounded-xl p-3 transition-colors ${selecionada ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            id={`turma-${t.id}`}
+                            checked={!!selecionada}
+                            onChange={() => toggleTurma(t.id)}
+                            className="w-4 h-4 accent-primary"
+                          />
+                          <label htmlFor={`turma-${t.id}`} className="flex-1 cursor-pointer">
+                            <span className="font-medium text-textMain">{t.nome}</span>
+                            <span className="text-xs text-gray-400 ml-2">{t.curso} • {t.total_alunos || 0} alunos</span>
+                          </label>
+                        </div>
+                        {selecionada && (
+                          <div className="mt-2 ml-7">
+                            <label className="text-xs text-gray-500 mb-1 block">Disciplina nesta turma *</label>
+                            <select
+                              value={selecionada.disciplina}
+                              onChange={e => setDisciplinaTurma(t.id, e.target.value)}
+                              className="input-field text-sm py-1"
+                            >
+                              <option value="">Selecione a disciplina</option>
+                              {DISCIPLINAS_OPCOES.map(d => <option key={d} value={d}>{d}</option>)}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Disciplinas gerais */}
+            <div className="bg-white rounded-xl shadow-md p-5">
+              <h3 className="font-semibold text-textMain mb-3">Disciplinas que leciona (geral)</h3>
               <div className="flex flex-wrap gap-2">
                 {DISCIPLINAS_OPCOES.map(d => (
                   <button key={d} type="button" onClick={() => toggleDisciplina(d)} className={`px-3 py-1 rounded-full text-sm transition-colors ${form.disciplinas.includes(d) ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
@@ -148,11 +215,10 @@ export default function CadastroProfessor() {
                   className="w-4 h-4 accent-primary cursor-pointer"
                 />
                 <label htmlFor="criar-acesso" className="font-semibold text-textMain cursor-pointer select-none">
-                  🔑 {editando ? 'Criar/redefinir acesso ao sistema para este professor' : 'Criar acesso ao sistema para este professor'}
+                  🔑 {editando ? 'Criar/redefinir acesso ao sistema' : 'Criar acesso ao sistema para este professor'}
                 </label>
               </div>
-              <p className="text-xs text-gray-400 mb-3 ml-7">O professor poderá fazer login no CEITEC com o e-mail e senha definidos abaixo.</p>
-
+              <p className="text-xs text-gray-400 mb-3 ml-7">O professor poderá fazer login no CEITEC com o e-mail acima.</p>
               {criarAcesso && (
                 <div className="ml-7 mt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Senha de acesso *</label>
@@ -164,7 +230,7 @@ export default function CadastroProfessor() {
                     onChange={e => setSenhaAcesso(e.target.value)}
                     minLength={6}
                   />
-                  <p className="text-xs text-gray-400 mt-1">Login será feito com: <strong>{form.email || 'e-mail acima'}</strong></p>
+                  <p className="text-xs text-gray-400 mt-1">Login: <strong>{form.email || 'e-mail acima'}</strong></p>
                 </div>
               )}
             </div>

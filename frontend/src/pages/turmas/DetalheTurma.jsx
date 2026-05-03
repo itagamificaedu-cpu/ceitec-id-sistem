@@ -6,6 +6,8 @@ import api from '../../api'
 export default function DetalheTurma() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const isProfessor = usuario.perfil === 'professor'
   const [turma, setTurma] = useState(null)
   const [aba, setAba] = useState('alunos')
   const [frequencia, setFrequencia] = useState([])
@@ -131,9 +133,11 @@ export default function DetalheTurma() {
                   onChange={e => setBusca(e.target.value)}
                   className="input-field flex-1 min-w-[200px]"
                 />
-                <Link to={novoAlunoUrl} className="btn-primary text-sm whitespace-nowrap">
-                  + Novo Aluno
-                </Link>
+                {!isProfessor && (
+                  <Link to={novoAlunoUrl} className="btn-primary text-sm whitespace-nowrap">
+                    + Novo Aluno
+                  </Link>
+                )}
                 <button onClick={() => exportarCSV(turma.alunos, 'alunos')} className="btn-secondary text-sm">
                   📥 CSV
                 </button>
@@ -155,23 +159,27 @@ export default function DetalheTurma() {
                     </Link>
                     <div className="flex gap-2 border-t pt-2">
                       <Link
-                        to={`/alunos/${a.id}/carteirinha`}
+                        to={`/alunos/${a.id}/perfil`}
                         className="flex-1 text-center text-xs py-1 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600"
                       >
-                        🪪 Carteirinha
+                        👤 Ver perfil
                       </Link>
-                      <Link
-                        to={`/alunos/${a.id}/editar`}
-                        className="flex-1 text-center text-xs py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600"
-                      >
-                        ✏️ Editar
-                      </Link>
-                      <button
-                        onClick={() => setConfirmExcluir(a)}
-                        className="flex-1 text-center text-xs py-1 rounded-lg bg-red-50 hover:bg-red-100 text-danger"
-                      >
-                        🗑️ Excluir
-                      </button>
+                      {!isProfessor && (
+                        <>
+                          <Link
+                            to={`/alunos/${a.id}/editar`}
+                            className="flex-1 text-center text-xs py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600"
+                          >
+                            ✏️ Editar
+                          </Link>
+                          <button
+                            onClick={() => setConfirmExcluir(a)}
+                            className="flex-1 text-center text-xs py-1 rounded-lg bg-red-50 hover:bg-red-100 text-danger"
+                          >
+                            🗑️ Excluir
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -19,6 +19,104 @@ function Card({ titulo, valor, icone, cor, sub }) {
   )
 }
 
+function DashboardProfessor({ usuario }) {
+  const [prof, setProf] = useState(null)
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
+
+  useEffect(() => {
+    api.get('/professores/eu')
+      .then(({ data }) => setProf(data))
+      .catch(err => setErro(err.response?.data?.erro || 'Erro ao carregar dados'))
+      .finally(() => setCarregando(false))
+  }, [])
+
+  if (carregando) return <div className="text-center py-20 text-gray-400">Carregando...</div>
+
+  if (erro) return (
+    <div className="max-w-xl mx-auto mt-10 text-center">
+      <div className="text-5xl mb-4">⚠️</div>
+      <h2 className="text-xl font-bold text-textMain mb-2">Perfil não vinculado</h2>
+      <p className="text-gray-500 text-sm">{erro}</p>
+      <p className="text-xs text-gray-400 mt-2">Entre em contato com o administrador da escola.</p>
+    </div>
+  )
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-textMain">Olá, {prof.nome?.split(' ')[0]} 👋</h1>
+        <p className="text-sm text-gray-400">{prof.especialidade || 'Professor'}</p>
+      </div>
+
+      {/* Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <Card titulo="Minhas Turmas" valor={prof.total_turmas} icone="🏫" cor="border-primary" />
+        <Card titulo="Total de Alunos" valor={prof.total_alunos} icone="👥" cor="border-secondary" />
+        <Card titulo="ItagGame" valor="🎮" icone="⭐" cor="border-yellow-400" sub="Acesse pelo menu" />
+      </div>
+
+      {/* Minhas turmas */}
+      {prof.turmas?.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-md p-10 text-center text-gray-400">
+          <div className="text-4xl mb-3">📚</div>
+          <p className="font-medium">Nenhuma turma vinculada ainda</p>
+          <p className="text-sm mt-1">Peça ao administrador para vincular suas turmas no cadastro de professor.</p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {prof.turmas?.map(turma => (
+            <div key={turma.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+              {/* Cabeçalho da turma */}
+              <div className="bg-primary p-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-white font-bold text-lg">{turma.nome}</h2>
+                  <p className="text-white/70 text-sm">
+                    {turma.disciplinas?.join(', ') || turma.curso} • {turma.alunos?.length || 0} alunos
+                  </p>
+                </div>
+                <Link
+                  to={`/turmas/${turma.id}`}
+                  className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-medium transition-colors"
+                >
+                  Ver turma →
+                </Link>
+              </div>
+
+              {/* Lista de alunos (prévia) */}
+              {turma.alunos?.length > 0 ? (
+                <div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-0">
+                    {turma.alunos.slice(0, 8).map(a => (
+                      <div key={a.id} className="flex items-center gap-2 px-4 py-2.5 border-b border-r border-gray-100">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {a.foto_path ? <img src={a.foto_path} alt={a.nome} className="w-full h-full object-cover" /> : <span className="text-sm">👤</span>}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-textMain truncate">{a.nome.split(' ')[0]}</p>
+                          <p className="text-xs text-gray-400 font-mono truncate">{a.codigo}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {turma.alunos.length > 8 && (
+                    <div className="px-4 py-2 text-xs text-gray-400 text-center border-t">
+                      + {turma.alunos.length - 8} aluno(s) — <Link to={`/turmas/${turma.id}`} className="text-primary hover:underline">ver todos</Link>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="px-4 py-6 text-sm text-gray-400 text-center">Nenhum aluno cadastrado nesta turma ainda</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [dados, setDados] = useState(null)
   const [semanal, setSemanal] = useState([])
@@ -26,6 +124,7 @@ export default function Dashboard() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
   useEffect(() => {
+    if (usuario.perfil === 'professor') { setCarregando(false); return }
     async function carregar() {
       try {
         const [dashRes, semanalRes] = await Promise.all([
@@ -42,6 +141,17 @@ export default function Dashboard() {
     }
     carregar()
   }, [])
+
+  if (usuario.perfil === 'professor') {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Navbar />
+        <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
+          <DashboardProfessor usuario={usuario} />
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -69,7 +179,6 @@ export default function Dashboard() {
                 <Card titulo="Frequência" valor={`${dados.frequencia}%`} icone="📊" cor="border-secondary" />
               </div>
 
-              {/* Atalhos rápidos */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 {[
                   { icon: '👥', label: 'Turmas', to: '/turmas', cor: '#1e3a5f' },

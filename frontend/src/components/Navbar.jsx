@@ -125,6 +125,12 @@ export default function Navbar() {
   const secoes = isProfessor
     ? [
         {
+          titulo: 'MINHAS TURMAS',
+          itens: [
+            { path: '/dashboard', label: 'Painel do Professor', icon: '🏫' },
+          ]
+        },
+        {
           titulo: 'FERRAMENTAS ITA',
           itens: [
             { onClick: abrirItagame, label: 'ItagGame — Painel do Professor', icon: '🎮' },
