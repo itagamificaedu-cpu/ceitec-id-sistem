@@ -3,6 +3,42 @@ const db = require('../db');
 const { autenticar } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Rota pública — acesso do aluno pelo código (sem login)
+router.get('/publico/:codigo', async (req, res) => {
+  try {
+    const aluno = await db.get(
+      'SELECT * FROM alunos WHERE codigo = ? AND ativo = 1',
+      [req.params.codigo.toUpperCase()]
+    );
+    if (!aluno) return res.status(404).json({ erro: 'Código não encontrado' });
+
+    await db.run(
+      "INSERT OR IGNORE INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]')",
+      [aluno.id, aluno.turma_id]
+    );
+    const xp = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]);
+    const historico = await db.all(
+      'SELECT * FROM itagame_historico WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 20',
+      [aluno.id]
+    );
+    const turma = aluno.turma_id
+      ? await db.get('SELECT nome FROM turmas WHERE id = ?', [aluno.turma_id])
+      : null;
+
+    res.json({
+      aluno: { id: aluno.id, nome: aluno.nome, codigo: aluno.codigo, foto_path: aluno.foto_path, turma: aluno.turma, turma_nome: turma?.nome },
+      xp_total: xp.xp_total,
+      nivel: xp.nivel,
+      nivel_info: calcularNivel(xp.xp_total),
+      badges: JSON.parse(xp.badges_json || '[]'),
+      historico,
+    });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 router.use(autenticar);
 
 function calcularNivel(xp) {
@@ -42,6 +78,29 @@ router.get('/aluno/:id', async (req, res) => {
     }
     const historico = await db.all('SELECT * FROM itagame_historico WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 20', [req.params.id]);
     res.json({ ...xp, nivel_info: calcularNivel(xp.xp_total), historico, badges: JSON.parse(xp.badges_json || '[]') });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+router.post('/atribuir', async (req, res) => {
+  try {
+    const { aluno_id, xp, motivo, tipo } = req.body;
+    if (!aluno_id || !xp) return res.status(400).json({ erro: 'aluno_id e xp são obrigatórios' });
+
+    let registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
+    if (!registro) {
+      const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [aluno_id]);
+      await db.run("INSERT OR IGNORE INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]')", [aluno_id, aluno?.turma_id]);
+      registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
+    }
+    const novoXP = registro.xp_total + Number(xp);
+    const novoNivel = calcularNivel(novoXP).nivel;
+    await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno_id]);
+    await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
+      [aluno_id, tipo || 'bonus', motivo || 'XP atribuído', Number(xp)]);
+
+    res.json({ xp_total: novoXP, nivel: novoNivel, nivel_info: calcularNivel(novoXP) });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }

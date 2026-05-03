@@ -20,6 +20,7 @@ import ResultadosAvaliacao from './pages/avaliacoes/ResultadosAvaliacao'
 import ListaOcorrencias from './pages/ocorrencias/ListaOcorrencias'
 import NovaOcorrencia from './pages/ocorrencias/NovaOcorrencia'
 import ItagameDashboard from './pages/itagame/ItagameDashboard'
+import ItagameAluno from './pages/itagame/ItagameAluno'
 import PlanoDeAula from './pages/ia/PlanoDeAula'
 import CriadorQuestoes from './pages/ia/CriadorQuestoes'
 import CorretorProvas from './pages/ia/CorretorProvas'
@@ -77,6 +78,7 @@ export default function App() {
 
         {/* ItagGame */}
         <Route path="/itagame" element={<P><ItagameDashboard /></P>} />
+        <Route path="/itagame/aluno" element={<ItagameAluno />} />
 
         {/* IA */}
         <Route path="/ia/plano-aula" element={<P><PlanoDeAula /></P>} />
