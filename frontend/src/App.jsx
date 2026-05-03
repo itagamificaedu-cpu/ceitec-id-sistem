@@ -67,7 +67,7 @@ export default function App() {
 
         {/* Turmas */}
         <Route path="/turmas" element={<Admin><ListaTurmas /></Admin>} />
-        <Route path="/turmas/:id" element={<Admin><DetalheTurma /></Admin>} />
+        <Route path="/turmas/:id" element={<P><DetalheTurma /></P>} />
 
         {/* Professores */}
         <Route path="/professores" element={<Admin><ListaProfessores /></Admin>} />

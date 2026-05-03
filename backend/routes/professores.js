@@ -8,6 +8,51 @@ const router = express.Router();
 router.use(autenticar);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
+// Professor vê o próprio perfil + turmas pelo email do token
+router.get('/eu', async (req, res) => {
+  try {
+    const email = req.usuario.email;
+    const eid = req.usuario.escola_id;
+    const prof = await db.get(
+      'SELECT * FROM professores WHERE email = ? AND escola_id = ? AND ativo = 1',
+      [email, eid]
+    );
+    if (!prof) return res.status(404).json({ erro: 'Perfil de professor não encontrado. Peça ao administrador para vincular seu e-mail ao cadastro.' });
+
+    // Turmas via professor_turma_disciplina
+    const links = await db.all(
+      'SELECT DISTINCT turma_id FROM professor_turma_disciplina WHERE professor_id = ?',
+      [prof.id]
+    );
+    // Turmas com professor_id direto
+    const direto = await db.all(
+      'SELECT id as turma_id FROM turmas WHERE professor_id = ? AND escola_id = ?',
+      [prof.id, eid]
+    );
+    const ids = [...new Set([...links.map(r => r.turma_id), ...direto.map(r => r.turma_id)])];
+
+    const turmas = await Promise.all(ids.map(async tid => {
+      const turma = await db.get('SELECT * FROM turmas WHERE id = ?', [tid]);
+      if (!turma) return null;
+      const alunos = await db.all(
+        'SELECT id, nome, codigo, foto_path, curso, turma FROM alunos WHERE (turma_id = ? OR (turma_id IS NULL AND turma = ?)) AND ativo = 1 ORDER BY nome',
+        [tid, turma.nome]
+      );
+      const disciplinas = await db.all(
+        'SELECT disciplina FROM professor_turma_disciplina WHERE professor_id = ? AND turma_id = ?',
+        [prof.id, tid]
+      );
+      return { ...turma, alunos, disciplinas: disciplinas.map(d => d.disciplina) };
+    }));
+    const turmasFiltradas = turmas.filter(Boolean);
+    const totalAlunos = turmasFiltradas.reduce((s, t) => s + t.alunos.length, 0);
+
+    res.json({ ...prof, turmas: turmasFiltradas, total_turmas: turmasFiltradas.length, total_alunos: totalAlunos });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const eid = req.usuario.escola_id;
@@ -69,6 +114,7 @@ router.post('/', upload.single('foto'), async (req, res) => {
       for (const item of td) {
         if (item.turma_id && item.disciplina) {
           await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [profId, item.turma_id, item.disciplina]);
+          await db.run('UPDATE turmas SET professor_id = ? WHERE id = ?', [profId, item.turma_id]);
         }
       }
     }
@@ -87,12 +133,13 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
       [nome, email, telefone, especialidade, formacao, req.params.id, req.usuario.escola_id]
     );
 
-    if (turmas_disciplinas) {
+    if (turmas_disciplinas !== undefined) {
       await db.run('DELETE FROM professor_turma_disciplina WHERE professor_id = ?', [req.params.id]);
       const td = typeof turmas_disciplinas === 'string' ? JSON.parse(turmas_disciplinas) : turmas_disciplinas;
       for (const item of td) {
         if (item.turma_id && item.disciplina) {
           await db.run('INSERT INTO professor_turma_disciplina (professor_id, turma_id, disciplina) VALUES (?, ?, ?)', [req.params.id, item.turma_id, item.disciplina]);
+          await db.run('UPDATE turmas SET professor_id = ? WHERE id = ?', [req.params.id, item.turma_id]);
         }
       }
     }
