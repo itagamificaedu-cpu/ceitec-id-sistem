@@ -81,7 +81,7 @@ export default function Navbar() {
       const turmasComAlunos = turmas.map(t => ({
         nome: t.nome,
         alunos: alunos
-          .filter(a => a.turma_id === t.id)
+          .filter(a => a.turma_id === t.id || (a.turma_id == null && a.turma === t.nome))
           .map(a => ({ codigo: a.codigo, nome: a.nome })),
       }))
       await fetch('https://projetoitagame.pythonanywhere.com/api/sync-turmas/', {
