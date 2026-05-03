@@ -204,6 +204,14 @@ export default function Carteirinha() {
               <div className="col-span-2"><span className="text-gray-500">WhatsApp responsável:</span> {aluno.telefone_responsavel}</div>
             )}
           </div>
+
+          {/* Acesso ItagGame */}
+          <div className="mt-4 bg-gradient-to-r from-primary to-secondary rounded-xl p-4 text-white text-center">
+            <p className="text-xs font-bold tracking-widest opacity-70 mb-1">ACESSO ITAGAME</p>
+            <p className="font-mono font-black text-2xl tracking-widest text-secondary bg-white/10 rounded-lg py-2 px-4 mb-2">{aluno.codigo}</p>
+            <p className="text-xs opacity-60">Acesse em:</p>
+            <p className="text-xs font-bold opacity-90">ceitec-id-sistem.vercel.app/itagame/aluno</p>
+          </div>
         </div>
       </main>
     </div>
