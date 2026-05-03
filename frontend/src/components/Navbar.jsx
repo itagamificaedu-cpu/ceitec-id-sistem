@@ -72,6 +72,38 @@ export default function Navbar() {
     return `https://correcaoonlineita.pythonanywhere.com/login-magico/?${params.toString()}`
   }
 
+  async function abrirItagame() {
+    try {
+      const [{ data: turmas }, { data: alunos }] = await Promise.all([
+        api.get('/turmas'),
+        api.get('/alunos'),
+      ])
+      const turmasComAlunos = turmas.map(t => ({
+        nome: t.nome,
+        alunos: alunos
+          .filter(a => a.turma_id === t.id)
+          .map(a => ({ codigo: a.codigo, nome: a.nome })),
+      }))
+      await fetch('https://projetoitagame.pythonanywhere.com/api/sync-turmas/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chave: 'gamificaedu_secreto_2026',
+          professor_username: usuario.email || '',
+          turmas: turmasComAlunos,
+        }),
+      })
+    } catch (_) {}
+    const params = new URLSearchParams({
+      user: usuario.email || '',
+      email: usuario.email || '',
+      nome: usuario.nome || '',
+      chave: 'gamificaedu_secreto_2026',
+      tipo: 'professor',
+    })
+    window.open(`https://projetoitagame.pythonanywhere.com/login-magico/?${params}`, '_blank')
+  }
+
   async function abrirCorretor() {
     try {
       const { data: alunos } = await api.get('/alunos')
@@ -93,7 +125,7 @@ export default function Navbar() {
     {
       titulo: 'FERRAMENTAS ITA',
       itens: [
-        { href: `https://projetoitagame.pythonanywhere.com/login-magico/?user=${encodeURIComponent(usuario.email||'')}&email=${encodeURIComponent(usuario.email||'')}&nome=${encodeURIComponent(usuario.nome||'')}&chave=gamificaedu_secreto_2026&tipo=professor`, label: 'ItagGame', icon: '🎮' },
+        { onClick: abrirItagame,                   label: 'ItagGame',           icon: '🎮' },
         { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
         { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
         { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
