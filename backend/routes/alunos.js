@@ -69,10 +69,10 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { nome, turma, curso, email_responsavel, telefone_responsavel, data_matricula } = req.body;
+    const { nome, turma, turma_id, curso, email_responsavel, telefone_responsavel, data_matricula } = req.body;
     await db.run(
-      'UPDATE alunos SET nome=?, turma=?, curso=?, email_responsavel=?, telefone_responsavel=?, data_matricula=? WHERE id=? AND escola_id=?',
-      [nome, turma, curso, email_responsavel, telefone_responsavel, data_matricula, req.params.id, req.usuario.escola_id]
+      'UPDATE alunos SET nome=?, turma=?, turma_id=?, curso=?, email_responsavel=?, telefone_responsavel=?, data_matricula=? WHERE id=? AND escola_id=?',
+      [nome, turma, turma_id || null, curso, email_responsavel, telefone_responsavel, data_matricula, req.params.id, req.usuario.escola_id]
     );
     const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.id]);
     res.json(aluno);

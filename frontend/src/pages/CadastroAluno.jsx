@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import api from '../api'
 
@@ -17,11 +17,15 @@ const DISCIPLINAS = [
 export default function CadastroAluno() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const editando = !!id
   const fotoRef = useRef()
 
+  const turmaIdParam = searchParams.get('turma_id')
+  const turmaNomeParam = searchParams.get('turma_nome') || ''
+
   const [form, setForm] = useState({
-    nome: '', turma: '', turma_id: null, curso: '',
+    nome: '', turma: turmaNomeParam, turma_id: turmaIdParam ? Number(turmaIdParam) : null, curso: '',
     email_responsavel: '', telefone_responsavel: '',
     data_matricula: new Date().toISOString().split('T')[0]
   })
@@ -68,6 +72,8 @@ export default function CadastroAluno() {
     reader.readAsDataURL(file)
   }
 
+  const voltarUrl = turmaIdParam ? `/turmas/${turmaIdParam}` : '/alunos'
+
   async function handleSubmit(e) {
     e.preventDefault()
     setErro('')
@@ -100,7 +106,7 @@ export default function CadastroAluno() {
       if (!editando) {
         setAlunoSalvo(aluno)
       } else {
-        navigate('/alunos')
+        navigate(voltarUrl)
       }
     } catch (err) {
       setErro(err.response?.data?.erro || 'Erro ao salvar aluno')
@@ -151,8 +157,9 @@ export default function CadastroAluno() {
       <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
-            <Link to="/alunos" className="text-gray-500 hover:text-primary">← Voltar</Link>
+            <Link to={voltarUrl} className="text-gray-500 hover:text-primary">← Voltar</Link>
             <h1 className="text-2xl font-bold text-textMain">{editando ? 'Editar Aluno' : 'Cadastrar Aluno'}</h1>
+            {turmaNomeParam && !editando && <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-lg">Turma: {turmaNomeParam}</span>}
           </div>
 
           {erro && (
@@ -256,7 +263,7 @@ export default function CadastroAluno() {
               <button type="submit" disabled={salvando} className="btn-primary flex-1 disabled:opacity-60">
                 {salvando ? '⏳ Salvando...' : (editando ? 'Salvar Alterações' : 'Cadastrar Aluno')}
               </button>
-              <Link to="/alunos" className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-center">
+              <Link to={voltarUrl} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-center">
                 Cancelar
               </Link>
             </div>

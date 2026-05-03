@@ -1,32 +1,45 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import api from '../../api'
 
 export default function DetalheTurma() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [turma, setTurma] = useState(null)
   const [aba, setAba] = useState('alunos')
   const [frequencia, setFrequencia] = useState([])
   const [desempenho, setDesempenho] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [busca, setBusca] = useState('')
+  const [confirmExcluir, setConfirmExcluir] = useState(null)
+  const [excluindo, setExcluindo] = useState(false)
 
-  useEffect(() => {
-    async function carregar() {
-      try {
-        const [turmaRes, freqRes, despRes] = await Promise.all([
-          api.get(`/turmas/${id}`),
-          api.get(`/turmas/${id}/frequencia`),
-          api.get(`/turmas/${id}/desempenho`)
-        ])
-        setTurma(turmaRes.data)
-        setFrequencia(freqRes.data)
-        setDesempenho(despRes.data)
-      } catch { }
-      finally { setCarregando(false) }
-    }
-    carregar()
-  }, [id])
+  async function carregar() {
+    try {
+      const [turmaRes, freqRes, despRes] = await Promise.all([
+        api.get(`/turmas/${id}`),
+        api.get(`/turmas/${id}/frequencia`),
+        api.get(`/turmas/${id}/desempenho`)
+      ])
+      setTurma(turmaRes.data)
+      setFrequencia(freqRes.data)
+      setDesempenho(despRes.data)
+    } catch { }
+    finally { setCarregando(false) }
+  }
+
+  useEffect(() => { carregar() }, [id])
+
+  async function excluirAluno(aluno) {
+    setExcluindo(true)
+    try {
+      await api.delete(`/alunos/${aluno.id}`)
+      setConfirmExcluir(null)
+      await carregar()
+    } catch { }
+    finally { setExcluindo(false) }
+  }
 
   function exportarCSV(dados, nome) {
     const header = ['Nome', 'Código', 'Turma', 'Status/Média']
@@ -38,8 +51,25 @@ export default function DetalheTurma() {
     a.href = url; a.download = `${nome}_${turma?.nome}.csv`; a.click()
   }
 
-  if (carregando) return <div className="flex min-h-screen bg-background"><Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6 flex items-center justify-center"><p className="text-gray-400">Carregando...</p></main></div>
-  if (!turma) return <div className="flex min-h-screen bg-background"><Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6"><p className="text-danger">Turma não encontrada</p></main></div>
+  if (carregando) return (
+    <div className="flex min-h-screen bg-background">
+      <Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6 flex items-center justify-center">
+        <p className="text-gray-400">Carregando...</p>
+      </main>
+    </div>
+  )
+  if (!turma) return (
+    <div className="flex min-h-screen bg-background">
+      <Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
+        <p className="text-danger">Turma não encontrada</p>
+      </main>
+    </div>
+  )
+
+  const alunosFiltrados = (turma.alunos || []).filter(a =>
+    a.nome.toLowerCase().includes(busca.toLowerCase()) ||
+    a.codigo?.toLowerCase().includes(busca.toLowerCase())
+  )
 
   const abas = [
     { id: 'alunos', label: '👥 Alunos' },
@@ -47,6 +77,8 @@ export default function DetalheTurma() {
     { id: 'desempenho', label: '📊 Desempenho' },
     { id: 'avaliacoes', label: '📝 Avaliações' },
   ]
+
+  const novoAlunoUrl = `/alunos/novo?turma_id=${id}&turma_nome=${encodeURIComponent(turma.nome)}`
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -90,23 +122,64 @@ export default function DetalheTurma() {
           {/* Aba Alunos */}
           {aba === 'alunos' && (
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <p className="text-sm text-gray-500">{turma.alunos?.length} aluno(s)</p>
-                <button onClick={() => exportarCSV(turma.alunos, 'alunos')} className="btn-secondary text-sm">📥 Exportar CSV</button>
+              {/* Barra de ações */}
+              <div className="flex flex-wrap gap-3 items-center mb-4">
+                <input
+                  type="text"
+                  placeholder="Buscar aluno por nome ou código..."
+                  value={busca}
+                  onChange={e => setBusca(e.target.value)}
+                  className="input-field flex-1 min-w-[200px]"
+                />
+                <Link to={novoAlunoUrl} className="btn-primary text-sm whitespace-nowrap">
+                  + Novo Aluno
+                </Link>
+                <button onClick={() => exportarCSV(turma.alunos, 'alunos')} className="btn-secondary text-sm">
+                  📥 CSV
+                </button>
               </div>
+              <p className="text-xs text-gray-400 mb-3">{alunosFiltrados.length} aluno(s){busca && ` encontrado(s) para "${busca}"`}</p>
+
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {turma.alunos?.map(a => (
-                  <Link key={a.id} to={`/alunos/${a.id}/perfil`} className="bg-white rounded-xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {a.foto_path ? <img src={a.foto_path} alt={a.nome} className="w-full h-full object-cover" /> : <span className="text-xl">👤</span>}
+                {alunosFiltrados.map(a => (
+                  <div key={a.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <Link to={`/alunos/${a.id}/perfil`} className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {a.foto_path ? <img src={a.foto_path} alt={a.nome} className="w-full h-full object-cover" /> : <span className="text-xl">👤</span>}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-textMain truncate">{a.nome}</p>
+                        <p className="text-xs text-secondary font-mono">{a.codigo}</p>
+                        <p className="text-xs text-gray-400">{a.curso}</p>
+                      </div>
+                    </Link>
+                    <div className="flex gap-2 border-t pt-2">
+                      <Link
+                        to={`/alunos/${a.id}/carteirinha`}
+                        className="flex-1 text-center text-xs py-1 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600"
+                      >
+                        🪪 Carteirinha
+                      </Link>
+                      <Link
+                        to={`/alunos/${a.id}/editar`}
+                        className="flex-1 text-center text-xs py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600"
+                      >
+                        ✏️ Editar
+                      </Link>
+                      <button
+                        onClick={() => setConfirmExcluir(a)}
+                        className="flex-1 text-center text-xs py-1 rounded-lg bg-red-50 hover:bg-red-100 text-danger"
+                      >
+                        🗑️ Excluir
+                      </button>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-textMain truncate">{a.nome}</p>
-                      <p className="text-xs text-secondary font-mono">{a.codigo}</p>
-                      <p className="text-xs text-gray-400">{a.curso}</p>
-                    </div>
-                  </Link>
+                  </div>
                 ))}
+                {alunosFiltrados.length === 0 && (
+                  <div className="col-span-3 text-center py-12 text-gray-400">
+                    {busca ? 'Nenhum aluno encontrado para essa busca' : 'Nenhum aluno nesta turma ainda'}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -215,6 +288,36 @@ export default function DetalheTurma() {
           )}
         </div>
       </main>
+
+      {/* Modal confirmar exclusão */}
+      {confirmExcluir && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">⚠️</div>
+              <h3 className="font-bold text-textMain">Excluir aluno?</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                <strong>{confirmExcluir.nome}</strong> será desativado e não aparecerá mais no sistema.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => excluirAluno(confirmExcluir)}
+                disabled={excluindo}
+                className="flex-1 bg-danger text-white py-2 rounded-lg font-medium hover:opacity-90 disabled:opacity-60"
+              >
+                {excluindo ? 'Excluindo...' : 'Sim, excluir'}
+              </button>
+              <button
+                onClick={() => setConfirmExcluir(null)}
+                className="flex-1 border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
