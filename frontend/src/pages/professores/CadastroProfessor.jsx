@@ -16,6 +16,11 @@ export default function CadastroProfessor() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
 
+  // Acesso ao sistema
+  const [criarAcesso, setCriarAcesso] = useState(false)
+  const [senhaAcesso, setSenhaAcesso] = useState('')
+  const [acessoCriado, setAcessoCriado] = useState(false)
+
   useEffect(() => {
     if (editando) {
       api.get(`/professores/${id}`).then(({ data }) => {
@@ -33,13 +38,36 @@ export default function CadastroProfessor() {
     e.preventDefault()
     setErro('')
     if (!form.nome || !form.email) return setErro('Nome e e-mail são obrigatórios')
+    if (criarAcesso && !senhaAcesso) return setErro('Informe a senha para criar o acesso')
     setSalvando(true)
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, Array.isArray(v) ? JSON.stringify(v) : v))
       if (foto) fd.append('foto', foto)
-      if (editando) await api.put(`/professores/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      else await api.post('/professores', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+
+      if (editando) {
+        await api.put(`/professores/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      } else {
+        await api.post('/professores', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      }
+
+      // Cria conta de acesso se solicitado
+      if (criarAcesso && senhaAcesso) {
+        try {
+          await api.post('/usuarios', { nome: form.nome, email: form.email, senha: senhaAcesso, perfil: 'professor' })
+          setAcessoCriado(true)
+        } catch (errAcesso) {
+          const msgErro = errAcesso.response?.data?.erro || ''
+          if (msgErro.toLowerCase().includes('já existe') || msgErro.toLowerCase().includes('unique') || msgErro.toLowerCase().includes('duplicate')) {
+            setErro('Professor salvo, mas já existe uma conta com esse e-mail.')
+          } else {
+            setErro(`Professor salvo, mas erro ao criar acesso: ${msgErro}`)
+          }
+          setSalvando(false)
+          return
+        }
+      }
+
       navigate('/professores')
     } catch (err) {
       setErro(err.response?.data?.erro || 'Erro ao salvar')
@@ -109,10 +137,44 @@ export default function CadastroProfessor() {
               </div>
             </div>
 
-            {erro && <p className="text-danger text-sm text-center">{erro}</p>}
+            {/* Acesso ao sistema */}
+            <div className="bg-white rounded-xl shadow-md p-5">
+              <div className="flex items-center gap-3 mb-1">
+                <input
+                  id="criar-acesso"
+                  type="checkbox"
+                  checked={criarAcesso}
+                  onChange={e => setCriarAcesso(e.target.checked)}
+                  className="w-4 h-4 accent-primary cursor-pointer"
+                />
+                <label htmlFor="criar-acesso" className="font-semibold text-textMain cursor-pointer select-none">
+                  🔑 {editando ? 'Criar/redefinir acesso ao sistema para este professor' : 'Criar acesso ao sistema para este professor'}
+                </label>
+              </div>
+              <p className="text-xs text-gray-400 mb-3 ml-7">O professor poderá fazer login no CEITEC com o e-mail e senha definidos abaixo.</p>
+
+              {criarAcesso && (
+                <div className="ml-7 mt-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Senha de acesso *</label>
+                  <input
+                    type="password"
+                    className="input-field max-w-xs"
+                    placeholder="Mínimo 6 caracteres"
+                    value={senhaAcesso}
+                    onChange={e => setSenhaAcesso(e.target.value)}
+                    minLength={6}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Login será feito com: <strong>{form.email || 'e-mail acima'}</strong></p>
+                </div>
+              )}
+            </div>
+
+            {erro && <p className="text-danger text-sm text-center bg-red-50 rounded-lg py-2 px-4">{erro}</p>}
 
             <div className="flex gap-3">
-              <button type="submit" disabled={salvando} className="btn-primary flex-1">{salvando ? 'Salvando...' : editando ? 'Salvar Alterações' : 'Cadastrar Professor'}</button>
+              <button type="submit" disabled={salvando} className="btn-primary flex-1">
+                {salvando ? 'Salvando...' : editando ? 'Salvar Alterações' : 'Cadastrar Professor'}
+              </button>
               <Link to="/professores" className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancelar</Link>
             </div>
           </form>
