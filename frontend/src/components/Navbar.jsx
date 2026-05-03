@@ -25,7 +25,6 @@ const SECOES_ESTATICAS = [
     titulo: 'PROFESSORES',
     itens: [
       { path: '/professores', label: 'Professores', icon: '👨‍🏫' },
-      { path: '/ia/plano-aula', label: 'Planos de Aula (IA)', icon: '📚' },
     ]
   },
   {
@@ -35,14 +34,6 @@ const SECOES_ESTATICAS = [
       { path: '/desempenho', label: 'Desempenho', icon: '📊' },
       { path: '/diagnostico', label: 'Diagnóstico por Disciplina', icon: '🔬' },
       { path: '/ocorrencias', label: 'Ocorrências', icon: '⚠️' },
-    ]
-  },
-  {
-    titulo: 'IA EDUCACIONAL',
-    itens: [
-      { path: '/ia/questoes', label: 'Criar Questões (IA)', icon: '🤖' },
-      { path: '/ia/corretor', label: 'Corrigir Provas (IA)', icon: '✅' },
-      { path: '/ia/conteudo', label: 'Criar Conteúdo (IA)', icon: '📄' },
     ]
   },
   {
@@ -106,10 +97,10 @@ export default function Navbar() {
   const secoes = [
     ...SECOES_ESTATICAS,
     {
-      titulo: 'PLATAFORMA DJANGO',
+      titulo: 'FERRAMENTAS ITA',
       itens: [
-        { href: ssoUrl('/dashboard/'),            label: 'GamificaEdu',        icon: '🌟' },
-        { onClick: abrirCorretor,                   label: 'Corretor de Provas', icon: '📋' },
+        { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
+        { href: ssoUrl('/dashboard/'),             label: 'ItagGame',           icon: '🎮' },
         { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
         { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
       ]
