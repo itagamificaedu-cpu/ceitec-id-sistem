@@ -194,7 +194,7 @@ export default function Carteirinha() {
           {/* Info */}
           <div className="mt-6 bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm">
             <div><span className="text-gray-500">Código:</span> <span className="font-mono font-bold text-secondary">{aluno.codigo}</span></div>
-            <div><span className="text-gray-500">Matrícula:</span> {new Date(aluno.data_matricula + 'T12:00:00').toLocaleDateString('pt-BR')}</div>
+            <div><span className="text-gray-500">Matrícula:</span> {aluno.data_matricula ? new Date(aluno.data_matricula + 'T12:00:00').toLocaleDateString('pt-BR') : '—'}</div>
             <div><span className="text-gray-500">Turma:</span> {aluno.turma}</div>
             <div><span className="text-gray-500">Curso:</span> {aluno.curso}</div>
             {aluno.email_responsavel && (
