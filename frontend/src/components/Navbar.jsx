@@ -93,7 +93,7 @@ export default function Navbar() {
     {
       titulo: 'FERRAMENTAS ITA',
       itens: [
-        { path: '/itagame',                        label: 'ItagGame',           icon: '🎮' },
+        { href: `https://projetoitagame.pythonanywhere.com/login-magico/?user=${encodeURIComponent(usuario.email||'')}&email=${encodeURIComponent(usuario.email||'')}&nome=${encodeURIComponent(usuario.nome||'')}&chave=gamificaedu_secreto_2026&tipo=professor`, label: 'ItagGame', icon: '🎮' },
         { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
         { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
         { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
