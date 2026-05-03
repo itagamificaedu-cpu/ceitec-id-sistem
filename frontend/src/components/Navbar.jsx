@@ -73,6 +73,9 @@ export default function Navbar() {
   }
 
   async function abrirItagame() {
+    // Abre a janela ANTES dos awaits — Chrome bloqueia window.open() após async
+    const janela = window.open('about:blank', '_blank')
+
     try {
       const [{ data: turmas }, { data: alunos }] = await Promise.all([
         api.get('/turmas'),
@@ -94,6 +97,7 @@ export default function Navbar() {
         }),
       })
     } catch (_) {}
+
     const params = new URLSearchParams({
       user: usuario.email || '',
       email: usuario.email || '',
@@ -101,10 +105,15 @@ export default function Navbar() {
       chave: 'gamificaedu_secreto_2026',
       tipo: 'professor',
     })
-    window.open(`https://projetoitagame.pythonanywhere.com/login-magico/?${params}`, '_blank')
+    const url = `https://projetoitagame.pythonanywhere.com/login-magico/?${params}`
+    if (janela) janela.location.href = url
+    else window.open(url, '_blank')
   }
 
   async function abrirCorretor() {
+    // Abre a janela ANTES dos awaits — Chrome bloqueia window.open() após async
+    const janela = window.open('about:blank', '_blank')
+
     try {
       const { data: alunos } = await api.get('/alunos')
       await fetch('https://correcaoonlineita.pythonanywhere.com/api/sync-alunos/', {
@@ -117,7 +126,10 @@ export default function Navbar() {
         }),
       })
     } catch (_) {}
-    window.open(corretorSsoUrl(), '_blank')
+
+    const url = corretorSsoUrl()
+    if (janela) janela.location.href = url
+    else window.open(url, '_blank')
   }
 
   const isProfessor = usuario.perfil === 'professor'
