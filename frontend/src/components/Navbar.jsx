@@ -37,12 +37,6 @@ const SECOES_ESTATICAS = [
     ]
   },
   {
-    titulo: 'ITAGAME',
-    itens: [
-      { path: '/itagame', label: 'ItagGame Dashboard', icon: '🎮' },
-    ]
-  },
-  {
     titulo: 'RELATÓRIOS',
     itens: [
       { path: '/relatorios', label: 'Relatórios Gerais', icon: '📈' },
@@ -99,8 +93,8 @@ export default function Navbar() {
     {
       titulo: 'FERRAMENTAS ITA',
       itens: [
+        { path: '/itagame',                        label: 'ItagGame',           icon: '🎮' },
         { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
-        { href: ssoUrl('/dashboard/'),             label: 'ItagGame',           icon: '🎮' },
         { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
         { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
       ]
