@@ -3,6 +3,110 @@ import { useParams, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import api from '../api'
 
+function parseTurma(turma) {
+  if (!turma) return { ano: '', secao: '' }
+  const parts = turma.trim().split(/\s+/)
+  if (parts.length >= 3) {
+    return { ano: `${parts[0]}º Ano`, secao: `Turma ${parts[parts.length - 1]}` }
+  }
+  return { ano: turma, secao: '' }
+}
+
+function CardCarteirinha({ aluno, qrcode }) {
+  const { ano, secao } = parseTurma(aluno.turma)
+  return (
+    <div style={{
+      width: '342px',
+      height: '216px',
+      background: 'linear-gradient(135deg, #1e3a5f 0%, #0f2040 100%)',
+      borderRadius: '12px',
+      padding: '16px',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      overflow: 'hidden',
+      fontFamily: 'Segoe UI, system-ui, sans-serif',
+      flexShrink: 0,
+    }}>
+      {/* Decoração fundo */}
+      <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(245,166,35,0.1)' }} />
+      <div style={{ position: 'absolute', bottom: '-30px', left: '-10px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+        <div>
+          <div style={{ color: '#f5a623', fontSize: '14px', fontWeight: '900', letterSpacing: '1px', lineHeight: 1 }}>CEITEC</div>
+          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '8px', letterSpacing: '1px' }}>INOVAÇÃO E TECNOLOGIA</div>
+        </div>
+        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '8px', textAlign: 'right' }}>
+          <div>ID ESTUDANTIL</div>
+          <div style={{ color: '#f5a623', fontSize: '7px', marginTop: '2px' }}>2025</div>
+        </div>
+      </div>
+
+      {/* Conteúdo principal */}
+      <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+        {/* Foto + dados */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px', flex: 1 }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+              border: '2px solid #f5a623',
+              overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              {aluno.foto_path ? (
+                <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
+              ) : (
+                <span style={{ fontSize: '28px' }}>👤</span>
+              )}
+            </div>
+            <div>
+              <div style={{ color: '#ffffff', fontSize: '11px', fontWeight: '700', lineHeight: 1.3, maxWidth: '130px', marginBottom: '3px' }}>{aluno.nome}</div>
+              <div style={{ color: '#f5a623', fontSize: '10px', fontWeight: '700', fontFamily: 'monospace', marginBottom: '3px' }}>{aluno.codigo}</div>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '8.5px', marginBottom: '2px' }}>{ano}</div>
+              <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '8px' }}>{secao}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+          <div style={{
+            background: '#ffffff',
+            padding: '6px',
+            borderRadius: '8px',
+            width: '100px',
+            height: '100px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            {qrcode && <img src={qrcode} alt="QR Code" style={{ width: '88px', height: '88px' }} />}
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '7px', textAlign: 'center' }}>Escaneie para presença</div>
+        </div>
+      </div>
+
+      {/* Rodapé */}
+      <div style={{
+        marginTop: '8px',
+        paddingTop: '6px',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        textAlign: 'center',
+        color: 'rgba(255,255,255,0.4)',
+        fontSize: '7px',
+        letterSpacing: '1px'
+      }}>
+        DOCUMENTO DE IDENTIFICAÇÃO ESTUDANTIL • NÃO TRANSFERÍVEL
+      </div>
+    </div>
+  )
+}
+
 export default function Carteirinha() {
   const { id } = useParams()
   const [aluno, setAluno] = useState(null)
@@ -79,112 +183,25 @@ export default function Carteirinha() {
       <Navbar />
       <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 no-print">
             <Link to="/alunos" className="text-gray-500 hover:text-primary">← Voltar</Link>
             <h1 className="text-2xl font-bold text-textMain">Carteirinha — {aluno.nome}</h1>
           </div>
 
-          {/* Carteirinha Preview */}
-          <div className="flex justify-center mb-6">
-            <div
-              ref={carteirinhaRef}
-              style={{
-                width: '342px',
-                height: '216px',
-                background: 'linear-gradient(135deg, #1e3a5f 0%, #0f2040 100%)',
-                borderRadius: '12px',
-                padding: '16px',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                overflow: 'hidden',
-                fontFamily: 'Segoe UI, system-ui, sans-serif'
-              }}
-            >
-              {/* Decoração fundo */}
-              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(245,166,35,0.1)' }} />
-              <div style={{ position: 'absolute', bottom: '-30px', left: '-10px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div>
-                  <div style={{ color: '#f5a623', fontSize: '14px', fontWeight: '900', letterSpacing: '1px', lineHeight: 1 }}>ITA TECNOLOGIA</div>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '8px', letterSpacing: '1px' }}>EDUCACIONAL</div>
-                </div>
-                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '8px', textAlign: 'right' }}>
-                  <div>ID ESTUDANTIL</div>
-                  <div style={{ color: '#f5a623', fontSize: '7px', marginTop: '2px' }}>2024</div>
-                </div>
-              </div>
-
-              {/* Conteúdo principal */}
-              <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
-                {/* Foto */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                  <div style={{
-                    width: '64px', height: '64px', borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '2px solid #f5a623',
-                    overflow: 'hidden',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    {aluno.foto_path ? (
-                      <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
-                    ) : (
-                      <span style={{ fontSize: '28px' }}>👤</span>
-                    )}
-                  </div>
-
-                  {/* Dados */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ color: '#ffffff', fontSize: '11px', fontWeight: '700', lineHeight: 1.2, maxWidth: '140px', marginBottom: '4px' }}>{aluno.nome}</div>
-                    <div style={{ color: '#f5a623', fontSize: '10px', fontWeight: '700', fontFamily: 'monospace', marginBottom: '3px' }}>{aluno.codigo}</div>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '8.5px', marginBottom: '2px' }}>{aluno.turma}</div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '8px' }}>{aluno.curso}</div>
-                  </div>
-                </div>
-
-                {/* QR Code */}
-                <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <div style={{
-                    background: '#ffffff',
-                    padding: '6px',
-                    borderRadius: '8px',
-                    width: '100px',
-                    height: '100px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {qrcode && <img src={qrcode} alt="QR Code" style={{ width: '88px', height: '88px' }} />}
-                  </div>
-                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '7px', textAlign: 'center' }}>Escaneie para presença</div>
-                </div>
-              </div>
-
-              {/* Rodapé */}
-              <div style={{
-                marginTop: '8px',
-                paddingTop: '6px',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
-                textAlign: 'center',
-                color: 'rgba(255,255,255,0.4)',
-                fontSize: '7px',
-                letterSpacing: '1px'
-              }}>
-                DOCUMENTO DE IDENTIFICAÇÃO ESTUDANTIL • NÃO TRANSFERÍVEL
-              </div>
+          {/* Preview único — tela */}
+          <div className="flex justify-center mb-6 no-print">
+            <div ref={carteirinhaRef}>
+              <CardCarteirinha aluno={aluno} qrcode={qrcode} />
             </div>
           </div>
 
           {/* Botões */}
-          <div className="flex gap-3 justify-center flex-wrap">
+          <div className="flex gap-3 justify-center flex-wrap mb-6 no-print">
             <button onClick={baixarPDF} className="btn-primary">
-              📥 Baixar PDF
+              📥 Baixar PDF (1 carteirinha)
             </button>
             <button onClick={imprimir} className="btn-secondary">
-              🖨️ Imprimir
+              🖨️ Imprimir (8 por folha)
             </button>
             <Link to={`/alunos/${id}/editar`} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
               ✏️ Editar Aluno
@@ -192,7 +209,7 @@ export default function Carteirinha() {
           </div>
 
           {/* Info */}
-          <div className="mt-6 bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm">
+          <div className="mt-2 bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm no-print">
             <div><span className="text-gray-500">Código:</span> <span className="font-mono font-bold text-secondary">{aluno.codigo}</span></div>
             <div><span className="text-gray-500">Matrícula:</span> {(() => { const d = new Date(aluno.data_matricula); return aluno.data_matricula && !isNaN(d) ? d.toLocaleDateString('pt-BR') : '—' })()}</div>
             <div><span className="text-gray-500">Turma:</span> {aluno.turma}</div>
@@ -204,16 +221,37 @@ export default function Carteirinha() {
               <div className="col-span-2"><span className="text-gray-500">WhatsApp responsável:</span> {aluno.telefone_responsavel}</div>
             )}
           </div>
-
-          {/* Acesso ItagGame */}
-          <div className="mt-4 bg-gradient-to-r from-primary to-secondary rounded-xl p-4 text-white text-center">
-            <p className="text-xs font-bold tracking-widest opacity-70 mb-1">ACESSO ITAGAME</p>
-            <p className="font-mono font-black text-2xl tracking-widest text-secondary bg-white/10 rounded-lg py-2 px-4 mb-2">{aluno.codigo}</p>
-            <p className="text-xs opacity-60">Acesse em:</p>
-            <p className="text-xs font-bold opacity-90">ceitec-id-sistem.vercel.app/itagame/aluno</p>
-          </div>
         </div>
       </main>
+
+      {/* Grade de impressão — 8 carteirinhas por folha A4 */}
+      <div className="print-grid">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <CardCarteirinha key={i} aluno={aluno} qrcode={qrcode} />
+        ))}
+      </div>
+
+      <style>{`
+        @media print {
+          @page { size: A4 portrait; margin: 8mm; }
+          body * { visibility: hidden; }
+          .print-grid, .print-grid * { visibility: visible; }
+          .print-grid {
+            position: fixed;
+            top: 0; left: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6mm;
+            padding: 0;
+          }
+          .no-print { display: none !important; }
+          nav, aside { display: none !important; }
+        }
+
+        @media screen {
+          .print-grid { display: none; }
+        }
+      `}</style>
     </div>
   )
 }
