@@ -1,0 +1,346 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Pedagógico — ITA Tecnologia{% endblock %}
+
+{% block extra_css %}
+<style>
+  .pg-header { margin-bottom: 2rem; }
+  .pg-header h1 { font-family:'Orbitron',sans-serif; font-size:1.4rem; font-weight:900; color:var(--azul-escuro); }
+  .pg-header p  { color:var(--muted); font-size:.9rem; margin-top:.25rem; }
+
+  /* ABAS */
+  .tabs { display:flex; gap:.5rem; margin-bottom:2rem; flex-wrap:wrap; border-bottom:2px solid var(--border); padding-bottom:0; }
+  .tab-btn {
+    background:none; border:none; border-bottom:3px solid transparent;
+    padding:.65rem 1.25rem; font-family:'Nunito',sans-serif; font-size:.875rem;
+    font-weight:800; color:var(--muted); cursor:pointer; transition:all .2s;
+    margin-bottom:-2px;
+  }
+  .tab-btn.ativo { color:var(--azul-escuro); border-bottom-color:var(--azul-claro); }
+  .tab-btn:hover { color:var(--azul-escuro); }
+  .tab-panel { display:none; }
+  .tab-panel.ativo { display:block; }
+
+  /* STATS */
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .stat-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.25rem; box-shadow:var(--shadow); text-align:center; }
+  .stat-box .val { font-family:'Orbitron',sans-serif; font-size:1.8rem; font-weight:900; color:var(--azul-escuro); }
+  .stat-box .lbl { font-size:.72rem; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:.3rem; }
+  .stat-box.verde .val { color:#00a86b; }
+  .stat-box.laranja .val { color:var(--laranja-escuro); }
+  .stat-box.azul .val { color:var(--azul-claro); }
+
+  /* PANELS */
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:1.5rem; }
+  .panel-head { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .panel-head h2 { font-size:.95rem; font-weight:800; color:var(--azul-escuro); }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:.65rem 1rem; font-size:.7rem; font-weight:800; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); }
+  td { padding:.65rem 1rem; font-size:.85rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+
+  /* BADGES */
+  .badge { display:inline-block; padding:.15rem .55rem; border-radius:6px; font-size:.7rem; font-weight:800; text-transform:uppercase; }
+  .badge-pub  { background:rgba(0,214,143,.15); color:#00a86b; }
+  .badge-rasc { background:rgba(74,144,217,.15); color:var(--azul-claro); }
+  .badge-enc  { background:rgba(107,122,153,.15); color:var(--muted); }
+  .badge-ok   { background:rgba(0,214,143,.15); color:#00a86b; }
+  .badge-err  { background:rgba(239,83,80,.15); color:#c62828; }
+
+  /* NOTA BADGE */
+  .nota-badge {
+    display:inline-block; min-width:42px; text-align:center;
+    padding:.2rem .5rem; border-radius:8px; font-weight:900; font-size:.9rem;
+  }
+  .nota-alta { background:rgba(0,214,143,.15); color:#00a86b; }
+  .nota-media { background:rgba(245,166,35,.15); color:#b37800; }
+  .nota-baixa { background:rgba(239,83,80,.15); color:#c62828; }
+
+  /* BARRA PROGRESSO */
+  .barra { background:var(--border); border-radius:10px; height:8px; overflow:hidden; }
+  .barra-fill { height:100%; border-radius:10px; transition:width .4s; }
+  .barra-fill.alta  { background:var(--verde-ok); }
+  .barra-fill.media { background:var(--laranja); }
+  .barra-fill.baixa { background:var(--vermelho-err); }
+
+  /* QUESTÕES */
+  .questoes-grid { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.5rem; }
+  .q-box {
+    width:32px; height:32px; border-radius:6px; display:flex; align-items:center;
+    justify-content:center; font-size:.7rem; font-weight:900;
+  }
+  .q-ok  { background:rgba(0,214,143,.2); color:#00a86b; border:1px solid rgba(0,214,143,.4); }
+  .q-err { background:rgba(239,83,80,.2); color:#c62828; border:1px solid rgba(239,83,80,.4); }
+  .q-nd  { background:var(--border); color:var(--muted); }
+
+  /* ALUNO CARD */
+  .aluno-card { border:1px solid var(--border); border-radius:12px; margin-bottom:.75rem; overflow:hidden; }
+  .aluno-header {
+    padding:.85rem 1.25rem; background:var(--card); cursor:pointer;
+    display:flex; align-items:center; gap:1rem;
+    transition:background .2s;
+  }
+  .aluno-header:hover { background:#f8fafc; }
+  .aluno-nome { font-weight:800; font-size:.9rem; flex:1; }
+  .aluno-turma { font-size:.75rem; color:var(--muted); }
+  .aluno-body { padding:1.25rem; background:#fafbfd; border-top:1px solid var(--border); display:none; }
+  .aluno-body.aberto { display:block; }
+
+  .prova-item { margin-bottom:1.25rem; padding-bottom:1.25rem; border-bottom:1px solid var(--border); }
+  .prova-item:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .prova-titulo { font-weight:800; font-size:.875rem; margin-bottom:.4rem; }
+  .prova-meta { font-size:.75rem; color:var(--muted); margin-bottom:.6rem; }
+
+  /* DISCIPLINA */
+  .disc-row { padding:1rem 1.25rem; border-bottom:1px solid var(--border); }
+  .disc-row:last-child { border-bottom:none; }
+  .disc-nome { font-weight:800; font-size:.9rem; margin-bottom:.4rem; }
+  .disc-meta { font-size:.75rem; color:var(--muted); margin-bottom:.5rem; }
+
+  .empty { text-align:center; padding:2rem; color:var(--muted); font-size:.875rem; }
+  .btn-link { display:inline-flex; align-items:center; gap:.3rem; background:var(--azul-claro); color:#fff; border-radius:8px; padding:.35rem .75rem; font-size:.75rem; font-weight:800; text-decoration:none; transition:filter .2s; }
+  .btn-link:hover { filter:brightness(1.1); }
+
+  @media(max-width:640px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .tabs { gap:.25rem; }
+    .tab-btn { padding:.5rem .75rem; font-size:.8rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/portal/">🏠 Portal</a> <span>/ 📚 Pedagógico</span>
+</div>
+
+<div class="pg-header">
+  <h1>📚 Área Pedagógica</h1>
+  <p>Acompanhe o desempenho das avaliações, alunos e diagnóstico por disciplina.</p>
+</div>
+
+<!-- ABAS -->
+<div class="tabs">
+  <button class="tab-btn ativo" onclick="mudarAba('visao-geral', this)">📊 Visão Geral</button>
+  <button class="tab-btn" onclick="mudarAba('avaliacoes', this)">📋 Avaliações</button>
+  <button class="tab-btn" onclick="mudarAba('por-aluno', this)">👨‍🎓 Resultado por Aluno</button>
+  <button class="tab-btn" onclick="mudarAba('por-disciplina', this)">📚 Diagnóstico por Disciplina</button>
+</div>
+
+<!-- ABA: VISÃO GERAL -->
+<div id="aba-visao-geral" class="tab-panel ativo">
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="val">{{ total_avaliacoes }}</div>
+      <div class="lbl">Avaliações</div>
+    </div>
+    <div class="stat-box azul">
+      <div class="val">{{ total_correcoes }}</div>
+      <div class="lbl">Correções</div>
+    </div>
+    <div class="stat-box">
+      <div class="val">{{ total_alunos }}</div>
+      <div class="lbl">Alunos</div>
+    </div>
+    <div class="stat-box laranja">
+      <div class="val">{{ media_geral }}</div>
+      <div class="lbl">Média Geral</div>
+    </div>
+    <div class="stat-box verde">
+      <div class="val">{{ taxa_aprovacao }}%</div>
+      <div class="lbl">Aprovação</div>
+    </div>
+  </div>
+
+  {% if avaliacoes %}
+  <div class="panel">
+    <div class="panel-head">
+      <h2>📋 Últimas Avaliações</h2>
+      <a href="/corretor/" class="btn-link">Gerenciar →</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th><th>Disciplina</th><th>Turma</th><th>Alunos</th><th>Média</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for av in avaliacoes %}
+        <tr>
+          <td><strong>{{ av.titulo }}</strong></td>
+          <td>{{ av.disciplina }}</td>
+          <td>{{ av.turma }}</td>
+          <td>{{ av.total_correcoes }}</td>
+          <td>
+            {% with m=av.media_notas %}
+            <span class="nota-badge {% if m >= 7 %}nota-alta{% elif m >= 5 %}nota-media{% else %}nota-baixa{% endif %}">
+              {{ m|floatformat:1 }}
+            </span>
+            {% endwith %}
+          </td>
+          <td>
+            <span class="badge {% if av.status == 'publicada' %}badge-pub{% elif av.status == 'rascunho' %}badge-rasc{% else %}badge-enc{% endif %}">
+              {{ av.get_status_display }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="panel"><div class="empty">Nenhuma avaliação ainda. <a href="/corretor/avaliacoes/criar/" style="color:var(--azul-claro)">Criar primeira →</a></div></div>
+  {% endif %}
+</div>
+
+<!-- ABA: AVALIAÇÕES -->
+<div id="aba-avaliacoes" class="tab-panel">
+  {% if avaliacoes %}
+  <div class="panel">
+    <div class="panel-head">
+      <h2>📋 Todas as Avaliações</h2>
+      <a href="/corretor/avaliacoes/criar/" class="btn-link">+ Nova</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th><th>Disciplina</th><th>Turma</th><th>Série</th><th>Questões</th><th>Alunos</th><th>Média</th><th>Aprovação</th><th>Data</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for av in avaliacoes %}
+        {% with total=av.total_correcoes media=av.media_notas %}
+        <tr>
+          <td><strong>{{ av.titulo }}</strong></td>
+          <td>{{ av.disciplina }}</td>
+          <td>{{ av.turma }}</td>
+          <td>{{ av.serie }}</td>
+          <td style="text-align:center">{{ av.numero_questoes }}</td>
+          <td style="text-align:center">{{ total }}</td>
+          <td>
+            <span class="nota-badge {% if media >= 7 %}nota-alta{% elif media >= 5 %}nota-media{% else %}nota-baixa{% endif %}">
+              {{ media|floatformat:1 }}
+            </span>
+          </td>
+          <td style="font-size:.8rem;color:var(--muted)">{{ av.data_criacao|date:"d/m/Y" }}</td>
+          <td><a href="/corretor/avaliacoes/{{ av.pk }}/" class="btn-link">Ver →</a></td>
+        </tr>
+        {% endwith %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="panel"><div class="empty">Nenhuma avaliação cadastrada.</div></div>
+  {% endif %}
+</div>
+
+<!-- ABA: POR ALUNO -->
+<div id="aba-por-aluno" class="tab-panel">
+  {% if alunos_lista %}
+  <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem">
+    Clique no nome do aluno para ver o detalhe de cada prova e as questões acertadas/erradas.
+  </p>
+  {% for aluno in alunos_lista %}
+  <div class="aluno-card">
+    <div class="aluno-header" onclick="toggleAluno(this)">
+      <div>
+        <div class="aluno-nome">{{ aluno.nome }}</div>
+        <div class="aluno-turma">Turma {{ aluno.turma }}</div>
+      </div>
+      <span class="nota-badge {% if aluno.media >= 7 %}nota-alta{% elif aluno.media >= 5 %}nota-media{% else %}nota-baixa{% endif %}">
+        Média {{ aluno.media }}
+      </span>
+      <span style="color:var(--muted);font-size:.8rem">{{ aluno.total_provas }} prova{{ aluno.total_provas|pluralize:"s" }}</span>
+      <span style="color:var(--muted);font-size:1rem">▼</span>
+    </div>
+    <div class="aluno-body">
+      {% for prova in aluno.provas %}
+      <div class="prova-item">
+        <div class="prova-titulo">{{ prova.avaliacao }}</div>
+        <div class="prova-meta">
+          {{ prova.disciplina }} &middot; {{ prova.data|date:"d/m/Y" }} &middot;
+          <strong>Nota: </strong>
+          <span class="nota-badge {% if prova.nota >= 7 %}nota-alta{% elif prova.nota >= 5 %}nota-media{% else %}nota-baixa{% endif %}">
+            {{ prova.nota|floatformat:1 }}
+          </span>
+          &middot; {{ prova.acertos }} acerto{{ prova.acertos|pluralize:"s" }} / {{ prova.erros }} erro{{ prova.erros|pluralize:"s" }}
+        </div>
+        {% if prova.questoes %}
+        <div class="questoes-grid">
+          {% for q in prova.questoes %}
+          <div class="q-box {% if q.acertou %}q-ok{% else %}q-err{% endif %}"
+               title="Q{{ q.numero }}: aluno={{ q.aluno }} / correta={{ q.correta }}">
+            Q{{ q.numero }}
+          </div>
+          {% endfor %}
+        </div>
+        <div style="margin-top:.5rem;font-size:.72rem;color:var(--muted)">
+          <span style="color:#00a86b;font-weight:700">■</span> Acertou &nbsp;
+          <span style="color:#c62828;font-weight:700">■</span> Errou
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="panel"><div class="empty">Nenhum resultado de aluno encontrado ainda.</div></div>
+  {% endif %}
+</div>
+
+<!-- ABA: DIAGNÓSTICO POR DISCIPLINA -->
+<div id="aba-por-disciplina" class="tab-panel">
+  {% if disciplinas_lista %}
+  <div class="panel">
+    <div class="panel-head">
+      <h2>📚 Desempenho por Disciplina</h2>
+    </div>
+    {% for disc in disciplinas_lista %}
+    <div class="disc-row">
+      <div class="disc-nome">{{ disc.nome }}</div>
+      <div class="disc-meta">
+        {{ disc.total_avaliacoes }} avaliação{{ disc.total_avaliacoes|pluralize:"ões" }} &middot;
+        {{ disc.total_alunos }} aluno{{ disc.total_alunos|pluralize:"s" }} &middot;
+        Turma{{ disc.turmas|pluralize:"s" }}: {{ disc.turmas }}
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div style="flex:1">
+          <div class="barra">
+            <div class="barra-fill {% if disc.media >= 7 %}alta{% elif disc.media >= 5 %}media{% else %}baixa{% endif %}"
+                 style="width:{{ disc.media|floatformat:0 }}0%"></div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.25rem">
+            Aprovação: <strong>{{ disc.aprovacao }}%</strong>
+          </div>
+        </div>
+        <span class="nota-badge {% if disc.media >= 7 %}nota-alta{% elif disc.media >= 5 %}nota-media{% else %}nota-baixa{% endif %}" style="font-size:1rem">
+          {{ disc.media }}
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="panel"><div class="empty">Nenhum dado de disciplina disponível ainda.</div></div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function mudarAba(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('ativo'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativo'));
+    document.getElementById('aba-' + id).classList.add('ativo');
+    btn.classList.add('ativo');
+  }
+  function toggleAluno(header) {
+    const body = header.nextElementSibling;
+    body.classList.toggle('aberto');
+    const arr = header.querySelector('span:last-child');
+    arr.textContent = body.classList.contains('aberto') ? '▲' : '▼';
+  }
+</script>
+{% endblock %}
