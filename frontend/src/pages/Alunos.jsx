@@ -67,11 +67,22 @@ export default function Alunos() {
   function onFileChange(e) {
     const file = e.target.files[0]
     if (!file) return
+
     const reader = new FileReader()
     reader.onload = ev => {
-      const dados = parseCSV(ev.target.result)
-      setPreview(dados)
-      setResultadoImport(null)
+      const texto = ev.target.result
+      // Se contém caractere de substituição (U+FFFD), o arquivo é Latin-1
+      if (texto.includes('�')) {
+        const reader2 = new FileReader()
+        reader2.onload = ev2 => {
+          setPreview(parseCSV(ev2.target.result))
+          setResultadoImport(null)
+        }
+        reader2.readAsText(file, 'ISO-8859-1')
+      } else {
+        setPreview(parseCSV(texto))
+        setResultadoImport(null)
+      }
     }
     reader.readAsText(file, 'UTF-8')
   }
