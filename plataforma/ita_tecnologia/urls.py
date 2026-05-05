@@ -26,6 +26,7 @@ urlpatterns = [
     path('repositorio/',         include('gamificaedu.ferramentas.urls')),  # alias
     path('corretor/',            include('corretor.core.urls')),
     path('relatorios/',          modulo_relatorios,          name='relatorios'),
+    path('pedagogico/',          modulo_relatorios,          name='pedagogico'),
     path('gestao-professores/',  modulo_gestao_professores,  name='gestao_professores'),
 
     # Rotas legacy do gamificaedu.core (URLs usadas em templates existentes)

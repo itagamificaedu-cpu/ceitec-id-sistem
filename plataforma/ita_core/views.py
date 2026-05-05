@@ -218,7 +218,7 @@ def portal_home(request):
             'icon': '📚',
             'nome': 'Área Pedagógica',
             'descricao': 'Resultados por aluno, diagnóstico por disciplina e relatórios completos de avaliações.',
-            'url': '/relatorios/',
+            'url': '/pedagogico/',
             'planos': ['trial', 'professor', 'escola'],
             'cor': '#1e88e5',
         },
