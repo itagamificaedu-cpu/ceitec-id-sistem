@@ -1,0 +1,115 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}ItagGame — Gamificação Educacional{% endblock %}
+
+{% block extra_css %}
+<style>
+  .mod-header { margin-bottom: 2rem; }
+  .mod-header h1 { font-family:'Orbitron',sans-serif; font-size:1.4rem; font-weight:900; color:var(--azul-escuro); }
+  .mod-header p  { color:var(--muted); font-size:.9rem; margin-top:.25rem; }
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .stat-box { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.25rem; text-align:center; box-shadow:var(--shadow); }
+  .stat-box .val { font-family:'Orbitron',sans-serif; font-size:2rem; font-weight:900; color:#6c63ff; }
+  .stat-box .lbl { font-size:.75rem; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:.25rem; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; }
+  .panel-head { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .panel-head h2 { font-size:.95rem; font-weight:800; color:var(--azul-escuro); }
+  .panel-body { padding:1rem 1.25rem; }
+  .missao-item { display:flex; align-items:center; gap:.75rem; padding:.6rem 0; border-bottom:1px solid var(--border); }
+  .missao-item:last-child { border-bottom:none; }
+  .missao-icon { font-size:1.5rem; }
+  .missao-title { font-weight:700; font-size:.875rem; color:var(--text); }
+  .missao-xp { font-size:.75rem; color:#6c63ff; font-weight:800; margin-top:.1rem; }
+  .ranking-item { display:flex; align-items:center; gap:.75rem; padding:.5rem 0; border-bottom:1px solid var(--border); }
+  .ranking-item:last-child { border-bottom:none; }
+  .rank-pos { font-family:'Orbitron',sans-serif; font-weight:900; font-size:.9rem; color:var(--muted); width:1.5rem; text-align:center; }
+  .rank-pos.top1 { color:#f5a623; }
+  .rank-pos.top2 { color:#8a8a8a; }
+  .rank-pos.top3 { color:#cd7f32; }
+  .rank-name { font-weight:700; font-size:.875rem; flex:1; }
+  .rank-xp { font-size:.8rem; color:var(--muted); }
+  .xp-badge { background:#6c63ff; color:#fff; border-radius:6px; padding:.15rem .5rem; font-size:.7rem; font-weight:800; }
+  .btn-mod { display:inline-flex; align-items:center; gap:.4rem; background:linear-gradient(135deg,#6c63ff,#4a4eff); color:#fff; border-radius:10px; padding:.5rem 1rem; font-size:.8rem; font-weight:800; text-decoration:none; border:none; cursor:pointer; font-family:'Nunito',sans-serif; transition:filter .2s; }
+  .btn-mod:hover { filter:brightness(1.1); }
+  .empty { text-align:center; padding:1.5rem; color:var(--muted); font-size:.875rem; }
+  @media(max-width:640px){ .grid2{ grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/portal/">🏠 Portal</a> <span>/ 🎮 ItagGame</span>
+</div>
+
+<div class="mod-header">
+  <h1>🎮 ItagGame</h1>
+  <p>Sistema de gamificação educacional — XP, missões, badges e ranking.</p>
+</div>
+
+<!-- STATS DO PERFIL -->
+<div class="stats-row">
+  <div class="stat-box">
+    <div class="val">{{ perfil.xp|default:"0" }}</div>
+    <div class="lbl">XP Total</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">{{ perfil.nivel|default:"1" }}</div>
+    <div class="lbl">Nível</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">{{ perfil.streak|default:"0" }}</div>
+    <div class="lbl">🔥 Streak</div>
+  </div>
+  <div class="stat-box">
+    <div class="val">{{ perfil.pontos|default:"0" }}</div>
+    <div class="lbl">Pontos</div>
+  </div>
+</div>
+
+<div class="grid2">
+  <!-- MISSÕES ATIVAS -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>🎯 Missões Ativas</h2>
+    </div>
+    <div class="panel-body">
+      {% if missoes %}
+        {% for m in missoes %}
+        <div class="missao-item">
+          <span class="missao-icon">📌</span>
+          <div>
+            <div class="missao-title">{{ m.titulo }}</div>
+            <div class="missao-xp">+{{ m.recompensa_xp }} XP</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">Nenhuma missão ativa no momento.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RANKING TOP 5 -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>🏆 Top 5 Ranking</h2>
+      <a href="/itagame/ranking/" class="btn-mod">Ver completo →</a>
+    </div>
+    <div class="panel-body">
+      {% if ranking_top5 %}
+        {% for r in ranking_top5 %}
+        <div class="ranking-item">
+          <span class="rank-pos {% if forloop.counter == 1 %}top1{% elif forloop.counter == 2 %}top2{% elif forloop.counter == 3 %}top3{% endif %}">
+            {{ forloop.counter }}
+          </span>
+          <span class="rank-name">{{ r.usuario.get_full_name|default:r.usuario.email }}</span>
+          <span class="xp-badge">{{ r.xp }} XP</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">Nenhum dado de ranking ainda.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

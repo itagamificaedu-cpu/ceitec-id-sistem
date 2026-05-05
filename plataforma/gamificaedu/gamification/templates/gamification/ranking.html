@@ -1,0 +1,83 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Ranking — itagamificaedu{% endblock %}
+
+{% block content %}
+<section style="min-height: 90vh; padding: 60px 0; background: radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.12) 0%, transparent 60%), var(--dark);">
+    <div class="container">
+        <div class="mb-5 fade-up">
+            <span class="hero-badge"><i class="fa fa-trophy me-1 text-warning"></i> Melhores Alunos/Professores</span>
+            <h1 class="section-title mt-2">Ranking de <span class="gradient-text">Engajamento</span></h1>
+            <p class="section-subtitle">Veja quem está no topo este mês!</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card-3d cyan p-0 overflow-hidden">
+                    <table class="table table-dark table-hover mb-0" style="background: transparent;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <th class="p-4">Posição</th>
+                                <th class="p-4">Usuário</th>
+                                <th class="p-4 text-center">Nível</th>
+                                <th class="p-4 text-end">Experiência (XP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in ranking %}
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="p-4 fw-800">
+                                    {% if forloop.counter == 1 %}<i class="fa fa-crown text-warning me-2"></i>{% endif %}
+                                    #{{ forloop.counter }}
+                                </td>
+                                <td class="p-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div style="width:40px;height:40px;background:rgba(124,58,237,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#a78bfa;">
+                                            {{ item.usuario.first_name|first|default:item.usuario.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-700">{{ item.usuario.get_full_name|default:item.usuario.username }}</div>
+                                            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4)">{{ item.usuario.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="badge bg-purple" style="background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(124,58,237,0.4);">Nível {{ item.nivel }}</span>
+                                </td>
+                                <td class="p-4 text-end fw-800" style="color:#22d3ee;">
+                                    {{ item.xp }} XP
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="p-5 text-center text-muted">Ainda não há dados no ranking.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card-3d purple">
+                    <h4 class="fw-800 mb-3">Como subir de nível?</h4>
+                    <ul class="list-unstyled d-flex flex-column gap-3">
+                        <li class="d-flex gap-3">
+                            <i class="fa fa-check-circle text-success fs-5"></i>
+                            <div><strong>Crie Atividades:</strong> Ganhe +50 XP por plano de aula gerado.</div>
+                        </li>
+                        <li class="d-flex gap-3">
+                            <i class="fa fa-check-circle text-success fs-5"></i>
+                            <div><strong>Corrija Provas:</strong> 10 XP por prova escaneada.</div>
+                        </li>
+                        <li class="d-flex gap-3">
+                            <i class="fa fa-check-circle text-success fs-5"></i>
+                            <div><strong>Missões Diárias:</strong> Complete os desafios para ganhar bônus.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
