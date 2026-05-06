@@ -38,6 +38,7 @@ app.use('/api/ia', require('./routes/ia'));
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/pagamento', require('./routes/pagamento'));
 app.use('/api/corretor', require('./routes/corretor'));
+app.use('/api/portal',  require('./routes/portal'));
 
 app.get('/api/status', (req, res) => {
   res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });
