@@ -185,6 +185,10 @@ export default function Dashboard() {
                   { icon: '📝', label: 'Avaliações', to: '/avaliacoes', cor: '#27ae60' },
                   { icon: '🎮', label: 'ItagGame', to: '/itagame', cor: '#f5a623' },
                   { icon: '🤖', label: 'IA', to: '/ia/questoes', cor: '#9b59b6' },
+                  { icon: '📋', label: 'Corretor de Provas', to: '/corretor-resultados', cor: '#1a237e' },
+                  { icon: '📊', label: 'Desempenho', to: '/desempenho', cor: '#8e44ad' },
+                  { icon: '📈', label: 'Relatórios', to: '/relatorios', cor: '#16a085' },
+                  { icon: '🔬', label: 'Diagnóstico IA', to: '/diagnostico', cor: '#c0392b' },
                 ].map(a => (
                   <Link key={a.to} to={a.to} className="flex items-center gap-3 p-3 rounded-xl text-white font-medium text-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: a.cor }}>
                     <span className="text-xl">{a.icon}</span> {a.label}

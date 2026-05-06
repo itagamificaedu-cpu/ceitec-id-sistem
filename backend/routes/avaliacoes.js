@@ -117,10 +117,27 @@ router.get('/:id/resultados', async (req, res) => {
   try {
     const av = await db.get('SELECT * FROM avaliacoes WHERE id = ? AND escola_id = ?', [req.params.id, req.usuario.escola_id]);
     if (!av) return res.status(404).json({ erro: 'Avaliação não encontrada' });
+    const questoes = await db.all('SELECT * FROM questoes WHERE avaliacao_id = ? ORDER BY id', [req.params.id]);
     const notas = await db.all('SELECT n.*, a.nome, a.codigo, a.foto_path FROM notas n JOIN alunos a ON n.aluno_id = a.id WHERE n.avaliacao_id = ? ORDER BY n.nota_final DESC', [req.params.id]);
-    const questoes = await db.all('SELECT * FROM questoes WHERE avaliacao_id = ?', [req.params.id]);
+    const respostas = await db.all('SELECT aluno_id, questao_id, resposta_marcada, correta FROM respostas_alunos WHERE avaliacao_id = ?', [req.params.id]);
+    const resPorAluno = {};
+    respostas.forEach(r => {
+      if (!resPorAluno[r.aluno_id]) resPorAluno[r.aluno_id] = {};
+      resPorAluno[r.aluno_id][r.questao_id] = { resposta: r.resposta_marcada, acertou: r.correta == 1 };
+    });
+    const notasComDetalhe = notas.map((n, qi) => ({
+      ...n,
+      questoes_detalhe: questoes.map((q, idx) => ({
+        numero: idx + 1,
+        enunciado: q.enunciado,
+        gabarito: q.gabarito,
+        alternativas: { a: q.alternativa_a, b: q.alternativa_b, c: q.alternativa_c, d: q.alternativa_d },
+        resposta_aluno: resPorAluno[n.aluno_id]?.[q.id]?.resposta || null,
+        acertou: resPorAluno[n.aluno_id]?.[q.id]?.acertou ?? false,
+      }))
+    }));
     const media = notas.length > 0 ? notas.reduce((s, n) => s + n.nota_final, 0) / notas.length : 0;
-    res.json({ avaliacao: av, notas, questoes, media: Math.round(media * 10) / 10 });
+    res.json({ avaliacao: av, notas: notasComDetalhe, questoes, media: Math.round(media * 10) / 10 });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }

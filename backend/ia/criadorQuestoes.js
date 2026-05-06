@@ -1,8 +1,7 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const { chamarGemini } = require('./gemini');
 
-async function gerarQuestoes({ disciplina, tema, nivel, nivel: dificuldade, quantidade, ano_escolar }) {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const nivelFinal = nivel || dificuldade || 'médio';
+async function gerarQuestoes({ disciplina, tema, nivel, quantidade, ano_escolar }) {
+  const nivelFinal = nivel || 'médio';
   const qtd = quantidade || 5;
   const disc = disciplina || 'Geral';
 
@@ -28,19 +27,11 @@ Regras:
 - Apenas uma alternativa deve ser correta
 - A explicação deve ser clara e educativa`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  const texto = message.content[0].text.trim();
+  const texto = (await chamarGemini(prompt)).trim();
   const jsonMatch = texto.match(/\[[\s\S]*\]/);
   if (!jsonMatch) throw new Error('IA não retornou JSON válido');
 
   const questoes = JSON.parse(jsonMatch[0]);
-
-  // Normaliza o formato caso a IA retorne alternativa_a/b/c/d em vez de array
   return questoes.map(q => {
     if (Array.isArray(q.alternativas)) return q;
     const alternativas = [q.alternativa_a, q.alternativa_b, q.alternativa_c, q.alternativa_d].filter(Boolean);

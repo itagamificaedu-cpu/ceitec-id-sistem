@@ -30,8 +30,9 @@ const SECOES_ESTATICAS = [
   {
     titulo: 'PEDAGÓGICO',
     itens: [
-      { path: '/avaliacoes', label: 'Avaliações', icon: '📝' },
-      { path: '/desempenho', label: 'Desempenho', icon: '📊' },
+      { path: '/corretor-resultados', label: 'Resultados Corretor de Provas', icon: '📋' },
+      { path: '/avaliacoes', label: 'Avaliações da Plataforma', icon: '📝' },
+      { path: '/desempenho', label: 'Desempenho Acadêmico', icon: '📊' },
       { path: '/diagnostico', label: 'Diagnóstico por Disciplina', icon: '🔬' },
       { path: '/ocorrencias', label: 'Ocorrências', icon: '⚠️' },
     ]
@@ -154,7 +155,8 @@ export default function Navbar() {
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
-            { onClick: abrirItagame,                   label: 'ItagGame',           icon: '🎮' },
+            { path: '/itagame',                        label: 'ItagGame — Painel',  icon: '🎮' },
+            { onClick: abrirItagame,                   label: 'Abrir Jogo Online',  icon: '🕹️' },
             { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
             { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
             { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },

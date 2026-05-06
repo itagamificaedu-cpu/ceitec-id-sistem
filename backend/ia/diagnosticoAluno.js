@@ -1,10 +1,7 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const { chamarGemini } = require('./gemini');
 
 async function gerarDiagnostico({ disciplina, turma, dados }) {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
   const resumo = dados.notas?.map(n => `${n.nome}: ${n.nota_final}`).join(', ') || 'sem dados';
-  const topicos = dados.topicosComErro?.map(t => `"${t.enunciado}" (${t.pct_erro}% de erro)`).join('; ') || 'nenhum identificado';
   const emReforco = dados.emReforco?.map(n => n.nome).join(', ') || 'nenhum';
   const destaque = dados.destaque?.map(n => n.nome).join(', ') || 'nenhum';
 
@@ -14,7 +11,6 @@ Analise os seguintes dados de desempenho da turma ${turma} na disciplina de ${di
 
 Taxa de aprovação: ${dados.percentualAprovacao}% (${dados.aprovados} de ${dados.total} alunos)
 Notas dos alunos: ${resumo}
-Tópicos com maior índice de erro: ${topicos}
 Alunos que precisam de reforço: ${emReforco}
 Alunos em destaque: ${destaque}
 
@@ -29,24 +25,16 @@ Com base nesses dados, forneça:
 
 Use linguagem clara, objetiva e empática. Foque em soluções práticas e aplicáveis.`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return message.content[0].text;
+  return chamarGemini(prompt);
 }
 
 async function gerarConteudo({ disciplina, tema, ano_escolar, tipo, instrucoes }) {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
   const tipos = {
     resumo: 'um resumo didático completo',
     mapa_mental: 'um mapa mental em formato de texto estruturado com hierarquia clara',
     exercicios: 'uma lista de 5-8 exercícios práticos progressivos',
     projeto: 'uma proposta de projeto maker/robótica completa com etapas',
-    rubrica: 'uma rubrica de avaliação detalhada com critérios e níveis de desempenho'
+    rubrica: 'uma rubrica de avaliação detalhada com critérios e níveis de desempenho',
   };
 
   const prompt = `Você é um professor especialista em ${disciplina} para escola de tecnologia.
@@ -63,18 +51,10 @@ O conteúdo deve ser:
 
 Crie o conteúdo completo e detalhado.`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 3000,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return message.content[0].text;
+  return chamarGemini(prompt);
 }
 
 async function gerarDiagnosticoAluno({ aluno, notas, mediasPorDisc, pior, melhor }) {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
   const discResumo = mediasPorDisc.map(d => `${d.disciplina}: ${d.media}`).join(', ') || 'sem dados';
 
   const prompt = `Você é um pedagogo especialista em educação personalizada.
@@ -97,13 +77,7 @@ Com base nesses dados, forneça um diagnóstico pedagógico personalizado com:
 
 Use linguagem empática, construtiva e focada no desenvolvimento do aluno.`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1500,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  const texto = message.content[0].text;
+  const texto = await chamarGemini(prompt);
   const recomendacoes = [];
   const linhas = texto.split('\n');
   let capturando = false;
@@ -117,7 +91,7 @@ Use linguagem empática, construtiva e focada no desenvolvimento do aluno.`;
     aluno: { nome: aluno.nome, turma: aluno.turma, media_geral: aluno.media_geral },
     diagnostico: texto,
     recomendacoes: recomendacoes.slice(0, 5),
-    plano_recuperacao: aluno.media_geral !== null && aluno.media_geral < 5 ? 'Ver diagnóstico completo acima.' : null
+    plano_recuperacao: aluno.media_geral !== null && aluno.media_geral < 5 ? 'Ver diagnóstico completo acima.' : null,
   };
 }
 

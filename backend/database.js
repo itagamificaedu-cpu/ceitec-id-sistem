@@ -54,6 +54,10 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS planos_aula (id SERIAL PRIMARY KEY, professor_id INTEGER, turma_id INTEGER, disciplina TEXT NOT NULL, tema TEXT NOT NULL, objetivo TEXT, conteudo_json TEXT, gerado_por_ia INTEGER DEFAULT 0, data_aula DATE, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS itagame_pontos (id SERIAL PRIMARY KEY, aluno_id INTEGER UNIQUE NOT NULL, turma_id INTEGER, xp_total INTEGER DEFAULT 0, nivel INTEGER DEFAULT 1, badges_json TEXT DEFAULT '[]', missoes_concluidas INTEGER DEFAULT 0, atualizado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS itagame_historico (id SERIAL PRIMARY KEY, aluno_id INTEGER NOT NULL, tipo TEXT NOT NULL, descricao TEXT NOT NULL, xp_ganho INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS itagame_missoes (id SERIAL PRIMARY KEY, escola_id INTEGER, turma_id INTEGER, titulo TEXT NOT NULL, descricao TEXT, xp_recompensa INTEGER DEFAULT 100, codigo_secreto TEXT, ativa INTEGER DEFAULT 1, criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS itagame_recados (id SERIAL PRIMARY KEY, escola_id INTEGER, turma_id INTEGER, titulo TEXT NOT NULL, mensagem TEXT NOT NULL, criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS itagame_provas (id SERIAL PRIMARY KEY, escola_id INTEGER, turma_id INTEGER, titulo TEXT NOT NULL, disciplina TEXT, descricao TEXT, xp_por_acerto INTEGER DEFAULT 50, codigo_acesso TEXT, ativa INTEGER DEFAULT 1, criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS itagame_repositorio (id SERIAL PRIMARY KEY, escola_id INTEGER, titulo TEXT NOT NULL, descricao TEXT, link_url TEXT, tipo TEXT DEFAULT 'outro', criado_em TIMESTAMP DEFAULT NOW())`,
   ];
 
   for (const sql of tabelas) {
