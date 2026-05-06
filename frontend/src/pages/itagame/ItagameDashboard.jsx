@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Navbar from '../../components/Navbar'
 import api from '../../api'
 
@@ -66,6 +66,19 @@ export default function ItagameDashboard() {
   const [repoForm, setRepoForm] = useState({ titulo: '', descricao: '', link_url: '', tipo: 'outro' })
   const [criandoRepo, setCriandoRepo] = useState(false)
 
+  // Loja
+  const [lojaItens, setLojaItens] = useState([])
+  const [resgates, setResgates] = useState([])
+  const [lojaForm, setLojaForm] = useState({ nome: '', descricao: '', custo_xp: 100, icone: '🎁' })
+  const [criandoItem, setCriandoItem] = useState(false)
+  const [modalScanner, setModalScanner] = useState(false)
+  const [scanAluno, setScanAluno] = useState(null)
+  const [scanItem, setScanItem] = useState('')
+  const [confirmando, setConfirmando] = useState(false)
+  const [scanErro, setScanErro] = useState('')
+  const scannerRef = useRef(null)
+  const html5QrRef = useRef(null)
+
   useEffect(() => {
     api.get('/turmas').then(({ data }) => setTurmas(data))
   }, [])
@@ -82,6 +95,10 @@ export default function ItagameDashboard() {
     if (aba === 'provas') api.get('/itagame/provas').then(({ data }) => setProvas(data))
     if (aba === 'repositorio') api.get('/itagame/repositorio').then(({ data }) => setRepositorio(data))
     if (aba === 'historico') carregarHistorico()
+    if (aba === 'loja') {
+      api.get('/itagame/loja').then(({ data }) => setLojaItens(data))
+      api.get('/itagame/resgates').then(({ data }) => setResgates(data))
+    }
   }, [aba])
 
   async function carregarHistorico(turma) {
@@ -174,6 +191,78 @@ export default function ItagameDashboard() {
     setRepositorio(prev => prev.filter(r => r.id !== id))
   }
 
+  async function criarItemLoja() {
+    if (!lojaForm.nome) return
+    setCriandoItem(true)
+    try {
+      await api.post('/itagame/loja', lojaForm)
+      const { data } = await api.get('/itagame/loja')
+      setLojaItens(data)
+      setLojaForm({ nome: '', descricao: '', custo_xp: 100, icone: '🎁' })
+    } catch { alert('Erro ao criar item') }
+    finally { setCriandoItem(false) }
+  }
+
+  async function excluirItemLoja(id) {
+    if (!confirm('Excluir este item da loja?')) return
+    await api.delete(`/itagame/loja/${id}`)
+    setLojaItens(prev => prev.filter(i => i.id !== id))
+  }
+
+  async function marcarEntregue(id) {
+    await api.patch(`/itagame/resgates/${id}/entregar`)
+    setResgates(prev => prev.map(r => r.id === id ? { ...r, entregue: 1, status: 'entregue' } : r))
+  }
+
+  async function excluirResgate(id) {
+    if (!confirm('Excluir este registro?')) return
+    await api.delete(`/itagame/resgates/${id}`)
+    setResgates(prev => prev.filter(r => r.id !== id))
+  }
+
+  async function abrirScanner() {
+    setScanAluno(null); setScanItem(''); setScanErro('')
+    setModalScanner(true)
+    setTimeout(async () => {
+      try {
+        const { Html5QrcodeScanner } = await import('html5-qrcode')
+        const scanner = new Html5QrcodeScanner('loja-qr-reader', { fps: 10, qrbox: { width: 220, height: 220 } }, false)
+        scanner.render(async (codigo) => {
+          await scanner.clear()
+          html5QrRef.current = null
+          try {
+            const { data } = await api.get(`/itagame/publico/${codigo}`)
+            setScanAluno(data)
+            setScanErro('')
+          } catch {
+            setScanErro('Código não encontrado. Tente novamente.')
+            setScanAluno(null)
+          }
+        }, () => {})
+        html5QrRef.current = scanner
+      } catch (err) { setScanErro('Erro ao abrir câmera') }
+    }, 300)
+  }
+
+  async function fecharScanner() {
+    if (html5QrRef.current) { try { await html5QrRef.current.clear() } catch {} html5QrRef.current = null }
+    setModalScanner(false); setScanAluno(null); setScanItem(''); setScanErro('')
+  }
+
+  async function confirmarResgate() {
+    if (!scanAluno || !scanItem) return
+    setConfirmando(true)
+    try {
+      const { data } = await api.post('/itagame/resgates', { aluno_codigo: scanAluno.aluno.codigo, item_id: scanItem })
+      alert(`✅ Resgate confirmado!\n${scanAluno.aluno.nome} → ${data.item}\nXP restante: ${data.xp_restante}`)
+      const res = await api.get('/itagame/resgates')
+      setResgates(res.data)
+      fecharScanner()
+    } catch (err) {
+      setScanErro(err.response?.data?.erro || 'Erro ao registrar resgate')
+    } finally { setConfirmando(false) }
+  }
+
   const top3 = ranking.slice(0, 3)
   const ABAS = [
     { id: 'ranking',    label: '🏆 Ranking' },
@@ -182,6 +271,7 @@ export default function ItagameDashboard() {
     { id: 'provas',     label: '📝 Provas' },
     { id: 'historico',  label: '📋 Histórico XP' },
     { id: 'repositorio',label: '📚 Repositório' },
+    { id: 'loja',       label: '💰 Loja' },
   ]
 
   return (
@@ -602,6 +692,124 @@ export default function ItagameDashboard() {
 
         </div>
 
+          {/* ===== LOJA ===== */}
+          {aba === 'loja' && (
+            <div className="space-y-6">
+              {/* Adicionar item */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="font-semibold text-textMain mb-1">💰 Adicionar Item na Loja</h2>
+                <p className="text-sm text-gray-500 mb-4">Itens que os alunos podem resgatar usando XP acumulado no jogo.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Item *</label>
+                    <input className="input-field" value={lojaForm.nome} onChange={e => setLojaForm(f => ({ ...f, nome: e.target.value }))} placeholder="Ex: Lápis personalizado" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ícone (emoji)</label>
+                    <input className="input-field" value={lojaForm.icone} onChange={e => setLojaForm(f => ({ ...f, icone: e.target.value }))} placeholder="🎁" maxLength={4} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Custo em XP</label>
+                    <input className="input-field" type="number" min={10} value={lojaForm.custo_xp} onChange={e => setLojaForm(f => ({ ...f, custo_xp: Number(e.target.value) }))} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <input className="input-field" value={lojaForm.descricao} onChange={e => setLojaForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Brinde/descrição do item" />
+                  </div>
+                </div>
+                <button onClick={criarItemLoja} disabled={criandoItem || !lojaForm.nome} className="btn-primary mt-4">
+                  {criandoItem ? '⏳ Salvando...' : '💰 Adicionar Item'}
+                </button>
+              </div>
+
+              {/* Itens da loja */}
+              {lojaItens.length > 0 && (
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-5 border-b">
+                    <h2 className="font-semibold text-textMain">Itens Disponíveis ({lojaItens.length})</h2>
+                  </div>
+                  <div className="divide-y">
+                    {lojaItens.map(item => (
+                      <div key={item.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50">
+                        <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-xl flex-shrink-0">{item.icone}</div>
+                        <div className="flex-1">
+                          <p className="font-medium text-textMain">{item.nome}</p>
+                          {item.descricao && <p className="text-xs text-gray-500">{item.descricao}</p>}
+                        </div>
+                        <span className="text-sm font-bold text-yellow-600 flex-shrink-0">{item.custo_xp} XP</span>
+                        <button onClick={() => excluirItemLoja(item.id)} className="text-red-400 hover:text-red-600 text-sm px-2 py-1 hover:bg-red-50 rounded flex-shrink-0">🗑</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Botão QR + Tabela de Resgates */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-5 border-b flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <h2 className="font-semibold text-textMain">Liberação de Brindes</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Escaneie o QR Code do aluno para registrar a entrega</p>
+                  </div>
+                  <button onClick={abrirScanner} disabled={lojaItens.length === 0} className="btn-primary text-sm flex items-center gap-2">
+                    📷 Ler QR Code
+                  </button>
+                </div>
+
+                {resgates.length === 0 ? (
+                  <div className="p-10 text-center text-gray-400">Nenhum resgate registrado ainda</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 text-left">
+                          <th className="px-4 py-3 font-medium text-gray-600">Aluno</th>
+                          <th className="px-4 py-3 font-medium text-gray-600">Item</th>
+                          <th className="px-4 py-3 font-medium text-gray-600">Data</th>
+                          <th className="px-4 py-3 font-medium text-gray-600">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {resgates.map(r => (
+                          <tr key={r.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-textMain">{r.aluno_nome}</p>
+                              <p className="text-xs text-gray-400">{r.aluno_turma}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="mr-1">{r.item_icone}</span>
+                              <span className="font-medium">{r.item_nome}</span>
+                              <span className="text-xs text-yellow-600 ml-2">-{r.custo_xp} XP</span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                              {new Date(r.criado_em).toLocaleDateString('pt-BR')}
+                            </td>
+                            <td className="px-4 py-3">
+                              {r.entregue ? (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">✅ Entregue</span>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <button onClick={() => marcarEntregue(r.id)} className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded hover:bg-green-100 font-medium">
+                                    ✅ Entregar
+                                  </button>
+                                  <button onClick={() => excluirResgate(r.id)} className="text-xs text-red-400 hover:text-red-600 px-2 py-1 hover:bg-red-50 rounded">
+                                    🗑
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+        </div>
+
         {/* Modal atribuir XP */}
         {modalAtribuir && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -635,6 +843,72 @@ export default function ItagameDashboard() {
             </div>
           </div>
         )}
+      {/* Modal Scanner Loja */}
+      {modalScanner && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-bold text-textMain">📷 Escanear QR Code do Aluno</h3>
+              <button onClick={fecharScanner} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {!scanAluno ? (
+                <>
+                  <div id="loja-qr-reader" className="w-full" />
+                  {scanErro && <p className="text-red-500 text-sm text-center">{scanErro}</p>}
+                </>
+              ) : (
+                <div className="space-y-4">
+                  {/* Info do aluno */}
+                  <div className="bg-gray-50 rounded-lg p-3 flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl flex-shrink-0">
+                      {scanAluno.aluno.foto_path ? <img src={scanAluno.aluno.foto_path} alt="" className="w-full h-full object-cover rounded-full" /> : '👤'}
+                    </div>
+                    <div>
+                      <p className="font-bold text-textMain">{scanAluno.aluno.nome}</p>
+                      <p className="text-xs text-gray-500">{scanAluno.aluno.turma_nome}</p>
+                      <p className="text-sm font-semibold text-yellow-600">⭐ {scanAluno.xp_total} XP disponíveis</p>
+                    </div>
+                  </div>
+
+                  {/* Selecionar item */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Selecionar Item *</label>
+                    <select className="input-field" value={scanItem} onChange={e => { setScanItem(e.target.value); setScanErro('') }}>
+                      <option value="">— escolha um item —</option>
+                      {lojaItens.map(item => (
+                        <option key={item.id} value={item.id} disabled={scanAluno.xp_total < item.custo_xp}>
+                          {item.icone} {item.nome} — {item.custo_xp} XP {scanAluno.xp_total < item.custo_xp ? '(XP insuficiente)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {scanItem && (
+                    <div className="bg-blue-50 rounded-lg p-3 text-sm">
+                      <p className="text-blue-700">
+                        XP após resgate: <strong>{scanAluno.xp_total - (lojaItens.find(i => i.id == scanItem)?.custo_xp || 0)} XP</strong>
+                      </p>
+                    </div>
+                  )}
+
+                  {scanErro && <p className="text-red-500 text-sm">{scanErro}</p>}
+
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={confirmarResgate} disabled={confirmando || !scanItem} className="btn-primary flex-1">
+                      {confirmando ? '⏳ Confirmando...' : '✅ Confirmar Resgate'}
+                    </button>
+                    <button onClick={() => { setScanAluno(null); setScanErro(''); abrirScanner() }} className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
+                      🔄 Novo scan
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       </main>
     </div>
   )
