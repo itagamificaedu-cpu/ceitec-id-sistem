@@ -309,6 +309,44 @@ router.delete('/recados/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ erro: err.message }); }
 });
 
+// SYNC — envia alunos do ITA para o ItagGame PythonAnywhere
+router.post('/sync', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    const [turmas, alunos] = await Promise.all([
+      db.all('SELECT * FROM turmas WHERE escola_id = ?', [eid]),
+      db.all('SELECT * FROM alunos WHERE escola_id = ? AND ativo = 1', [eid]),
+    ]);
+
+    const turmasComAlunos = turmas.map(t => ({
+      nome: t.nome,
+      alunos: alunos
+        .filter(a => a.turma_id === t.id)
+        .map(a => ({ codigo: a.codigo, nome: a.nome })),
+    }));
+
+    const pyRes = await fetch(`${ITAGAME_PY}/api/sync-turmas/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chave: CHAVE,
+        professor_username: req.usuario.email || '',
+        turmas: turmasComAlunos,
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    const totalAlunos = turmasComAlunos.reduce((s, t) => s + t.alunos.length, 0);
+    if (!pyRes.ok) {
+      return res.json({ ok: false, mensagem: 'ItagGame não respondeu', sincronizados: 0 });
+    }
+    const pyData = await pyRes.json().catch(() => ({}));
+    res.json({ ok: true, sincronizados: totalAlunos, turmas: turmas.length, ...pyData });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 // HISTÓRICO XP
 router.get('/historico', async (req, res) => {
   try {

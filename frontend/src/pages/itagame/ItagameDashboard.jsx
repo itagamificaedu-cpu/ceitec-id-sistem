@@ -40,6 +40,8 @@ export default function ItagameDashboard() {
   const [modalAtribuir, setModalAtribuir] = useState(null)
   const [xpForm, setXpForm] = useState({ xp: 10, motivo: '', tipo: 'bonus' })
   const [salvando, setSalvando] = useState(false)
+  const [sincStatus, setSincStatus] = useState(null) // null | 'ok' | 'erro'
+  const [sincMsg, setSincMsg] = useState('')
 
   // Missões
   const [missoes, setMissoes] = useState([])
@@ -81,7 +83,25 @@ export default function ItagameDashboard() {
 
   useEffect(() => {
     api.get('/turmas').then(({ data }) => setTurmas(data))
+    sincronizar(true)
   }, [])
+
+  async function sincronizar(silencioso = false) {
+    try {
+      const { data } = await api.post('/itagame/sync')
+      if (!silencioso) {
+        setSincStatus('ok')
+        setSincMsg(`✅ ${data.sincronizados} alunos sincronizados com o ItagGame`)
+        setTimeout(() => setSincStatus(null), 4000)
+      }
+    } catch {
+      if (!silencioso) {
+        setSincStatus('erro')
+        setSincMsg('❌ Erro ao sincronizar com o ItagGame')
+        setTimeout(() => setSincStatus(null), 4000)
+      }
+    }
+  }
 
   useEffect(() => {
     setCarregando(true)
@@ -298,8 +318,14 @@ export default function ItagameDashboard() {
           {/* ===== RANKING ===== */}
           {aba === 'ranking' && (
             <>
+              {sincStatus && (
+                <div className={`mb-4 px-4 py-2 rounded-lg text-sm font-medium ${sincStatus === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {sincMsg}
+                </div>
+              )}
               <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div className="flex gap-2 items-center flex-wrap">
+                  <button onClick={() => sincronizar(false)} className="btn-secondary text-sm">🔄 Sincronizar ItagGame</button>
                   <button onClick={() => {
                     const header = ['#', 'Nome', 'Turma', 'XP', 'Nível']
                     const rows = ranking.map((a, i) => [i + 1, a.nome, a.turma_nome || '', a.xp_total, `${a.nivel} - ${NIVEIS[a.nivel]}`])
