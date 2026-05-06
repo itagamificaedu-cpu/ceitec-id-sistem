@@ -1,7 +1,6 @@
 const MODELOS = [
   'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
+  'gemini-2.0-flash-lite',
 ];
 
 async function chamarGemini(prompt) {
@@ -19,7 +18,7 @@ async function chamarGemini(prompt) {
       });
       if (res.status === 429 || res.status === 503) {
         ultimoErro = `Modelo ${modelo} sem cota (${res.status})`;
-        continue; // tenta o próximo modelo
+        continue;
       }
       if (!res.ok) {
         const err = await res.text();
@@ -28,11 +27,11 @@ async function chamarGemini(prompt) {
       const data = await res.json();
       return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     } catch (e) {
-      if (e.message.startsWith('Gemini error')) throw e; // erro real, não tenta outro
+      if (e.message.startsWith('Gemini error')) throw e;
       ultimoErro = e.message;
     }
   }
-  throw new Error(`Todos os modelos Gemini falharam. Último erro: ${ultimoErro}`);
+  throw new Error(`Cota Gemini esgotada. Tente novamente em alguns minutos. (${ultimoErro})`);
 }
 
 module.exports = { chamarGemini };
