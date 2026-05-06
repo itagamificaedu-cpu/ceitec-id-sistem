@@ -690,8 +690,6 @@ export default function ItagameDashboard() {
             </div>
           )}
 
-        </div>
-
           {/* ===== LOJA ===== */}
           {aba === 'loja' && (
             <div className="space-y-6">
