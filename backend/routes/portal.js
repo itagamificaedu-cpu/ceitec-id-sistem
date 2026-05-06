@@ -4,12 +4,12 @@ const db = require('../db');
 
 function calcularNivel(xp) {
   const niveis = [
-    { min: 0,    nome: 'Novato',      cor: '#6b7280', emoji: '🌱' },
-    { min: 100,  nome: 'Aprendiz',    cor: '#3b82f6', emoji: '📘' },
-    { min: 250,  nome: 'Estudioso',   cor: '#10b981', emoji: '📗' },
-    { min: 500,  nome: 'Dedicado',    cor: '#f59e0b', emoji: '⭐' },
-    { min: 1000, nome: 'Especialista',cor: '#ef4444', emoji: '🔥' },
-    { min: 2000, nome: 'Mestre',      cor: '#8b5cf6', emoji: '👑' },
+    { min: 0,    nome: 'Iniciante',   cor: '#6b7280', emoji: '🔩' },
+    { min: 100,  nome: 'Construtor',  cor: '#3b82f6', emoji: '⚙️' },
+    { min: 250,  nome: 'Inventor',    cor: '#10b981', emoji: '💡' },
+    { min: 500,  nome: 'Engenheiro',  cor: '#f59e0b', emoji: '🚀' },
+    { min: 1000, nome: 'Hacker',      cor: '#ef4444', emoji: '🤖' },
+    { min: 2000, nome: 'Mestre Tech', cor: '#8b5cf6', emoji: '👑' },
   ];
   let atual = niveis[0];
   let proximo = niveis[1];
