@@ -19,6 +19,7 @@ export default function ItagameAluno() {
       const { data } = await api.get(`/itagame/publico/${cod}`)
       const params = new URLSearchParams({
         user: data.aluno.codigo,
+        email: data.aluno.codigo,
         nome: data.aluno.nome,
         turma: data.aluno.turma_nome || data.aluno.turma || '',
         chave: CHAVE,
