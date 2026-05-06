@@ -394,4 +394,111 @@ router.delete('/repositorio/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ erro: err.message }); }
 });
 
+// LOJA
+router.get('/loja', async (req, res) => {
+  try {
+    res.json(await db.all('SELECT * FROM itagame_loja WHERE escola_id = ? AND ativo = 1 ORDER BY criado_em DESC', [req.usuario.escola_id]));
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+router.post('/loja', async (req, res) => {
+  try {
+    const { nome, descricao, custo_xp, icone } = req.body;
+    if (!nome) return res.status(400).json({ erro: 'Nome obrigatório' });
+    const { lastInsertRowid } = await db.run(
+      'INSERT INTO itagame_loja (escola_id, nome, descricao, custo_xp, icone) VALUES (?, ?, ?, ?, ?)',
+      [req.usuario.escola_id, nome, descricao || '', custo_xp || 100, icone || '🎁']
+    );
+    res.json({ id: lastInsertRowid, nome });
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+router.delete('/loja/:id', async (req, res) => {
+  try {
+    await db.run('DELETE FROM itagame_loja WHERE id = ? AND escola_id = ?', [req.params.id, req.usuario.escola_id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+// RESGATES (loja — debita XP do aluno)
+router.get('/resgates', async (req, res) => {
+  try {
+    const rows = await db.all(
+      `SELECT r.id, r.custo_xp, r.status, r.entregue, r.criado_em,
+              a.nome as aluno_nome, a.turma as aluno_turma, a.foto_path,
+              l.nome as item_nome, l.icone as item_icone
+       FROM itagame_resgates r
+       LEFT JOIN alunos a ON r.aluno_id = a.id
+       LEFT JOIN itagame_loja l ON r.item_id = l.id
+       WHERE r.escola_id = ?
+       ORDER BY r.criado_em DESC`,
+      [req.usuario.escola_id]
+    );
+    res.json(rows);
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+router.post('/resgates', async (req, res) => {
+  try {
+    const { aluno_codigo, item_id } = req.body;
+    if (!aluno_codigo || !item_id) return res.status(400).json({ erro: 'Código do aluno e item obrigatórios' });
+
+    const aluno = await db.get('SELECT * FROM alunos WHERE codigo = ? AND ativo = 1', [aluno_codigo.toUpperCase()]);
+    if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
+
+    const item = await db.get('SELECT * FROM itagame_loja WHERE id = ? AND escola_id = ?', [item_id, req.usuario.escola_id]);
+    if (!item) return res.status(404).json({ erro: 'Item não encontrado' });
+
+    // Busca XP atual
+    let pontos = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]);
+    if (!pontos) {
+      await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno.id, aluno.turma_id]);
+      pontos = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]);
+    }
+
+    if ((pontos?.xp_total || 0) < item.custo_xp) {
+      return res.status(400).json({ erro: `XP insuficiente. Aluno tem ${pontos?.xp_total || 0} XP, item custa ${item.custo_xp} XP.` });
+    }
+
+    // Debita XP
+    const novoXP = pontos.xp_total - item.custo_xp;
+    const novoNivel = calcularNivel(novoXP).nivel;
+    await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno.id]);
+    await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
+      [aluno.id, 'resgate', `Resgatou item da loja: ${item.nome}`, -item.custo_xp]);
+
+    // Tenta sincronizar com PythonAnywhere (debitar XP)
+    try {
+      await fetch(`${ITAGAME_PY}/api/xp/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chave: CHAVE, codigo: aluno.codigo, xp: -item.custo_xp, motivo: `Resgate loja: ${item.nome}` }),
+        signal: AbortSignal.timeout(5000),
+      });
+    } catch (_) {}
+
+    const { lastInsertRowid } = await db.run(
+      'INSERT INTO itagame_resgates (escola_id, aluno_id, item_id, custo_xp) VALUES (?, ?, ?, ?)',
+      [req.usuario.escola_id, aluno.id, item_id, item.custo_xp]
+    );
+
+    res.json({ id: lastInsertRowid, aluno: aluno.nome, item: item.nome, xp_restante: novoXP });
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+router.patch('/resgates/:id/entregar', async (req, res) => {
+  try {
+    await db.run('UPDATE itagame_resgates SET entregue = 1, status = ? WHERE id = ? AND escola_id = ?',
+      ['entregue', req.params.id, req.usuario.escola_id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+router.delete('/resgates/:id', async (req, res) => {
+  try {
+    await db.run('DELETE FROM itagame_resgates WHERE id = ? AND escola_id = ?', [req.params.id, req.usuario.escola_id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
 module.exports = router;

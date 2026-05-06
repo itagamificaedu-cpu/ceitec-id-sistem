@@ -58,6 +58,8 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS itagame_recados (id SERIAL PRIMARY KEY, escola_id INTEGER, turma_id INTEGER, titulo TEXT NOT NULL, mensagem TEXT NOT NULL, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS itagame_provas (id SERIAL PRIMARY KEY, escola_id INTEGER, turma_id INTEGER, titulo TEXT NOT NULL, disciplina TEXT, descricao TEXT, xp_por_acerto INTEGER DEFAULT 50, codigo_acesso TEXT, ativa INTEGER DEFAULT 1, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS itagame_repositorio (id SERIAL PRIMARY KEY, escola_id INTEGER, titulo TEXT NOT NULL, descricao TEXT, link_url TEXT, tipo TEXT DEFAULT 'outro', criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS itagame_loja (id SERIAL PRIMARY KEY, escola_id INTEGER, nome TEXT NOT NULL, descricao TEXT, custo_xp INTEGER DEFAULT 100, icone TEXT DEFAULT '🎁', ativo INTEGER DEFAULT 1, criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS itagame_resgates (id SERIAL PRIMARY KEY, escola_id INTEGER, aluno_id INTEGER NOT NULL, item_id INTEGER NOT NULL, custo_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'pendente', entregue INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT NOW())`,
   ];
 
   for (const sql of tabelas) {
