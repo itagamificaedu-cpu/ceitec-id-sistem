@@ -45,11 +45,11 @@ router.get('/publico/:codigo', async (req, res) => {
 router.use(autenticar);
 
 function calcularNivel(xp) {
-  if (xp >= 2000) return { nivel: 5, nome: 'Lenda', proximo: null, xp_proximo: 0 };
-  if (xp >= 1000) return { nivel: 4, nome: 'Campeão', proximo: 2000, xp_proximo: 2000 - xp };
-  if (xp >= 500) return { nivel: 3, nome: 'Guerreiro', proximo: 1000, xp_proximo: 1000 - xp };
-  if (xp >= 200) return { nivel: 2, nome: 'Explorador', proximo: 500, xp_proximo: 500 - xp };
-  return { nivel: 1, nome: 'Aprendiz', proximo: 200, xp_proximo: 200 - xp };
+  if (xp >= 2000) return { nivel: 5, nome: 'Mestre Tech 👑', proximo: null, xp_proximo: 0 };
+  if (xp >= 1000) return { nivel: 4, nome: 'Hacker 🤖', proximo: 2000, xp_proximo: 2000 - xp };
+  if (xp >= 500)  return { nivel: 3, nome: 'Engenheiro 🚀', proximo: 1000, xp_proximo: 1000 - xp };
+  if (xp >= 200)  return { nivel: 2, nome: 'Inventor 💡', proximo: 500, xp_proximo: 500 - xp };
+  return { nivel: 1, nome: 'Construtor ⚙️', proximo: 200, xp_proximo: 200 - xp };
 }
 
 // Busca ranking do PythonAnywhere mesclado com fotos/turmas do CEITEC
