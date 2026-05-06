@@ -1,8 +1,7 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const { chamarGemini } = require('./gemini');
 
 async function gerarPlanoAula({ disciplina, turma, nivel, tema, duracao, recursos, objetivos }) {
   turma = turma || nivel || 'Ensino Fundamental';
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const prompt = `Você é um pedagogo especialista em tecnologia educacional. Crie um plano de aula completo e detalhado para:
 
@@ -25,13 +24,7 @@ Crie um plano de aula estruturado com as seguintes seções:
 
 Use linguagem clara, didática e adequada para o contexto de escola de tecnologia.`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return message.content[0].text;
+  return chamarGemini(prompt);
 }
 
 module.exports = { gerarPlanoAula };

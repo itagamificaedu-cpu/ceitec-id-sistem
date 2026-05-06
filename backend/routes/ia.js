@@ -13,8 +13,8 @@ router.use(autenticar);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 function checkApiKey(res) {
-  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'sua_chave_aqui') {
-    res.status(503).json({ erro: 'ANTHROPIC_API_KEY não configurada.' });
+  if (!process.env.GOOGLE_API_KEY) {
+    res.status(503).json({ erro: 'GOOGLE_API_KEY não configurada.' });
     return false;
   }
   return true;
@@ -93,7 +93,6 @@ router.post('/conteudo', async (req, res) => {
 });
 
 router.get('/diagnostico/:aluno_id', async (req, res) => {
-  if (!checkApiKey(res)) return;
   try {
     const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.aluno_id]);
     if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
@@ -111,8 +110,27 @@ router.get('/diagnostico/:aluno_id', async (req, res) => {
     const pior = mediasPorDisc.reduce((m, d) => !m || d.media < m.media ? d : m, null);
     const melhor = mediasPorDisc.reduce((m, d) => !m || d.media > m.media ? d : m, null);
 
-    const { gerarDiagnosticoAluno } = require('../ia/diagnosticoAluno');
-    const diagnostico = await gerarDiagnosticoAluno({ aluno: { ...aluno, media_geral }, notas, mediasPorDisc, pior, melhor });
+    // Tenta gerar diagnóstico com IA; se falhar, usa análise local
+    let diagnostico;
+    try {
+      const { gerarDiagnosticoAluno } = require('../ia/diagnosticoAluno');
+      diagnostico = await gerarDiagnosticoAluno({ aluno: { ...aluno, media_geral }, notas, mediasPorDisc, pior, melhor });
+    } catch (_) {
+      // Fallback sem IA
+      const status = media_geral === null ? 'sem avaliações' : media_geral >= 7 ? 'aprovado' : media_geral >= 5 ? 'em recuperação' : 'em risco';
+      const discTexto = mediasPorDisc.map(d => `${d.disciplina}: ${d.media}`).join(', ') || 'sem dados';
+      diagnostico = {
+        aluno: { nome: aluno.nome, turma: aluno.turma, media_geral },
+        diagnostico: `Aluno: ${aluno.nome} | Situação: ${status}\nMédia geral: ${media_geral ?? '—'}\nDesempenho por disciplina: ${discTexto}${melhor ? `\nMelhor disciplina: ${melhor.disciplina} (${melhor.media})` : ''}${pior && pior.disciplina !== melhor?.disciplina ? `\nAtenção: ${pior.disciplina} (${pior.media})` : ''}`,
+        recomendacoes: media_geral !== null && media_geral < 5
+          ? ['Priorizar reforço nas disciplinas com menor nota', 'Planejar atividades de recuperação', 'Acompanhar frequência nas aulas']
+          : media_geral !== null && media_geral < 7
+          ? ['Manter dedicação nos estudos', 'Focar nas disciplinas com nota abaixo de 7']
+          : ['Continuar o bom desempenho', 'Participar de atividades de aprofundamento'],
+        plano_recuperacao: media_geral !== null && media_geral < 5 ? 'Agendar avaliação de recuperação e reforço individualizado.' : null,
+        sem_ia: true,
+      };
+    }
     res.json(diagnostico);
   } catch (err) {
     res.status(500).json({ erro: err.message });

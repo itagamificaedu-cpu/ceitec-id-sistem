@@ -8,6 +8,7 @@ export default function ResultadosAvaliacao() {
   const { id } = useParams()
   const [avaliacao, setAvaliacao] = useState(null)
   const [resultados, setResultados] = useState([])
+  const [questoes, setQuestoes] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [alunoSel, setAlunoSel] = useState(null)
   const [lancarAberto, setLancarAberto] = useState(false)
@@ -22,7 +23,13 @@ export default function ResultadosAvaliacao() {
           api.get(`/avaliacoes/${id}/resultados`)
         ])
         setAvaliacao(avRes.data)
-        setResultados(resRes.data)
+        const data = resRes.data
+        if (Array.isArray(data)) {
+          setResultados(data)
+        } else {
+          setResultados(data.notas || [])
+          setQuestoes(data.questoes || [])
+        }
       } catch { }
       finally { setCarregando(false) }
     }
@@ -35,7 +42,7 @@ export default function ResultadosAvaliacao() {
       const payload = Object.entries(notaLancar).map(([aluno_id, nota]) => ({ aluno_id: Number(aluno_id), nota }))
       await api.post(`/avaliacoes/${id}/notas`, { notas: payload })
       const { data } = await api.get(`/avaliacoes/${id}/resultados`)
-      setResultados(data)
+      setResultados(data.notas || data || [])
       setLancarAberto(false)
       setNotaLancar({})
     } catch { }
@@ -49,12 +56,13 @@ export default function ResultadosAvaliacao() {
     const header = ['Aluno', 'Nota', '% Acerto', 'Status']
     const rows = resultados.map(r => [r.nome, r.nota_final ?? '', r.percentual_acerto != null ? r.percentual_acerto + '%' : '', r.nota_final == null ? 'Pendente' : r.nota_final >= 7 ? 'Aprovado' : r.nota_final >= 5 ? 'Recuperação' : 'Em risco'])
     const csv = [header, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = `resultados_${avaliacao.titulo}.csv`; a.click()
   }
 
-  const mediaGeral = resultados.length > 0 ? (resultados.reduce((s, r) => s + (r.nota_final ?? 0), 0) / resultados.filter(r => r.nota_final != null).length).toFixed(1) : '—'
+  const notasValidas = resultados.filter(r => r.nota_final != null)
+  const mediaGeral = notasValidas.length > 0 ? (notasValidas.reduce((s, r) => s + r.nota_final, 0) / notasValidas.length).toFixed(1) : '—'
   const aprovados = resultados.filter(r => r.nota_final >= 7).length
   const emRisco = resultados.filter(r => r.nota_final != null && r.nota_final < 5).length
 
@@ -100,47 +108,136 @@ export default function ResultadosAvaliacao() {
           </div>
 
           {/* Gráfico */}
-          {resultados.filter(r => r.nota_final != null).length > 0 && (
+          {notasValidas.length > 0 && (
             <div className="bg-white rounded-xl shadow-md p-5 mb-5">
               <h3 className="font-semibold text-textMain mb-3">Notas por Aluno</h3>
-              <GraficoBarrasDesempenho dados={resultados.filter(r => r.nota_final != null)} nomeChave="nome" valorChave="nota_final" />
+              <GraficoBarrasDesempenho dados={notasValidas} nomeChave="nome" valorChave="nota_final" />
             </div>
           )}
 
           {/* Tabela */}
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="p-5 border-b">
+          <div className="bg-white rounded-xl shadow-md overflow-hidden mb-5">
+            <div className="p-5 border-b flex items-center justify-between">
               <h3 className="font-semibold text-textMain">Resultados por Aluno</h3>
+              <p className="text-xs text-gray-400">Clique em um aluno para ver questão por questão</p>
             </div>
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-4 py-3 text-gray-600">Aluno</th>
-                  <th className="text-left px-4 py-3 text-gray-600">Nota</th>
-                  <th className="text-left px-4 py-3 text-gray-600">%</th>
-                  <th className="text-left px-4 py-3 text-gray-600">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultados.map(r => (
-                  <tr key={r.id} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => setAlunoSel(r)}>
-                    <td className="px-4 py-3 font-medium">{r.nome}</td>
-                    <td className="px-4 py-3 font-bold" style={{ color: r.nota_final >= 7 ? '#27ae60' : r.nota_final >= 5 ? '#e67e22' : r.nota_final != null ? '#e74c3c' : '#9ca3af' }}>
-                      {r.nota_final ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">{r.percentual_acerto != null ? `${r.percentual_acerto}%` : '—'}</td>
-                    <td className="px-4 py-3">
-                      {r.nota_final == null ? <span className="text-gray-400 text-xs">Pendente</span>
-                        : r.nota_final >= 7 ? <span className="px-2 py-0.5 bg-green-100 text-success rounded-full text-xs">Aprovado</span>
-                        : r.nota_final >= 5 ? <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">Recuperação</span>
-                        : <span className="px-2 py-0.5 bg-red-100 text-danger rounded-full text-xs">Em risco</span>}
-                    </td>
+            {resultados.length === 0 ? (
+              <div className="p-10 text-center text-gray-400">
+                <p className="text-4xl mb-2">📋</p>
+                <p>Nenhum resultado lançado ainda</p>
+                <button onClick={() => setLancarAberto(true)} className="btn-primary mt-3 text-sm">Lançar Notas</button>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-gray-600">Aluno</th>
+                    <th className="text-left px-4 py-3 text-gray-600">Nota</th>
+                    <th className="text-left px-4 py-3 text-gray-600">% Acerto</th>
+                    <th className="text-left px-4 py-3 text-gray-600">Status</th>
+                    <th className="text-left px-4 py-3 text-gray-600">Questões</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {resultados.map(r => (
+                    <tr key={r.id} className="border-t hover:bg-blue-50 cursor-pointer transition-colors" onClick={() => setAlunoSel(r)}>
+                      <td className="px-4 py-3 font-medium">{r.nome}</td>
+                      <td className="px-4 py-3 font-bold" style={{ color: r.nota_final >= 7 ? '#27ae60' : r.nota_final >= 5 ? '#e67e22' : r.nota_final != null ? '#e74c3c' : '#9ca3af' }}>
+                        {r.nota_final ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500">{r.percentual_acerto != null ? `${r.percentual_acerto}%` : '—'}</td>
+                      <td className="px-4 py-3">
+                        {r.nota_final == null ? <span className="text-gray-400 text-xs">Pendente</span>
+                          : r.nota_final >= 7 ? <span className="px-2 py-0.5 bg-green-100 text-success rounded-full text-xs">Aprovado</span>
+                          : r.nota_final >= 5 ? <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">Recuperação</span>
+                          : <span className="px-2 py-0.5 bg-red-100 text-danger rounded-full text-xs">Em risco</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        {r.questoes_detalhe ? (
+                          <div className="flex gap-0.5 flex-wrap">
+                            {r.questoes_detalhe.map((q, i) => (
+                              <span key={i} title={`Q${q.numero}: ${q.acertou ? 'Acerto' : 'Erro'}`}
+                                className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${q.acertou ? 'bg-green-100 text-green-700' : q.resposta_aluno ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-400'}`}>
+                                {q.numero}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-blue-500">Ver detalhe →</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
+
+        {/* Modal detalhe aluno */}
+        {alunoSel && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setAlunoSel(null)}>
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white">
+                <div>
+                  <h3 className="font-bold text-textMain text-lg">{alunoSel.nome}</h3>
+                  <p className="text-sm text-gray-500">{avaliacao.titulo} • Nota: <strong style={{ color: alunoSel.nota_final >= 7 ? '#27ae60' : alunoSel.nota_final >= 5 ? '#e67e22' : '#e74c3c' }}>{alunoSel.nota_final ?? '—'}</strong></p>
+                </div>
+                <button onClick={() => setAlunoSel(null)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+              </div>
+
+              <div className="p-5">
+                {/* Resumo */}
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                  <div className="bg-green-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-bold text-success">{alunoSel.questoes_detalhe?.filter(q => q.acertou).length ?? alunoSel.acertos ?? '—'}</p>
+                    <p className="text-xs text-gray-500">Acertos</p>
+                  </div>
+                  <div className="bg-red-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-bold text-danger">{alunoSel.questoes_detalhe?.filter(q => !q.acertou && q.resposta_aluno).length ?? alunoSel.erros ?? '—'}</p>
+                    <p className="text-xs text-gray-500">Erros</p>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-bold text-primary">{alunoSel.percentual_acerto != null ? `${alunoSel.percentual_acerto}%` : '—'}</p>
+                    <p className="text-xs text-gray-500">% Acerto</p>
+                  </div>
+                </div>
+
+                {/* Questão por questão */}
+                {alunoSel.questoes_detalhe && alunoSel.questoes_detalhe.length > 0 ? (
+                  <div>
+                    <h4 className="font-semibold text-sm text-gray-700 mb-3">Questão por Questão:</h4>
+                    <div className="space-y-2">
+                      {alunoSel.questoes_detalhe.map(q => (
+                        <div key={q.numero} className={`flex items-start gap-3 p-3 rounded-lg border ${q.acertou ? 'bg-green-50 border-green-200' : q.resposta_aluno ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${q.acertou ? 'bg-green-200 text-green-800' : q.resposta_aluno ? 'bg-red-200 text-red-800' : 'bg-gray-200 text-gray-600'}`}>
+                            {q.numero}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-gray-700 leading-snug">{q.enunciado || `Questão ${q.numero}`}</p>
+                            <div className="flex gap-4 mt-1 text-xs">
+                              <span className={`font-medium ${q.acertou ? 'text-success' : 'text-danger'}`}>
+                                Resposta: <strong className="uppercase">{q.resposta_aluno || '—'}</strong>
+                              </span>
+                              {!q.acertou && q.gabarito && (
+                                <span className="text-success font-medium">
+                                  Correta: <strong className="uppercase">{q.gabarito}</strong>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <span className="text-lg flex-shrink-0">{q.acertou ? '✅' : q.resposta_aluno ? '❌' : '⬜'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">Respostas detalhadas não disponíveis para este aluno</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal lançar notas */}
         {lancarAberto && (
