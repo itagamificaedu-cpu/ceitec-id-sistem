@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import api from '../api'
 
-const ITAGAME_LINK = 'itatecnologiaeducacional.tech/itagame/aluno'
+const ITAGAME_BASE = 'itatecnologiaeducacional.tech/itagame/aluno'
 
 function parseTurma(turma) {
   if (!turma) return { ano: '', secao: '' }
@@ -89,7 +89,7 @@ function CardCarteirinha({ aluno, qrcode }) {
         </div>
       </div>
 
-      {/* ItagGame */}
+      {/* ItagGame — link direto com código do aluno */}
       <div style={{
         background: 'rgba(245,166,35,0.13)',
         border: '1px solid rgba(245,166,35,0.35)',
@@ -98,13 +98,10 @@ function CardCarteirinha({ aluno, qrcode }) {
         marginBottom: '5px',
       }}>
         <div style={{ color: '#f5a623', fontSize: '7.5px', fontWeight: '900', letterSpacing: '0.8px', marginBottom: '2px' }}>
-          🎮 ITAGAME — GANHE XP E MOEDAS
+          🎮 ACESSE SUA PÁGINA ITAGAME
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '6.5px', lineHeight: 1.5 }}>
-          Acesse: <span style={{ color: 'rgba(255,255,255,0.85)', fontFamily: 'monospace' }}>{ITAGAME_LINK}</span>
-        </div>
-        <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '6.5px' }}>
-          Código: <span style={{ color: '#f5a623', fontFamily: 'monospace', fontWeight: '800' }}>{aluno.codigo}</span>
+        <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '6px', fontFamily: 'monospace', lineHeight: 1.6, wordBreak: 'break-all' }}>
+          {ITAGAME_BASE}?codigo={aluno.codigo}
         </div>
       </div>
 
@@ -243,6 +240,12 @@ export default function Carteirinha() {
             <div className="bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm">
               <div><span className="text-gray-500">Código:</span> <span className="font-mono font-bold text-secondary">{aluno.codigo}</span></div>
               <div><span className="text-gray-500">Turma:</span> {aluno.turma}</div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Link ItagGame:</span>{' '}
+                <a href={`https://${ITAGAME_BASE}?codigo=${aluno.codigo}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-mono text-xs break-all">
+                  {ITAGAME_BASE}?codigo={aluno.codigo}
+                </a>
+              </div>
               <div className="col-span-2 text-xs text-gray-400">
                 Ao clicar em Imprimir, serão impressas as carteirinhas de todos os {turmaAlunos.length} alunos da turma {aluno.turma}, 8 por folha A4.
               </div>
