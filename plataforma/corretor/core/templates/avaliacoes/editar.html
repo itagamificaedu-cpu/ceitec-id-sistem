@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Avaliação - Correção Online{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alt-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid #ddd;
+        background: #fff;
+        color: #555;
+        user-select: none;
+    }
+    .alt-btn:hover {
+        background-color: #f0f7ff;
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+    .alt-btn.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+    }
+    .questao-row {
+        border-bottom: 1px solid #eee;
+        padding: 12px 0;
+    }
+    .questao-num {
+        width: 35px;
+        font-weight: 700;
+        color: #444;
+        font-size: 1.1rem;
+    }
+    .manual-item {
+        border-left: 4px solid #0d6efd;
+        background: #f8f9fa;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold"><i class="fas fa-edit text-primary"></i> Editar Avaliação</h2>
+        </div>
+    </div>
+    
+    <form method="post" enctype="multipart/form-data" id="avaliacaoForm">
+        {% csrf_token %}
+    
+    <div class="row">
+        <!-- Coluna Esquerda: Configurações -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> 1. Dados da Avaliação</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Título da Avaliação *</label>
+                        <input type="text" name="titulo" class="form-control form-control-lg" required value="{{ avaliacao.titulo }}">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Instituição *</label>
+                            <input type="text" name="instituicao" class="form-control" required value="{{ avaliacao.instituicao }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Disciplina *</label>
+                            <input type="text" name="disciplina" class="form-control" required value="{{ avaliacao.disciplina }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Série *</label>
+                            <input type="text" name="serie" class="form-control" required value="{{ avaliacao.serie }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Turma *</label>
+                            <input type="text" name="turma" list="turmasList" class="form-control" required value="{{ avaliacao.turma }}">
+                            <datalist id="turmasList">
+                                {% for t in turmas_existentes %}
+                                <option value="{{ t }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Data de Aplicação</label>
+                            <input type="date" name="data_aplicacao" class="form-control" value="{{ avaliacao.data_aplicacao|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Modo Online</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_online" id="is_online" {% if avaliacao.is_online %}checked{% endif %}>
+                                <label class="form-check-label" for="is_online">Permitir resposta pelos alunos</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="rascunho" {% if avaliacao.status == 'rascunho' %}selected{% endif %}>Rascunho</option>
+                            <option value="publicada" {% if avaliacao.status == 'publicada' %}selected{% endif %}>Publicada</option>
+                            <option value="encerrada" {% if avaliacao.status == 'encerrada' %}selected{% endif %}>Encerrada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Formato -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i> 2. Formato da Prova</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group w-100 mb-4" role="group">
+                        <input type="radio" class="btn-check" name="is_manual" id="btn_pdf" value="off" {% if not avaliacao.is_manual %}checked{% endif %}>
+                        <label class="btn btn-outline-success py-3" for="btn_pdf">
+                            <i class="fas fa-file-pdf fa-lg d-block mb-2"></i> <strong>PDF</strong>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="is_manual" id="btn_manual" value="on" {% if avaliacao.is_manual %}checked{% endif %}>
+                        <label class="btn btn-outline-success py-3" for="btn_manual">
+                            <i class="fas fa-keyboard fa-lg d-block mb-2"></i> <strong>Manual</strong>
+                        </label>
+                    </div>
+
+                    <div id="section_pdf" {% if avaliacao.is_manual %}style="display: none;"{% endif %}>
+                        <label class="form-label fw-bold">Arquivo da Prova (PDF)</label>
+                        {% if avaliacao.arquivo_prova %}
+                        <div class="mb-2 small">
+                            <i class="fas fa-link"></i> <a href="{{ avaliacao.arquivo_prova.url }}" target="_blank">Ver arquivo atual</a>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="arquivo_prova" class="form-control" accept="application/pdf">
+                    </div>
+
+                    <div id="section_manual" {% if not avaliacao.is_manual %}style="display: none;"{% endif %}>
+                        <div id="questoesContainer">
+                            <!-- Injetado via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Direita: Gabarito -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 mb-4 sticky-top" style="top: 20px;">
+                <div class="card-header bg-warning py-3">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-check-double me-2"></i> 3. Gabarito Oficial</h5>
+                </div>
+                <div class="card-body bg-light-subtle">
+                    <div class="row g-2 mb-4">
+                        <div class="col-7">
+                            <label class="form-label small fw-bold">Qtd. Questões</label>
+                            <input type="number" id="num_questoes_input" value="{{ avaliacao.numero_questoes }}" min="1" max="50" class="form-control border-warning">
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label small fw-bold">Alt. por Questão</label>
+                            <select id="num_alternativas_select" class="form-select border-warning">
+                                <option value="2" {% if avaliacao.alternativas_por_questao == 2 %}selected{% endif %}>2 (A-B)</option>
+                                <option value="3" {% if avaliacao.alternativas_por_questao == 3 %}selected{% endif %}>3 (A-C)</option>
+                                <option value="4" {% if avaliacao.alternativas_por_questao == 4 %}selected{% endif %}>4 (A-D)</option>
+                                <option value="5" {% if avaliacao.alternativas_por_questao == 5 %}selected{% endif %}>5 (A-E)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="gabaritoGrid" class="bg-white rounded border p-3" style="max-height: 450px; overflow-y: auto;">
+                        <div class="text-center py-4 text-muted">Aguarde...</div>
+                    </div>
+                    
+                    <input type="hidden" name="numero_questoes" id="final_num_questoes" value="{{ avaliacao.numero_questoes }}">
+                    <input type="hidden" name="alternativas_por_questao" id="final_num_alts" value="{{ avaliacao.alternativas_por_questao }}">
+                    <textarea name="gabarito_json" id="gabarito_hidden" style="display: none;">{{ avaliacao.gabarito|safe }}</textarea>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 shadow py-3 fw-bold">
+                            <i class="fas fa-save me-2"></i> SALVAR ALTERAÇÕES
+                        </button>
+                        <a href="{% url 'lista_avaliacoes' %}" class="btn btn-link w-100 text-muted mt-2">
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    const ALTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    let currentGabarito = JSON.parse('{{ avaliacao.gabarito|safe|escapejs }}' || '{}');
+
+    function renderGabarito() {
+        const n = parseInt($('#num_questoes_input').val()) || 10;
+        const altsCount = parseInt($('#num_alternativas_select').val()) || 5;
+        const grid = $('#gabaritoGrid');
+        grid.empty();
+
+        for (let i = 1; i <= n; i++) {
+            const row = $('<div class="questao-row d-flex align-items-center gap-2"></div>');
+            row.append(`<div class="questao-num">${i}</div>`);
+            const btnGroup = $('<div class="d-flex gap-2 flex-grow-1"></div>');
+            
+            const selectedVal = currentGabarito[i] || currentGabarito[i.toString()] || '';
+
+            for (let j = 0; j < altsCount; j++) {
+                const letter = ALTS[j];
+                const activeClass = selectedVal === letter ? 'active' : '';
+                const btn = $(`<div class="alt-btn ${activeClass}" data-q="${i}" data-ans="${letter}">${letter}</div>`);
+                btn.on('click', function() {
+                    const q = $(this).data('q');
+                    const a = $(this).data('ans');
+                    $(`.alt-btn[data-q="${q}"]`).removeClass('active');
+                    $(this).addClass('active');
+                    currentGabarito[q] = a;
+                    $('#gabarito_hidden').val(JSON.stringify(currentGabarito));
+                });
+                btnGroup.append(btn);
+            }
+            row.append(btnGroup);
+            grid.append(row);
+        }
+        $('#final_num_questoes').val(n);
+        $('#final_num_alts').val(altsCount);
+        $('#gabarito_hidden').val(JSON.stringify(currentGabarito));
+    }
+
+    $('#num_questoes_input, #num_alternativas_select').on('change input', renderGabarito);
+    
+    $('input[name="is_manual"]').on('change', function() {
+        if ($(this).val() === 'on') {
+            $('#section_pdf').hide();
+            $('#section_manual').fadeIn();
+        } else {
+            $('#section_manual').hide();
+            $('#section_pdf').fadeIn();
+        }
+    });
+
+    renderGabarito();
+});
+</script>
+{% endblock %}

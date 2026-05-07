@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Modo Sala - {{ avaliacao.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="fas fa-users"></i> Modo Sala
+        </h2>
+        <a href="{% url 'detalhar_avaliacao' avaliacao.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle"></i>
+        <strong>{{ avaliacao.titulo }}</strong> - {{ avaliacao.disciplina }} - {{ avaliacao.turma }}
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <h1 class="text-primary fw-bold" id="count_conectados">{{ conectados }}</h1>
+                    <p class="text-muted mb-0"><i class="fas fa-signal"></i> Conectados/Ativos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h1 class="text-success fw-bold" id="count_finalizados">{{ finalizados }}</h1>
+                    <p class="text-muted mb-0"><i class="fas fa-check-circle"></i> Finalizados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <h1 class="text-info fw-bold" id="count_resultados">{{ total_resultados }}</h1>
+                    <p class="text-muted mb-0"><i class="fas fa-clipboard-check"></i> Resultados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-signal"></i> Alunos Ativos
+                    <span class="badge bg-light text-primary ms-2" id="badge_ativos">{{ tentativas_ativas|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if tentativas_ativas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Status</th>
+                                    <th>Início</th>
+                                    <th>Duração</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ativos_table">
+                                {% for t in tentativas_ativas %}
+                                <tr>
+                                    <td class="fw-bold">{{ t.aluno_nome }}</td>
+                                    <td>
+                                        {% if t.status == 'conectado' %}
+                                        <span class="badge bg-info"><i class="fas fa-wifi"></i> Conectado</span>
+                                        {% elif t.status == 'iniciado' %}
+                                        <span class="badge bg-warning"><i class="fas fa-play"></i> Iniciado</span>
+                                        {% elif t.status == 'em_andamento' %}
+                                        <span class="badge bg-primary"><i class="fas fa-spinner fa-spin"></i> Em Andamento</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ t.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small>{{ t.iniciado_em|time:"H:i:s"|default:"-" }}</small></td>
+                                    <td><small>{{ t.duracao_segundos|floatformat:0 }}s</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Nenhum aluno ativo no momento</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-check-circle"></i> Últimos Resultados
+                </div>
+                <div class="card-body p-0">
+                    {% if resultados %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Nota</th>
+                                    <th>Acertos</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in resultados %}
+                                <tr>
+                                    <td class="fw-bold">{{ r.aluno_nome }}</td>
+                                    <td>
+                                        {% if r.nota >= 7 %}
+                                        <span class="badge bg-success">{{ r.nota }}</span>
+                                        {% elif r.nota >= 5 %}
+                                        <span class="badge bg-warning text-dark">{{ r.nota }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ r.nota }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ r.acertos }}/{{ r.acertos|add:r.erros }}</td>
+                                    <td><small>{{ r.data_correcao|date:"H:i" }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Nenhum resultado registrado ainda</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+setInterval(function() {
+    fetch(`/api/modo-sala/{{ avaliacao.id }}/?acao=listar`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.sucesso) {
+                document.getElementById('count_conectados').textContent = data.total_ativos;
+                document.getElementById('badge_ativos').textContent = data.total_ativos;
+
+                const tbody = document.getElementById('ativos_table');
+                if (data.tentativas.length > 0) {
+                    let html = '';
+                    data.tentativas.forEach(t => {
+                        let badgeClass = 'bg-secondary';
+                        let icon = '';
+                        if (t.status === 'conectado') { badgeClass = 'bg-info'; icon = '<i class="fas fa-wifi"></i>'; }
+                        else if (t.status === 'iniciado') { badgeClass = 'bg-warning'; icon = '<i class="fas fa-play"></i>'; }
+                        else if (t.status === 'em_andamento') { badgeClass = 'bg-primary'; icon = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+                        const min = Math.floor(t.duracao / 60);
+                        const sec = t.duracao % 60;
+                        const dur = min > 0 ? `${min}m${sec}s` : `${sec}s`;
+
+                        html += `<tr>
+                            <td class="fw-bold">${t.aluno_nome}</td>
+                            <td><span class="badge ${badgeClass}">${icon} ${t.status_display}</span></td>
+                            <td><small>${t.iniciado_em}</small></td>
+                            <td><small>${dur}</small></td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                }
+            }
+        });
+}, 5000);
+</script>
+{% endblock %}

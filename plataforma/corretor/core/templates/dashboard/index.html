@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Correção Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="fas fa-chart-pie"></i> Dashboard
+        </h2>
+        <a href="{% url 'exportar_excel' %}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Exportar Excel
+        </a>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Avaliações</h6>
+                            <h2 class="mb-0 fw-bold">{{ total_avaliacoes }}</h2>
+                        </div>
+                        <div class="fs-1" style="color: #1a237e;">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stat-card success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Correções</h6>
+                            <h2 class="mb-0 fw-bold">{{ total_correcoes }}</h2>
+                        </div>
+                        <div class="fs-1" style="color: #43a047;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stat-card warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Média Geral</h6>
+                            <h2 class="mb-0 fw-bold">{{ media_geral }}</h2>
+                        </div>
+                        <div class="fs-1" style="color: #fdd835;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stat-card error h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Alunos Corrigidos</h6>
+                            <h2 class="mb-0 fw-bold">{{ total_correcoes }}</h2>
+                        </div>
+                        <div class="fs-1" style="color: #e53935;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-list"></i> Média por Avaliação
+                </div>
+                <div class="card-body">
+                    {% if avaliacoes_grafico %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Avaliação</th>
+                                <th class="text-center">Média</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in avaliacoes_grafico %}
+                            <tr>
+                                <td>{{ item.titulo }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">{{ item.media }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-center py-4 text-muted">Nenhuma avaliação com resultados</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar"></i> Distribuição de Notas
+                </div>
+                <div class="card-body">
+                    {% if total_correcoes > 0 %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>0-2 (Reprovado)</span>
+                            <span class="badge bg-danger">{{ dist_notas.0 }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-danger" style="width: {% widthratio dist_notas.0 total_correcoes 100 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>2-4 (Reprovado)</span>
+                            <span class="badge bg-warning" style="background-color: #fb8c00!important;">{{ dist_notas.1 }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-warning" style="width: {% widthratio dist_notas.1 total_correcoes 100 %}%; background-color: #fb8c00;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>4-6 (Recuperação)</span>
+                            <span class="badge bg-warning">{{ dist_notas.2 }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-warning" style="width: {% widthratio dist_notas.2 total_correcoes 100 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>6-8 (Bom)</span>
+                            <span class="badge bg-success">{{ dist_notas.3 }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: {% widthratio dist_notas.3 total_correcoes 100 %}%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>8-10 (Excelente)</span>
+                            <span class="badge bg-primary">{{ dist_notas.4 }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-primary" style="width: {% widthratio dist_notas.4 total_correcoes 100 %}%"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-center py-4 text-muted">Sem dados suficientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

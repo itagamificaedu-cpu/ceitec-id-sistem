@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Início - Correção Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i class="fas fa-home"></i> Bem-vindo, {{ request.user.get_first_name|default:request.user.username }}!
+            </h2>
+            <p class="text-muted">Sistema de Correção Automática de Provas</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Avaliações</h6>
+                            <h2 class="mb-0 fw-bold">{{ total_avaliacoes }}</h2>
+                        </div>
+                        <div class="fs-1" style="color: #1a237e;">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stat-card success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Correções</h6>
+                            <h2 class="mb-0 fw-bold">{{ total_correcoes }}</h2>
+                        </div>
+                        <div class="fs-1" style="color: #43a047;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stat-card warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Ações Rápidas</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'criar_avaliacao' %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Nova Avaliação
+                                </a>
+                                <a href="{% url 'correcao' %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-camera"></i> Corrigir Individual
+                                </a>
+                                <a href="{% url 'correcao_lote' %}" class="btn btn-sm btn-dark">
+                                    <i class="fas fa-qrcode"></i> Correção em Lote
+                                </a>
+                            </div>
+                        </div>
+                        <div class="fs-1" style="color: #fdd835;">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stat-card error h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Ajuda</h6>
+                            <p class="small mb-0">Precisa de ajuda?</p>
+                            <a href="#" class="small">Ver tutorial</a>
+                        </div>
+                        <div class="fs-1" style="color: #e53935;">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clock"></i> Avaliações Recentes
+                </div>
+                <div class="card-body">
+                    {% if avaliacoes_recentes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Disciplina</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for avaliacao in avaliacoes_recentes %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'detalhar_avaliacao' avaliacao.id %}">
+                                            {{ avaliacao.titulo }}
+                                        </a>
+                                    </td>
+                                    <td>{{ avaliacao.disciplina }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ avaliacao.status }}">
+                                            {{ avaliacao.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">
+                        Nenhuma avaliação encontrada.<br>
+                        <a href="{% url 'criar_avaliacao' %}">Criar primeira avaliação</a>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-history"></i> Últimas Correções
+                </div>
+                <div class="card-body">
+                    {% if ultimas_correcoes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Avaliação</th>
+                                    <th>Nota</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resultado in ultimas_correcoes %}
+                                <tr>
+                                    <td>{{ resultado.aluno_nome }}</td>
+                                    <td>{{ resultado.avaliacao.titulo|truncatechars:20 }}</td>
+                                    <td>
+                                        <span class="badge {% if resultado.nota >= 7 %}bg-success{% elif resultado.nota >= 5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ resultado.nota }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">
+                        Nenhuma correção realizada ainda.<br>
+                        <a href="{% url 'correcao' %}">Realizar primeira correção</a>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
