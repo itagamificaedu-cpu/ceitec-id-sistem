@@ -7,10 +7,12 @@ const STORAGE_KEY = 'portal_aluno'
 
 const TABS = [
   { id: 'inicio',      label: 'INÍCIO',      emoji: '🏠' },
+  { id: 'missoes',     label: 'MISSÕES',     emoji: '🎯' },
+  { id: 'loja',        label: 'LOJA',        emoji: '💰' },
+  { id: 'avaliacoes',  label: 'AVALIAÇÕES',  emoji: '🧪' },
   { id: 'notas',       label: 'NOTAS',       emoji: '📝' },
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
   { id: 'ocorrencias', label: 'OCORRÊNCIAS', emoji: '⚠️' },
-  { id: 'itagame',     label: 'ITAGAME',     emoji: '🎮' },
   { id: 'repositorio', label: 'MATERIAIS',   emoji: '📚' },
 ]
 
@@ -227,10 +229,12 @@ function Portal({ dados, aba, setAba, onSair, onItagame }) {
       {/* Conteúdo */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '28px 16px' }}>
         {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} />}
+        {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
+        {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
+        {aba === 'avaliacoes'  && <AbaAvaliacoes provas={itagame.provas || []} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
-        {aba === 'itagame'     && <AbaItagame itagame={itagame} onItagame={onItagame} />}
         {aba === 'repositorio' && <AbaRepositorio repositorio={repositorio} />}
       </div>
     </div>
@@ -590,6 +594,307 @@ function AbaItagame({ itagame, onItagame }) {
       {!itagame.missoes?.length && !itagame.recados?.length && !itagame.historico?.length && (
         <Vazio emoji="🎮" texto="Nenhuma atividade ainda. Jogue para ganhar XP!" />
       )}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   REPOSITÓRIO
+══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   MISSÕES — envio de prova com link ou PDF
+══════════════════════════════════════════ */
+function AbaMissoes({ missoes, codigoAluno, onAtualizar }) {
+  const [modal, setModal] = useState(null) // missão selecionada
+  const [form, setForm] = useState({ descricao: '', link: '', arquivo: null })
+  const [enviando, setEnviando] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  if (!missoes.length) return <Vazio emoji="🎯" texto="Nenhuma missão ativa no momento." />
+
+  async function enviar(e) {
+    e.preventDefault()
+    setEnviando(true); setMsg('')
+    try {
+      const fd = new FormData()
+      fd.append('codigo', codigoAluno)
+      fd.append('missao_id', modal.id)
+      fd.append('descricao', form.descricao)
+      if (form.link) fd.append('link_entrega', form.link)
+      if (form.arquivo) fd.append('arquivo', form.arquivo)
+
+      const res = await fetch('/api/portal/missao-entrega', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.erro)
+      setMsg('✅ ' + data.mensagem)
+      onAtualizar()
+      setTimeout(() => { setModal(null); setMsg(''); setForm({ descricao: '', link: '', arquivo: null }) }, 2000)
+    } catch (err) { setMsg('❌ ' + err.message) }
+    finally { setEnviando(false) }
+  }
+
+  const statusCfg = {
+    pendente:  { cor: N.amarelo, label: '⏳ AGUARDANDO PROFESSOR', emoji: '⏳' },
+    aprovada:  { cor: N.verde,   label: '✅ APROVADA',             emoji: '✅' },
+    reprovada: { cor: N.rosa,    label: '❌ REPROVADA',            emoji: '❌' },
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ background: `${N.amarelo}18`, border: `1px solid ${N.amarelo}33`, borderRadius: 16, padding: '12px 18px', color: '#BBBBCC', fontSize: 13, lineHeight: 1.6 }}>
+        💡 Conclua uma missão, depois clique em <strong style={{ color: N.amarelo }}>ENVIAR</strong> para registrar. Você pode enviar um link ou um PDF como prova.
+      </div>
+
+      {missoes.map((m, i) => {
+        const entrega = m.entrega
+        const scfg = entrega ? statusCfg[entrega.status] || statusCfg.pendente : null
+        return (
+          <NeonCard key={i} cor={scfg ? scfg.cor : N.amarelo}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>🎯 {m.titulo}</div>
+                {m.descricao && <div style={{ color: '#BBBBCC', fontSize: 14, marginTop: 6, lineHeight: 1.5 }}>{m.descricao}</div>}
+                {entrega?.observacao && (
+                  <div style={{ background: `${scfg.cor}15`, border: `1px solid ${scfg.cor}33`, borderRadius: 10, padding: '8px 12px', marginTop: 10, fontSize: 13, color: scfg.cor }}>
+                    💬 Professor: {entrega.observacao}
+                  </div>
+                )}
+                {entrega?.xp_concedido > 0 && (
+                  <div style={{ color: N.verde, fontWeight: 900, fontSize: 15, marginTop: 8 }}>+{entrega.xp_concedido} XP concedidos!</div>
+                )}
+              </div>
+              <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                <div style={{ background: `${N.amarelo}18`, border: `1px solid ${N.amarelo}44`, borderRadius: 14, padding: '8px 14px', marginBottom: 8 }}>
+                  <div style={{ fontWeight: 900, fontSize: 20, color: N.amarelo, textShadow: `0 0 12px ${N.amarelo}` }}>+{m.xp_recompensa}</div>
+                  <div style={{ fontSize: 10, color: N.cinza, fontWeight: 800 }}>XP</div>
+                </div>
+                {entrega ? (
+                  <Tag label={scfg.label} cor={scfg.cor} />
+                ) : (
+                  <button onClick={() => { setModal(m); setForm({ descricao: '', link: '', arquivo: null }); setMsg('') }} style={{
+                    background: `linear-gradient(135deg, ${N.amarelo}, ${N.laranja})`,
+                    border: 'none', borderRadius: 12, padding: '8px 16px',
+                    color: '#000', fontWeight: 900, fontSize: 13, cursor: 'pointer',
+                    boxShadow: `0 0 16px ${N.amarelo}44`,
+                  }}>📤 ENVIAR</button>
+                )}
+              </div>
+            </div>
+          </NeonCard>
+        )
+      })}
+
+      {/* Modal de envio */}
+      {modal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: '#12121A', border: `2px solid ${N.amarelo}44`, borderRadius: 24, padding: 28, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ fontWeight: 900, fontSize: 18, color: N.amarelo, marginBottom: 6 }}>📤 Enviar Missão</div>
+            <div style={{ color: '#BBBBCC', fontSize: 14, marginBottom: 20 }}>🎯 {modal.titulo}</div>
+
+            <form onSubmit={enviar} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ color: N.cinza, fontSize: 12, fontWeight: 800, letterSpacing: 1, display: 'block', marginBottom: 6 }}>DESCRIÇÃO / ONDE REALIZEI</label>
+                <textarea
+                  value={form.descricao}
+                  onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+                  placeholder="Ex: Fiz o exercício de robótica com Arduino, montei o circuito e testei..."
+                  rows={4}
+                  style={{ width: '100%', boxSizing: 'border-box', background: '#0A0A0F', border: `1px solid ${N.borda}`, borderRadius: 14, padding: '12px 16px', color: N.branco, fontSize: 14, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                />
+              </div>
+              <div>
+                <label style={{ color: N.cinza, fontSize: 12, fontWeight: 800, letterSpacing: 1, display: 'block', marginBottom: 6 }}>LINK (opcional)</label>
+                <input
+                  type="url"
+                  value={form.link}
+                  onChange={e => setForm(f => ({ ...f, link: e.target.value }))}
+                  placeholder="https://..."
+                  style={{ width: '100%', boxSizing: 'border-box', background: '#0A0A0F', border: `1px solid ${N.borda}`, borderRadius: 14, padding: '12px 16px', color: N.branco, fontSize: 14, outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ color: N.cinza, fontSize: 12, fontWeight: 800, letterSpacing: 1, display: 'block', marginBottom: 6 }}>PDF / COMPROVANTE (opcional, máx 10MB)</label>
+                <label style={{
+                  display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
+                  background: '#0A0A0F', border: `2px dashed ${form.arquivo ? N.verde : N.borda}`,
+                  borderRadius: 14, padding: '16px 20px',
+                }}>
+                  <span style={{ fontSize: 28 }}>{form.arquivo ? '✅' : '📎'}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: form.arquivo ? N.verde : N.branco }}>
+                      {form.arquivo ? form.arquivo.name : 'Clique para selecionar PDF'}
+                    </div>
+                    {form.arquivo && <div style={{ color: N.cinza, fontSize: 12, marginTop: 2 }}>{(form.arquivo.size / 1024 / 1024).toFixed(2)} MB</div>}
+                  </div>
+                  <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => setForm(f => ({ ...f, arquivo: e.target.files[0] || null }))} />
+                </label>
+              </div>
+
+              {msg && (
+                <div style={{ background: msg.startsWith('✅') ? `${N.verde}15` : `${N.rosa}15`, border: `1px solid ${msg.startsWith('✅') ? N.verde : N.rosa}44`, borderRadius: 12, padding: '10px 14px', color: msg.startsWith('✅') ? N.verde : '#FF8FA3', fontSize: 14, fontWeight: 700 }}>
+                  {msg}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+                <button type="button" onClick={() => setModal(null)} style={{ flex: 1, background: 'transparent', border: `1px solid ${N.borda}`, borderRadius: 14, padding: '14px', color: N.cinza, fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+                  Cancelar
+                </button>
+                <button type="submit" disabled={enviando || (!form.descricao && !form.link && !form.arquivo)} style={{
+                  flex: 2, background: enviando ? '#1E1E2E' : `linear-gradient(135deg, ${N.amarelo}, ${N.laranja})`,
+                  border: 'none', borderRadius: 14, padding: '14px',
+                  color: enviando ? N.cinza : '#000', fontWeight: 900, fontSize: 15, cursor: enviando ? 'default' : 'pointer',
+                  boxShadow: enviando ? 'none' : `0 0 30px ${N.amarelo}44`,
+                }}>
+                  {enviando ? '⏳ Enviando...' : '🚀 ENVIAR MISSÃO'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   LOJA — resgatar itens com XP
+══════════════════════════════════════════ */
+function AbaLoja({ loja, xpTotal, codigoAluno, onAtualizar }) {
+  const [xpAtual, setXpAtual] = useState(xpTotal)
+  const [resgates, setResgates] = useState({})
+  const [carregando, setCarregando] = useState(null)
+  const [msg, setMsg] = useState('')
+
+  useEffect(() => {
+    const mapa = {}
+    loja.forEach(item => { if (item.resgate) mapa[item.id] = item.resgate })
+    setResgates(mapa)
+  }, [loja])
+
+  if (!loja.length) return <Vazio emoji="💰" texto="Nenhum item na loja ainda." />
+
+  async function resgatar(item) {
+    if (xpAtual < item.custo_xp) { setMsg(`❌ XP insuficiente! Você tem ${xpAtual} XP, precisa de ${item.custo_xp} XP.`); setTimeout(() => setMsg(''), 3000); return }
+    setCarregando(item.id)
+    try {
+      const res = await fetch('/api/portal/resgatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: codigoAluno, item_id: item.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.erro)
+      setXpAtual(data.xp_total)
+      setResgates(r => ({ ...r, [item.id]: { status: 'pendente' } }))
+      onAtualizar(data.xp_total)
+      setMsg(`✅ ${data.mensagem}`)
+      setTimeout(() => setMsg(''), 4000)
+    } catch (err) { setMsg('❌ ' + err.message); setTimeout(() => setMsg(''), 4000) }
+    finally { setCarregando(null) }
+  }
+
+  const statusCfg = {
+    pendente:  { cor: N.amarelo, label: '⏳ AGUARDANDO ENTREGA' },
+    entregue:  { cor: N.verde,   label: '✅ ENTREGUE' },
+    cancelado: { cor: N.rosa,    label: '❌ CANCELADO' },
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* XP disponível */}
+      <div style={{ background: `${N.amarelo}18`, border: `2px solid ${N.amarelo}44`, borderRadius: 20, padding: '18px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: `0 0 30px ${N.amarelo}22` }}>
+        <div>
+          <div style={{ color: N.cinza, fontSize: 12, fontWeight: 800, letterSpacing: 1 }}>SEU XP DISPONÍVEL</div>
+          <div style={{ fontSize: 46, fontWeight: 900, color: N.amarelo, textShadow: `0 0 20px ${N.amarelo}`, lineHeight: 1 }}>{xpAtual.toLocaleString()}</div>
+        </div>
+        <div style={{ fontSize: 46 }}>⚡</div>
+      </div>
+
+      {msg && (
+        <div style={{ background: msg.startsWith('✅') ? `${N.verde}15` : `${N.rosa}15`, border: `1px solid ${msg.startsWith('✅') ? N.verde : N.rosa}44`, borderRadius: 14, padding: '12px 18px', color: msg.startsWith('✅') ? N.verde : '#FF8FA3', fontSize: 14, fontWeight: 700 }}>
+          {msg}
+        </div>
+      )}
+
+      {loja.map((item, i) => {
+        const resgate = resgates[item.id]
+        const scfg = resgate ? statusCfg[resgate.status] || statusCfg.pendente : null
+        const podeResgatar = !resgate && xpAtual >= item.custo_xp
+        return (
+          <NeonCard key={i} cor={scfg ? scfg.cor : podeResgatar ? N.verde : N.cinza}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{
+                width: 60, height: 60, borderRadius: 18, flexShrink: 0,
+                background: `${N.amarelo}18`, border: `2px solid ${N.amarelo}33`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
+              }}>{item.icone}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>{item.nome}</div>
+                {item.descricao && <div style={{ color: '#BBBBCC', fontSize: 13, marginTop: 4 }}>{item.descricao}</div>}
+                <div style={{ marginTop: 8 }}>
+                  <Tag label={`${item.custo_xp} XP`} cor={N.amarelo} />
+                </div>
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                {resgate ? (
+                  <Tag label={scfg.label} cor={scfg.cor} />
+                ) : (
+                  <button
+                    onClick={() => resgatar(item)}
+                    disabled={carregando === item.id || !podeResgatar}
+                    style={{
+                      background: podeResgatar ? `linear-gradient(135deg, ${N.verde}, #00CC66)` : '#1E1E2E',
+                      border: `1px solid ${podeResgatar ? N.verde : N.borda}`,
+                      borderRadius: 12, padding: '10px 16px',
+                      color: podeResgatar ? '#000' : N.cinza,
+                      fontWeight: 900, fontSize: 13, cursor: podeResgatar ? 'pointer' : 'default',
+                      boxShadow: podeResgatar ? `0 0 20px ${N.verde}44` : 'none',
+                    }}
+                  >
+                    {carregando === item.id ? '⏳' : podeResgatar ? '💰 RESGATAR' : '🔒 XP INSUF.'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </NeonCard>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   AVALIAÇÕES — provas do itagame
+══════════════════════════════════════════ */
+function AbaAvaliacoes({ provas }) {
+  if (!provas.length) return <Vazio emoji="🧪" texto="Nenhuma avaliação disponível ainda." />
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ background: `${N.azul}18`, border: `1px solid ${N.azul}33`, borderRadius: 16, padding: '12px 18px', color: '#BBBBCC', fontSize: 13, lineHeight: 1.6 }}>
+        🧪 Avaliações gamificadas criadas pelo professor. Use o <strong style={{ color: N.azul }}>código de acesso</strong> no ItagGame para participar.
+      </div>
+      {provas.map((p, i) => (
+        <NeonCard key={i} cor={N.azul}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>🧪 {p.titulo}</div>
+              {p.disciplina && <div style={{ marginTop: 8 }}><Tag label={p.disciplina} cor={N.azul} /></div>}
+              {p.descricao && <div style={{ color: '#BBBBCC', fontSize: 14, marginTop: 8, lineHeight: 1.5 }}>{p.descricao}</div>}
+              <div style={{ color: N.cinza, fontSize: 12, fontWeight: 700, marginTop: 8 }}>{fmt(p.criado_em)}</div>
+            </div>
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              {p.codigo_acesso && (
+                <div style={{ background: '#0A0A0F', border: `2px solid ${N.azul}66`, borderRadius: 14, padding: '10px 16px', marginBottom: 8 }}>
+                  <div style={{ color: N.cinza, fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>CÓDIGO</div>
+                  <div style={{ fontWeight: 900, fontSize: 22, color: N.azul, letterSpacing: 4, textShadow: `0 0 12px ${N.azul}` }}>{p.codigo_acesso}</div>
+                </div>
+              )}
+              <Tag label={`+${p.xp_por_acerto} XP/acerto`} cor={N.amarelo} />
+            </div>
+          </div>
+        </NeonCard>
+      ))}
     </div>
   )
 }
