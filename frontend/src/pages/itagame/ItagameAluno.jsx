@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../../api'
 
 const ITAGAME_URL = 'https://projetoitagame.pythonanywhere.com'
@@ -47,6 +48,7 @@ function Glow({ cor, size = 300, top, left, right, bottom, opacity = 0.12 }) {
 }
 
 export default function ItagameAluno() {
+  const [searchParams] = useSearchParams()
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
@@ -55,20 +57,27 @@ export default function ItagameAluno() {
 
   useEffect(() => {
     const s = localStorage.getItem(STORAGE_KEY)
-    if (s) { try { setDados(JSON.parse(s)) } catch (_) {} }
+    if (s) { try { setDados(JSON.parse(s)); return } catch (_) {} }
+    // Auto-login se ?codigo= vier na URL (link da carteirinha)
+    const codParam = searchParams.get('codigo')
+    if (codParam) loginComCodigo(codParam.trim().toUpperCase())
   }, [])
 
-  async function entrar(e) {
-    e.preventDefault()
-    const cod = codigo.trim().toUpperCase()
-    if (!cod) return
-    setErro(''); setCarregando(true)
+  async function loginComCodigo(cod) {
+    setCarregando(true); setErro('')
     try {
       const { data } = await api.get(`/portal/${cod}`)
       setDados(data)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch { setErro('Código não encontrado. Verifique sua carteirinha.') }
     finally { setCarregando(false) }
+  }
+
+  async function entrar(e) {
+    e.preventDefault()
+    const cod = codigo.trim().toUpperCase()
+    if (!cod) return
+    await loginComCodigo(cod)
   }
 
   function sair() {
