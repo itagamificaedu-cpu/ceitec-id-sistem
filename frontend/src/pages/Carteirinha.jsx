@@ -32,7 +32,6 @@ function CardCarteirinha({ aluno, qrcode }) {
       flexShrink: 0,
       boxSizing: 'border-box',
     }}>
-      {/* Decoração */}
       <div style={{ position: 'absolute', top: '-15px', right: '-15px', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(245,166,35,0.12)' }} />
       <div style={{ position: 'absolute', bottom: '40px', left: '-20px', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
 
@@ -48,7 +47,7 @@ function CardCarteirinha({ aluno, qrcode }) {
         </div>
       </div>
 
-      {/* Foto centralizada */}
+      {/* Foto */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }}>
         <div style={{
           width: '68px', height: '68px',
@@ -130,6 +129,9 @@ export default function Carteirinha() {
   const [aluno, setAluno] = useState(null)
   const [qrcode, setQrcode] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [turmaAlunos, setTurmaAlunos] = useState([])
+  const [turmaQrcodes, setTurmaQrcodes] = useState({})
+  const [carregandoTurma, setCarregandoTurma] = useState(false)
   const carteirinhaRef = useRef()
 
   useEffect(() => {
@@ -141,10 +143,25 @@ export default function Carteirinha() {
         ])
         setAluno(alunoRes.data)
         setQrcode(qrRes.data.qrcode)
+
+        // Carrega todos os alunos da turma para impressão
+        setCarregandoTurma(true)
+        const todosRes = await api.get('/alunos')
+        const colegas = todosRes.data.filter(a => a.turma === alunoRes.data.turma && a.ativo !== 0)
+        setTurmaAlunos(colegas)
+
+        // Busca QR code de cada aluno da turma em paralelo
+        const qrResults = await Promise.all(
+          colegas.map(a => api.get(`/alunos/${a.id}/qrcode`).then(r => ({ id: a.id, qr: r.data.qrcode })).catch(() => ({ id: a.id, qr: '' })))
+        )
+        const qrMap = {}
+        qrResults.forEach(({ id: aid, qr }) => { qrMap[aid] = qr })
+        setTurmaQrcodes(qrMap)
       } catch (err) {
         console.error(err)
       } finally {
         setCarregando(false)
+        setCarregandoTurma(false)
       }
     }
     carregar()
@@ -160,7 +177,6 @@ export default function Carteirinha() {
         backgroundColor: null,
       })
       const imgData = canvas.toDataURL('image/png')
-      // Portrait 54mm × 86mm (padrão crachá)
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [54, 86] })
       pdf.addImage(imgData, 'PNG', 0, 0, 54, 86)
       pdf.save(`carteirinha_${aluno.codigo}.pdf`)
@@ -215,8 +231,8 @@ export default function Carteirinha() {
               <button onClick={baixarPDF} className="btn-primary">
                 📥 Baixar PDF (crachá)
               </button>
-              <button onClick={imprimir} className="btn-secondary">
-                🖨️ Imprimir (8 por folha)
+              <button onClick={imprimir} disabled={carregandoTurma} className="btn-secondary">
+                {carregandoTurma ? '⏳ Carregando turma...' : `🖨️ Imprimir turma (${turmaAlunos.length} alunos)`}
               </button>
               <Link to={`/alunos/${id}/editar`} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                 ✏️ Editar Aluno
@@ -226,74 +242,54 @@ export default function Carteirinha() {
             {/* Info */}
             <div className="bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm">
               <div><span className="text-gray-500">Código:</span> <span className="font-mono font-bold text-secondary">{aluno.codigo}</span></div>
-              <div><span className="text-gray-500">Matrícula:</span> {(() => { const d = new Date(aluno.data_matricula); return aluno.data_matricula && !isNaN(d) ? d.toLocaleDateString('pt-BR') : '—' })()}</div>
               <div><span className="text-gray-500">Turma:</span> {aluno.turma}</div>
-              <div><span className="text-gray-500">Curso:</span> {aluno.curso}</div>
-              <div className="col-span-2">
-                <span className="text-gray-500">ItagGame:</span>{' '}
-                <a href={`https://${ITAGAME_LINK}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono text-xs">
-                  {ITAGAME_LINK}
-                </a>
+              <div className="col-span-2 text-xs text-gray-400">
+                Ao clicar em Imprimir, serão impressas as carteirinhas de todos os {turmaAlunos.length} alunos da turma {aluno.turma}, 8 por folha A4.
               </div>
             </div>
           </div>
         </main>
       </div>
 
-      {/* Grade de impressão — fora do wrapper principal */}
+      {/* Grade de impressão — 1 card por aluno da turma, 8 por folha */}
       <div className="print-grid">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="print-card-slot">
-            <CardCarteirinha aluno={aluno} qrcode={qrcode} />
+        {turmaAlunos.map(a => (
+          <div key={a.id} className="print-card-slot">
+            <CardCarteirinha aluno={a} qrcode={turmaQrcodes[a.id] || ''} />
           </div>
         ))}
       </div>
 
       <style>{`
         @media screen {
-          .print-grid { display: none; }
+          .print-grid { display: none !important; }
         }
 
         @media print {
           @page { size: A4 portrait; margin: 8mm; }
 
-          /* Força impressão de cores e fundos */
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            color-adjust: exact !important;
-          }
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
 
-          /* Esconde tudo da tela */
-          body > * { display: none !important; }
           .tela-normal { display: none !important; }
 
-          /* Mostra apenas a grade */
           .print-grid {
             display: grid !important;
-            grid-template-columns: repeat(3, 54mm);
-            gap: 4mm;
+            grid-template-columns: repeat(3, auto);
+            gap: 5mm;
             justify-content: center;
             align-content: start;
-            width: 100%;
-            margin: 0;
-            padding: 0;
           }
 
           .print-card-slot {
-            width: 54mm;
-            height: 86mm;
-            overflow: hidden;
             break-inside: avoid;
             page-break-inside: avoid;
             display: block !important;
           }
 
-          /* 54mm = 204px e 86mm = 325px a 96dpi — encaixa perfeitamente */
-          .print-card-slot > div {
-            width: 204px !important;
-            height: 322px !important;
-            display: flex !important;
+          .print-card-slot * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>
