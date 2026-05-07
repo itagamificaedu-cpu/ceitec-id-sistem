@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerar QR Code - {{ avaliacao.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="fas fa-qrcode"></i> Gerar QR Code
+        </h2>
+        <a href="{% url 'detalhar_avaliacao' avaliacao.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle"></i>
+        <strong>{{ avaliacao.titulo }}</strong> - {{ avaliacao.disciplina }} - {{ avaliacao.turma }}
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-cog"></i> Configurar QR Code
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tipo de Token</label>
+                            <select name="tipo" id="tipo_token" class="form-select" onchange="toggleAluno()">
+                                <option value="prova">Token da Prova (acesso geral - todos os alunos)</option>
+                                <option value="aluno_individual">Token Individual por Aluno</option>
+                            </select>
+                            <small class="text-muted">Token geral: qualquer aluno da turma pode usar. Token individual: vinculado a um aluno específico.</small>
+                        </div>
+
+                        <div class="mb-3" id="aluno_select" style="display: none;">
+                            <label class="form-label fw-bold">Selecionar Aluno</label>
+                            <select name="aluno_id" class="form-select">
+                                <option value="">-- Selecione --</option>
+                                {% for aluno in alunos %}
+                                <option value="{{ aluno.id }}">{{ aluno.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Validade (horas)</label>
+                            <input type="number" name="horas_validade" class="form-control" value="24" min="1" max="720">
+                            <small class="text-muted">Tempo que o QR Code ficará válido.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Máximo de Usos</label>
+                            <input type="number" name="max_usos" class="form-control" value="0" min="0">
+                            <small class="text-muted">0 = ilimitado. Para token individual, recomenda-se 1.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-qrcode"></i> Gerar QR Code
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-history"></i> Tokens Existentes
+                </div>
+                <div class="card-body">
+                    {% if tokens_existentes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Aluno</th>
+                                    <th>Usos</th>
+                                    <th>Status</th>
+                                    <th>Expira em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for token in tokens_existentes %}
+                                <tr>
+                                    <td>
+                                        {% if token.tipo == 'aluno' %}
+                                        <span class="badge bg-info">Individual</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Geral</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ token.aluno.nome|default:"-" }}</td>
+                                    <td>{{ token.usos_count }}/{{ token.max_usos|default:"∞" }}</td>
+                                    <td>
+                                        {% if token.status == 'ativo' %}
+                                        <span class="badge bg-success">Ativo</span>
+                                        {% elif token.status == 'expirado' %}
+                                        <span class="badge bg-warning">Expirado</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Revogado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small>{{ token.expira_em|date:"d/m/Y H:i" }}</small></td>
+                                    <td>
+                                        {% if token.status == 'ativo' %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="revogarToken('{{ token.id }}')" title="Revogar">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Nenhum token gerado ainda.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAluno() {
+    const tipo = document.getElementById('tipo_token').value;
+    const select = document.getElementById('aluno_select');
+    select.style.display = tipo === 'aluno_individual' ? 'block' : 'none';
+}
+
+function revogarToken(tokenId) {
+    if (confirm('Revogar este token? Ele não poderá mais ser usado.')) {
+        fetch(`/api/revogar-token/${tokenId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.sucesso) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

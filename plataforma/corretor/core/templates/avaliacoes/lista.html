@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Avaliações - Correção Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="fas fa-file-alt"></i> Minhas Avaliações
+        </h2>
+        <a href="{% url 'criar_avaliacao' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nova Avaliação
+        </a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="rascunho" {% if filtro_status == 'rascunho' %}selected{% endif %}>Rascunho</option>
+                        <option value="publicada" {% if filtro_status == 'publicada' %}selected{% endif %}>Publicada</option>
+                        <option value="encerrada" {% if filtro_status == 'encerrada' %}selected{% endif %}>Encerrada</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Disciplina</label>
+                    <input type="text" name="disciplina" class="form-control" value="{{ filtro_disciplina }}" placeholder="Filtrar por disciplina">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if avaliacoes %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Instituição</th>
+                            <th>Disciplina</th>
+                            <th>Série/Turma</th>
+                            <th>Questões</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for avaliacao in avaliacoes %}
+                        <tr>
+                            <td class="fw-bold">
+                                <a href="{% url 'detalhar_avaliacao' avaliacao.id %}" class="text-decoration-none">
+                                    {{ avaliacao.titulo }}
+                                </a>
+                                {% if avaliacao.is_manual %}
+                                <span class="badge bg-info ms-1" style="font-size: 0.7rem;">Manual</span>
+                                {% endif %}
+                                {% if avaliacao.is_online %}
+                                <span class="badge bg-success ms-1" style="font-size: 0.7rem;">Online</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ avaliacao.instituicao }}</td>
+                            <td>{{ avaliacao.disciplina }}</td>
+                            <td>{{ avaliacao.serie }}º {{ avaliacao.turma }}</td>
+                            <td class="text-center">{{ avaliacao.numero_questoes }}</td>
+                            <td>
+                                {% if avaliacao.status == 'publicada' %}
+                                <span class="badge bg-primary">Publicada</span>
+                                {% elif avaliacao.status == 'rascunho' %}
+                                <span class="badge bg-secondary">Rascunho</span>
+                                {% else %}
+                                <span class="badge bg-danger">Encerrada</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group shadow-sm">
+                                    <a href="/avaliacoes/{{ avaliacao.id }}/" class="btn btn-sm btn-outline-primary" title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/avaliacoes/{{ avaliacao.id }}/editar/" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/avaliacoes/{{ avaliacao.id }}/pdf/" class="btn btn-sm btn-outline-success" title="Baixar PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    {% if avaliacao.is_online %}
+                                    <a href="{% url 'prova_online' avaliacao.id %}" class="btn btn-sm btn-info text-white" title="Abrir Prova Online" target="_blank">
+                                        <i class="fas fa-globe"></i>
+                                    </a>
+                                    <a href="{% url 'gerar_qr_prova' avaliacao.id %}" class="btn btn-sm btn-success" title="Gerar QR Code">
+                                        <i class="fas fa-qrcode"></i>
+                                    </a>
+                                    <a href="{% url 'modo_sala' avaliacao.id %}" class="btn btn-sm btn-outline-success" title="Modo Sala">
+                                        <i class="fas fa-users"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{% url 'correcao_lote' %}?av={{ avaliacao.id }}" class="btn btn-sm btn-outline-dark" title="Corrigir Lote">
+                                        <i class="fas fa-barcode"></i>
+                                    </a>
+                                    <a href="/avaliacoes/{{ avaliacao.id }}/excluir/" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+            <h4>Nenhuma avaliação encontrada</h4>
+            <p class="text-muted">Crie sua primeira avaliação para começar</p>
+            <a href="{% url 'criar_avaliacao' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Criar Avaliação
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if avaliacoes.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if avaliacoes.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ avaliacoes.previous_page_number }}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_disciplina %}&disciplina={{ filtro_disciplina }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in avaliacoes.paginator.page_range %}
+            <li class="page-item {% if avaliacoes.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_disciplina %}&disciplina={{ filtro_disciplina }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if avaliacoes.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ avaliacoes.next_page_number }}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_disciplina %}&disciplina={{ filtro_disciplina }}{% endif %}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+        <p class="text-center text-muted small">
+            Página {{ avaliacoes.number }} de {{ avaliacoes.paginator.num_pages }} ({{ avaliacoes.paginator.count }} avaliações)
+        </p>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

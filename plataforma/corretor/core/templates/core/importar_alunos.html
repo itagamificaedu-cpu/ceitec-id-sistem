@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar Alunos - Correção Online{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-file-csv"></i> Importar Alunos</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Arquivo CSV</label>
+                        <input type="file" name="arquivo" class="form-control" accept=".csv" required>
+                        <div class="form-text">
+                            O arquivo deve ter as colunas: <strong>Nome, Turma</strong>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload"></i> Processar Arquivo
+                    </button>
+                </form>
+                
+                <hr>
+                <h6>Modelo de CSV:</h6>
+                <pre class="bg-light p-2 small">Nome,Turma
+João Silva,9º Ano A
+Maria Souza,8º Ano B</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 text-primary"><i class="fas fa-user-graduate"></i> Alunos Cadastrados</h5>
+                <form method="get" class="d-flex gap-2" id="filterForm">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                        <input type="text" name="q_nome" id="filterNome" class="form-control" placeholder="Filtrar por nome..." value="{{ q_nome }}">
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="fas fa-filter"></i></span>
+                        <input type="text" name="q_turma" id="filterTurma" class="form-control" placeholder="Filtrar por turma..." value="{{ q_turma }}">
+                    </div>
+                    {% if q_nome or q_turma %}
+                    <a href="{% url 'importar_alunos' %}" class="btn btn-sm btn-outline-secondary" title="Limpar Filtros">
+                        <i class="fas fa-times"></i>
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+            <div class="card-body">
+                {% if alunos %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Turma</th>
+                                <th>Data Cadastro</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aluno in alunos %}
+                            <tr>
+                                <td>{{ aluno.nome }}</td>
+                                <td>{{ aluno.turma }}</td>
+                                <td>{{ aluno.data_cadastro|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users-slash fa-4x text-muted mb-3"></i>
+                    <p>Nenhum aluno cadastrado ainda.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    function filterTable() {
+        const nome = $('#filterNome').val().toLowerCase();
+        const turma = $('#filterTurma').val().toLowerCase();
+        
+        $('table tbody tr').each(function() {
+            if ($(this).attr('id') === 'no-results-msg') return;
+            
+            const rowNome = $(this).find('td:nth-child(1)').text().toLowerCase();
+            const rowTurma = $(this).find('td:nth-child(2)').text().toLowerCase();
+            
+            if (rowNome.includes(nome) && rowTurma.includes(turma)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        const visibleRows = $('table tbody tr:visible').not('#no-results-msg').length;
+        if (visibleRows === 0 && $('table tbody tr').not('#no-results-msg').length > 0) {
+            if ($('#no-results-msg').length === 0) {
+                $('table tbody').append('<tr id="no-results-msg"><td colspan="3" class="text-center py-4 text-muted"><i class="fas fa-search-minus fa-2x mb-2 d-block"></i>Nenhum aluno encontrado com esses filtros.</td></tr>');
+            }
+        } else {
+            $('#no-results-msg').remove();
+        }
+    }
+
+    $('#filterNome, #filterTurma').on('keyup input', function() {
+        filterTable();
+    });
+
+    if ($('#filterNome').val() || $('#filterTurma').val()) {
+        filterTable();
+    }
+});
+</script>
+{% endblock %}

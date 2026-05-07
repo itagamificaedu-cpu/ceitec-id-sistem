@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultado da Correção - Correção Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i class="fas fa-check-circle text-success"></i> Correção Concluída
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="display-1 fw-bold text-primary">{{ resultado.nota }}</div>
+                    <p class="text-muted">Nota Final</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="display-4 text-success">{{ detalhes.acertos }}</div>
+                            <p class="text-muted">Acertos</p>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-4 text-danger">{{ detalhes.erros }}</div>
+                            <p class="text-muted">Erros</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-user"></i> Informações do Aluno
+                </div>
+                <div class="card-body">
+                    <p><strong>Nome:</strong> {{ resultado.aluno_nome }}</p>
+                    <p><strong>Turma:</strong> {{ resultado.turma }}</p>
+                    <p><strong>Avaliação:</strong> {{ resultado.avaliacao.titulo }}</p>
+                    <p><strong>Data:</strong> {{ resultado.data_correcao|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list"></i> Detalhamento das Respostas
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Questão</th>
+                            <th class="text-center">Resposta do Aluno</th>
+                            <th class="text-center">Gabarito</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for questao, info in detalhes.respostas.items %}
+                        <tr class="{% if info.status == 'correto' %}table-success{% elif info.status == 'errado' %}table-danger{% endif %}">
+                            <td class="text-center">{{ questao }}</td>
+                            <td class="text-center">{{ info.marcada }}</td>
+                            <td class="text-center">{{ info.correta }}</td>
+                            <td class="text-center">
+                                {% if info.status == 'correto' %}
+                                <span class="badge bg-success"><i class="fas fa-check"></i> Correto</span>
+                                {% elif info.status == 'errado' %}
+                                <span class="badge bg-danger"><i class="fas fa-times"></i> Errado</span>
+                                {% else %}
+                                <span class="badge bg-secondary"><i class="fas fa-minus"></i> Não marcada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'correcao' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nova Correção
+        </a>
+        <a href="{% url 'lista_resultados' %}" class="btn btn-secondary">
+            <i class="fas fa-list"></i> Ver Resultados
+        </a>
+    </div>
+</div>
+{% endblock %}

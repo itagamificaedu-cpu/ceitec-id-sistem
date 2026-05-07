@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Corrigir Prova - Correção Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i class="fas fa-camera"></i> Corrigir Prova
+            </h2>
+            <p class="text-muted">Envie a foto do gabarito preenchido pelo aluno</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-upload"></i> Enviar Gabarito
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="correcaoForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Selecione a Avaliação *</label>
+                            <select name="avaliacao" class="form-select" required id="id_avaliacao">
+                                <option value="">-- Selecione --</option>
+                                {% for avaliacao in avaliacoes %}
+                                <option value="{{ avaliacao.id }}">{{ avaliacao.titulo }} - {{ avaliacao.disciplina }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome do Aluno *</label>
+                                <input type="text" name="aluno_nome" class="form-control" list="lista_nomes" required placeholder="Nome completo">
+                                <datalist id="lista_nomes">
+                                    {% for aluno in alunos_sugeridos %}
+                                    <option value="{{ aluno.nome }}">
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Turma *</label>
+                                <input type="text" name="turma" class="form-control" list="lista_turmas" required placeholder="Ex: 1º A">
+                                <datalist id="lista_turmas">
+                                    {% for turma in turmas_sugeridas %}
+                                    <option value="{{ turma }}">
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Foto do Gabarito *</label>
+                            <input type="file" name="imagem" class="form-control" accept="image/*" required capture="environment">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> Tire uma foto clara do gabarito preenchido
+                            </small>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="btnCorrigir">
+                                <i class="fas fa-check"></i> Corrigir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-lightbulb"></i> Dicas para uma boa leitura
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Boa iluminação:</strong> Tire a foto em local bem iluminado
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Posição:</strong> Mantenha o gabarito reto, sem inclinação
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Contraste:</strong> O fundo deve ser claro e as marcas escuras
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>QR Code:</strong> O QR Code deve estar visível e legível
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Formato:</strong> Formatos aceitos: JPG, PNG, JPEG
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="fas fa-mobile-alt"></i> Como usar no celular
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li class="mb-2">Selecione a avaliação correta</li>
+                        <li class="mb-2">Informe o nome do aluno e turma</li>
+                        <li class="mb-2">Toque em "Escolher arquivo" ou no ícone de câmera</li>
+                        <li class="mb-2">Tire foto do gabarito preenchido</li>
+                        <li class="mb-2">Toque em "Corrigir" e aguarde o resultado</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('correcaoForm').addEventListener('submit', function(e) {
+    const btn = document.getElementById('btnCorrigir');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processando...';
+});
+</script>
+{% endblock %}

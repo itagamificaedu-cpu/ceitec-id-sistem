@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ avaliacao.titulo }} - Detalhes{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-file-alt text-primary"></i> {{ avaliacao.titulo }}</h2>
+        <div class="d-flex gap-2">
+            <a href="{% url 'gerar_pdf_gabarito' avaliacao.id %}" class="btn btn-outline-primary" title="Imprimir Folhas em Branco">
+                <i class="fas fa-file-pdf"></i> PDF Simples
+            </a>
+            <a href="{% url 'gerar_pdf_gabarito' avaliacao.id %}?nominal=1" class="btn btn-success shadow-sm" title="Imprimir Nominal para Turma Toda">
+                <i class="fas fa-users-class"></i> PDF DA TURMA (NOMINAL)
+            </a>
+            <a href="{% url 'editar_avaliacao' avaliacao.id %}" class="btn btn-info text-white">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    {% if total > 0 %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ total }}</h3>
+                    <small>Total Corrigidos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ media|floatformat:1 }}</h3>
+                    <small>Média da Turma</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ maior|floatformat:1 }}</h3>
+                    <small>Maior Nota</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ menor|floatformat:1 }}</h3>
+                    <small>Menor Nota</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Infos -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3"><h6 class="mb-0 fw-bold">Informações</h6></div>
+                <div class="card-body">
+                    <p><strong>Turma:</strong> {{ avaliacao.turma }}</p>
+                    <p><strong>Disciplina:</strong> {{ avaliacao.disciplina }}</p>
+                    <p><strong>Questões:</strong> {{ avaliacao.numero_questoes }}</p>
+                    <p><strong>Data:</strong> {{ avaliacao.data_criacao|date:"d/m/Y" }}</p>
+                    <hr>
+                    <div class="text-center">
+                        <a href="{% url 'correcao_lote' %}" class="btn btn-success w-100 py-2">
+                            <i class="fas fa-camera"></i> INICIAR CORREÇÃO EM LOTE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista da Turma e Atendimento Individual -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between">
+                    <h6 class="mb-0 fw-bold">Alunos da Turma - Impressão Individual</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome do Aluno</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in alunos %}
+                            <tr>
+                                <td class="fw-bold">{{ a.nome }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'gerar_pdf_gabarito' avaliacao.id %}?aluno_id={{ a.id }}" class="btn btn-sm btn-outline-success" title="Imprimir só este gabarito">
+                                        <i class="fas fa-print"></i> Folha Individual
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center py-4 text-muted">
+                                    Nenhum aluno cadastrado nesta turma. <br>
+                                    <a href="{% url 'importar_alunos' %}" class="small text-primary">Importar alunos agora</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

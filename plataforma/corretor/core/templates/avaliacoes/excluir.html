@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Avaliação - Correção Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão
+                </div>
+                <div class="card-body">
+                    <p>Tem certeza que deseja excluir a avaliação abaixo?</p>
+                    
+                    <div class="alert alert-warning">
+                        <strong>{{ avaliacao.titulo }}</strong><br>
+                        <small>{{ avaliacao.disciplina }} - {{ avaliacao.serie }}º {{ avaliacao.turma }}</small>
+                    </div>
+                    
+                    <p class="text-muted">Esta ação não pode ser desfeita. Todos os resultados associados também serão excluídos.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'lista_avaliacoes' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
