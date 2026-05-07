@@ -113,6 +113,15 @@ router.post('/importar', async (req, res) => {
       if (t) { turma_nome = t.nome; curso_nome = t.curso; }
     }
 
+    const REPLACEMENT = '�';
+    const corrompidos = alunos.filter(a => (a.nome || '').includes(REPLACEMENT));
+    if (corrompidos.length > 0) {
+      return res.status(400).json({
+        erro: `${corrompidos.length} nome(s) com caracteres inválidos (?). Salve o CSV como "CSV UTF-8" no Excel e importe novamente.`,
+        nomes_corrompidos: corrompidos.map(a => a.nome)
+      });
+    }
+
     const importados = [], erros = [];
     for (const a of alunos) {
       try {
