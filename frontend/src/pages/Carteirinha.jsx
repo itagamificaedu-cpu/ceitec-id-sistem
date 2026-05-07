@@ -257,15 +257,22 @@ export default function Carteirinha() {
         @media print {
           @page { size: A4 portrait; margin: 8mm; }
 
+          /* Força impressão de cores e fundos */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+
           /* Esconde tudo da tela */
+          body > * { display: none !important; }
           .tela-normal { display: none !important; }
 
-          /* Mostra grade de impressão */
+          /* Mostra apenas a grade */
           .print-grid {
             display: grid !important;
             grid-template-columns: repeat(3, 54mm);
-            grid-template-rows: repeat(3, 86mm);
-            gap: 3mm;
+            gap: 4mm;
             justify-content: center;
             align-content: start;
             width: 100%;
@@ -279,13 +286,14 @@ export default function Carteirinha() {
             overflow: hidden;
             break-inside: avoid;
             page-break-inside: avoid;
+            display: block !important;
           }
 
-          /* Garante que o card preenche o slot */
+          /* 54mm = 204px e 86mm = 325px a 96dpi — encaixa perfeitamente */
           .print-card-slot > div {
-            width: 54mm !important;
-            height: 86mm !important;
-            transform-origin: top left;
+            width: 204px !important;
+            height: 322px !important;
+            display: flex !important;
           }
         }
       `}</style>
