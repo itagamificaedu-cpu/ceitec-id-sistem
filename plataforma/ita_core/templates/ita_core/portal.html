@@ -1,0 +1,253 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Portal — ITA Tecnologia Educacional{% endblock %}
+
+{% block extra_css %}
+<style>
+  .portal-header {
+    margin-bottom: 2rem;
+  }
+  .portal-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--azul-escuro);
+    margin-bottom: .25rem;
+  }
+  .portal-header p {
+    color: var(--muted);
+    font-size: .9rem;
+  }
+  /* GRADE DE MÓDULOS */
+  .modulos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .modulo-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .modulo-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(30,58,95,.15); }
+  .modulo-card.bloqueado { opacity: .65; }
+  .modulo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--cor-mod);
+    border-radius: 20px 20px 0 0;
+  }
+  .modulo-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+  .modulo-nome {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .modulo-desc {
+    color: var(--muted);
+    font-size: .875rem;
+    line-height: 1.5;
+    flex: 1;
+  }
+  .btn-acessar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    background: var(--cor-mod);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: .65rem 1.25rem;
+    font-weight: 800;
+    font-size: .875rem;
+    transition: filter .2s, transform .2s;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-acessar:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-bloqueado {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    background: var(--border);
+    color: var(--muted);
+    border-radius: 10px;
+    padding: .65rem 1.25rem;
+    font-weight: 700;
+    font-size: .875rem;
+    cursor: not-allowed;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+  }
+  /* BANNER DE PLANO */
+  .plano-banner {
+    background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+    color: #fff;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .plano-banner h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    margin-bottom: .25rem;
+  }
+  .plano-banner p { color: rgba(255,255,255,.65); font-size: .875rem; }
+  .btn-upgrade {
+    background: var(--laranja);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .6rem 1.25rem;
+    font-weight: 800;
+    font-size: .875rem;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+    transition: filter .2s;
+  }
+  .btn-upgrade:hover { filter: brightness(1.1); }
+  /* MODAL UPGRADE */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.ativo { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+  }
+  .modal-box h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: .75rem; color: var(--azul-escuro); }
+  .modal-box p { color: var(--muted); margin-bottom: 1.5rem; font-size: .9rem; line-height: 1.6; }
+  .modal-btns { display: flex; gap: .75rem; justify-content: center; }
+  .modal-btns a, .modal-btns button {
+    padding: .6rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: .875rem;
+    cursor: pointer;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    text-decoration: none;
+  }
+  .modal-btns .btn-primary { background: var(--laranja); color: #fff; }
+  .modal-btns .btn-secondary { background: var(--border); color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+  <a href="/portal/">🏠 Início</a> <span>/ Portal</span>
+</div>
+
+{% if dias_restantes is not None and dias_restantes <= 5 and dias_restantes > 0 %}
+<div style="background:rgba(239,83,80,.1);border:1px solid rgba(239,83,80,.3);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;">
+  <span style="font-size:1.5rem">⚠️</span>
+  <div>
+    <strong style="color:#c62828">Seu plano vence em {{ dias_restantes }} dia{{ dias_restantes|pluralize:"s" }}!</strong>
+    <p style="color:var(--muted);font-size:.875rem;margin-top:.2rem">Renove agora para não perder o acesso às ferramentas.</p>
+  </div>
+  <a href="/assinar/{{ plano_atual }}/" class="btn-upgrade" style="margin-left:auto">Renovar →</a>
+</div>
+{% endif %}
+
+<div class="portal-header">
+  <h1>Olá, {{ usuario.first_name|default:usuario.email }} 👋</h1>
+  <p>Selecione um módulo para começar. Plano atual: <strong>{{ plano_atual|upper }}</strong></p>
+</div>
+
+{% if plano_atual != 'escola' %}
+<div class="plano-banner">
+  <div>
+    <h2>🚀 Desbloqueie o Plano Escola</h2>
+    <p>Relatórios avançados, gestão de múltiplos professores, IA ilimitada e suporte WhatsApp.</p>
+  </div>
+  <a href="/assinar/escola/" class="btn-upgrade">Fazer Upgrade — R$99/mês</a>
+</div>
+{% endif %}
+
+<div class="modulos-grid">
+  {% for mod in modulos %}
+  <div class="modulo-card {% if not mod.liberado %}bloqueado{% endif %}"
+       style="--cor-mod: {{ mod.cor }}">
+    <div class="modulo-icon">{{ mod.icon }}</div>
+    <div>
+      <div class="modulo-nome">{{ mod.nome }}</div>
+      <div class="modulo-desc">{{ mod.descricao }}</div>
+    </div>
+    {% if mod.liberado %}
+      <a href="{{ mod.url }}" class="btn-acessar">Acessar →</a>
+    {% else %}
+      <button class="btn-bloqueado"
+              onclick="abrirUpgrade('{{ mod.nome }}')">
+        🔒 Plano Escola
+      </button>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- MODAL UPGRADE -->
+<div class="modal-overlay" id="modal-upgrade">
+  <div class="modal-box">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">🔒</div>
+    <h3>Módulo exclusivo do Plano Escola</h3>
+    <p id="modal-msg">Este recurso está disponível no Plano Escola (R$99/mês).<br>
+      Faça upgrade e libere acesso completo para toda sua equipe.</p>
+    <div class="modal-btns">
+      <a href="/assinar/escola/" class="btn-primary">Ver Plano Escola</a>
+      <button class="btn-secondary" onclick="fecharUpgrade()">Agora não</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function abrirUpgrade(nome) {
+    document.getElementById('modal-msg').innerHTML =
+      `<strong>${nome}</strong> está disponível apenas no Plano Escola (R$99/mês).<br>Faça upgrade e libere acesso completo.`;
+    document.getElementById('modal-upgrade').classList.add('ativo');
+  }
+  function fecharUpgrade() {
+    document.getElementById('modal-upgrade').classList.remove('ativo');
+  }
+  document.getElementById('modal-upgrade').addEventListener('click', e => {
+    if (e.target === e.currentTarget) fecharUpgrade();
+  });
+</script>
+{% endblock %}

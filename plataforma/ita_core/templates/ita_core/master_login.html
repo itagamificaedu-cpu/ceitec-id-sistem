@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso Administrativo — ITA Tecnologia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #060e1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 40%, rgba(245,166,35,.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 70%, rgba(30,58,95,.4) 0%, transparent 50%),
+                  #060e1a;
+    }
+    .card {
+      position: relative;
+      z-index: 10;
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(245,166,35,.2);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 80px rgba(0,0,0,.7), 0 0 60px rgba(245,166,35,.05);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .logo .icon { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+    .logo h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 2px;
+    }
+    .logo h1 span { color: #f5a623; }
+    .logo p {
+      color: rgba(255,255,255,.4);
+      font-size: .75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: .4rem;
+    }
+    .badge-master {
+      display: inline-block;
+      background: rgba(245,166,35,.15);
+      border: 1px solid rgba(245,166,35,.3);
+      color: #f5a623;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: .25rem .75rem;
+      border-radius: 20px;
+      margin-top: .75rem;
+    }
+    label {
+      display: block;
+      color: rgba(255,255,255,.5);
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: .4rem;
+    }
+    input[type="password"] {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(245,166,35,.2);
+      border-radius: 12px;
+      padding: .85rem 1rem;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s;
+      letter-spacing: 2px;
+    }
+    input[type="password"]:focus { border-color: #f5a623; }
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, #f5a623, #d4891f);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 1.25rem;
+      transition: filter .2s, transform .2s;
+      box-shadow: 0 4px 20px rgba(245,166,35,.35);
+    }
+    .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .erro {
+      background: rgba(239,83,80,.15);
+      border: 1px solid rgba(239,83,80,.4);
+      color: #ff8a80;
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      font-size: .85rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .back-link a {
+      color: rgba(255,255,255,.25);
+      font-size: .75rem;
+      text-decoration: none;
+    }
+    .back-link a:hover { color: rgba(255,255,255,.5); }
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="card">
+  <div class="logo">
+    <span class="icon">🔑</span>
+    <h1>ITA <span>TECH</span></h1>
+    <p>Painel Administrativo</p>
+    <span class="badge-master">Acesso Restrito</span>
+  </div>
+
+  {% if erro %}
+    <div class="erro">⚠️ {{ erro }}</div>
+  {% endif %}
+
+  <form method="POST">
+    {% csrf_token %}
+    <label for="senha">Senha Master</label>
+    <input type="password" id="senha" name="senha"
+           placeholder="••••••••••••"
+           autocomplete="current-password" autofocus>
+    <button type="submit" class="btn">🔓 Entrar</button>
+  </form>
+
+  <div class="back-link">
+    <a href="/login/">← Voltar para o portal</a>
+  </div>
+</div>
+</body>
+</html>

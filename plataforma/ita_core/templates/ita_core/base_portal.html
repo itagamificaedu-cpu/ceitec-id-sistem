@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ITA Tecnologia Educacional{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --azul-escuro:   #1e3a5f;
+      --azul-medio:    #2c5282;
+      --azul-claro:    #4a90d9;
+      --laranja:       #f5a623;
+      --laranja-escuro:#d4891f;
+      --verde-ok:      #00d68f;
+      --vermelho-err:  #ef5350;
+      --amarelo-aviso: #ffca28;
+      --bg:            #f0f4fc;
+      --card:          #ffffff;
+      --text:          #1a1a2e;
+      --muted:         #6b7a99;
+      --border:        #e2e8f0;
+      --shadow:        0 4px 24px rgba(30,58,95,.10);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    /* TOPBAR */
+    .topbar {
+      background: var(--azul-escuro);
+      padding: 0 1.5rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,.3);
+    }
+    .topbar-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      color: #fff;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      text-decoration: none;
+    }
+    .topbar-logo span { color: var(--laranja); }
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      font-size: .85rem;
+      color: rgba(255,255,255,.7);
+    }
+    .badge-plano {
+      background: var(--laranja);
+      color: #fff;
+      font-weight: 800;
+      font-size: .7rem;
+      padding: .2rem .6rem;
+      border-radius: 20px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .badge-plano.trial { background: #78909c; }
+    .badge-plano.escola { background: var(--verde-ok); color: #0a2e1a; }
+    .dias-restantes {
+      background: rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: .2rem .6rem;
+      font-size: .75rem;
+      color: rgba(255,255,255,.8);
+    }
+    .dias-restantes.critico { color: var(--vermelho-err); background: rgba(239,83,80,.2); }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .btn-logout {
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.85);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: .35rem 1rem;
+      border-radius: 8px;
+      font-size: .8rem;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-logout:hover { background: rgba(239,83,80,.3); color: #fff; border-color: var(--vermelho-err); }
+    /* CONTEÚDO PRINCIPAL */
+    .main-content { padding: 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    /* TOAST */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .toast {
+      padding: .75rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: .875rem;
+      animation: slideIn .3s ease;
+      max-width: 360px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    }
+    .toast.success { background: var(--verde-ok); color: #0a2e1a; }
+    .toast.error   { background: var(--vermelho-err); color: #fff; }
+    .toast.warning { background: var(--amarelo-aviso); color: #3a2000; }
+    .toast.info    { background: var(--azul-claro); color: #fff; }
+    @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: .8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    .footer a { color: var(--azul-claro); text-decoration: none; }
+    /* BREADCRUMB */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+    .breadcrumb a { color: var(--azul-claro); text-decoration: none; }
+    .breadcrumb span { color: var(--text); font-weight: 700; }
+    @media (max-width: 640px) {
+      .topbar-center { display: none; }
+      .topbar-logo { font-size: .85rem; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a href="/portal/" class="topbar-logo">⚡ ITA <span>TECNOLOGIA</span></a>
+
+  <div class="topbar-center">
+    {% if usuario %}
+      <span>{{ usuario.first_name|default:usuario.email }}</span>
+      {% if plano_atual %}
+        <span class="badge-plano {% if plano_atual == 'escola' %}escola{% elif plano_atual == 'trial' %}trial{% endif %}">
+          {% if plano_atual == 'escola' %}🏫 ESCOLA{% elif plano_atual == 'professor' %}🎓 PROFESSOR{% else %}🔖 TRIAL{% endif %}
+        </span>
+      {% endif %}
+      {% if dias_restantes is not None %}
+        <span class="dias-restantes {% if dias_restantes <= 5 %}critico{% endif %}">
+          {% if dias_restantes > 0 %}{{ dias_restantes }} dia{{ dias_restantes|pluralize:"s" }} restante{{ dias_restantes|pluralize:"s" }}{% else %}Expirado{% endif %}
+        </span>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="topbar-right">
+    {% if usuario %}
+      <a href="/logout/" class="btn-logout">Sair</a>
+    {% endif %}
+  </div>
+</header>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toasts">
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="toast {{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<!-- CONTEÚDO -->
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>ITA TECNOLOGIA EDUCACIONAL &copy; 2025 &mdash;
+     <a href="https://wa.me/5588999999999" target="_blank">Suporte WhatsApp</a> &middot;
+     <a href="#">Termos de Uso</a>
+  </p>
+  <p style="margin-top:.25rem">Desenvolvido por Prof. Genezio &middot; CEITEC Itapipoca-CE</p>
+</footer>
+
+<script>
+  // Auto-remove toasts
+  setTimeout(() => {
+    document.querySelectorAll('.toast').forEach(t => {
+      t.style.transition = 'opacity .5s';
+      t.style.opacity = '0';
+      setTimeout(() => t.remove(), 500);
+    });
+  }, 4000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
