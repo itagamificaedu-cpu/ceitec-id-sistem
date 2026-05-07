@@ -41,6 +41,7 @@ export default function Alunos() {
   const [preview, setPreview] = useState([])
   const [importando, setImportando] = useState(false)
   const [resultadoImport, setResultadoImport] = useState(null)
+  const [avisoEncoding, setAvisoEncoding] = useState(false)
   const fileRef = useRef()
 
   async function carregar() {
@@ -75,12 +76,16 @@ export default function Alunos() {
       if (texto.includes('�')) {
         const reader2 = new FileReader()
         reader2.onload = ev2 => {
-          setPreview(parseCSV(ev2.target.result))
+          const parsed = parseCSV(ev2.target.result)
+          setPreview(parsed)
+          setAvisoEncoding(parsed.some(r => (r.nome || '').includes('�')))
           setResultadoImport(null)
         }
         reader2.readAsText(file, 'ISO-8859-1')
       } else {
-        setPreview(parseCSV(texto))
+        const parsed = parseCSV(texto)
+        setPreview(parsed)
+        setAvisoEncoding(parsed.some(r => (r.nome || '').includes('�')))
         setResultadoImport(null)
       }
     }
@@ -116,10 +121,13 @@ export default function Alunos() {
       <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <h1 className="text-2xl font-bold text-textMain">Alunos</h1>
+            <div className="flex items-center gap-3">
+              <Link to="/dashboard" className="text-gray-500 hover:text-primary text-sm">← Voltar</Link>
+              <h1 className="text-2xl font-bold text-textMain">Alunos</h1>
+            </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => exportarCSV(filtrados)} className="btn-secondary text-sm">📥 Exportar CSV</button>
-              <button onClick={() => { setModalImport(true); setPreview([]); setResultadoImport(null) }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">📤 Importar CSV</button>
+              <button onClick={() => { setModalImport(true); setPreview([]); setResultadoImport(null); setAvisoEncoding(false) }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">📤 Importar CSV</button>
               <Link to="/alunos/novo" className="btn-primary text-sm">+ Cadastrar</Link>
             </div>
           </div>
@@ -175,6 +183,16 @@ export default function Alunos() {
                 <p><span className="font-mono bg-white px-1 rounded">nome</span> (obrigatório) • <span className="font-mono bg-white px-1 rounded">turma</span> • <span className="font-mono bg-white px-1 rounded">curso</span> • <span className="font-mono bg-white px-1 rounded">email_responsavel</span> • <span className="font-mono bg-white px-1 rounded">telefone_responsavel</span></p>
               </div>
 
+              {/* Aviso de encoding corrompido */}
+              {avisoEncoding && (
+                <div className="bg-red-50 border border-red-400 rounded-lg p-3 text-sm text-red-800">
+                  <p className="font-bold mb-1">⚠️ Nomes com caracteres inválidos detectados!</p>
+                  <p>O arquivo CSV contém caracteres corrompidos nos nomes dos alunos (aparecem como "?").</p>
+                  <p className="mt-1 font-medium">Como corrigir: No Excel, vá em <strong>Arquivo → Salvar Como</strong> → escolha o formato <strong>"CSV UTF-8 (delimitado por vírgula)"</strong> e importe novamente.</p>
+                  <p className="mt-1 text-xs text-red-600">A importação foi bloqueada para evitar salvar nomes incorretos no sistema.</p>
+                </div>
+              )}
+
               {/* Preview */}
               {preview.length > 0 && !resultadoImport && (
                 <div className="border rounded-lg overflow-hidden">
@@ -211,7 +229,7 @@ export default function Alunos() {
             </div>
 
             <div className="p-4 border-t flex gap-2 justify-end">
-              {!resultadoImport && preview.length > 0 && (
+              {!resultadoImport && preview.length > 0 && !avisoEncoding && (
                 <button onClick={importar} disabled={importando} className="btn-primary">
                   {importando ? '⏳ Importando...' : `✅ Importar ${preview.length} aluno(s)`}
                 </button>
