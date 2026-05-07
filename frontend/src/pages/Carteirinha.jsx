@@ -22,7 +22,7 @@ function CardCarteirinha({ aluno, qrcode }) {
       height: '322px',
       background: 'linear-gradient(170deg, #1e3a5f 0%, #0f2040 55%, #1a1040 100%)',
       borderRadius: '12px',
-      padding: '14px 12px',
+      padding: '11px 12px',
       boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
       display: 'flex',
       flexDirection: 'column',
@@ -37,7 +37,7 @@ function CardCarteirinha({ aluno, qrcode }) {
       <div style={{ position: 'absolute', bottom: '40px', left: '-20px', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <div>
           <div style={{ color: '#f5a623', fontSize: '14px', fontWeight: '900', letterSpacing: '1px', lineHeight: 1 }}>CEITEC</div>
           <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '6.5px', letterSpacing: '1.5px', marginTop: '1px' }}>INOVAÇÃO E TECNOLOGIA</div>
@@ -49,9 +49,9 @@ function CardCarteirinha({ aluno, qrcode }) {
       </div>
 
       {/* Foto centralizada */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '9px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }}>
         <div style={{
-          width: '72px', height: '72px',
+          width: '68px', height: '68px',
           borderRadius: '50%',
           background: 'rgba(255,255,255,0.1)',
           border: '3px solid #f5a623',
@@ -61,12 +61,12 @@ function CardCarteirinha({ aluno, qrcode }) {
         }}>
           {aluno.foto_path
             ? <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
-            : <span style={{ fontSize: '30px' }}>👤</span>}
+            : <span style={{ fontSize: '28px' }}>👤</span>}
         </div>
       </div>
 
       {/* Nome e dados */}
-      <div style={{ textAlign: 'center', marginBottom: '9px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '7px' }}>
         <div style={{ color: '#ffffff', fontSize: '10.5px', fontWeight: '700', lineHeight: 1.3, marginBottom: '4px' }}>{aluno.nome}</div>
         <div style={{ color: '#f5a623', fontSize: '12px', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '1px', marginBottom: '3px' }}>{aluno.codigo}</div>
         <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '8px' }}>
@@ -75,15 +75,15 @@ function CardCarteirinha({ aluno, qrcode }) {
       </div>
 
       {/* QR Code */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '6px' }}>
         <div style={{
           background: '#ffffff',
-          padding: '5px',
+          padding: '4px',
           borderRadius: '7px',
-          width: '72px', height: '72px',
+          width: '68px', height: '68px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          {qrcode && <img src={qrcode} alt="QR" style={{ width: '62px', height: '62px' }} />}
+          {qrcode && <img src={qrcode} alt="QR" style={{ width: '60px', height: '60px' }} />}
         </div>
         <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '6.5px', marginTop: '3px', letterSpacing: '0.3px' }}>
           Escaneie para registrar presença
@@ -95,8 +95,8 @@ function CardCarteirinha({ aluno, qrcode }) {
         background: 'rgba(245,166,35,0.13)',
         border: '1px solid rgba(245,166,35,0.35)',
         borderRadius: '7px',
-        padding: '5px 7px',
-        marginBottom: '7px',
+        padding: '4px 7px',
+        marginBottom: '5px',
       }}>
         <div style={{ color: '#f5a623', fontSize: '7.5px', fontWeight: '900', letterSpacing: '0.8px', marginBottom: '2px' }}>
           🎮 ITAGAME — GANHE XP E MOEDAS
@@ -112,7 +112,7 @@ function CardCarteirinha({ aluno, qrcode }) {
       {/* Rodapé */}
       <div style={{
         marginTop: 'auto',
-        paddingTop: '5px',
+        paddingTop: '4px',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         textAlign: 'center',
         color: 'rgba(255,255,255,0.25)',
