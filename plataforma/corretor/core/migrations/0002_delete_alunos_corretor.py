@@ -12,7 +12,7 @@ def deletar_alunos_corretor(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),
+        ('corretor_core', '0001_initial'),
     ]
 
     operations = [
