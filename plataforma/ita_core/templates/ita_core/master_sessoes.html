@@ -1,0 +1,47 @@
+{% extends 'ita_core/base_master.html' %}
+{% block title %}Sessões SSO — Master{% endblock %}
+{% block page_title %}Sessões SSO Ativas{% endblock %}
+
+{% block content %}
+<div class="data-card">
+  <div class="data-card-header">
+    <h2>🔗 Sessões SSO (últimas 100)</h2>
+    <a href="/master/dashboard/" class="btn btn-sm-azul">← Voltar</a>
+  </div>
+
+  {% if sessoes %}
+  <table>
+    <thead>
+      <tr>
+        <th>Usuário</th>
+        <th>Criada em</th>
+        <th>Expira em</th>
+        <th>IP</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessoes %}
+      <tr>
+        <td>{{ s.usuario.email }}</td>
+        <td style="font-size:.8rem">{{ s.criada_em|date:"d/m/Y H:i" }}</td>
+        <td style="font-size:.8rem">{{ s.expira_em|date:"d/m/Y H:i" }}</td>
+        <td style="font-size:.8rem;color:var(--muted)">{{ s.ip_origem|default:"—" }}</td>
+        <td>
+          {% if s.ativa and not s.expirada %}
+            <span class="badge ativo">Ativa</span>
+          {% elif s.expirada %}
+            <span class="badge inadimplente">Expirada</span>
+          {% else %}
+            <span class="badge bloqueado">Inativa</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:2rem;text-align:center;color:var(--muted)">Nenhuma sessão registrada.</div>
+  {% endif %}
+</div>
+{% endblock %}

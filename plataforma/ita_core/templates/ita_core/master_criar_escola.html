@@ -1,0 +1,47 @@
+{% extends 'ita_core/base_master.html' %}
+{% block title %}Nova Escola — Master{% endblock %}
+{% block page_title %}Criar Nova Escola{% endblock %}
+
+{% block content %}
+<div class="data-card" style="max-width:600px">
+  <div class="data-card-header">
+    <h2>➕ Nova Escola</h2>
+    <a href="/master/dashboard/" class="btn btn-sm-azul">← Voltar</a>
+  </div>
+
+  <div style="padding:1.5rem">
+    {% if erro %}<div class="alert alert-erro">{{ erro }}</div>{% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome da Escola *</label>
+          <input type="text" name="nome" placeholder="Ex: EEMTI Dom Pedro II" required>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" placeholder="gestao@escola.com.br" required>
+        </div>
+        <div class="form-group">
+          <label>Senha *</label>
+          <input type="password" name="senha" placeholder="Mínimo 8 caracteres" required>
+        </div>
+        <div class="form-group">
+          <label>Plano</label>
+          <select name="plano">
+            <option value="trial">Trial (7 dias grátis)</option>
+            <option value="professor">Professor — R$29/mês</option>
+            <option value="escola">Escola — R$99/mês</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Dias de Trial</label>
+          <input type="number" name="dias_trial" value="7" min="1" max="90">
+        </div>
+      </div>
+      <button type="submit" class="btn-submit">🏫 Criar Escola</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Gestão de Professores — ITA Tecnologia{% endblock %}
+
+{% block extra_css %}
+<style>
+  .mod-header { margin-bottom:2rem; }
+  .mod-header h1 { font-family:'Orbitron',sans-serif; font-size:1.4rem; font-weight:900; color:var(--azul-escuro); }
+  .mod-header p  { color:var(--muted); font-size:.9rem; margin-top:.25rem; }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; }
+  .panel-head { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .panel-head h2 { font-size:.95rem; font-weight:800; color:var(--azul-escuro); }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:.75rem 1.25rem; font-size:.7rem; font-weight:800; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); }
+  td { padding:.75rem 1.25rem; font-size:.875rem; border-bottom:1px solid var(--border); }
+  tr:last-child td { border-bottom:none; }
+  .avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--azul-claro),#6c63ff); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:.85rem; }
+  .badge-ativo { display:inline-block; padding:.15rem .5rem; border-radius:5px; font-size:.7rem; font-weight:800; background:rgba(0,214,143,.15); color:#00a86b; }
+  .badge-pend  { display:inline-block; padding:.15rem .5rem; border-radius:5px; font-size:.7rem; font-weight:800; background:rgba(255,202,40,.15); color:#c8a000; }
+  .empty { text-align:center; padding:2.5rem; color:var(--muted); font-size:.875rem; }
+  .btn-add { display:inline-flex; align-items:center; gap:.4rem; background:var(--laranja); color:#fff; border-radius:10px; padding:.5rem 1rem; font-size:.8rem; font-weight:800; text-decoration:none; transition:filter .2s; font-family:'Nunito',sans-serif; }
+  .btn-add:hover { filter:brightness(1.1); }
+  .info-card { background:rgba(74,144,217,.07); border:1px solid rgba(74,144,217,.2); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem; font-size:.875rem; color:var(--azul-medio); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/portal/">🏠 Portal</a> <span>/ 👥 Gestão de Professores</span>
+</div>
+
+<div class="mod-header">
+  <h1>👥 Gestão de Professores</h1>
+  <p>Gerencie os professores da sua escola. Cada professor acessa com email e senha próprios.</p>
+</div>
+
+<div class="info-card">
+  ℹ️ Para adicionar professores, acesse o
+  <a href="/django-admin/accounts/professor/add/" style="color:var(--azul-claro);font-weight:700" target="_blank">
+    painel administrativo
+  </a>
+  e crie um usuário com tipo <strong>Professor</strong> vinculado à sua escola.
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <h2>Professores da Escola ({{ professores.count }})</h2>
+    <a href="/django-admin/accounts/professor/add/" class="btn-add" target="_blank">+ Adicionar Professor</a>
+  </div>
+
+  {% if professores %}
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Disciplina</th>
+        <th>Status</th>
+        <th>Desde</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in professores %}
+      <tr>
+        <td>
+          <div class="avatar">{{ p.first_name|first|upper }}{{ p.last_name|first|upper }}</div>
+        </td>
+        <td><strong>{{ p.get_full_name|default:p.email }}</strong></td>
+        <td style="color:var(--muted)">{{ p.email }}</td>
+        <td>{{ p.disciplina|default:"—" }}</td>
+        <td>
+          {% if p.status_aprovacao == 'aprovado' %}
+            <span class="badge-ativo">Ativo</span>
+          {% else %}
+            <span class="badge-pend">{{ p.get_status_aprovacao_display }}</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--muted);font-size:.8rem">{{ p.date_joined|date:"d/m/Y" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    Nenhum professor cadastrado ainda.<br>
+    <a href="/django-admin/accounts/professor/add/" style="color:var(--azul-claro)" target="_blank">
+      Adicionar primeiro professor →
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

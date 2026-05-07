@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Master — ITA Tecnologia{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0a1628;
+      --sidebar: #0f1e38;
+      --card:    #162035;
+      --border:  rgba(255,255,255,.08);
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --laranja: #f5a623;
+      --verde:   #00d68f;
+      --azul:    #4a90d9;
+      --vermelho:#ef5350;
+    }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      flex-shrink: 0;
+    }
+    .sidebar-logo {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo .title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: .9rem;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .sidebar-logo .title span { color: var(--laranja); }
+    .sidebar-logo .badge-master {
+      display: inline-block;
+      background: rgba(245,166,35,.15);
+      color: var(--laranja);
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      margin-top: .3rem;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 0;
+    }
+    .nav-label {
+      padding: .5rem 1.5rem;
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: .5rem;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .65rem 1.5rem;
+      color: rgba(255,255,255,.6);
+      text-decoration: none;
+      font-size: .875rem;
+      font-weight: 600;
+      transition: all .2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-link:hover, .nav-link.ativo {
+      color: #fff;
+      background: rgba(255,255,255,.06);
+      border-left-color: var(--laranja);
+    }
+    .nav-link .icon { font-size: 1.1rem; width: 1.25rem; text-align: center; }
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .btn-logout-master {
+      display: block;
+      text-align: center;
+      background: rgba(239,83,80,.15);
+      color: var(--vermelho);
+      border: 1px solid rgba(239,83,80,.3);
+      border-radius: 8px;
+      padding: .5rem;
+      font-size: .8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-logout-master:hover { background: var(--vermelho); color: #fff; }
+    /* MAIN */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .topbar-master {
+      height: 60px;
+      background: var(--sidebar);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      gap: 1rem;
+    }
+    .topbar-master h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      color: #fff;
+      flex: 1;
+    }
+    .topbar-master .status-badge {
+      background: rgba(0,214,143,.15);
+      color: var(--verde);
+      font-size: .75rem;
+      font-weight: 800;
+      padding: .25rem .75rem;
+      border-radius: 20px;
+      letter-spacing: .5px;
+    }
+    .content {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1200px;
+      width: 100%;
+    }
+    /* CARDS DE STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .stat-card .label {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      margin-bottom: .4rem;
+    }
+    .stat-card .value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .stat-card .value.laranja { color: var(--laranja); }
+    .stat-card .value.verde   { color: var(--verde); }
+    .stat-card .value.vermelho{ color: var(--vermelho); }
+    .stat-card .value.azul    { color: var(--azul); }
+    /* TABLE */
+    .data-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .data-card-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .data-card-header h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: .75rem 1.25rem;
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: .75rem 1.25rem;
+      font-size: .875rem;
+      color: rgba(255,255,255,.8);
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.03); }
+    /* BADGES DE STATUS */
+    .badge {
+      display: inline-block;
+      padding: .2rem .6rem;
+      border-radius: 6px;
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .badge.ativo     { background: rgba(0,214,143,.15); color: var(--verde); }
+    .badge.trial     { background: rgba(74,144,217,.15); color: var(--azul); }
+    .badge.inadimplente { background: rgba(239,83,80,.15); color: var(--vermelho); }
+    .badge.bloqueado { background: rgba(100,116,139,.15); color: var(--muted); }
+    .badge.cancelado { background: rgba(100,116,139,.15); color: var(--muted); }
+    /* BOTÕES */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .35rem .75rem;
+      border-radius: 7px;
+      font-size: .75rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      font-family: 'Nunito', sans-serif;
+      transition: filter .2s;
+    }
+    .btn:hover { filter: brightness(1.15); }
+    .btn-sm-azul   { background: rgba(74,144,217,.2); color: var(--azul); }
+    .btn-sm-laranja{ background: rgba(245,166,35,.2); color: var(--laranja); }
+    .btn-sm-verde  { background: rgba(0,214,143,.2);  color: var(--verde); }
+    .btn-sm-vermelho{background: rgba(239,83,80,.2);  color: var(--vermelho); }
+    /* FORM */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: .75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      margin-bottom: .4rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem 1rem;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--azul);
+    }
+    .form-group select option { background: #1a2a45; }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--laranja), var(--laranja-escuro, #d4891f));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: .75rem 2rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: filter .2s;
+    }
+    .btn-submit:hover { filter: brightness(1.1); }
+    .alert { padding: .75rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: .875rem; }
+    .alert-erro { background: rgba(239,83,80,.15); border: 1px solid rgba(239,83,80,.3); color: #ff8a80; }
+    /* TOAST */
+    .toast-container {
+      position: fixed; top: 70px; right: 1.5rem; z-index: 9999;
+      display: flex; flex-direction: column; gap: .5rem;
+    }
+    .toast {
+      padding: .75rem 1.25rem; border-radius: 10px; font-weight: 700;
+      font-size: .875rem; animation: fadeIn .3s ease; max-width: 360px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    }
+    .toast.success { background: var(--verde); color: #0a2e1a; }
+    .toast.error   { background: var(--vermelho); color: #fff; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:none;} }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">⚡ ITA <span>TECH</span></div>
+    <div class="badge-master">🔑 Master Admin</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-label">Principal</div>
+    <a href="/master/dashboard/" class="nav-link {% if request.path == '/master/dashboard/' %}ativo{% endif %}">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a href="/master/criar-escola/" class="nav-link {% if request.path == '/master/criar-escola/' %}ativo{% endif %}">
+      <span class="icon">➕</span> Nova Escola
+    </a>
+    <a href="/master/sessoes/" class="nav-link {% if request.path == '/master/sessoes/' %}ativo{% endif %}">
+      <span class="icon">🔗</span> Sessões SSO
+    </a>
+
+    <div class="nav-label" style="margin-top:1rem">Sistema</div>
+    <a href="/django-admin/" class="nav-link" target="_blank">
+      <span class="icon">⚙️</span> Admin Django
+    </a>
+    <a href="/portal/" class="nav-link" target="_blank">
+      <span class="icon">🌐</span> Ver Portal
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/master/logout/" class="btn-logout-master">🚪 Sair do Master</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar-master">
+    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+    <span class="status-badge">🟢 Online</span>
+  </header>
+
+  <!-- TOASTS -->
+  <div class="toast-container">
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="toast {{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.toast').forEach(t => {
+      t.style.transition = 'opacity .5s';
+      t.style.opacity = '0';
+      setTimeout(() => t.remove(), 500);
+    });
+  }, 4000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

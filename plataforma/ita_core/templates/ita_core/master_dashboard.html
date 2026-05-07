@@ -1,0 +1,144 @@
+{% extends 'ita_core/base_master.html' %}
+{% block title %}Dashboard Master — ITA Tecnologia{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="label">Total de Escolas</div>
+    <div class="value azul">{{ total_escolas }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Inadimplentes</div>
+    <div class="value vermelho">{{ inadimplentes }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">MRR</div>
+    <div class="value laranja">R${{ mrr|floatformat:0 }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Sessões SSO Ativas</div>
+    <div class="value verde">{{ sessoes_ativas }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Novos este Mês</div>
+    <div class="value">{{ novos_este_mes }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Total Professores</div>
+    <div class="value">{{ total_professores }}</div>
+  </div>
+</div>
+
+<!-- TABELA DE ESCOLAS -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h2>🏫 Escolas Cadastradas</h2>
+    <a href="/master/criar-escola/" class="btn btn-sm-laranja">+ Nova Escola</a>
+  </div>
+
+  {% if escolas %}
+  <table>
+    <thead>
+      <tr>
+        <th>Escola</th>
+        <th>Plano</th>
+        <th>Status</th>
+        <th>Vencimento</th>
+        <th>Dias Restantes</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in escolas %}
+      <tr>
+        <td>
+          <strong style="color:#fff">{{ item.tenant.nome }}</strong><br>
+          <span style="font-size:.75rem;color:var(--muted)">{{ item.tenant.dominio }}</span>
+        </td>
+        <td>
+          {% if item.plano %}
+            <span class="badge {{ item.plano.plano }}">
+              {% if item.plano.plano == 'escola' %}🏫 Escola{% elif item.plano.plano == 'professor' %}🎓 Professor{% else %}🔖 Trial{% endif %}
+            </span>
+          {% else %}
+            <span class="badge bloqueado">Sem plano</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if item.plano %}
+            <span class="badge {{ item.plano.status }}">{{ item.plano.status|upper }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>{% if item.plano %}{{ item.plano.vencimento|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+        <td>
+          {% if item.plano %}
+            <span style="color: {% if item.dias <= 5 %}var(--vermelho){% elif item.dias <= 15 %}var(--laranja){% else %}var(--verde){% endif %}; font-weight:800">
+              {{ item.dias }}d
+            </span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+            <a href="/master/editar/{{ item.tenant.pk }}/" class="btn btn-sm-azul">✏️ Editar</a>
+            <a href="/master/bloquear/{{ item.tenant.pk }}/"
+               class="btn {% if item.plano and item.plano.status == 'bloqueado' %}btn-sm-verde{% else %}btn-sm-vermelho{% endif %}"
+               onclick="return confirm('Confirmar ação?')">
+              {% if item.plano and item.plano.status == 'bloqueado' %}🔓 Desbloquear{% else %}🔒 Bloquear{% endif %}
+            </a>
+            <a href="/master/forcar-logout/{{ item.tenant.pk }}/"
+               class="btn btn-sm-laranja"
+               onclick="return confirm('Forçar logout de todos os usuários desta escola?')">
+              🚪 Logout
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:2rem;text-align:center;color:var(--muted)">
+    Nenhuma escola cadastrada ainda.
+    <a href="/master/criar-escola/" style="color:var(--laranja);font-weight:700">Criar primeira escola →</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- LOGS RECENTES -->
+<div class="data-card">
+  <div class="data-card-header">
+    <h2>📋 Logs Recentes</h2>
+    <a href="/master/sessoes/" class="btn btn-sm-azul">Ver Sessões SSO</a>
+  </div>
+  {% if logs_recentes %}
+  <table>
+    <thead>
+      <tr>
+        <th>Quando</th>
+        <th>Usuário</th>
+        <th>Módulo</th>
+        <th>Ação</th>
+        <th>IP</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs_recentes %}
+      <tr>
+        <td style="font-size:.75rem;white-space:nowrap">{{ log.momento|date:"d/m H:i" }}</td>
+        <td style="font-size:.8rem">{{ log.usuario.email|default:"—" }}</td>
+        <td><span class="badge trial">{{ log.modulo }}</span></td>
+        <td style="font-size:.8rem">{{ log.acao }}</td>
+        <td style="font-size:.75rem;color:var(--muted)">{{ log.ip|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:.875rem">Nenhum log registrado.</div>
+  {% endif %}
+</div>
+
+{% endblock %}
