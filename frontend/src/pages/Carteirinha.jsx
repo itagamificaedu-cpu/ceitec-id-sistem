@@ -192,81 +192,103 @@ export default function Carteirinha() {
   )
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Navbar />
-      <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
-        <div className="max-w-xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 no-print">
-            <Link to="/alunos" className="text-gray-500 hover:text-primary">← Voltar</Link>
-            <h1 className="text-2xl font-bold text-textMain">Carteirinha — {aluno.nome}</h1>
-          </div>
+    <>
+      {/* Tela normal — some na impressão */}
+      <div className="tela-normal flex min-h-screen bg-background">
+        <Navbar />
+        <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
+          <div className="max-w-xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <Link to="/alunos" className="text-gray-500 hover:text-primary">← Voltar</Link>
+              <h1 className="text-2xl font-bold text-textMain">Carteirinha — {aluno.nome}</h1>
+            </div>
 
-          {/* Preview */}
-          <div className="flex justify-center mb-6 no-print">
-            <div ref={carteirinhaRef}>
-              <CardCarteirinha aluno={aluno} qrcode={qrcode} />
+            {/* Preview */}
+            <div className="flex justify-center mb-6">
+              <div ref={carteirinhaRef}>
+                <CardCarteirinha aluno={aluno} qrcode={qrcode} />
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex gap-3 justify-center flex-wrap mb-6">
+              <button onClick={baixarPDF} className="btn-primary">
+                📥 Baixar PDF (crachá)
+              </button>
+              <button onClick={imprimir} className="btn-secondary">
+                🖨️ Imprimir (8 por folha)
+              </button>
+              <Link to={`/alunos/${id}/editar`} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                ✏️ Editar Aluno
+              </Link>
+            </div>
+
+            {/* Info */}
+            <div className="bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm">
+              <div><span className="text-gray-500">Código:</span> <span className="font-mono font-bold text-secondary">{aluno.codigo}</span></div>
+              <div><span className="text-gray-500">Matrícula:</span> {(() => { const d = new Date(aluno.data_matricula); return aluno.data_matricula && !isNaN(d) ? d.toLocaleDateString('pt-BR') : '—' })()}</div>
+              <div><span className="text-gray-500">Turma:</span> {aluno.turma}</div>
+              <div><span className="text-gray-500">Curso:</span> {aluno.curso}</div>
+              <div className="col-span-2">
+                <span className="text-gray-500">ItagGame:</span>{' '}
+                <a href={`https://${ITAGAME_LINK}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono text-xs">
+                  {ITAGAME_LINK}
+                </a>
+              </div>
             </div>
           </div>
+        </main>
+      </div>
 
-          {/* Botões */}
-          <div className="flex gap-3 justify-center flex-wrap mb-6 no-print">
-            <button onClick={baixarPDF} className="btn-primary">
-              📥 Baixar PDF (crachá)
-            </button>
-            <button onClick={imprimir} className="btn-secondary">
-              🖨️ Imprimir (8 por folha)
-            </button>
-            <Link to={`/alunos/${id}/editar`} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-              ✏️ Editar Aluno
-            </Link>
-          </div>
-
-          {/* Info */}
-          <div className="bg-white rounded-xl shadow-md p-4 grid grid-cols-2 gap-3 text-sm no-print">
-            <div><span className="text-gray-500">Código:</span> <span className="font-mono font-bold text-secondary">{aluno.codigo}</span></div>
-            <div><span className="text-gray-500">Matrícula:</span> {(() => { const d = new Date(aluno.data_matricula); return aluno.data_matricula && !isNaN(d) ? d.toLocaleDateString('pt-BR') : '—' })()}</div>
-            <div><span className="text-gray-500">Turma:</span> {aluno.turma}</div>
-            <div><span className="text-gray-500">Curso:</span> {aluno.curso}</div>
-            <div className="col-span-2">
-              <span className="text-gray-500">ItagGame:</span>{' '}
-              <a href={`https://${ITAGAME_LINK}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono text-xs">
-                {ITAGAME_LINK}
-              </a>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Grade de impressão — 8 crachás por folha A4 portrait */}
-      {/* A4 portrait: 3 colunas × 3 linhas = 9 slots (último vazio) */}
+      {/* Grade de impressão — fora do wrapper principal */}
       <div className="print-grid">
         {Array.from({ length: 8 }).map((_, i) => (
-          <CardCarteirinha key={i} aluno={aluno} qrcode={qrcode} />
+          <div key={i} className="print-card-slot">
+            <CardCarteirinha aluno={aluno} qrcode={qrcode} />
+          </div>
         ))}
       </div>
 
       <style>{`
-        @media print {
-          @page { size: A4 portrait; margin: 8mm; }
-          body * { visibility: hidden; }
-          .print-grid, .print-grid * { visibility: visible; }
-          .print-grid {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, auto);
-            gap: 5mm;
-            padding: 0;
-          }
-          .no-print { display: none !important; }
-          nav, aside { display: none !important; }
-        }
         @media screen {
           .print-grid { display: none; }
         }
+
+        @media print {
+          @page { size: A4 portrait; margin: 8mm; }
+
+          /* Esconde tudo da tela */
+          .tela-normal { display: none !important; }
+
+          /* Mostra grade de impressão */
+          .print-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 54mm);
+            grid-template-rows: repeat(3, 86mm);
+            gap: 3mm;
+            justify-content: center;
+            align-content: start;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+
+          .print-card-slot {
+            width: 54mm;
+            height: 86mm;
+            overflow: hidden;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          /* Garante que o card preenche o slot */
+          .print-card-slot > div {
+            width: 54mm !important;
+            height: 86mm !important;
+            transform-origin: top left;
+          }
+        }
       `}</style>
-    </div>
+    </>
   )
 }
