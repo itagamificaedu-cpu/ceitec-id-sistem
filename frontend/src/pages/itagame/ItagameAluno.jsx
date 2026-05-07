@@ -623,13 +623,11 @@ function AbaMissoes({ missoes, codigoAluno, onAtualizar }) {
       if (form.link) fd.append('link_entrega', form.link)
       if (form.arquivo) fd.append('arquivo', form.arquivo)
 
-      const res = await fetch('/api/portal/missao-entrega', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.erro)
+      const { data } = await api.post('/portal/missao-entrega', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       setMsg('✅ ' + data.mensagem)
       onAtualizar()
       setTimeout(() => { setModal(null); setMsg(''); setForm({ descricao: '', link: '', arquivo: null }) }, 2000)
-    } catch (err) { setMsg('❌ ' + err.message) }
+    } catch (err) { setMsg('❌ ' + (err.response?.data?.erro || err.message)) }
     finally { setEnviando(false) }
   }
 
@@ -778,19 +776,13 @@ function AbaLoja({ loja, xpTotal, codigoAluno, onAtualizar }) {
     if (xpAtual < item.custo_xp) { setMsg(`❌ XP insuficiente! Você tem ${xpAtual} XP, precisa de ${item.custo_xp} XP.`); setTimeout(() => setMsg(''), 3000); return }
     setCarregando(item.id)
     try {
-      const res = await fetch('/api/portal/resgatar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ codigo: codigoAluno, item_id: item.id }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.erro)
+      const { data } = await api.post('/portal/resgatar', { codigo: codigoAluno, item_id: item.id })
       setXpAtual(data.xp_total)
       setResgates(r => ({ ...r, [item.id]: { status: 'pendente' } }))
       onAtualizar(data.xp_total)
       setMsg(`✅ ${data.mensagem}`)
       setTimeout(() => setMsg(''), 4000)
-    } catch (err) { setMsg('❌ ' + err.message); setTimeout(() => setMsg(''), 4000) }
+    } catch (err) { setMsg('❌ ' + (err.response?.data?.erro || err.message)); setTimeout(() => setMsg(''), 4000) }
     finally { setCarregando(null) }
   }
 
