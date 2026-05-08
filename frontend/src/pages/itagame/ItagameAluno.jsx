@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useParams } from 'react-router-dom'
 import api from '../../api'
 
 const ITAGAME_URL = 'https://projetoitagame.pythonanywhere.com'
@@ -49,6 +49,7 @@ function Glow({ cor, size = 300, top, left, right, bottom, opacity = 0.12 }) {
 
 export default function ItagameAluno() {
   const [searchParams] = useSearchParams()
+  const { codigo: codigoRota } = useParams()
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
@@ -58,8 +59,8 @@ export default function ItagameAluno() {
   useEffect(() => {
     const s = localStorage.getItem(STORAGE_KEY)
     if (s) { try { setDados(JSON.parse(s)); return } catch (_) {} }
-    // Auto-login se ?codigo= vier na URL (link da carteirinha)
-    const codParam = searchParams.get('codigo')
+    // Auto-login via rota /aluno/:codigo ou query ?codigo=
+    const codParam = codigoRota || searchParams.get('codigo')
     if (codParam) loginComCodigo(codParam.trim().toUpperCase())
   }, [])
 
@@ -179,7 +180,7 @@ function TelaLogin({ codigo, setCodigo, erro, carregando, onSubmit }) {
    PORTAL PRINCIPAL
 ══════════════════════════════════════════ */
 function Portal({ dados, aba, setAba, onSair, onItagame }) {
-  const { aluno, itagame, notas, presencas, ocorrencias, repositorio } = dados
+  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes } = dados
   const nivel = itagame.nivel
   const presentes = presencas.filter(p => p.status === 'presente').length
   const pctPresenca = presencas.length > 0 ? Math.round((presentes / presencas.length) * 100) : null
@@ -240,7 +241,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame }) {
         {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
-        {aba === 'avaliacoes'  && <AbaAvaliacoes provas={itagame.provas || []} />}
+        {aba === 'avaliacoes'  && <AbaAvaliacoes provas={itagame.provas || []} avaliacoesProfessor={avaliacoes || []} codigoAluno={aluno.codigo} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
@@ -866,36 +867,92 @@ function AbaLoja({ loja, xpTotal, codigoAluno, onAtualizar }) {
 }
 
 /* ══════════════════════════════════════════
-   AVALIAÇÕES — provas do itagame
+   AVALIAÇÕES — provas do itagame + avaliações do professor
 ══════════════════════════════════════════ */
-function AbaAvaliacoes({ provas }) {
-  if (!provas.length) return <Vazio emoji="🧪" texto="Nenhuma avaliação disponível ainda." />
+function AbaAvaliacoes({ provas, avaliacoesProfessor = [], codigoAluno }) {
+  const temConteudo = provas.length > 0 || avaliacoesProfessor.length > 0
+  if (!temConteudo) return <Vazio emoji="📝" texto="Nenhuma avaliação disponível ainda." />
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ background: `${N.azul}18`, border: `1px solid ${N.azul}33`, borderRadius: 16, padding: '12px 18px', color: '#BBBBCC', fontSize: 13, lineHeight: 1.6 }}>
-        🧪 Avaliações gamificadas criadas pelo professor. Use o <strong style={{ color: N.azul }}>código de acesso</strong> no ItagGame para participar.
-      </div>
-      {provas.map((p, i) => (
-        <NeonCard key={i} cor={N.azul}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>🧪 {p.titulo}</div>
-              {p.disciplina && <div style={{ marginTop: 8 }}><Tag label={p.disciplina} cor={N.azul} /></div>}
-              {p.descricao && <div style={{ color: '#BBBBCC', fontSize: 14, marginTop: 8, lineHeight: 1.5 }}>{p.descricao}</div>}
-              <div style={{ color: N.cinza, fontSize: 12, fontWeight: 700, marginTop: 8 }}>{fmt(p.criado_em)}</div>
-            </div>
-            <div style={{ textAlign: 'center', flexShrink: 0 }}>
-              {p.codigo_acesso && (
-                <div style={{ background: '#0A0A0F', border: `2px solid ${N.azul}66`, borderRadius: 14, padding: '10px 16px', marginBottom: 8 }}>
-                  <div style={{ color: N.cinza, fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>CÓDIGO</div>
-                  <div style={{ fontWeight: 900, fontSize: 22, color: N.azul, letterSpacing: 4, textShadow: `0 0 12px ${N.azul}` }}>{p.codigo_acesso}</div>
-                </div>
-              )}
-              <Tag label={`+${p.xp_por_acerto} XP/acerto`} cor={N.amarelo} />
-            </div>
+
+      {/* Avaliações criadas pelo professor na plataforma */}
+      {avaliacoesProfessor.length > 0 && (
+        <>
+          <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>
+            Avaliações da Plataforma
           </div>
-        </NeonCard>
-      ))}
+          {avaliacoesProfessor.map((av) => {
+            const respondida = av.ja_respondeu
+            return (
+              <a
+                key={av.id}
+                href={`/responder/${av.id}/${codigoAluno}`}
+                style={{ textDecoration: 'none' }}
+              >
+                <NeonCard cor={respondida ? N.verde : N.laranja}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 900, fontSize: 15, color: N.branco }}>
+                        {respondida ? '✅' : '📝'} {av.titulo}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                        {av.disciplina && <Tag label={av.disciplina} cor={N.azul} />}
+                        <Tag label={`${av.total_questoes} questões`} cor={N.cinza} />
+                        {av.total_pontos && <Tag label={`${av.total_pontos} pts`} cor={N.amarelo} />}
+                      </div>
+                      {av.data_aplicacao && (
+                        <div style={{ color: N.cinza, fontSize: 11, marginTop: 6 }}>
+                          📅 {new Date(av.data_aplicacao).toLocaleDateString('pt-BR')}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                      {respondida
+                        ? <div style={{ color: N.verde, fontWeight: 900, fontSize: 13 }}>Ver gabarito →</div>
+                        : <div style={{ background: N.laranja, color: '#000', fontWeight: 900, fontSize: 12, padding: '6px 14px', borderRadius: 20 }}>Responder →</div>
+                      }
+                    </div>
+                  </div>
+                </NeonCard>
+              </a>
+            )
+          })}
+        </>
+      )}
+
+      {/* Avaliações gamificadas do ItagGame */}
+      {provas.length > 0 && (
+        <>
+          <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginTop: avaliacoesProfessor.length > 0 ? 8 : 0, marginBottom: 2 }}>
+            Avaliações ItagGame
+          </div>
+          <div style={{ background: `${N.azul}18`, border: `1px solid ${N.azul}33`, borderRadius: 16, padding: '12px 18px', color: '#BBBBCC', fontSize: 13, lineHeight: 1.6 }}>
+            🧪 Use o <strong style={{ color: N.azul }}>código de acesso</strong> no ItagGame para participar.
+          </div>
+          {provas.map((p, i) => (
+            <NeonCard key={i} cor={N.azul}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>🧪 {p.titulo}</div>
+                  {p.disciplina && <div style={{ marginTop: 8 }}><Tag label={p.disciplina} cor={N.azul} /></div>}
+                  {p.descricao && <div style={{ color: '#BBBBCC', fontSize: 14, marginTop: 8, lineHeight: 1.5 }}>{p.descricao}</div>}
+                  <div style={{ color: N.cinza, fontSize: 12, fontWeight: 700, marginTop: 8 }}>{fmt(p.criado_em)}</div>
+                </div>
+                <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                  {p.codigo_acesso && (
+                    <div style={{ background: '#0A0A0F', border: `2px solid ${N.azul}66`, borderRadius: 14, padding: '10px 16px', marginBottom: 8 }}>
+                      <div style={{ color: N.cinza, fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>CÓDIGO</div>
+                      <div style={{ fontWeight: 900, fontSize: 22, color: N.azul, letterSpacing: 4, textShadow: `0 0 12px ${N.azul}` }}>{p.codigo_acesso}</div>
+                    </div>
+                  )}
+                  <Tag label={`+${p.xp_por_acerto} XP/acerto`} cor={N.amarelo} />
+                </div>
+              </div>
+            </NeonCard>
+          ))}
+        </>
+      )}
     </div>
   )
 }
