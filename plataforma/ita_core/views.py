@@ -102,7 +102,7 @@ def portal_login(request):
     plano_obj = _get_plano_escola(usuario)
     plano_info = {
         'plano': plano_obj.plano if plano_obj else 'trial',
-        'modulos': plano_obj.modulos_liberados if plano_obj else ['itagame', 'corretor', 'repositorio', 'pedagogico', 'configuracoes'],
+        'modulos': plano_obj.modulos_liberados if plano_obj else ['itagame', 'corretor', 'repositorio', 'quiz', 'pedagogico', 'configuracoes'],
         'dias_restantes': plano_obj.dias_restantes if plano_obj else 0,
         'status': plano_obj.status if plano_obj else 'trial',
     }
@@ -221,6 +221,15 @@ def portal_home(request):
             'url': '/pedagogico/',
             'planos': ['trial', 'professor', 'escola'],
             'cor': '#1e88e5',
+        },
+        {
+            'id': 'quiz',
+            'icon': '🎯',
+            'nome': 'Quiz',
+            'descricao': 'Crie quizzes com cronômetro estilo Kahoot. Veja quem acertou e errou cada pergunta.',
+            'url': '/quiz/',
+            'planos': ['trial', 'professor', 'escola'],
+            'cor': '#e91e8c',
         },
         {
             'id': 'configuracoes',

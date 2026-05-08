@@ -41,7 +41,7 @@ class PlanoEscola(models.Model):
 
     @property
     def modulos_liberados(self):
-        base = ['itagame', 'corretor', 'repositorio', 'configuracoes']
+        base = ['itagame', 'corretor', 'repositorio', 'quiz', 'configuracoes']
         if self.plano == 'escola':
             base += ['relatorios', 'gestao_professores']
         return base
