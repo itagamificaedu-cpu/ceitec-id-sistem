@@ -18,6 +18,12 @@ export default function ListaAvaliacoes() {
     a.turma_nome?.toLowerCase().includes(filtro.toLowerCase())
   )
 
+  async function excluir(av) {
+    if (!window.confirm(`Excluir "${av.titulo}"? Esta ação não pode ser desfeita.`)) return
+    await api.delete(`/avaliacoes/${av.id}`)
+    setAvaliacoes(prev => prev.filter(a => a.id !== av.id))
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Navbar />
@@ -49,6 +55,7 @@ export default function ListaAvaliacoes() {
                   <div className="flex gap-2">
                     <Link to={`/avaliacoes/${av.id}`} className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20">Ver resultados</Link>
                     <Link to={`/avaliacoes/${av.id}/editar`} className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm hover:bg-gray-50">✏️</Link>
+                    <button onClick={() => excluir(av)} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100">🗑️</button>
                   </div>
                 </div>
               ))}
