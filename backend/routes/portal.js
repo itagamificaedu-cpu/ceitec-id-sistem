@@ -52,7 +52,7 @@ router.get('/:codigo', async (req, res) => {
 
     const eid = aluno.escola_id;
 
-    const [xp, historico_xp, notas, presencas, ocorrencias, missoes, entregas, recados, repositorio, provas, loja, resgates, avaliacoes_turma] = await Promise.all([
+    const [xp, historico_xp, notas, presencas, ocorrencias, missoes, entregas, recados, repositorio, provas, loja, resgates, avaliacoes_turma, quizzes_escola] = await Promise.all([
       db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]),
       db.all('SELECT * FROM itagame_historico WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 30', [aluno.id]),
       db.all(`SELECT n.*, av.titulo AS avaliacao_titulo, av.tipo AS avaliacao_tipo, av.disciplina, av.data_aplicacao FROM notas n JOIN avaliacoes av ON n.avaliacao_id = av.id WHERE n.aluno_id = ? ORDER BY av.data_aplicacao DESC`, [aluno.id]),
@@ -79,6 +79,13 @@ router.get('/:codigo', async (req, res) => {
           WHERE av.turma_id = ? AND av.escola_id = ? AND av.total_questoes > 0
           ORDER BY av.data_aplicacao DESC`, [aluno.id, turmaId, eid])
       })(),
+      db.all(
+        `SELECT id, titulo, descricao, codigo_acesso,
+           (SELECT COUNT(*) FROM quiz_questoes WHERE quiz_id = quizzes.id) AS total_questoes,
+           (SELECT COUNT(*) FROM quiz_resultados WHERE quiz_id = quizzes.id AND aluno_codigo = ?) AS ja_jogou
+         FROM quizzes WHERE escola_id = ? AND ativo = 1 ORDER BY criado_em DESC`,
+        [aluno.codigo, eid]
+      ),
     ]);
 
     const xpTotal = xp?.xp_total || 0;
@@ -104,6 +111,7 @@ router.get('/:codigo', async (req, res) => {
       ocorrencias,
       repositorio,
       avaliacoes: avaliacoes_turma.map(av => ({ ...av, ja_respondeu: parseInt(av.ja_respondeu) > 0 })),
+      quizzes: quizzes_escola.map(q => ({ ...q, total_questoes: parseInt(q.total_questoes) || 0, ja_jogou: parseInt(q.ja_jogou) > 0 })),
     });
   } catch (err) {
     res.status(500).json({ erro: err.message });

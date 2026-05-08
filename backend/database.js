@@ -23,6 +23,7 @@ async function initDatabase() {
     `ALTER TABLE itagame_pontos    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE itagame_historico ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE justificativas    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE quiz_resultados   ADD COLUMN IF NOT EXISTS aluno_codigo TEXT`,
     // Cada admin tem escola_id = próprio id
     `UPDATE usuarios SET escola_id = id WHERE perfil = 'admin' AND escola_id IS NULL`,
     // Demais usuários herdaram escola do admin ITA (dados demo)

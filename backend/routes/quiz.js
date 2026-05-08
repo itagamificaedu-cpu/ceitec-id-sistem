@@ -25,7 +25,7 @@ router.get('/jogar/:codigo', async (req, res) => {
 
 router.post('/jogar/:codigo/responder', async (req, res) => {
   try {
-    const { aluno_nome, respostas, tempo_total } = req.body;
+    const { aluno_nome, aluno_codigo, respostas, tempo_total } = req.body;
     const quiz = await db.get('SELECT * FROM quizzes WHERE codigo_acesso = ?', [req.params.codigo]);
     if (!quiz) return res.status(404).json({ erro: 'Quiz não encontrado' });
 
@@ -44,11 +44,30 @@ router.post('/jogar/:codigo/responder', async (req, res) => {
     const percentual = total > 0 ? Math.round((acertos / total) * 100) : 0;
 
     await db.run(
-      'INSERT INTO quiz_resultados (quiz_id, aluno_nome, acertos, total, percentual, tempo_total) VALUES (?, ?, ?, ?, ?, ?)',
-      [quiz.id, aluno_nome || 'Participante', acertos, total, percentual, tempo_total || 0]
+      'INSERT INTO quiz_resultados (quiz_id, aluno_nome, aluno_codigo, acertos, total, percentual, tempo_total) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [quiz.id, aluno_nome || 'Participante', aluno_codigo || null, acertos, total, percentual, tempo_total || 0]
     );
 
-    res.json({ acertos, total, percentual });
+    // Dar XP ao aluno se código da carteirinha foi informado
+    let xp_ganho = 0;
+    if (aluno_codigo) {
+      const aluno = await db.get('SELECT * FROM alunos WHERE codigo = ? AND ativo = 1', [aluno_codigo.toUpperCase()]);
+      if (aluno) {
+        xp_ganho = acertos * 10;
+        if (xp_ganho > 0) {
+          await db.run(
+            'INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, 1, \'[]\') ON CONFLICT (aluno_id) DO UPDATE SET xp_total = itagame_pontos.xp_total + ?',
+            [aluno.id, aluno.turma_id, xp_ganho, xp_ganho]
+          );
+          await db.run(
+            'INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
+            [aluno.id, 'quiz', `Quiz: ${quiz.titulo} — ${acertos}/${total} acertos`, xp_ganho]
+          );
+        }
+      }
+    }
+
+    res.json({ acertos, total, percentual, xp_ganho });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
