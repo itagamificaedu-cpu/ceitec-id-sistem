@@ -33,7 +33,13 @@ router.get('/:id', async (req, res) => {
       LEFT JOIN professores p ON av.professor_id = p.id
       WHERE av.id = ? AND av.escola_id = ?`, [req.params.id, eid]);
     if (!av) return res.status(404).json({ erro: 'Avaliação não encontrada' });
-    const questoes = await db.all('SELECT * FROM questoes WHERE avaliacao_id = ? ORDER BY id', [req.params.id]);
+    const questoesRaw = await db.all('SELECT * FROM questoes WHERE avaliacao_id = ? ORDER BY id', [req.params.id]);
+    const letras = ['a', 'b', 'c', 'd']
+    const questoes = questoesRaw.map(q => ({
+      ...q,
+      alternativas: [q.alternativa_a || '', q.alternativa_b || '', q.alternativa_c || '', q.alternativa_d || ''],
+      resposta_correta: letras.indexOf((q.gabarito || 'A').toLowerCase()),
+    }))
     res.json({ ...av, questoes });
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -53,7 +59,13 @@ router.post('/', async (req, res) => {
 
     if (questoes && questoes.length > 0) {
       for (const q of questoes) {
-        await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [avId, q.enunciado, q.alternativa_a, q.alternativa_b, q.alternativa_c, q.alternativa_d, q.gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
+        const letras = ['a', 'b', 'c', 'd']
+        const alt_a = q.alternativa_a ?? q.alternativas?.[0] ?? null
+        const alt_b = q.alternativa_b ?? q.alternativas?.[1] ?? null
+        const alt_c = q.alternativa_c ?? q.alternativas?.[2] ?? null
+        const alt_d = q.alternativa_d ?? q.alternativas?.[3] ?? null
+        const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
+        await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [avId, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
       }
       await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, avId]);
     }
@@ -66,11 +78,26 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { titulo, disciplina, turma_id, professor_id, tipo, total_pontos, data_aplicacao } = req.body;
+    const { titulo, disciplina, turma_id, professor_id, tipo, total_pontos, data_aplicacao, questoes } = req.body;
+    const eid = req.usuario.escola_id;
     await db.run(
       'UPDATE avaliacoes SET titulo=?, disciplina=?, turma_id=?, professor_id=?, tipo=?, total_pontos=?, data_aplicacao=? WHERE id=? AND escola_id=?',
-      [titulo, disciplina, turma_id, professor_id, tipo, total_pontos, data_aplicacao, req.params.id, req.usuario.escola_id]
+      [titulo, disciplina, turma_id, professor_id, tipo, total_pontos, data_aplicacao, req.params.id, eid]
     );
+    if (questoes && questoes.length > 0) {
+      await db.run('DELETE FROM questoes WHERE avaliacao_id = ?', [req.params.id]);
+      const letras = ['a', 'b', 'c', 'd']
+      for (const q of questoes) {
+        const alt_a = q.alternativa_a ?? q.alternativas?.[0] ?? null
+        const alt_b = q.alternativa_b ?? q.alternativas?.[1] ?? null
+        const alt_c = q.alternativa_c ?? q.alternativas?.[2] ?? null
+        const alt_d = q.alternativa_d ?? q.alternativas?.[3] ?? null
+        const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
+        await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [req.params.id, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
+      }
+      await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, req.params.id]);
+    }
     res.json(await db.get('SELECT * FROM avaliacoes WHERE id = ?', [req.params.id]));
   } catch (err) {
     res.status(500).json({ erro: err.message });
