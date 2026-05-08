@@ -32,6 +32,7 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/corretor-resultados', label: 'Resultados Corretor de Provas', icon: '📋' },
       { path: '/avaliacoes', label: 'Avaliações da Plataforma', icon: '📝' },
+      { path: '/quiz',       label: 'Quiz Interativo',          icon: '🎯' },
       { path: '/desempenho', label: 'Desempenho Acadêmico', icon: '📊' },
       { path: '/diagnostico', label: 'Diagnóstico por Disciplina', icon: '🔬' },
       { path: '/ocorrencias', label: 'Ocorrências', icon: '⚠️' },

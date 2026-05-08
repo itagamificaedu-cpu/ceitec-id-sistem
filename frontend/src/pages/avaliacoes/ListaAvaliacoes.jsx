@@ -3,6 +3,19 @@ import { Link } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import api from '../../api'
 
+function TabNav() {
+  return (
+    <div className="flex gap-1 mb-6 border-b border-gray-200">
+      <span className="px-4 py-2 text-sm font-semibold text-primary border-b-2 border-primary -mb-px">
+        📝 Avaliações
+      </span>
+      <Link to="/quiz" className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+        🎯 Quiz
+      </Link>
+    </div>
+  )
+}
+
 export default function ListaAvaliacoes() {
   const [avaliacoes, setAvaliacoes] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -29,6 +42,7 @@ export default function ListaAvaliacoes() {
       <Navbar />
       <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-5xl mx-auto">
+          <TabNav />
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-textMain">Avaliações</h1>
             <Link to="/avaliacoes/nova" className="btn-primary text-sm">+ Nova Avaliação</Link>

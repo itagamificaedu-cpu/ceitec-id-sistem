@@ -19,6 +19,10 @@ import CriadorAvaliacao from './pages/avaliacoes/CriadorAvaliacao'
 import ResultadosAvaliacao from './pages/avaliacoes/ResultadosAvaliacao'
 import ListaOcorrencias from './pages/ocorrencias/ListaOcorrencias'
 import NovaOcorrencia from './pages/ocorrencias/NovaOcorrencia'
+import ListaQuizzes from './pages/quiz/ListaQuizzes'
+import CriadorQuiz from './pages/quiz/CriadorQuiz'
+import JogarQuiz from './pages/quiz/JogarQuiz'
+import RankingQuiz from './pages/quiz/RankingQuiz'
 import ItagameDashboard from './pages/itagame/ItagameDashboard'
 import ItagameAluno from './pages/itagame/ItagameAluno'
 import PlanoDeAula from './pages/ia/PlanoDeAula'
@@ -85,6 +89,14 @@ export default function App() {
         {/* Ocorrências */}
         <Route path="/ocorrencias" element={<Admin><ListaOcorrencias /></Admin>} />
         <Route path="/ocorrencias/nova" element={<Admin><NovaOcorrencia /></Admin>} />
+
+        {/* Quiz */}
+        <Route path="/quiz" element={<Admin><ListaQuizzes /></Admin>} />
+        <Route path="/quiz/novo" element={<Admin><CriadorQuiz /></Admin>} />
+        <Route path="/quiz/:id/editar" element={<Admin><CriadorQuiz /></Admin>} />
+        <Route path="/quiz/:id/ranking" element={<Admin><RankingQuiz /></Admin>} />
+        {/* Rota pública para jogar */}
+        <Route path="/q/:codigo" element={<JogarQuiz />} />
 
         {/* ItagGame */}
         <Route path="/itagame" element={<Admin><ItagameDashboard /></Admin>} />
