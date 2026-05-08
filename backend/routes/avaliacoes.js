@@ -104,6 +104,21 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    const av = await db.get('SELECT id FROM avaliacoes WHERE id = ? AND escola_id = ?', [req.params.id, eid]);
+    if (!av) return res.status(404).json({ erro: 'Avaliação não encontrada' });
+    await db.run('DELETE FROM respostas_alunos WHERE avaliacao_id = ?', [req.params.id]);
+    await db.run('DELETE FROM notas WHERE avaliacao_id = ?', [req.params.id]);
+    await db.run('DELETE FROM questoes WHERE avaliacao_id = ?', [req.params.id]);
+    await db.run('DELETE FROM avaliacoes WHERE id = ? AND escola_id = ?', [req.params.id, eid]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 router.post('/:id/questoes', async (req, res) => {
   try {
     const { enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, explicacao } = req.body;
