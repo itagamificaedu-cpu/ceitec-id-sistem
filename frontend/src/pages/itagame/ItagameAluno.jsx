@@ -184,7 +184,7 @@ function TelaLogin({ codigo, setCodigo, erro, carregando, onSubmit }) {
    PORTAL PRINCIPAL
 ══════════════════════════════════════════ */
 function Portal({ dados, aba, setAba, onSair, onItagame }) {
-  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes } = dados
+  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [] } = dados
   const nivel = itagame.nivel
   const presentes = presencas.filter(p => p.status === 'presente').length
   const pctPresenca = presencas.length > 0 ? Math.round((presentes / presencas.length) * 100) : null
@@ -245,7 +245,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame }) {
         {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
-        {aba === 'avaliacoes'  && <AbaAvaliacoes provas={itagame.provas || []} avaliacoesProfessor={avaliacoes || []} codigoAluno={aluno.codigo} />}
+        {aba === 'avaliacoes'  && <AbaAvaliacoes provas={itagame.provas || []} avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
@@ -873,8 +873,8 @@ function AbaLoja({ loja, xpTotal, codigoAluno, onAtualizar }) {
 /* ══════════════════════════════════════════
    AVALIAÇÕES — provas do itagame + avaliações do professor
 ══════════════════════════════════════════ */
-function AbaAvaliacoes({ provas, avaliacoesProfessor = [], codigoAluno }) {
-  const temConteudo = provas.length > 0 || avaliacoesProfessor.length > 0
+function AbaAvaliacoes({ provas, avaliacoesProfessor = [], quizzes = [], codigoAluno }) {
+  const temConteudo = provas.length > 0 || avaliacoesProfessor.length > 0 || quizzes.length > 0
   if (!temConteudo) return <Vazio emoji="📝" texto="Nenhuma avaliação disponível ainda." />
 
   return (
@@ -922,6 +922,45 @@ function AbaAvaliacoes({ provas, avaliacoesProfessor = [], codigoAluno }) {
               </a>
             )
           })}
+        </>
+      )}
+
+      {/* Quizzes interativos */}
+      {quizzes.length > 0 && (
+        <>
+          <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginTop: avaliacoesProfessor.length > 0 ? 8 : 0, marginBottom: 2 }}>
+            Quiz Interativo
+          </div>
+          {quizzes.map((q) => (
+            <a
+              key={q.id}
+              href={`/q/${q.codigo_acesso}?aluno=${codigoAluno}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <NeonCard cor={q.ja_jogou ? N.verde : N.roxo}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 900, fontSize: 15, color: N.branco }}>
+                      {q.ja_jogou ? '✅' : '🎯'} {q.titulo}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                      <Tag label={`${q.total_questoes} questões`} cor={N.cinza} />
+                      <Tag label="+10 XP por acerto" cor={N.amarelo} />
+                    </div>
+                    {q.descricao ? <div style={{ color: '#BBBBCC', fontSize: 13, marginTop: 6 }}>{q.descricao}</div> : null}
+                  </div>
+                  <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                    {q.ja_jogou
+                      ? <div style={{ color: N.verde, fontWeight: 900, fontSize: 13 }}>Jogar novamente →</div>
+                      : <div style={{ background: N.roxo, color: '#fff', fontWeight: 900, fontSize: 12, padding: '6px 14px', borderRadius: 20 }}>Jogar →</div>
+                    }
+                  </div>
+                </div>
+              </NeonCard>
+            </a>
+          ))}
         </>
       )}
 

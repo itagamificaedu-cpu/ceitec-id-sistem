@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import api from '../../api'
 
 const LETRAS = ['A', 'B', 'C', 'D']
@@ -9,9 +9,11 @@ const EMOJIS_ERRADO = ['😬', '😅', '💀', '🤦', '😭']
 
 export default function JogarQuiz() {
   const { codigo } = useParams()
+  const [searchParams] = useSearchParams()
 
   const [etapa, setEtapa] = useState('nome')   // nome | carregando | jogando | resultado
   const [nome, setNome] = useState('')
+  const [codigoCarteirinha, setCodigoCarteirinha] = useState(() => searchParams.get('aluno') || '')
   const [quiz, setQuiz] = useState(null)
   const [questoes, setQuestoes] = useState([])
   const [erro, setErro] = useState('')
@@ -24,6 +26,7 @@ export default function JogarQuiz() {
   const [acertos, setAcertos] = useState(0)
 
   const [resultado, setResultado] = useState(null)
+  const [xpGanho, setXpGanho] = useState(0)
 
   const timerRef = useRef(null)
   const tempoInicioRef = useRef(null)
@@ -112,11 +115,13 @@ export default function JogarQuiz() {
     try {
       const { data } = await api.post(`/quiz/jogar/${codigo}/responder`, {
         aluno_nome: nome,
+        aluno_codigo: codigoCarteirinha.trim().toUpperCase() || undefined,
         respostas: respostasRef.current,
         tempo_total: tempoDecorrido,
       })
       setResultado(data)
       setAcertos(data.acertos)
+      setXpGanho(data.xp_ganho || 0)
       setEtapa('resultado')
     } catch {
       setEtapa('resultado')
@@ -136,13 +141,23 @@ export default function JogarQuiz() {
           {erro && <p className="text-red-300 text-sm mb-3 font-medium">{erro}</p>}
 
           <input
-            className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/50 font-medium text-center text-lg outline-none focus:border-yellow-300 focus:ring-2 focus:ring-yellow-300/30 mb-4"
+            className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/50 font-medium text-center text-lg outline-none focus:border-yellow-300 focus:ring-2 focus:ring-yellow-300/30 mb-3"
             placeholder="Seu nome ou apelido"
             value={nome}
             onChange={e => setNome(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && iniciar()}
             maxLength={40}
           />
+
+          <input
+            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 font-medium text-center text-sm outline-none focus:border-yellow-300/50 mb-1 tracking-widest"
+            placeholder="Código da carteirinha (opcional)"
+            value={codigoCarteirinha}
+            onChange={e => setCodigoCarteirinha(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key === 'Enter' && iniciar()}
+            maxLength={20}
+          />
+          <p className="text-white/30 text-xs mb-4 text-center">⚡ Informe seu código para ganhar XP</p>
 
           <button
             onClick={iniciar}
@@ -192,11 +207,24 @@ export default function JogarQuiz() {
             />
           </div>
 
+          {xpGanho > 0 && (
+            <div className="mb-4 py-3 px-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 text-center">
+              <p className="font-black text-gray-900 text-lg">⚡ +{xpGanho} XP ganhos!</p>
+              <p className="text-gray-800 text-xs font-medium">Adicionados à sua carteirinha</p>
+            </div>
+          )}
+
           <button
-            onClick={() => { setEtapa('nome'); setNome(''); setIndice(0); setRespostas([]); respostasRef.current = []; setAcertos(0); setEscolhida(null); setRespondeu(false) }}
-            className="w-full py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90"
+            onClick={() => { setEtapa('nome'); setNome(''); setCodigoCarteirinha(''); setIndice(0); setRespostas([]); respostasRef.current = []; setAcertos(0); setEscolhida(null); setRespondeu(false); setXpGanho(0) }}
+            className="w-full py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90 mb-2"
           >
             🔄 Jogar de novo
+          </button>
+          <button
+            onClick={() => window.history.length > 1 ? window.history.back() : window.close()}
+            className="w-full py-3 rounded-2xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
+          >
+            ← Voltar
           </button>
         </div>
       </div>
