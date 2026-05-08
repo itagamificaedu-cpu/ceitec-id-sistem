@@ -61,6 +61,9 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS itagame_loja (id SERIAL PRIMARY KEY, escola_id INTEGER, nome TEXT NOT NULL, descricao TEXT, custo_xp INTEGER DEFAULT 100, icone TEXT DEFAULT '🎁', ativo INTEGER DEFAULT 1, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS itagame_resgates (id SERIAL PRIMARY KEY, escola_id INTEGER, aluno_id INTEGER NOT NULL, item_id INTEGER NOT NULL, custo_xp INTEGER DEFAULT 0, status TEXT DEFAULT 'pendente', entregue INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS itagame_missao_entregas (id SERIAL PRIMARY KEY, escola_id INTEGER, missao_id INTEGER NOT NULL, aluno_id INTEGER NOT NULL, link_entrega TEXT, arquivo_path TEXT, descricao TEXT, status TEXT DEFAULT 'pendente', xp_concedido INTEGER DEFAULT 0, observacao TEXT, criado_em TIMESTAMP DEFAULT NOW(), UNIQUE(missao_id, aluno_id))`,
+    `CREATE TABLE IF NOT EXISTS quizzes (id SERIAL PRIMARY KEY, titulo TEXT NOT NULL, descricao TEXT DEFAULT '', tempo_por_questao INTEGER DEFAULT 30, ativo INTEGER DEFAULT 1, codigo_acesso TEXT UNIQUE, escola_id INTEGER, criado_por INTEGER, criado_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS quiz_questoes (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, enunciado TEXT NOT NULL, alt_a TEXT NOT NULL, alt_b TEXT NOT NULL, alt_c TEXT, alt_d TEXT, resposta_correta INTEGER DEFAULT 0, ordem INTEGER DEFAULT 0)`,
+    `CREATE TABLE IF NOT EXISTS quiz_resultados (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, aluno_nome TEXT DEFAULT 'Participante', acertos INTEGER DEFAULT 0, total INTEGER DEFAULT 0, percentual INTEGER DEFAULT 0, tempo_total INTEGER DEFAULT 0, respondido_em TIMESTAMP DEFAULT NOW())`,
   ];
 
   for (const sql of tabelas) {
