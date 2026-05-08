@@ -1,0 +1,73 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Quizzes — ItagGame{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header { margin-bottom: 2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+  .page-header h1 { font-family:'Orbitron',sans-serif; font-size:1.4rem; font-weight:900; color:var(--azul-escuro); }
+  .page-header p  { color:var(--muted); font-size:.9rem; margin-top:.25rem; }
+  .btn-criar { display:inline-flex; align-items:center; gap:.4rem; background:linear-gradient(135deg,#6c63ff,#4a4eff); color:#fff; border-radius:10px; padding:.6rem 1.2rem; font-size:.85rem; font-weight:800; text-decoration:none; font-family:'Nunito',sans-serif; transition:filter .2s; }
+  .btn-criar:hover { filter:brightness(1.1); }
+  .quizzes-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.25rem; }
+  .quiz-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:1.5rem; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:1rem; position:relative; overflow:hidden; transition:transform .2s, box-shadow .2s; }
+  .quiz-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(30,58,95,.15); }
+  .quiz-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,#6c63ff,#00d68f); border-radius:20px 20px 0 0; }
+  .quiz-icon { font-size:2.5rem; }
+  .quiz-title { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:900; color:var(--azul-escuro); }
+  .quiz-desc { color:var(--muted); font-size:.85rem; line-height:1.5; }
+  .quiz-meta { display:flex; gap:1rem; flex-wrap:wrap; }
+  .meta-chip { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:.25rem .65rem; font-size:.75rem; font-weight:700; color:var(--muted); display:flex; align-items:center; gap:.3rem; }
+  .quiz-actions { display:flex; gap:.75rem; margin-top:auto; }
+  .btn-jogar { flex:1; text-align:center; background:linear-gradient(135deg,#00d68f,#00b07a); color:#fff; border-radius:10px; padding:.6rem 1rem; font-size:.85rem; font-weight:800; text-decoration:none; font-family:'Nunito',sans-serif; transition:filter .2s; }
+  .btn-jogar:hover { filter:brightness(1.1); }
+  .btn-editar { background:var(--bg); border:1px solid var(--border); color:var(--muted); border-radius:10px; padding:.6rem .8rem; font-size:.85rem; font-weight:700; text-decoration:none; font-family:'Nunito',sans-serif; transition:background .2s; }
+  .btn-editar:hover { background:var(--border); }
+  .empty { text-align:center; padding:3rem; color:var(--muted); }
+  .empty .empty-icon { font-size:4rem; margin-bottom:1rem; }
+  .empty h3 { font-family:'Orbitron',sans-serif; font-size:1rem; color:var(--azul-escuro); margin-bottom:.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>🎯 Quizzes</h1>
+    <p>Responda os quizzes e veja como foi seu desempenho!</p>
+  </div>
+  {% if usuario.is_staff or usuario.is_superuser %}
+  <a href="{% url 'criar_quiz' %}" class="btn-criar">+ Criar Quiz</a>
+  {% endif %}
+</div>
+
+{% if quizzes %}
+<div class="quizzes-grid">
+  {% for quiz in quizzes %}
+  <div class="quiz-card">
+    <div class="quiz-icon">🎮</div>
+    <div>
+      <div class="quiz-title">{{ quiz.titulo }}</div>
+      {% if quiz.descricao %}
+      <div class="quiz-desc">{{ quiz.descricao }}</div>
+      {% endif %}
+    </div>
+    <div class="quiz-meta">
+      <span class="meta-chip">📝 {{ quiz.total_questoes }} questões</span>
+      <span class="meta-chip">⏱️ {{ quiz.tempo_por_questao }}s por questão</span>
+    </div>
+    <div class="quiz-actions">
+      <a href="{% url 'jogar_quiz' quiz.pk %}" class="btn-jogar">▶ Jogar</a>
+      {% if usuario.is_staff or usuario.is_superuser or quiz.professor == usuario %}
+      <a href="{% url 'editar_quiz' quiz.pk %}" class="btn-editar">✏️ Editar</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <div class="empty-icon">🎯</div>
+  <h3>Nenhum quiz disponível</h3>
+  <p>{% if usuario.is_staff %}Crie o primeiro quiz clicando em "+ Criar Quiz".{% else %}Aguarde o professor criar quizzes.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

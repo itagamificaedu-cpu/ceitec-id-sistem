@@ -1,0 +1,166 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Editar Quiz — {{ quiz.titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .editor-wrap { display:grid; grid-template-columns:1fr 1.4fr; gap:1.5rem; align-items:start; }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:1.5rem; box-shadow:var(--shadow); }
+  .panel-title { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:900; color:var(--azul-escuro); margin-bottom:1.25rem; display:flex; align-items:center; gap:.5rem; }
+  .form-group { margin-bottom:1rem; }
+  .form-group label { display:block; font-weight:700; font-size:.82rem; color:var(--muted); margin-bottom:.35rem; text-transform:uppercase; letter-spacing:.5px; }
+  .form-group input, .form-group textarea, .form-group select {
+    width:100%; padding:.65rem .9rem; border:1px solid var(--border); border-radius:10px;
+    font-family:'Nunito',sans-serif; font-size:.88rem; color:var(--text); background:#fff;
+  }
+  .form-group input:focus, .form-group textarea:focus { outline:none; border-color:#6c63ff; }
+  .form-group textarea { resize:vertical; min-height:70px; }
+  .btn-save { background:linear-gradient(135deg,#6c63ff,#4a4eff); color:#fff; border:none; border-radius:10px; padding:.6rem 1.5rem; font-size:.85rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; }
+  .btn-add { background:linear-gradient(135deg,#00d68f,#00b07a); color:#fff; border:none; border-radius:10px; padding:.6rem 1.5rem; font-size:.85rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; width:100%; margin-top:.5rem; }
+  .alt-row { display:grid; grid-template-columns:auto 1fr auto; gap:.5rem; align-items:center; margin-bottom:.6rem; }
+  .alt-letra { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:.85rem; color:#fff; flex-shrink:0; }
+  .alt-a { background:#e21b3c; }
+  .alt-b { background:#1368ce; }
+  .alt-c { background:#d89e00; }
+  .alt-d { background:#26890c; }
+  .alt-radio { width:18px; height:18px; accent-color:#6c63ff; }
+  .questao-list { display:flex; flex-direction:column; gap:.75rem; margin-bottom:1.5rem; }
+  .questao-item { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:1rem; position:relative; }
+  .questao-num { font-family:'Orbitron',sans-serif; font-size:.7rem; font-weight:900; color:#6c63ff; margin-bottom:.4rem; }
+  .questao-texto { font-size:.88rem; font-weight:700; color:var(--text); margin-bottom:.5rem; }
+  .alts-preview { display:flex; flex-direction:column; gap:.25rem; }
+  .alt-preview { font-size:.78rem; padding:.2rem .5rem; border-radius:6px; display:flex; align-items:center; gap:.4rem; }
+  .alt-preview.correta { background:#e8fff5; color:#00b07a; font-weight:800; }
+  .alt-preview.errada { color:var(--muted); }
+  .btn-del { position:absolute; top:.75rem; right:.75rem; background:none; border:none; color:var(--vermelho-err); cursor:pointer; font-size:1rem; }
+  .btn-back { color:var(--muted); text-decoration:none; font-size:.85rem; font-weight:700; display:inline-flex; align-items:center; gap:.3rem; margin-bottom:1.5rem; }
+  .btn-ir { display:inline-block; background:linear-gradient(135deg,#f5a623,#d4891f); color:#fff; border-radius:10px; padding:.65rem 1.5rem; font-size:.85rem; font-weight:800; text-decoration:none; font-family:'Nunito',sans-serif; margin-top:1rem; }
+  .msg-ok { background:#e8fff5; border:1px solid #00d68f; border-radius:10px; padding:.65rem 1rem; color:#00b07a; font-size:.85rem; font-weight:700; margin-bottom:1rem; }
+  .msg-erro { background:#fff0f0; border:1px solid var(--vermelho-err); border-radius:10px; padding:.65rem 1rem; color:var(--vermelho-err); font-size:.85rem; font-weight:700; margin-bottom:1rem; }
+  .empty-q { text-align:center; padding:1.5rem; color:var(--muted); font-size:.85rem; }
+  @media(max-width:768px){ .editor-wrap{ grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'lista_quizzes' %}" class="btn-back">← Voltar para Quizzes</a>
+
+{% for msg in messages %}
+  {% if 'adicionad' in msg.message or 'atualiz' in msg.message or 'removid' in msg.message %}
+  <div class="msg-ok">{{ msg }}</div>
+  {% else %}
+  <div class="msg-erro">{{ msg }}</div>
+  {% endif %}
+{% endfor %}
+
+<div class="editor-wrap">
+
+  <!-- Coluna esquerda: dados do quiz + add questão -->
+  <div>
+    <!-- Editar dados do quiz -->
+    <div class="panel" style="margin-bottom:1.5rem;">
+      <div class="panel-title">⚙️ Configurações</div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_quiz">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" name="titulo" value="{{ quiz.titulo }}" required>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea name="descricao">{{ quiz.descricao }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Tempo por questão</label>
+          <select name="tempo_por_questao">
+            {% for seg in "15 20 30 45 60 90"|split:" " %}
+            <option value="{{ seg }}" {% if quiz.tempo_por_questao == seg|add:0 %}selected{% endif %}>{{ seg }}s</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn-save">Salvar</button>
+      </form>
+    </div>
+
+    <!-- Adicionar questão -->
+    <div class="panel">
+      <div class="panel-title">➕ Nova Pergunta</div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_questao">
+        <div class="form-group">
+          <label>Pergunta</label>
+          <textarea name="texto" placeholder="Digite a pergunta aqui..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Alternativas — marque a correta</label>
+          {% for letra, idx, cor in "A,0,alt-a;B,1,alt-b;C,2,alt-c;D,3,alt-d"|split:";" %}
+          {% with parts=letra|add:","|add:idx|add:","|add:cor %}
+          {% endwith %}
+          {% endfor %}
+          <div class="alt-row">
+            <div class="alt-letra alt-a">A</div>
+            <input type="text" name="alt_0" placeholder="Alternativa A" required>
+            <input type="radio" name="correta" value="0" class="alt-radio" checked title="Esta é a correta">
+          </div>
+          <div class="alt-row">
+            <div class="alt-letra alt-b">B</div>
+            <input type="text" name="alt_1" placeholder="Alternativa B" required>
+            <input type="radio" name="correta" value="1" class="alt-radio" title="Esta é a correta">
+          </div>
+          <div class="alt-row">
+            <div class="alt-letra alt-c">C</div>
+            <input type="text" name="alt_2" placeholder="Alternativa C">
+            <input type="radio" name="correta" value="2" class="alt-radio" title="Esta é a correta">
+          </div>
+          <div class="alt-row">
+            <div class="alt-letra alt-d">D</div>
+            <input type="text" name="alt_3" placeholder="Alternativa D">
+            <input type="radio" name="correta" value="3" class="alt-radio" title="Esta é a correta">
+          </div>
+          <small style="color:var(--muted);font-size:.75rem;">O círculo marcado indica qual é a resposta correta.</small>
+        </div>
+        <button type="submit" class="btn-add">+ Adicionar Pergunta</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Coluna direita: lista de questões -->
+  <div class="panel">
+    <div class="panel-title">📋 Perguntas do Quiz
+      <span style="font-family:'Nunito';font-size:.8rem;font-weight:700;color:var(--muted);margin-left:auto;">{{ questoes|length }} questão(ões)</span>
+    </div>
+
+    {% if questoes %}
+    <div class="questao-list">
+      {% for q in questoes %}
+      <div class="questao-item">
+        <div class="questao-num">PERGUNTA {{ forloop.counter }}</div>
+        <div class="questao-texto">{{ q.texto }}</div>
+        <div class="alts-preview">
+          {% for alt in q.alternativas.all %}
+          <div class="alt-preview {% if alt.correta %}correta{% else %}errada{% endif %}">
+            {% if alt.correta %}✓{% else %}•{% endif %} {{ alt.texto }}
+          </div>
+          {% endfor %}
+        </div>
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_questao">
+          <input type="hidden" name="questao_id" value="{{ q.pk }}">
+          <button type="submit" class="btn-del" onclick="return confirm('Remover esta pergunta?')" title="Remover">🗑</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-q">Nenhuma pergunta ainda. Adicione a primeira!</div>
+    {% endif %}
+
+    {% if questoes %}
+    <a href="{% url 'jogar_quiz' quiz.pk %}" class="btn-ir">▶ Testar Quiz</a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

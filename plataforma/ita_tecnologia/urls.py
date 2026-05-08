@@ -24,6 +24,7 @@ urlpatterns = [
     path('accounts/',            include('gamificaedu.accounts.urls')),
     path('ferramentas/',         include('gamificaedu.ferramentas.urls')),
     path('repositorio/',         include('gamificaedu.ferramentas.urls')),  # alias
+    path('quiz/',                include('gamificaedu.quiz.urls')),
     path('corretor/',            include('corretor.core.urls')),
     path('relatorios/',          modulo_relatorios,          name='relatorios'),
     path('pedagogico/',          modulo_relatorios,          name='pedagogico'),
