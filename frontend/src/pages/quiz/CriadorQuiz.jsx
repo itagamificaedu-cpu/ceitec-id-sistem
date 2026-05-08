@@ -34,6 +34,14 @@ export default function CriadorQuiz() {
   const [erro, setErro] = useState('')
   const [questaoAtiva, setQuestaoAtiva] = useState(0)
 
+  // IA
+  const [iaAberto, setIaAberto] = useState(false)
+  const [iaTema, setIaTema] = useState('')
+  const [iaNivel, setIaNivel] = useState('médio')
+  const [iaQtd, setIaQtd] = useState(5)
+  const [iaGerando, setIaGerando] = useState(false)
+  const [iaErro, setIaErro] = useState('')
+
   useEffect(() => {
     if (editando) {
       api.get(`/quiz/${id}`).then(({ data }) => {
@@ -80,6 +88,34 @@ export default function CriadorQuiz() {
   function setAlt(idx, altIdx, valor) {
     const campos = ['alt_a', 'alt_b', 'alt_c', 'alt_d']
     updateQ(idx, campos[altIdx], valor)
+  }
+
+  async function gerarComIA() {
+    if (!iaTema.trim()) return setIaErro('Informe o tema das questões.')
+    setIaErro('')
+    setIaGerando(true)
+    try {
+      const { data } = await api.post('/ia/questoes', { tema: iaTema, nivel: iaNivel, quantidade: iaQtd })
+      const novas = data.questoes.map(q => ({
+        enunciado: q.enunciado || '',
+        alt_a: q.alternativas?.[0] || '',
+        alt_b: q.alternativas?.[1] || '',
+        alt_c: q.alternativas?.[2] || '',
+        alt_d: q.alternativas?.[3] || '',
+        resposta_correta: q.resposta_correta ?? 0,
+      }))
+      setQuestoes(prev => {
+        const semVazias = prev.filter(q => q.enunciado.trim())
+        return [...semVazias, ...novas]
+      })
+      setQuestaoAtiva(0)
+      setIaAberto(false)
+      setIaTema('')
+    } catch (err) {
+      setIaErro(err.response?.data?.erro || 'Erro ao gerar questões. Tente novamente.')
+    } finally {
+      setIaGerando(false)
+    }
   }
 
   async function salvar() {
@@ -212,6 +248,12 @@ export default function CriadorQuiz() {
                 >
                   + Adicionar pergunta
                 </button>
+                <button
+                  onClick={() => setIaAberto(true)}
+                  className="w-full py-2 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                  🤖 Gerar com IA
+                </button>
               </div>
             </div>
 
@@ -322,6 +364,62 @@ export default function CriadorQuiz() {
           </div>
         </div>
       </main>
+
+      {/* Modal IA */}
+      {iaAberto && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-800 text-lg">🤖 Gerar Questões com IA</h3>
+              <button onClick={() => { setIaAberto(false); setIaErro('') }} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Tema ou assunto *</label>
+                <input
+                  className="input-field text-sm"
+                  placeholder="Ex: Frações, Revolução Francesa, Fotossíntese..."
+                  value={iaTema}
+                  onChange={e => setIaTema(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && gerarComIA()}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Nível</label>
+                  <select className="input-field text-sm" value={iaNivel} onChange={e => setIaNivel(e.target.value)}>
+                    <option value="fácil">Fácil</option>
+                    <option value="médio">Médio</option>
+                    <option value="difícil">Difícil</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Quantidade</label>
+                  <select className="input-field text-sm" value={iaQtd} onChange={e => setIaQtd(parseInt(e.target.value))}>
+                    {[3, 5, 8, 10].map(n => <option key={n} value={n}>{n} questões</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {iaErro && <p className="text-red-500 text-sm font-medium">⚠️ {iaErro}</p>}
+
+              <button
+                onClick={gerarComIA}
+                disabled={iaGerando}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold hover:opacity-90 disabled:opacity-60 transition-all"
+              >
+                {iaGerando ? '⏳ Gerando questões...' : '✨ Gerar Questões'}
+              </button>
+
+              <p className="text-xs text-gray-400 text-center">
+                A IA irá criar {iaQtd} questões com 4 alternativas cada
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
