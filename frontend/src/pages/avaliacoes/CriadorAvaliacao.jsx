@@ -26,8 +26,15 @@ export default function CriadorAvaliacao() {
     api.get('/turmas').then(({ data }) => setTurmas(data))
     if (editando) {
       api.get(`/avaliacoes/${id}`).then(({ data }) => {
-        setForm({ titulo: data.titulo || '', disciplina: data.disciplina || '', tipo: data.tipo || 'prova', turma_id: data.turma_id || '', data_aplicacao: data.data_aplicacao || '', instrucoes: data.instrucoes || '' })
-        setQuestoes(data.questoes || [])
+        setForm({ titulo: data.titulo || '', disciplina: data.disciplina || '', tipo: data.tipo || 'prova', turma_id: data.turma_id || '', data_aplicacao: (data.data_aplicacao || '').slice(0, 10), instrucoes: data.instrucoes || '' })
+        const qs = (data.questoes || []).map(q => ({
+          ...q,
+          alternativas: Array.isArray(q.alternativas) && q.alternativas.some(a => a)
+            ? q.alternativas
+            : [q.alternativa_a || '', q.alternativa_b || '', q.alternativa_c || '', q.alternativa_d || ''],
+          resposta_correta: typeof q.resposta_correta === 'number' ? q.resposta_correta : 0,
+        }))
+        setQuestoes(qs)
       })
     }
   }, [id])

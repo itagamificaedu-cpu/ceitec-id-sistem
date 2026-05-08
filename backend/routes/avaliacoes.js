@@ -60,10 +60,10 @@ router.post('/', async (req, res) => {
     if (questoes && questoes.length > 0) {
       for (const q of questoes) {
         const letras = ['a', 'b', 'c', 'd']
-        const alt_a = q.alternativa_a ?? q.alternativas?.[0] ?? null
-        const alt_b = q.alternativa_b ?? q.alternativas?.[1] ?? null
-        const alt_c = q.alternativa_c ?? q.alternativas?.[2] ?? null
-        const alt_d = q.alternativa_d ?? q.alternativas?.[3] ?? null
+        const alt_a = q.alternativas?.[0] || q.alternativa_a || null
+        const alt_b = q.alternativas?.[1] || q.alternativa_b || null
+        const alt_c = q.alternativas?.[2] || q.alternativa_c || null
+        const alt_d = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
         await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [avId, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
       }
@@ -88,10 +88,10 @@ router.put('/:id', async (req, res) => {
       await db.run('DELETE FROM questoes WHERE avaliacao_id = ?', [req.params.id]);
       const letras = ['a', 'b', 'c', 'd']
       for (const q of questoes) {
-        const alt_a = q.alternativa_a ?? q.alternativas?.[0] ?? null
-        const alt_b = q.alternativa_b ?? q.alternativas?.[1] ?? null
-        const alt_c = q.alternativa_c ?? q.alternativas?.[2] ?? null
-        const alt_d = q.alternativa_d ?? q.alternativas?.[3] ?? null
+        const alt_a = q.alternativas?.[0] || q.alternativa_a || null
+        const alt_b = q.alternativas?.[1] || q.alternativa_b || null
+        const alt_c = q.alternativas?.[2] || q.alternativa_c || null
+        const alt_d = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
         await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [req.params.id, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
