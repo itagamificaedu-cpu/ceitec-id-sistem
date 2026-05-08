@@ -245,7 +245,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame }) {
         {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
-        {aba === 'avaliacoes'  && <AbaAvaliacoes provas={itagame.provas || []} avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
+        {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
@@ -873,8 +873,8 @@ function AbaLoja({ loja, xpTotal, codigoAluno, onAtualizar }) {
 /* ══════════════════════════════════════════
    AVALIAÇÕES — provas do itagame + avaliações do professor
 ══════════════════════════════════════════ */
-function AbaAvaliacoes({ provas, avaliacoesProfessor = [], quizzes = [], codigoAluno }) {
-  const temConteudo = provas.length > 0 || avaliacoesProfessor.length > 0 || quizzes.length > 0
+function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) {
+  const temConteudo = avaliacoesProfessor.length > 0 || quizzes.length > 0
   if (!temConteudo) return <Vazio emoji="📝" texto="Nenhuma avaliação disponível ainda." />
 
   return (
@@ -964,38 +964,6 @@ function AbaAvaliacoes({ provas, avaliacoesProfessor = [], quizzes = [], codigoA
         </>
       )}
 
-      {/* Avaliações gamificadas do ItagGame */}
-      {provas.length > 0 && (
-        <>
-          <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginTop: avaliacoesProfessor.length > 0 ? 8 : 0, marginBottom: 2 }}>
-            Avaliações ItagGame
-          </div>
-          <div style={{ background: `${N.azul}18`, border: `1px solid ${N.azul}33`, borderRadius: 16, padding: '12px 18px', color: '#BBBBCC', fontSize: 13, lineHeight: 1.6 }}>
-            🧪 Use o <strong style={{ color: N.azul }}>código de acesso</strong> no ItagGame para participar.
-          </div>
-          {provas.map((p, i) => (
-            <NeonCard key={i} cor={N.azul}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>🧪 {p.titulo}</div>
-                  {p.disciplina && <div style={{ marginTop: 8 }}><Tag label={p.disciplina} cor={N.azul} /></div>}
-                  {p.descricao && <div style={{ color: '#BBBBCC', fontSize: 14, marginTop: 8, lineHeight: 1.5 }}>{p.descricao}</div>}
-                  <div style={{ color: N.cinza, fontSize: 12, fontWeight: 700, marginTop: 8 }}>{fmt(p.criado_em)}</div>
-                </div>
-                <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                  {p.codigo_acesso && (
-                    <div style={{ background: '#0A0A0F', border: `2px solid ${N.azul}66`, borderRadius: 14, padding: '10px 16px', marginBottom: 8 }}>
-                      <div style={{ color: N.cinza, fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>CÓDIGO</div>
-                      <div style={{ fontWeight: 900, fontSize: 22, color: N.azul, letterSpacing: 4, textShadow: `0 0 12px ${N.azul}` }}>{p.codigo_acesso}</div>
-                    </div>
-                  )}
-                  <Tag label={`+${p.xp_por_acerto} XP/acerto`} cor={N.amarelo} />
-                </div>
-              </div>
-            </NeonCard>
-          ))}
-        </>
-      )}
     </div>
   )
 }
