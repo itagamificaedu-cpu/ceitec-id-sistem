@@ -157,9 +157,6 @@ export default function Navbar() {
           itens: [
             { path: '/itagame',                        label: 'ItagGame — Painel',  icon: '🎮' },
             { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
-            { href: ssoUrl('/ferramentas/'),           label: 'Repositório',        icon: '📁' },
-            { href: ssoUrl('/quiz/'),                  label: 'Quiz',               icon: '🎯' },
-            { href: ssoUrl('/gamification/ranking/'),  label: 'Ranking Professores',icon: '🏆' },
           ]
         },
       ]

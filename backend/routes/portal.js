@@ -65,11 +65,20 @@ router.get('/:codigo', async (req, res) => {
       db.all('SELECT id, titulo, disciplina, descricao, xp_por_acerto, codigo_acesso, criado_em FROM itagame_provas WHERE escola_id = ? AND ativa = 1 ORDER BY criado_em DESC', [eid]),
       db.all('SELECT * FROM itagame_loja WHERE escola_id = ? AND ativo = 1 ORDER BY custo_xp ASC', [eid]),
       db.all('SELECT * FROM itagame_resgates WHERE aluno_id = ?', [aluno.id]),
-      db.all(`SELECT av.id, av.titulo, av.disciplina, av.tipo, av.total_questoes, av.total_pontos, av.data_aplicacao,
-        (SELECT COUNT(*) FROM respostas_alunos ra WHERE ra.avaliacao_id = av.id AND ra.aluno_id = ?) AS ja_respondeu
-        FROM avaliacoes av
-        WHERE av.turma_id = ? AND av.escola_id = ? AND av.total_questoes > 0
-        ORDER BY av.data_aplicacao DESC`, [aluno.id, aluno.turma_id, eid]),
+      (async () => {
+        // Garante turma_id mesmo quando o aluno foi cadastrado só com nome da turma
+        let turmaId = aluno.turma_id
+        if (!turmaId && aluno.turma) {
+          const tr = await db.get('SELECT id FROM turmas WHERE escola_id = ? AND nome = ?', [eid, aluno.turma])
+          turmaId = tr?.id || null
+        }
+        if (!turmaId) return []
+        return db.all(`SELECT av.id, av.titulo, av.disciplina, av.tipo, av.total_questoes, av.total_pontos, av.data_aplicacao,
+          (SELECT COUNT(*) FROM respostas_alunos ra WHERE ra.avaliacao_id = av.id AND ra.aluno_id = ?) AS ja_respondeu
+          FROM avaliacoes av
+          WHERE av.turma_id = ? AND av.escola_id = ? AND av.total_questoes > 0
+          ORDER BY av.data_aplicacao DESC`, [aluno.id, turmaId, eid])
+      })(),
     ]);
 
     const xpTotal = xp?.xp_total || 0;
