@@ -22,6 +22,7 @@
       --muted:         #6b7a99;
       --border:        #e2e8f0;
       --shadow:        0 4px 24px rgba(30,58,95,.10);
+      --sidebar-w:     240px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -29,86 +30,216 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-    }
-    /* TOPBAR */
-    .topbar {
-      background: var(--azul-escuro);
-      padding: 0 1.5rem;
-      height: 64px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 16px rgba(0,0,0,.3);
     }
-    .topbar-logo {
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--azul-escuro);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 200;
+      transition: transform .3s ease;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 1.25rem 1.5rem 1rem;
       font-family: 'Orbitron', sans-serif;
       font-weight: 900;
-      font-size: 1rem;
+      font-size: .95rem;
       color: #fff;
       letter-spacing: 1px;
+      text-decoration: none;
       display: flex;
       align-items: center;
       gap: .5rem;
-      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      flex-shrink: 0;
     }
-    .topbar-logo span { color: var(--laranja); }
-    .topbar-center {
+    .sidebar-logo span { color: var(--laranja); }
+
+    /* Info do usuário */
+    .sidebar-user {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      flex-shrink: 0;
+    }
+    .sidebar-user .user-name {
+      font-weight: 800;
+      font-size: .875rem;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-user .user-plano {
+      margin-top: .25rem;
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: .15rem .5rem;
+      border-radius: 20px;
+    }
+    .sidebar-user .user-plano.trial    { background: #78909c; color: #fff; }
+    .sidebar-user .user-plano.professor{ background: var(--laranja); color: #fff; }
+    .sidebar-user .user-plano.escola   { background: var(--verde-ok); color: #0a2e1a; }
+
+    /* Seção de nav */
+    .sidebar-nav {
+      flex: 1;
+      padding: .75rem 0;
+      overflow-y: auto;
+    }
+    .nav-section-label {
+      padding: .5rem 1.5rem .25rem;
+      font-size: .65rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,.35);
+    }
+    .nav-item {
       display: flex;
       align-items: center;
       gap: .75rem;
-      font-size: .85rem;
-      color: rgba(255,255,255,.7);
+      padding: .65rem 1.5rem;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .875rem;
+      transition: background .15s, color .15s;
+      position: relative;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Nunito', sans-serif;
     }
-    .badge-plano {
+    .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-item.ativo {
+      background: rgba(255,255,255,.12);
+      color: #fff;
+    }
+    .nav-item.ativo::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--laranja);
+      border-radius: 0 4px 4px 0;
+    }
+    .nav-item .nav-icon { font-size: 1.1rem; flex-shrink: 0; width: 22px; text-align: center; }
+    .nav-item .nav-badge {
+      margin-left: auto;
       background: var(--laranja);
       color: #fff;
-      font-weight: 800;
-      font-size: .7rem;
-      padding: .2rem .6rem;
-      border-radius: 20px;
-      letter-spacing: .5px;
+      font-size: .6rem;
+      font-weight: 900;
+      padding: .1rem .4rem;
+      border-radius: 999px;
       text-transform: uppercase;
     }
-    .badge-plano.trial { background: #78909c; }
-    .badge-plano.escola { background: var(--verde-ok); color: #0a2e1a; }
-    .dias-restantes {
-      background: rgba(255,255,255,.12);
-      border-radius: 8px;
-      padding: .2rem .6rem;
-      font-size: .75rem;
-      color: rgba(255,255,255,.8);
+    .nav-item .nav-badge.novo { background: var(--verde-ok); color: #0a2e1a; }
+
+    /* Rodapé da sidebar */
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(255,255,255,.08);
+      flex-shrink: 0;
     }
-    .dias-restantes.critico { color: var(--vermelho-err); background: rgba(239,83,80,.2); }
-    .topbar-right { display: flex; align-items: center; gap: 1rem; }
-    .btn-logout {
-      background: rgba(255,255,255,.1);
-      color: rgba(255,255,255,.85);
-      border: 1px solid rgba(255,255,255,.2);
-      padding: .35rem 1rem;
-      border-radius: 8px;
-      font-size: .8rem;
+    .btn-logout-side {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      width: 100%;
+      padding: .6rem 1rem;
+      background: rgba(239,83,80,.15);
+      border: 1px solid rgba(239,83,80,.3);
+      border-radius: 10px;
+      color: rgba(255,255,255,.8);
+      font-size: .85rem;
+      font-weight: 800;
       font-family: 'Nunito', sans-serif;
       cursor: pointer;
       text-decoration: none;
-      transition: all .2s;
+      transition: background .2s;
     }
-    .btn-logout:hover { background: rgba(239,83,80,.3); color: #fff; border-color: var(--vermelho-err); }
-    /* CONTEÚDO PRINCIPAL */
-    .main-content { padding: 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
-    /* CARDS */
+    .btn-logout-side:hover { background: rgba(239,83,80,.35); color: #fff; }
+
+    /* ── TOPBAR MOBILE ── */
+    .topbar-mobile {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: var(--azul-escuro);
+      z-index: 150;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,.3);
+    }
+    .topbar-mobile .logo-mobile {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: .85rem;
+      color: #fff;
+      text-decoration: none;
+    }
+    .topbar-mobile .logo-mobile span { color: var(--laranja); }
+    .btn-menu {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: .25rem;
+      line-height: 1;
+    }
+
+    /* Overlay mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 190;
+    }
+    .sidebar-overlay.ativo { display: block; }
+
+    /* ── ÁREA PRINCIPAL ── */
+    .page-wrapper {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content {
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* ── COMPONENTES REUTILIZÁVEIS ── */
     .card {
       background: var(--card);
       border-radius: 16px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
     }
-    /* TOAST */
     .toast-container {
       position: fixed;
-      top: 80px;
+      top: 1.25rem;
       right: 1.5rem;
       z-index: 9999;
       display: flex;
@@ -129,17 +260,16 @@
     .toast.warning { background: var(--amarelo-aviso); color: #3a2000; }
     .toast.info    { background: var(--azul-claro); color: #fff; }
     @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-    /* FOOTER */
+
     .footer {
       text-align: center;
-      padding: 2rem 1rem;
+      padding: 1.5rem 1rem;
       color: var(--muted);
       font-size: .8rem;
       border-top: 1px solid var(--border);
-      margin-top: 3rem;
+      margin-top: 2rem;
     }
     .footer a { color: var(--azul-claro); text-decoration: none; }
-    /* BREADCRUMB */
     .breadcrumb {
       display: flex;
       align-items: center;
@@ -150,66 +280,136 @@
     }
     .breadcrumb a { color: var(--azul-claro); text-decoration: none; }
     .breadcrumb span { color: var(--text); font-weight: 700; }
-    @media (max-width: 640px) {
-      .topbar-center { display: none; }
-      .topbar-logo { font-size: .85rem; }
+
+    /* ── RESPONSIVO ── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.aberta { transform: translateX(0); }
+      .topbar-mobile { display: flex; }
+      .page-wrapper { margin-left: 0; padding-top: 56px; }
+      .main-content { padding: 1.25rem 1rem; }
     }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-<!-- TOPBAR -->
-<header class="topbar">
-  <a href="/portal/" class="topbar-logo">⚡ ITA <span>TECNOLOGIA</span></a>
-
-  <div class="topbar-center">
-    {% if usuario %}
-      <span>{{ usuario.first_name|default:usuario.email }}</span>
-      {% if plano_atual %}
-        <span class="badge-plano {% if plano_atual == 'escola' %}escola{% elif plano_atual == 'trial' %}trial{% endif %}">
-          {% if plano_atual == 'escola' %}🏫 ESCOLA{% elif plano_atual == 'professor' %}🎓 PROFESSOR{% else %}🔖 TRIAL{% endif %}
-        </span>
-      {% endif %}
-      {% if dias_restantes is not None %}
-        <span class="dias-restantes {% if dias_restantes <= 5 %}critico{% endif %}">
-          {% if dias_restantes > 0 %}{{ dias_restantes }} dia{{ dias_restantes|pluralize:"s" }} restante{{ dias_restantes|pluralize:"s" }}{% else %}Expirado{% endif %}
-        </span>
-      {% endif %}
-    {% endif %}
-  </div>
-
-  <div class="topbar-right">
-    {% if usuario %}
-      <a href="/logout/" class="btn-logout">Sair</a>
-    {% endif %}
-  </div>
-</header>
-
-<!-- TOASTS -->
-<div class="toast-container" id="toasts">
-  {% if messages %}
-    {% for msg in messages %}
-      <div class="toast {{ msg.tags }}">{{ msg }}</div>
-    {% endfor %}
-  {% endif %}
+<!-- TOPBAR MOBILE -->
+<div class="topbar-mobile">
+  <a href="/portal/" class="logo-mobile">⚡ ITA <span>TECNOLOGIA</span></a>
+  <button class="btn-menu" onclick="toggleSidebar()" aria-label="Menu">☰</button>
 </div>
 
-<!-- CONTEÚDO -->
-<main class="main-content">
-  {% block content %}{% endblock %}
-</main>
+<!-- OVERLAY MOBILE -->
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-<!-- FOOTER -->
-<footer class="footer">
-  <p>ITA TECNOLOGIA EDUCACIONAL &copy; 2025 &mdash;
-     <a href="https://wa.me/5588999999999" target="_blank">Suporte WhatsApp</a> &middot;
-     <a href="#">Termos de Uso</a>
-  </p>
-  <p style="margin-top:.25rem">Desenvolvido por Prof. Genezio &middot; CEITEC Itapipoca-CE</p>
-</footer>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+
+  <a href="/portal/" class="sidebar-logo">⚡ ITA <span>TECNOLOGIA</span></a>
+
+  {% if usuario %}
+  <div class="sidebar-user">
+    <div class="user-name">{{ usuario.first_name|default:usuario.email }}</div>
+    <span class="user-plano {{ plano_atual|default:'trial' }}">
+      {% if plano_atual == 'escola' %}🏫 Escola
+      {% elif plano_atual == 'professor' %}🎓 Professor
+      {% else %}🔖 Trial{% endif %}
+    </span>
+  </div>
+  {% endif %}
+
+  <nav class="sidebar-nav">
+
+    <div class="nav-section-label">Principal</div>
+    <a href="/portal/" class="nav-item {% if request.path == '/portal/' %}ativo{% endif %}">
+      <span class="nav-icon">🏠</span> Portal
+    </a>
+
+    <div class="nav-section-label">Módulos</div>
+    <a href="/itagame/" class="nav-item {% if '/itagame/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🎮</span> ItagGame
+    </a>
+    <a href="/corretor/" class="nav-item {% if '/corretor/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">📝</span> Corretor de Provas
+    </a>
+    <a href="/ferramentas/" class="nav-item {% if '/ferramentas/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">📁</span> Repositório
+    </a>
+    <a href="/quiz/" class="nav-item {% if '/quiz/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🎯</span> Quiz
+      <span class="nav-badge novo">Novo</span>
+    </a>
+    <a href="/pedagogico/" class="nav-item {% if '/pedagogico/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">📚</span> Área Pedagógica
+    </a>
+    <a href="/relatorios/" class="nav-item {% if '/relatorios/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">📊</span> Relatórios
+    </a>
+
+    {% if usuario and usuario.is_staff or usuario and usuario.is_superuser %}
+    <div class="nav-section-label">Gestão</div>
+    <a href="/gestao-professores/" class="nav-item {% if '/gestao-professores/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">👥</span> Professores
+    </a>
+    {% endif %}
+
+    <div class="nav-section-label">Conta</div>
+    <a href="/accounts/perfil/" class="nav-item {% if '/accounts/perfil/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">⚙️</span> Configurações
+    </a>
+
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/logout/" class="btn-logout-side">
+      <span>🚪</span> Sair
+    </a>
+  </div>
+
+</aside>
+
+<!-- ── CONTEÚDO PRINCIPAL ── -->
+<div class="page-wrapper">
+
+  <!-- TOASTS -->
+  <div class="toast-container" id="toasts">
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="toast {{ msg.tags }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>ITA TECNOLOGIA EDUCACIONAL &copy; 2025 &mdash;
+       <a href="https://wa.me/5588999999999" target="_blank">Suporte WhatsApp</a> &middot;
+       <a href="#">Termos de Uso</a>
+    </p>
+    <p style="margin-top:.25rem">Desenvolvido por Prof. Genezio &middot; CEITEC Itapipoca-CE</p>
+  </footer>
+
+</div>
 
 <script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('aberta');
+    document.getElementById('overlay').classList.toggle('ativo');
+  }
+
+  // Marca item ativo com base na URL atual
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const href = item.getAttribute('href');
+    if (href && href !== '/portal/' && path.startsWith(href)) {
+      item.classList.add('ativo');
+    }
+  });
+
   // Auto-remove toasts
   setTimeout(() => {
     document.querySelectorAll('.toast').forEach(t => {
