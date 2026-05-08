@@ -77,7 +77,7 @@ def _payload_do_usuario(usuario) -> dict:
         pass
     return {
         'plano': 'trial',
-        'modulos': ['itagame', 'corretor', 'repositorio', 'configuracoes'],
+        'modulos': ['itagame', 'corretor', 'repositorio', 'quiz', 'configuracoes'],
         'dias_restantes': 0,
     }
 
