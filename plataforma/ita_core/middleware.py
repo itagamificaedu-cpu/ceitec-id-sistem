@@ -47,6 +47,10 @@ class SSOMiddleware:
         request.sso_payload = payload
         request.sso_token = token
 
+        # Se tem token SSO válido mas sem sessão Django, autentica automaticamente
+        if payload and not request.user.is_authenticated:
+            _autenticar_do_token(request, payload)
+
         # Rotas que exigem SSO válido
         if any(path.startswith(p) for p in SSO_REQUIRED_PREFIXES):
             if not payload:
@@ -62,6 +66,20 @@ class SSOMiddleware:
                 return resp
 
         return self.get_response(request)
+
+
+def _autenticar_do_token(request, payload: dict):
+    """Autentica o usuário na sessão Django a partir do payload SSO."""
+    try:
+        from django.contrib.auth import get_user_model, login as auth_login
+        User = get_user_model()
+        user_id = payload.get('sub') or payload.get('user_id')
+        if not user_id:
+            return
+        user = User.objects.get(pk=user_id)
+        auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    except Exception:
+        pass
 
 
 def _payload_do_usuario(usuario) -> dict:

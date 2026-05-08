@@ -57,11 +57,15 @@ export default function ItagameAluno() {
   const [aba, setAba] = useState('inicio')
 
   useEffect(() => {
-    const s = localStorage.getItem(STORAGE_KEY)
-    if (s) { try { setDados(JSON.parse(s)); return } catch (_) {} }
-    // Auto-login via rota /aluno/:codigo ou query ?codigo=
+    // Se veio com código na URL, sempre busca dados frescos do servidor
     const codParam = codigoRota || searchParams.get('codigo')
-    if (codParam) loginComCodigo(codParam.trim().toUpperCase())
+    if (codParam) {
+      loginComCodigo(codParam.trim().toUpperCase())
+      return
+    }
+    // Sem código na URL: usa cache local (aluno que já fez login pelo formulário)
+    const s = localStorage.getItem(STORAGE_KEY)
+    if (s) { try { setDados(JSON.parse(s)) } catch (_) {} }
   }, [])
 
   async function loginComCodigo(cod) {
