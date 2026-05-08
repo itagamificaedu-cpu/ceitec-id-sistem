@@ -29,6 +29,7 @@ import CriadorConteudo from './pages/ia/CriadorConteudo'
 import Planos from './pages/Planos'
 import Usuarios from './pages/Usuarios'
 import CorretorResultados from './pages/CorretorResultados'
+import ResponderAvaliacao from './pages/ResponderAvaliacao'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -88,6 +89,10 @@ export default function App() {
         {/* ItagGame */}
         <Route path="/itagame" element={<Admin><ItagameDashboard /></Admin>} />
         <Route path="/itagame/aluno" element={<ItagameAluno />} />
+        <Route path="/aluno/:codigo" element={<ItagameAluno />} />
+
+        {/* Avaliações — portal do aluno sem login */}
+        <Route path="/responder/:avaliacao_id/:codigo" element={<ResponderAvaliacao />} />
 
         {/* IA */}
         <Route path="/ia/plano-aula" element={<Admin><PlanoDeAula /></Admin>} />
