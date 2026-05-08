@@ -21,14 +21,13 @@ export default function JogarQuiz() {
   const [respondeu, setRespondeu] = useState(false)
   const [escolhida, setEscolhida] = useState(null)
   const [tempo, setTempo] = useState(30)
-  const [tempoTotal, setTempoTotal] = useState(0)
   const [acertos, setAcertos] = useState(0)
 
   const [resultado, setResultado] = useState(null)
 
   const timerRef = useRef(null)
-  const tempoTotalRef = useRef(0)
   const tempoInicioRef = useRef(null)
+  const respostasRef = useRef([])  // ref para evitar stale closure
 
   // Carrega quiz ao entrar
   async function iniciar() {
@@ -72,7 +71,9 @@ export default function JogarQuiz() {
   function responderSemSelecao() {
     setRespondeu(true)
     setEscolhida(null)
-    setRespostas(prev => [...prev, { questao_id: questoes[indice].id, resposta: -1 }])
+    const nova = { questao_id: questoes[indice].id, resposta: -1 }
+    respostasRef.current = [...respostasRef.current, nova]
+    setRespostas(respostasRef.current)
     agendar()
   }
 
@@ -86,7 +87,9 @@ export default function JogarQuiz() {
     const correta = altIdx === q.resposta_correta
     if (correta) setAcertos(a => a + 1)
 
-    setRespostas(prev => [...prev, { questao_id: q.id, resposta: altIdx }])
+    const nova = { questao_id: q.id, resposta: altIdx }
+    respostasRef.current = [...respostasRef.current, nova]
+    setRespostas(respostasRef.current)
     agendar()
   }
 
@@ -109,7 +112,7 @@ export default function JogarQuiz() {
     try {
       const { data } = await api.post(`/quiz/jogar/${codigo}/responder`, {
         aluno_nome: nome,
-        respostas,
+        respostas: respostasRef.current,
         tempo_total: tempoDecorrido,
       })
       setResultado(data)
@@ -190,7 +193,7 @@ export default function JogarQuiz() {
           </div>
 
           <button
-            onClick={() => { setEtapa('nome'); setNome(''); setIndice(0); setRespostas([]); setAcertos(0); setEscolhida(null); setRespondeu(false) }}
+            onClick={() => { setEtapa('nome'); setNome(''); setIndice(0); setRespostas([]); respostasRef.current = []; setAcertos(0); setEscolhida(null); setRespondeu(false) }}
             className="w-full py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90"
           >
             🔄 Jogar de novo
