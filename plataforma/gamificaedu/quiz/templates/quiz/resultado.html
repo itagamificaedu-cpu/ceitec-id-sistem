@@ -1,0 +1,138 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Resultado — {{ resultado.quiz.titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .resultado-wrap { max-width: 720px; margin: 0 auto; padding-bottom: 3rem; }
+
+  /* Placar */
+  .placar-card {
+    background: linear-gradient(135deg, #1e3a5f, #2c5282);
+    border-radius: 24px;
+    padding: 2.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 40px rgba(30,58,95,.3);
+    color: #fff;
+  }
+  .placar-emoji { font-size: 4rem; margin-bottom: .75rem; }
+  .placar-titulo { font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:900; opacity:.7; letter-spacing:1px; margin-bottom:.5rem; }
+  .placar-score { font-family:'Orbitron',sans-serif; font-size:4rem; font-weight:900; line-height:1; }
+  .placar-score .de { font-size:1.5rem; opacity:.6; }
+  .placar-pct { font-size:1.25rem; font-weight:800; margin-top:.25rem; opacity:.85; }
+  .placar-stats { display:flex; gap:1.5rem; justify-content:center; margin-top:1.5rem; }
+  .stat-chip { background:rgba(255,255,255,.12); border-radius:12px; padding:.6rem 1.2rem; font-size:.9rem; font-weight:800; display:flex; align-items:center; gap:.4rem; }
+  .stat-chip.verde { background:rgba(0,214,143,.2); }
+  .stat-chip.vermelho { background:rgba(239,83,80,.2); }
+
+  /* Revisão */
+  .revisao-titulo { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:900; color:var(--azul-escuro); margin-bottom:1rem; }
+  .revisao-lista { display:flex; flex-direction:column; gap:1rem; }
+  .revisao-item {
+    background:var(--card); border:2px solid var(--border);
+    border-radius:16px; padding:1.25rem; position:relative;
+  }
+  .revisao-item.acerto { border-color: #00d68f; }
+  .revisao-item.erro   { border-color: #ef5350; }
+  .rv-header { display:flex; align-items:center; gap:.6rem; margin-bottom:.75rem; }
+  .rv-badge { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .rv-badge.ok  { background:#e8fff5; }
+  .rv-badge.err { background:#fff0f0; }
+  .rv-num { font-family:'Orbitron',sans-serif; font-size:.7rem; font-weight:900; color:var(--muted); }
+  .rv-texto { font-size:.9rem; font-weight:800; color:var(--text); flex:1; }
+  .alts-revisao { display:flex; flex-direction:column; gap:.4rem; }
+  .alt-rv {
+    padding:.45rem .75rem; border-radius:8px;
+    font-size:.82rem; font-weight:700;
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .alt-rv.correta        { background:#e8fff5; color:#00b07a; }
+  .alt-rv.escolhida-certa{ background:#e8fff5; color:#00b07a; font-weight:900; }
+  .alt-rv.escolhida-errada{ background:#fff0f0; color:#ef5350; }
+  .alt-rv.normal         { color:var(--muted); }
+  .tag-correta { background:#00d68f; color:#fff; border-radius:6px; padding:.1rem .45rem; font-size:.7rem; font-weight:900; margin-left:auto; }
+  .tag-errou   { background:#ef5350; color:#fff; border-radius:6px; padding:.1rem .45rem; font-size:.7rem; font-weight:900; margin-left:auto; }
+  .tag-pulou   { background:#a0aec0; color:#fff; border-radius:6px; padding:.1rem .45rem; font-size:.7rem; font-weight:900; margin-left:auto; }
+
+  /* Ações */
+  .acoes { display:flex; gap:1rem; margin-top:2rem; flex-wrap:wrap; }
+  .btn-jogar-dnv { flex:1; text-align:center; background:linear-gradient(135deg,#00d68f,#00b07a); color:#fff; border-radius:12px; padding:.75rem 1.5rem; font-size:.9rem; font-weight:800; text-decoration:none; font-family:'Nunito',sans-serif; }
+  .btn-voltar { background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:.75rem 1.5rem; font-size:.9rem; font-weight:800; text-decoration:none; font-family:'Nunito',sans-serif; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resultado-wrap">
+
+  <!-- PLACAR PRINCIPAL -->
+  <div class="placar-card">
+    {% if resultado.percentual >= 70 %}
+      <div class="placar-emoji">🏆</div>
+    {% elif resultado.percentual >= 40 %}
+      <div class="placar-emoji">👍</div>
+    {% else %}
+      <div class="placar-emoji">📚</div>
+    {% endif %}
+
+    <div class="placar-titulo">SEU RESULTADO</div>
+    <div class="placar-score">
+      {{ resultado.acertos }} <span class="de">/ {{ resultado.total }}</span>
+    </div>
+    <div class="placar-pct">{{ resultado.percentual }}% de acertos</div>
+
+    <div class="placar-stats">
+      <span class="stat-chip verde">✅ {{ resultado.acertos }} acerto{{ resultado.acertos|pluralize:"s" }}</span>
+      <span class="stat-chip vermelho">❌ {{ resultado.erros }} erro{{ resultado.erros|pluralize:"s" }}</span>
+    </div>
+  </div>
+
+  <!-- REVISÃO DETALHADA -->
+  <div class="revisao-titulo">📋 Revisão das Perguntas</div>
+  <div class="revisao-lista">
+    {% for resp in respostas %}
+    <div class="revisao-item {% if resp.correta %}acerto{% else %}erro{% endif %}">
+      <div class="rv-header">
+        <div class="rv-badge {% if resp.correta %}ok{% else %}err{% endif %}">
+          {% if resp.correta %}✅{% else %}❌{% endif %}
+        </div>
+        <div style="flex:1;">
+          <div class="rv-num">PERGUNTA {{ forloop.counter }}</div>
+          <div class="rv-texto">{{ resp.questao.texto }}</div>
+        </div>
+        {% if resp.correta %}
+          <span class="tag-correta">ACERTOU</span>
+        {% elif resp.alternativa_escolhida %}
+          <span class="tag-errou">ERROU</span>
+        {% else %}
+          <span class="tag-pulou">SEM RESPOSTA</span>
+        {% endif %}
+      </div>
+
+      <div class="alts-revisao">
+        {% for alt in resp.questao.alternativas.all %}
+          {% if alt.correta and resp.alternativa_escolhida == alt %}
+            <div class="alt-rv escolhida-certa">✓ {{ alt.texto }} <span style="margin-left:auto;font-size:.7rem;">sua resposta · correta</span></div>
+          {% elif not alt.correta and resp.alternativa_escolhida == alt %}
+            <div class="alt-rv escolhida-errada">✗ {{ alt.texto }} <span style="margin-left:auto;font-size:.7rem;">sua resposta</span></div>
+          {% elif alt.correta %}
+            <div class="alt-rv correta">✓ {{ alt.texto }} <span style="margin-left:auto;font-size:.7rem;">resposta correta</span></div>
+          {% else %}
+            <div class="alt-rv normal">• {{ alt.texto }}</div>
+          {% endif %}
+        {% endfor %}
+        {% if not resp.alternativa_escolhida %}
+        <div style="font-size:.78rem;color:var(--muted);margin-top:.25rem;">⏱️ Tempo esgotado — sem resposta</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- AÇÕES -->
+  <div class="acoes">
+    <a href="{% url 'jogar_quiz' resultado.quiz.pk %}" class="btn-jogar-dnv">🔁 Jogar Novamente</a>
+    <a href="{% url 'lista_quizzes' %}" class="btn-voltar">← Ver Todos os Quizzes</a>
+  </div>
+
+</div>
+{% endblock %}

@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'gamificaedu.core',
     'gamificaedu.ferramentas',
     'gamificaedu.gamification',
+    'gamificaedu.quiz.apps.QuizConfig',
     'corretor.core',
 ]
 

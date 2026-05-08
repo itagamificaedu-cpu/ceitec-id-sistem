@@ -1,0 +1,65 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Criar Quiz — ItagGame{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2rem; box-shadow:var(--shadow); max-width:600px; margin:0 auto; }
+  .form-title { font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:900; color:var(--azul-escuro); margin-bottom:1.5rem; }
+  .form-group { margin-bottom:1.25rem; }
+  .form-group label { display:block; font-weight:700; font-size:.85rem; color:var(--text); margin-bottom:.4rem; }
+  .form-group input, .form-group textarea, .form-group select {
+    width:100%; padding:.7rem 1rem; border:1px solid var(--border); border-radius:10px;
+    font-family:'Nunito',sans-serif; font-size:.9rem; color:var(--text); background:#fff;
+    transition:border-color .2s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline:none; border-color:#6c63ff; box-shadow:0 0 0 3px rgba(108,99,255,.1);
+  }
+  .form-group textarea { resize:vertical; min-height:80px; }
+  .btn-primary { background:linear-gradient(135deg,#6c63ff,#4a4eff); color:#fff; border:none; border-radius:10px; padding:.75rem 2rem; font-size:.9rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; transition:filter .2s; }
+  .btn-primary:hover { filter:brightness(1.1); }
+  .btn-back { color:var(--muted); text-decoration:none; font-size:.85rem; font-weight:700; display:inline-flex; align-items:center; gap:.3rem; margin-bottom:1.5rem; }
+  .btn-back:hover { color:var(--azul-claro); }
+  .hint { font-size:.78rem; color:var(--muted); margin-top:.25rem; }
+  {% if messages %}
+  .msg-erro { background:#fff0f0; border:1px solid var(--vermelho-err); border-radius:10px; padding:.75rem 1rem; color:var(--vermelho-err); font-size:.85rem; font-weight:700; margin-bottom:1rem; }
+  {% endif %}
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'lista_quizzes' %}" class="btn-back">← Voltar para Quizzes</a>
+
+<div class="form-card">
+  <div class="form-title">✨ Criar Novo Quiz</div>
+
+  {% for msg in messages %}
+  <div class="msg-erro">{{ msg }}</div>
+  {% endfor %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="titulo">Título do Quiz *</label>
+      <input type="text" id="titulo" name="titulo" placeholder="Ex: Matemática — Frações" required>
+    </div>
+    <div class="form-group">
+      <label for="descricao">Descrição (opcional)</label>
+      <textarea id="descricao" name="descricao" placeholder="Do que é este quiz? Para qual turma?"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="tempo_por_questao">Tempo por questão (segundos)</label>
+      <select id="tempo_por_questao" name="tempo_por_questao">
+        <option value="15">15 segundos</option>
+        <option value="20">20 segundos</option>
+        <option value="30" selected>30 segundos</option>
+        <option value="45">45 segundos</option>
+        <option value="60">60 segundos</option>
+        <option value="90">90 segundos</option>
+      </select>
+      <div class="hint">Os alunos terão este tempo para responder cada pergunta.</div>
+    </div>
+    <button type="submit" class="btn-primary">Continuar → Adicionar Perguntas</button>
+  </form>
+</div>
+{% endblock %}
