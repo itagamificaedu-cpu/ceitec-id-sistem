@@ -1274,3 +1274,27 @@ def api_resultados_json(request):
         })
 
     return cors(JsonResponse(data, safe=False))
+
+
+@csrf_exempt
+def api_sync_alunos(request):
+    """Recebe alunos do sistema ITA e salva localmente para uso no corretor."""
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Metodo nao permitido'}, status=405)
+    try:
+        data = json.loads(request.body)
+        if data.get('chave') != 'gamificaedu_secreto_2026':
+            return JsonResponse({'erro': 'Chave invalida'}, status=403)
+        criados = 0
+        for a in data.get('alunos', []):
+            nome = a.get('nome', '').strip()
+            turma = a.get('turma', '').strip()
+            if nome and turma:
+                AlunoITA.objects.get_or_create(
+                    nome=nome, turma=turma,
+                    defaults={'codigo': a.get('codigo', ''), 'ativo': 1}
+                )
+                criados += 1
+        return JsonResponse({'ok': True, 'sincronizados': criados})
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=500)
