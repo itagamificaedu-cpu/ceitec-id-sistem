@@ -70,9 +70,9 @@ export default function Navbar() {
       email: usuario.email || '',
       nome: usuario.nome || '',
       chave: 'gamificaedu_secreto_2026',
-      next: '/corretor/',
+      next: '/home/',
     })
-    return `https://itatecnologiaeducacional.tech/accounts/login-magico/?${params.toString()}`
+    return `https://correcaoonlineita.pythonanywhere.com/accounts/login-magico/?${params.toString()}`
   }
 
   function abrirUrl(url) {
@@ -127,7 +127,7 @@ export default function Navbar() {
 
     try {
       const { data: alunos } = await api.get('/alunos')
-      await fetch('https://itatecnologiaeducacional.tech/corretor/api/sync-alunos/', {
+      await fetch('https://correcaoonlineita.pythonanywhere.com/api/sync-alunos/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
