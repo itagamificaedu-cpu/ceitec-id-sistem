@@ -5,6 +5,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 const { initDatabase } = require('./database');
+const { verificarLicenca } = require('./middleware/licenca');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,22 +25,24 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/alunos', require('./routes/alunos'));
-app.use('/api/turmas', require('./routes/turmas'));
-app.use('/api/professores', require('./routes/professores'));
-app.use('/api/presenca', require('./routes/presenca'));
-app.use('/api/avaliacoes', require('./routes/avaliacoes'));
-app.use('/api/desempenho', require('./routes/desempenho'));
-app.use('/api/ocorrencias', require('./routes/ocorrencias'));
-app.use('/api/relatorios', require('./routes/relatorios'));
-app.use('/api/justificativas', require('./routes/justificativas'));
-app.use('/api/itagame', require('./routes/itagame'));
-app.use('/api/ia', require('./routes/ia'));
-app.use('/api/usuarios', require('./routes/usuarios'));
-app.use('/api/pagamento', require('./routes/pagamento'));
-app.use('/api/corretor', require('./routes/corretor'));
-app.use('/api/portal',  require('./routes/portal'));
-app.use('/api/quiz',    require('./routes/quiz'));
+app.use('/api/pagamento', require('./routes/pagamento')); // público (planos, webhook, minha-licenca)
+
+// Rotas protegidas — verificam licença ativa
+app.use('/api/alunos',       verificarLicenca, require('./routes/alunos'));
+app.use('/api/turmas',       verificarLicenca, require('./routes/turmas'));
+app.use('/api/professores',  verificarLicenca, require('./routes/professores'));
+app.use('/api/presenca',     verificarLicenca, require('./routes/presenca'));
+app.use('/api/avaliacoes',   verificarLicenca, require('./routes/avaliacoes'));
+app.use('/api/desempenho',   verificarLicenca, require('./routes/desempenho'));
+app.use('/api/ocorrencias',  verificarLicenca, require('./routes/ocorrencias'));
+app.use('/api/relatorios',   verificarLicenca, require('./routes/relatorios'));
+app.use('/api/justificativas', verificarLicenca, require('./routes/justificativas'));
+app.use('/api/itagame',      verificarLicenca, require('./routes/itagame'));
+app.use('/api/ia',           verificarLicenca, require('./routes/ia'));
+app.use('/api/usuarios',     verificarLicenca, require('./routes/usuarios'));
+app.use('/api/corretor',     verificarLicenca, require('./routes/corretor'));
+app.use('/api/portal',       require('./routes/portal')); // portal do aluno — sem check de licença
+app.use('/api/quiz',         require('./routes/quiz'));    // quiz público — sem check de licença
 
 app.get('/api/status', (req, res) => {
   res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });

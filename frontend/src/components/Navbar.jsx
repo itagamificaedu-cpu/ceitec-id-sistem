@@ -43,6 +43,7 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/relatorios', label: 'Relatórios Gerais', icon: '📈' },
       { path: '/planos', label: 'Planos de Assinatura', icon: '💳' },
+      { path: '/minha-licenca', label: 'Minha Licença', icon: '🔐' },
     ]
   },
 ]

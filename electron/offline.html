@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sem conexão — ITA Tecnologia Educacional</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1e3a5f;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 420px;
+    }
+    .icon {
+      font-size: 72px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #f5a623;
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    button {
+      background: #f5a623;
+      color: #1e3a5f;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #fbbf4a; }
+    .brand {
+      margin-top: 40px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📡</div>
+    <h1>Sem conexão com a internet</h1>
+    <p>
+      O sistema ITA Tecnologia Educacional precisa de internet para funcionar.<br>
+      Verifique sua conexão e tente novamente.
+    </p>
+    <button onclick="reconectar()">Tentar novamente</button>
+    <div class="brand">ITA Tecnologia Educacional</div>
+  </div>
+  <script>
+    function reconectar() {
+      if (window.electronAPI) {
+        window.electronAPI.retryConnection();
+      } else {
+        window.location.reload();
+      }
+    }
+  </script>
+</body>
+</html>

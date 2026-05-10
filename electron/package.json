@@ -1,0 +1,26 @@
+{
+  "name": "ita-tecnologia-educacional",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão Educacional — ITA Tecnologia Educacional",
+  "main": "main.js",
+  "author": "ITA Tecnologia Educacional",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-forge make --platform win32",
+    "build:mac": "electron-forge make --platform darwin",
+    "build:linux": "electron-forge make --platform linux",
+    "package": "electron-forge package"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "@electron-forge/cli": "^7.2.0",
+    "@electron-forge/maker-squirrel": "^7.2.0",
+    "@electron-forge/maker-zip": "^7.2.0",
+    "@electron-forge/maker-deb": "^7.2.0",
+    "@electron-forge/maker-dmg": "^7.2.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.2.0"
+  }
+}
