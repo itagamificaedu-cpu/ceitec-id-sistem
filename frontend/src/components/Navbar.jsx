@@ -75,9 +75,17 @@ export default function Navbar() {
     return `https://correcaoonlineita.pythonanywhere.com/login-magico/?${params.toString()}`
   }
 
+  function abrirUrl(url) {
+    if (window.electronAPI?.isElectron) {
+      window.electronAPI.openExternal(url)
+    } else {
+      window.open(url, '_blank')
+    }
+  }
+
   async function abrirItagame() {
-    // Abre a janela ANTES dos awaits — Chrome bloqueia window.open() após async
-    const janela = window.open('about:blank', '_blank')
+    // No navegador abre about:blank antes do await para evitar bloqueio de popup
+    const janela = window.electronAPI?.isElectron ? null : window.open('about:blank', '_blank')
 
     try {
       const [{ data: turmas }, { data: alunos }] = await Promise.all([
@@ -110,12 +118,12 @@ export default function Navbar() {
     })
     const url = `https://projetoitagame.pythonanywhere.com/login-magico/?${params}`
     if (janela) janela.location.href = url
-    else window.open(url, '_blank')
+    else abrirUrl(url)
   }
 
   async function abrirCorretor() {
-    // Abre a janela ANTES dos awaits — Chrome bloqueia window.open() após async
-    const janela = window.open('about:blank', '_blank')
+    // No navegador abre about:blank antes do await para evitar bloqueio de popup
+    const janela = window.electronAPI?.isElectron ? null : window.open('about:blank', '_blank')
 
     try {
       const { data: alunos } = await api.get('/alunos')
@@ -132,7 +140,7 @@ export default function Navbar() {
 
     const url = corretorSsoUrl()
     if (janela) janela.location.href = url
-    else window.open(url, '_blank')
+    else abrirUrl(url)
   }
 
   const isProfessor = usuario.perfil === 'professor'
