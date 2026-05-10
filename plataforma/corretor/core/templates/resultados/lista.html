@@ -49,7 +49,9 @@
                         <th>Aluno</th>
                         <th>Turma</th>
                         <th>Avaliação</th>
-                        <th class="text-center">Origem</th>
+                        <th>Disciplina</th>
+                        <th class="text-center">Nota</th>
+                        <th class="text-center">Modo</th>
                         <th class="text-center">Acertos</th>
                         <th class="text-center">Erros</th>
                         <th>Data</th>
@@ -63,16 +65,16 @@
                         <td>{{ resultado.turma }}</td>
                         <td>{{ resultado.avaliacao.titulo|truncatechars:25 }}</td>
                         <td>{{ resultado.avaliacao.disciplina }}</td>
-                        <td>
+                        <td class="text-center">
                             <span class="badge {% if resultado.nota >= 7 %}bg-success{% elif resultado.nota >= 5 %}bg-warning{% else %}bg-danger{% endif %}">
                                 {{ resultado.nota }}
                             </span>
                         </td>
                         <td class="text-center">
                             {% if resultado.modo == 'online' %}
-                            <span class="badge bg-info text-white" title="Resposta Via Link Online"><i class="fas fa-globe me-1"></i> Online</span>
+                            <span class="badge bg-info text-white"><i class="fas fa-globe me-1"></i> Online</span>
                             {% else %}
-                            <span class="badge bg-secondary" title="Correção via Scanner/QR Code"><i class="fas fa-camera me-1"></i> Scanner</span>
+                            <span class="badge bg-secondary"><i class="fas fa-camera me-1"></i> Scanner</span>
                             {% endif %}
                         </td>
                         <td class="text-success text-center">{{ resultado.acertos }}</td>
@@ -80,10 +82,10 @@
                         <td>{{ resultado.data_correcao|date:"d/m/Y H:i" }}</td>
                         <td class="text-center">
                             <div class="btn-group">
-                                <a href="{% url 'editar_resultado' resultado.id %}" class="btn btn-sm btn-outline-warning" title="Editar Nota/Nome">
+                                <a href="{% url 'editar_resultado' resultado.id %}" class="btn btn-sm btn-outline-warning" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{% url 'excluir_resultado' resultado.id %}" class="btn btn-sm btn-outline-danger" title="Excluir Resultado">
+                                <a href="{% url 'excluir_resultado' resultado.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </div>
