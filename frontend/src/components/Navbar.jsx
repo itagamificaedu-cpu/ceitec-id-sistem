@@ -72,7 +72,7 @@ export default function Navbar() {
       chave: 'gamificaedu_secreto_2026',
       next: '/home/',
     })
-    return `https://correcaoonlineita.pythonanywhere.com/accounts/login-magico/?${params.toString()}`
+    return `https://correcaoonlineita.pythonanywhere.com/login-magico/?${params.toString()}`
   }
 
   function abrirUrl(url) {
