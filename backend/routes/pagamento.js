@@ -3,6 +3,7 @@ const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const { autenticar } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ const PLANOS = [
     nome: 'Plano Básico',
     preco: 39.00,
     periodo: 'mês',
+    periodo_dias: 30,
     descricao: 'Ideal para professores individuais',
     recursos: ['Até 150 alunos', 'Controle de presença', 'Avaliações', 'Relatórios', 'IA Educacional'],
     destaque: false,
@@ -26,6 +28,7 @@ const PLANOS = [
     nome: 'Plano Escola',
     preco: 79.00,
     periodo: 'mês',
+    periodo_dias: 30,
     descricao: 'Para escolas e instituições',
     recursos: ['Alunos ilimitados', 'Múltiplos professores', 'ItagGame', 'Corretor de Provas', 'Repositório', 'IA Educacional', 'Suporte prioritário'],
     destaque: true,
@@ -57,7 +60,18 @@ function emailHtml(nome, plano_nome, email, senha) {
   `;
 }
 
-async function criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, payment_id) {
+async function calcularExpiry(email, plano) {
+  const dias = plano?.periodo_dias || 30;
+  // Se já tem licença ativa, estende a partir dela (renovação)
+  const atual = await db.get('SELECT licenca_expira FROM usuarios WHERE email = ?', [email]);
+  const base = atual?.licenca_expira && new Date(atual.licenca_expira) > new Date()
+    ? new Date(atual.licenca_expira)
+    : new Date();
+  base.setDate(base.getDate() + dias);
+  return base.toISOString();
+}
+
+async function criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, payment_id, licenca_expira) {
   const existe = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
   if (existe) {
     await db.run('UPDATE usuarios SET senha_hash = ? WHERE email = ?', [senha_hash, email]);
@@ -67,12 +81,14 @@ async function criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, paymen
       [nome, email, senha_hash, 'admin']
     );
   }
-  // Tenta atualizar colunas opcionais (podem não existir ainda)
   if (plano_id) {
     try { await db.run('UPDATE usuarios SET plano = ? WHERE email = ?', [plano_id, email]); } catch (_) {}
   }
   if (payment_id) {
     try { await db.run('UPDATE usuarios SET pagamento_mp_id = ? WHERE email = ?', [String(payment_id), email]); } catch (_) {}
+  }
+  if (licenca_expira) {
+    try { await db.run('UPDATE usuarios SET licenca_expira = ?, plano_ativo = 1 WHERE email = ?', [licenca_expira, email]); } catch (_) {}
   }
 }
 
@@ -150,11 +166,12 @@ router.post('/webhook', async (req, res) => {
 
     const senha = Math.random().toString(36).slice(-8).toUpperCase() + Math.floor(Math.random() * 100);
     const senha_hash = bcrypt.hashSync(senha, 10);
+    const licenca_expira = await calcularExpiry(email, plano);
 
-    await criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, payment_id);
+    await criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, payment_id, licenca_expira);
     await enviarEmail(email, nome, plano_nome, senha);
 
-    console.log(`[webhook-pix] acesso liberado: ${email} | plano: ${plano_id}`);
+    console.log(`[webhook-pix] acesso liberado: ${email} | plano: ${plano_id} | expira: ${licenca_expira}`);
   } catch (err) {
     console.error('[webhook-pix] erro:', err.message);
   }
@@ -189,11 +206,12 @@ router.post('/reprocessar', async (req, res) => {
 
     const senha = Math.random().toString(36).slice(-8).toUpperCase() + Math.floor(Math.random() * 100);
     const senha_hash = bcrypt.hashSync(senha, 10);
+    const licenca_expira = await calcularExpiry(email, plano);
 
-    await criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, payment_id);
+    await criarOuAtualizarUsuario(nome, email, senha_hash, plano_id, payment_id, licenca_expira);
     await enviarEmail(email, nome, plano_nome, senha);
 
-    res.json({ ok: true, mensagem: `Acesso liberado e email enviado para ${email}`, plano: plano_nome });
+    res.json({ ok: true, mensagem: `Acesso liberado e email enviado para ${email}`, plano: plano_nome, expira: licenca_expira });
   } catch (err) {
     console.error('[reprocessar] erro:', err.message);
     res.status(500).json({ erro: err.message });
@@ -213,16 +231,55 @@ router.post('/reenviar', async (req, res) => {
     const plano = PLANOS.find(p => p.id === plano_id);
     const plano_nome = plano?.nome || plano_id || 'Plano Escola';
     const nomeUsar = nome || email.split('@')[0];
+    const licenca_expira = await calcularExpiry(email, plano);
 
     const senha = Math.random().toString(36).slice(-8).toUpperCase() + Math.floor(Math.random() * 100);
     const senha_hash = bcrypt.hashSync(senha, 10);
 
-    await criarOuAtualizarUsuario(nomeUsar, email, senha_hash, plano_id, null);
+    await criarOuAtualizarUsuario(nomeUsar, email, senha_hash, plano_id, null, licenca_expira);
     await enviarEmail(email, nomeUsar, plano_nome, senha);
 
-    res.json({ ok: true, mensagem: `Credenciais enviadas para ${email}`, plano: plano_nome });
+    res.json({ ok: true, mensagem: `Credenciais enviadas para ${email}`, plano: plano_nome, expira: licenca_expira });
   } catch (err) {
     console.error('[reenviar] erro:', err.message);
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// Área do cliente: status da licença
+// GET /api/pagamento/minha-licenca  (requer login)
+router.get('/minha-licenca', autenticar, async (req, res) => {
+  try {
+    const escola_id = req.usuario.escola_id;
+    const admin = await db.get(
+      'SELECT nome, email, plano, licenca_expira, plano_ativo FROM usuarios WHERE id = ?',
+      [escola_id]
+    );
+    if (!admin) return res.status(404).json({ erro: 'Escola não encontrada' });
+
+    const planoInfo = PLANOS.find(p => p.id === admin.plano);
+    const expira = admin.licenca_expira ? new Date(admin.licenca_expira) : null;
+    const agora = new Date();
+    const dias_restantes = expira
+      ? Math.max(0, Math.ceil((expira - agora) / (1000 * 60 * 60 * 24)))
+      : null;
+
+    let status = 'ativo_demo';
+    if (expira) status = expira > agora ? 'ativo' : 'expirado';
+
+    res.json({
+      escola: admin.nome,
+      email: admin.email,
+      plano: admin.plano || 'escola',
+      plano_nome: planoInfo?.nome || 'Plano Escola',
+      plano_preco: planoInfo?.preco,
+      plano_periodo: planoInfo?.periodo,
+      licenca_expira: admin.licenca_expira,
+      plano_ativo: admin.plano_ativo !== 0,
+      dias_restantes,
+      status,
+    });
+  } catch (err) {
     res.status(500).json({ erro: err.message });
   }
 });

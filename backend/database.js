@@ -10,6 +10,8 @@ async function initDatabase() {
   const migrations = [
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano TEXT DEFAULT 'escola'`,
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pagamento_mp_id TEXT`,
+    `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS licenca_expira TIMESTAMP`,
+    `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS plano_ativo INTEGER DEFAULT 1`,
     // Multi-tenancy: cada admin é uma escola; escola_id = id do admin
     `ALTER TABLE usuarios    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE turmas      ADD COLUMN IF NOT EXISTS escola_id INTEGER`,

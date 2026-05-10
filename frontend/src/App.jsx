@@ -31,6 +31,7 @@ import CorretorProvas from './pages/ia/CorretorProvas'
 import DiagnosticoAluno from './pages/ia/DiagnosticoAluno'
 import CriadorConteudo from './pages/ia/CriadorConteudo'
 import Planos from './pages/Planos'
+import MinhaLicenca from './pages/MinhaLicenca'
 import Usuarios from './pages/Usuarios'
 import CorretorResultados from './pages/CorretorResultados'
 import ResponderAvaliacao from './pages/ResponderAvaliacao'
@@ -115,6 +116,9 @@ export default function App() {
 
         {/* Planos de Assinatura — público para novos clientes */}
         <Route path="/planos" element={<Planos />} />
+
+        {/* Área do cliente — licença e assinatura */}
+        <Route path="/minha-licenca" element={<P><MinhaLicenca /></P>} />
 
         {/* Corretor de Provas — resultados reais */}
         <Route path="/corretor-resultados" element={<Admin><CorretorResultados /></Admin>} />
