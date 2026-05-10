@@ -49,4 +49,7 @@ urlpatterns = [
 
     # API JSON para Dashboard CEITEC
     path('api/resultados-json/', views.api_resultados_json, name='api_resultados_json'),
+
+    # Sync de alunos do sistema ITA → corretor
+    path('api/sync-alunos/', views.api_sync_alunos, name='api_sync_alunos'),
 ]

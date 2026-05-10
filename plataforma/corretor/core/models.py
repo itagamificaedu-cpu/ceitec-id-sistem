@@ -8,8 +8,8 @@ from django.utils import timezone
 
 
 class AlunoITA(models.Model):
-    """Leitura direta da tabela 'alunos' do sistema Node.js (mesmo banco Neon)."""
-    codigo = models.CharField(max_length=20)
+    """Alunos sincronizados do sistema ITA via endpoint /api/sync-alunos/."""
+    codigo = models.CharField(max_length=20, blank=True)
     nome = models.CharField(max_length=200)
     turma = models.CharField(max_length=100)
     turma_id = models.IntegerField(null=True, blank=True)
@@ -19,8 +19,8 @@ class AlunoITA(models.Model):
     data_matricula = models.DateField(null=True, blank=True)
 
     class Meta:
-        managed = False
-        db_table = 'alunos'
+        managed = True
+        db_table = 'alunos_sync'
         ordering = ['nome']
 
     def __str__(self):
