@@ -46,8 +46,22 @@ function createWindow() {
 
   // Links externos abrem no navegador padrão
   win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url === 'about:blank') {
+      // Permite abrir janela em branco (usada pelo corretor/itagame antes de redirecionar)
+      return { action: 'allow' };
+    }
     shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // Quando a janela em branco redirecionar para URL real, abre no navegador e fecha a janela Electron
+  app.on('web-contents-created', (_event, contents) => {
+    contents.on('will-navigate', (_event, navUrl) => {
+      if (!navUrl.startsWith('about:')) {
+        shell.openExternal(navUrl);
+        contents.close();
+      }
+    });
   });
 
   // Sem internet — mostra página offline e inicia verificação automática
