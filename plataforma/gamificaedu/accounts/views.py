@@ -164,7 +164,7 @@ def perfil(request):
 
 
 def login_magico(request):
-    """SSO: auto-login via chave compartilhada — usado pela plataforma ITA (ceitec-id-sistem)."""
+    """SSO: auto-login via chave compartilhada — usado pela plataforma ITA."""
     chave = request.GET.get('chave', '')
     email = request.GET.get('email', '')
     nome = request.GET.get('nome', email.split('@')[0] if email else '')
@@ -179,7 +179,7 @@ def login_magico(request):
         from gamificaedu.core.models import Tenant
         tenant, _ = Tenant.objects.get_or_create(
             nome='ITA Tecnologia',
-            defaults={'dominio': 'ceitec-id-sistem.vercel.app'}
+            defaults={'dominio': 'itatecnologiaeducacional.tech'}
         )
         partes = nome.strip().split(' ', 1)
         professor = Professor(

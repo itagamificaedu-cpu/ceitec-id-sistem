@@ -234,7 +234,7 @@
                     <!-- LOGADO: Acesso direto às ferramentas -->
                     <li class="nav-item"><a class="nav-link" href="/ferramentas/">Repositório</a></li>
                     <li class="nav-item"><a class="nav-link" href="/dashboard/">Itagame</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/dashboard/">Corretor de Provas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://correcaoonlineita.pythonanywhere.com/login-magico/?email={{ request.user.email|urlencode }}&nome={{ request.user.get_full_name|urlencode }}&chave=gamificaedu_secreto_2026&next=/home/" target="_blank">Corretor de Provas</a></li>
                 {% else %}
                     <!-- VISITANTE DESLOGADO -->
                     <li class="nav-item"><a class="nav-link" href="/accounts/login/">Repositório</a></li>
@@ -284,9 +284,9 @@
             <div class="col-md-4">
                 <div class="fw-700 mb-3" style="color:rgba(255,255,255,0.7)">Plataformas</div>
                 <ul class="list-unstyled" style="font-size:0.9rem">
-                    <li class="mb-2"><a href="/#planos">Itagame</a></li>
-                    <li class="mb-2"><a href="/#planos">Corretor de Provas</a></li>
-                    <li class="mb-2"><a href="/#planos">Repositório</a></li>
+                    <li class="mb-2"><a href="/dashboard/">Itagame</a></li>
+                    <li class="mb-2"><a href="https://correcaoonlineita.pythonanywhere.com/" target="_blank">Corretor de Provas</a></li>
+                    <li class="mb-2"><a href="/ferramentas/">Repositório</a></li>
                 </ul>
             </div>
             <div class="col-md-4">
