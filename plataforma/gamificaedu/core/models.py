@@ -32,8 +32,8 @@ class Tenant(models.Model):
 class Assinatura(TenantMixin):
     TIPO_PLANO = (
         ('gratuito', 'Gratuito'),
-        ('educador', 'Educador (R$ 19/mês)'),
-        ('colaborador', 'Colaborador (R$ 39/mês)'),
+        ('educador', 'Professor (R$ 59/mês)'),
+        ('colaborador', 'Colaborador Premium (R$ 79/mês)'),
     )
 
     # <-- Usando a referência oficial do seu usuário customizado

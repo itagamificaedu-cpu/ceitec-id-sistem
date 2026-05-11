@@ -28,7 +28,7 @@
         <div class="icon-3d orange"><i class="fa fa-qrcode"></i></div>
         <h4 class="fw-800 mb-2">Corretor de Provas</h4>
         <p style="color:rgba(255,255,255,.55);font-size:.9rem">Gabaritos com QR Code e correção automática.</p>
-        <a href="/corretor/" class="btn w-100 mt-3" style="background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:30px;padding:11px;font-weight:800;color:#fff">
+        <a href="https://correcaoonlineita.pythonanywhere.com/login-magico/?email={{ request.user.email|urlencode }}&nome={{ request.user.get_full_name|urlencode }}&chave=gamificaedu_secreto_2026&next=/home/" target="_blank" class="btn w-100 mt-3" style="background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:30px;padding:11px;font-weight:800;color:#fff">
           <i class="fa fa-qrcode me-2"></i>Acessar
         </a>
       </div>

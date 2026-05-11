@@ -41,7 +41,7 @@
     <div class="d-flex gap-3 flex-wrap">
         {% if professor.pode_acessar %}
             <a href="https://projetoitagame.pythonanywhere.com/painel/" target="_blank" class="btn-glow-purple btn">🎮 Acessar Itagame</a>
-            <a href="https://sitemadecriaecorrigirdeprovas.pythonanywhere.com/" target="_blank" class="btn-glow-orange btn">📱 Corretor de Provas</a>
+            <a href="https://correcaoonlineita.pythonanywhere.com/login-magico/?email={{ request.user.email|urlencode }}&nome={{ request.user.get_full_name|urlencode }}&chave=gamificaedu_secreto_2026&next=/home/" target="_blank" class="btn-glow-orange btn">📱 Corretor de Provas</a>
         {% endif %}
         <a href="/accounts/logout/" class="btn" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:25px;color:#fca5a5;padding:10px 24px;font-weight:700">Sair</a>
     </div>

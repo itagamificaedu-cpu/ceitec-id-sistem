@@ -121,7 +121,7 @@
                     </div>
                     <div class="mt-4">
     {% if user.is_authenticated %}
-        <a href="/dashboard/" class="btn-glow-orange btn w-100">Acessar Corretor</a>
+        <a href="https://correcaoonlineita.pythonanywhere.com/login-magico/?email={{ request.user.email|urlencode }}&nome={{ request.user.get_full_name|urlencode }}&chave=gamificaedu_secreto_2026&next=/home/" target="_blank" class="btn-glow-orange btn w-100">Acessar Corretor</a>
     {% else %}
         <a href="/accounts/login/" class="btn-glow-orange btn w-100">Entrar para acessar</a>
     {% endif %}
@@ -191,45 +191,51 @@
 
     <div class="row justify-content-center g-4 mt-4">
 
-      <!-- Plano Educador -->
+      <!-- Plano Professor -->
       <div class="col-md-5 fade-up">
         <div class="card-3d h-100" style="background: rgba(255,255,255,0.03); border: 2px solid rgba(124,58,237,0.3); border-radius: 20px; padding: 40px; overflow: visible !important;">
           <div class="text-center mb-4">
-            <h3 class="fw-800" style="color: #a78bfa; font-size: 1.8rem;">Educador</h3>
-            <div class="fs-1 fw-900 text-white mt-3" style="font-size: 3rem !important;">R$ 19<span class="fs-5" style="color: rgba(255,255,255,0.5);">/mês</span></div>
+            <h3 class="fw-800" style="color: #a78bfa; font-size: 1.8rem;">Plano Professor</h3>
+            <div class="fs-1 fw-900 text-white mt-3" style="font-size: 3rem !important;">R$ 59<span class="fs-5" style="color: rgba(255,255,255,0.5);">/mês</span></div>
+            <div style="color: rgba(255,255,255,0.45); font-size: 0.85rem; margin-top: 4px;">ou R$ 590/ano (2 meses grátis)</div>
           </div>
           <ul class="list-unstyled mb-5" style="color: rgba(255,255,255,0.8); line-height: 2.5; font-size: 1.05rem;">
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Acesso total ao <strong>Itagame</strong></li>
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Acesso ao <strong>Corretor de Provas</strong></li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>IA:</strong> Gerador de planos de aula</li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>IA:</strong> Criador de questões</li>
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Downloads ilimitados no Repositório</li>
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Suporte por email</li>
           </ul>
           <a href="/assinar/educador/" class="btn-glow-purple btn w-100 py-3 fw-bold" style="border-radius: 30px; font-size: 1.1rem;">
-            Assinar Plano Educador
+            Assinar Plano Professor
           </a>
         </div>
       </div>
 
-      <!-- Plano Colaborador (COM MARGEM NO TOPO PARA O SELO NÃO CORTAR) -->
+      <!-- Plano Colaborador Premium (COM MARGEM NO TOPO PARA O SELO NÃO CORTAR) -->
       <div class="col-md-5 fade-up" style="margin-top: 25px;">
         <div class="card-3d orange h-100" style="background: rgba(255,255,255,0.03); border: 2px solid rgba(249,115,22,0.3); border-radius: 20px; padding: 40px; position: relative; overflow: visible !important;">
           <!-- Badge de Recomendado -->
           <div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 6px 24px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 5px 15px rgba(249,115,22,0.4); z-index: 10; white-space: nowrap;">
-            MAIS POPULAR
+            MAIS COMPLETO
           </div>
 
           <div class="text-center mb-4">
-            <h3 class="fw-800" style="color: #fb923c; font-size: 1.8rem;">Colaborador</h3>
-            <div class="fs-1 fw-900 text-white mt-3" style="font-size: 3rem !important;">R$ 39<span class="fs-5" style="color: rgba(255,255,255,0.5);">/mês</span></div>
+            <h3 class="fw-800" style="color: #fb923c; font-size: 1.8rem;">Colaborador Premium</h3>
+            <div class="fs-1 fw-900 text-white mt-3" style="font-size: 3rem !important;">R$ 79<span class="fs-5" style="color: rgba(255,255,255,0.5);">/mês</span></div>
+            <div style="color: rgba(255,255,255,0.45); font-size: 0.85rem; margin-top: 4px;">ou R$ 790/ano (2 meses grátis)</div>
           </div>
           <ul class="list-unstyled mb-5" style="color: rgba(255,255,255,0.8); line-height: 2.5; font-size: 1.05rem;">
-            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>Tudo do plano Educador</strong></li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>Tudo do Plano Professor</strong></li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>IA:</strong> Diagnóstico de alunos</li>
+            <li><i class="fa fa-check me-3" style="color: #10b981;"></i> <strong>IA:</strong> Criador de conteúdo</li>
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Selo exclusivo de Colaborador</li>
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Suporte prioritário via WhatsApp</li>
             <li><i class="fa fa-check me-3" style="color: #10b981;"></i> Acesso antecipado a novidades</li>
           </ul>
           <a href="/assinar/colaborador/" class="btn-glow-orange btn w-100 py-3 fw-bold" style="border-radius: 30px; font-size: 1.1rem;">
-            Assinar Plano Colaborador
+            Assinar Colaborador Premium
           </a>
         </div>
       </div>
