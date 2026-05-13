@@ -1,4 +1,5 @@
 {% extends 'ita_core/base_portal.html' %}
+{% load static %}
 {% block title %}{{ quiz.titulo }} — Quiz{% endblock %}
 
 {% block extra_css %}
@@ -108,7 +109,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="quiz-arena">
+{# data-prova-id lido pelo monitoramento_foco.js para identificar a prova #}
+<div class="quiz-arena" id="monitoramento-ctx" data-prova-id="{{ quiz.pk }}">
 
   <!-- TELA INICIAL -->
   <div id="tela-inicio">
@@ -325,4 +327,7 @@ function getCookie(name) {
   return v ? v[2] : null;
 }
 </script>
+
+{# ── Monitoramento de foco — carregado APENAS nesta página de avaliação ── #}
+<script src="{% static 'monitoramento/js/monitoramento_foco.js' %}"></script>
 {% endblock %}
