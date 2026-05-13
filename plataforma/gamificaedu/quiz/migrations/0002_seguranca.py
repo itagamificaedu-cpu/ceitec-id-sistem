@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('quiz', '0001_initial'),
+        ('gamificaedu_quiz', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -102,7 +102,7 @@ class Migration(migrations.Migration):
                 ('quiz', models.ForeignKey(
                     on_delete=django.db.models.deletion.CASCADE,
                     related_name='registros_acesso',
-                    to='quiz.quiz',
+                    to='gamificaedu_quiz.quiz',
                     verbose_name='Quiz',
                 )),
             ],
@@ -145,7 +145,7 @@ class Migration(migrations.Migration):
                 ('quiz', models.ForeignKey(
                     on_delete=django.db.models.deletion.CASCADE,
                     related_name='tentativas_suspeitas',
-                    to='quiz.quiz',
+                    to='gamificaedu_quiz.quiz',
                     verbose_name='Quiz',
                 )),
             ],
