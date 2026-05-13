@@ -6,6 +6,8 @@ import Alunos from './pages/Alunos'
 import CadastroAluno from './pages/CadastroAluno'
 import Carteirinha from './pages/Carteirinha'
 import Scanner from './pages/Scanner'
+import ScannerAlmoco from './pages/ScannerAlmoco'
+import RelatorioAlmoco from './pages/RelatorioAlmoco'
 import Relatorios from './pages/Relatorios'
 import Justificativas from './pages/Justificativas'
 import Desempenho from './pages/Desempenho'
@@ -68,6 +70,8 @@ export default function App() {
         <Route path="/alunos/:id/carteirinha" element={<Admin><Carteirinha /></Admin>} />
         <Route path="/alunos/:id/perfil" element={<Admin><PerfilAluno /></Admin>} />
         <Route path="/scanner" element={<Admin><Scanner /></Admin>} />
+        <Route path="/almoco/scanner" element={<Admin><ScannerAlmoco /></Admin>} />
+        <Route path="/almoco/relatorio" element={<Admin><RelatorioAlmoco /></Admin>} />
         <Route path="/relatorios" element={<Admin><Relatorios /></Admin>} />
         <Route path="/justificativas" element={<Admin><Justificativas /></Admin>} />
         <Route path="/desempenho" element={<Admin><Desempenho /></Admin>} />

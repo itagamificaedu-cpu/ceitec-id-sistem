@@ -10,6 +10,8 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/dashboard', label: 'Dashboard Geral', icon: '🏠' },
       { path: '/scanner', label: 'Scanner de Presença', icon: '📷' },
+      { path: '/almoco/scanner', label: 'Scanner de Almoço', icon: '🍽️' },
+      { path: '/almoco/relatorio', label: 'Relatório de Almoço', icon: '📋' },
       { path: '/usuarios', label: 'Gerenciar Usuários', icon: '🔑' },
     ]
   },
