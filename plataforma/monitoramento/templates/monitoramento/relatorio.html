@@ -1,0 +1,174 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Monitoramento de Foco — Prova {{ prova_id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Cabeçalho ─────────────────────────────────────────── */
+  .monitor-header {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    color: #fff;
+  }
+  .monitor-header h2 { font-size: 1.6rem; font-weight: 900; margin: 0 0 6px; }
+  .monitor-header p  { color: rgba(255,255,255,0.65); margin: 0; font-size: 0.9rem; }
+
+  /* ── Tabela ────────────────────────────────────────────── */
+  .tabela-monitor thead th {
+    background: #1e1b4b;
+    color: #a5b4fc;
+    font-size: 0.78rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border: none;
+    padding: 14px 16px;
+  }
+  .tabela-monitor tbody tr { transition: background .15s; }
+  .tabela-monitor tbody tr:hover { background: #f5f3ff; }
+  .tabela-monitor td { vertical-align: middle; padding: 14px 16px; border-color: #f0eeff; }
+
+  /* ── Número de saídas ──────────────────────────────────── */
+  .num-saidas { font-size: 1.6rem; font-weight: 900; line-height: 1; }
+  .num-normal   { color: #16a34a; }
+  .num-atencao  { color: #d97706; }
+  .num-suspeito { color: #dc2626; }
+
+  /* ── Badges ────────────────────────────────────────────── */
+  .badge-monitor {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 999px;
+    letter-spacing: .05em;
+  }
+  .badge-NORMAL   { background: #dcfce7; color: #15803d; }
+  .badge-ATENCAO  { background: #fef9c3; color: #92400e; }
+  .badge-SUSPEITO { background: #fee2e2; color: #991b1b; }
+
+  /* ── Chips de horário ──────────────────────────────────── */
+  .chip-horario {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin: 2px 3px 2px 0;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* ── Legenda ───────────────────────────────────────────── */
+  .legenda-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-top: 28px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  {# ── Cabeçalho ────────────────────────────────────────────── #}
+  <div class="monitor-header d-flex align-items-start justify-content-between flex-wrap gap-3">
+    <div>
+      <h2>👁 Monitoramento de Foco</h2>
+      <p>
+        Prova ID: <code style="background:rgba(255,255,255,.15); padding:2px 8px; border-radius:6px;">{{ prova_id }}</code>
+        &nbsp;&middot;&nbsp;
+        {{ total_alunos }} aluno{{ total_alunos|pluralize }} monitorado{{ total_alunos|pluralize }}
+      </p>
+    </div>
+    <a href="?exportar=csv" class="btn btn-success fw-bold px-4">
+      <i class="fas fa-file-csv me-2"></i>Exportar CSV
+    </a>
+  </div>
+
+  {# ── Sem registros ────────────────────────────────────────── #}
+  {% if not alunos_lista %}
+  <div class="alert alert-info d-flex align-items-center gap-3" role="alert">
+    <i class="fas fa-info-circle fa-lg"></i>
+    <span>Nenhum registro de monitoramento encontrado para esta prova. Os dados aparecem assim que os alunos iniciam a avaliação.</span>
+  </div>
+
+  {# ── Tabela de resultados ─────────────────────────────────── #}
+  {% else %}
+  <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table tabela-monitor mb-0">
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th class="text-center">Saídas</th>
+            <th class="text-center">Classificação</th>
+            <th>Horários das saídas</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dados in alunos_lista %}
+          <tr>
+
+            {# Nome e e-mail #}
+            <td>
+              <strong class="d-block">{{ dados.aluno.get_full_name|default:dados.aluno.email }}</strong>
+              <small class="text-muted">{{ dados.aluno.email }}</small>
+            </td>
+
+            {# Número de saídas com cor por nível #}
+            <td class="text-center">
+              <span class="num-saidas
+                {% if dados.badge == 'NORMAL' %}num-normal
+                {% elif dados.badge == 'ATENÇÃO' %}num-atencao
+                {% else %}num-suspeito{% endif %}">
+                {{ dados.total_saidas }}
+              </span>
+            </td>
+
+            {# Badge de classificação #}
+            <td class="text-center">
+              <span class="badge-monitor
+                {% if dados.badge == 'NORMAL' %}badge-NORMAL
+                {% elif dados.badge == 'ATENÇÃO' %}badge-ATENCAO
+                {% else %}badge-SUSPEITO{% endif %}">
+                {{ dados.badge }}
+              </span>
+            </td>
+
+            {# Lista de horários das saídas #}
+            <td>
+              {% if dados.saidas %}
+                {% for horario in dados.saidas %}
+                  <span class="chip-horario">{{ horario|date:"d/m H:i:s" }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted small">Nenhuma saída</span>
+              {% endif %}
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ── Legenda ──────────────────────────────────────────────── #}
+  <div class="legenda-card">
+    <h6 class="fw-bold mb-3">📋 Legenda de classificação</h6>
+    <div class="d-flex flex-wrap gap-3 mb-3">
+      <span class="badge-monitor badge-NORMAL">NORMAL — 0 a 1 saída</span>
+      <span class="badge-monitor badge-ATENCAO">ATENÇÃO — 2 a 3 saídas</span>
+      <span class="badge-monitor badge-SUSPEITO">SUSPEITO — 4 ou mais saídas</span>
+    </div>
+    <p class="text-muted small mb-0">
+      ⚠️ Este relatório é apenas informativo. A decisão sobre penalidades ou revisão da prova é exclusiva do professor.
+    </p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

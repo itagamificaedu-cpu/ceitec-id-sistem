@@ -32,6 +32,11 @@ urlpatterns = [
 
     # Rotas legacy do gamificaedu.core (URLs usadas em templates existentes)
     path('', include('gamificaedu.core.urls')),
+
+    # ── Monitoramento de foco (anti-cheat) ────────────────────────
+    # /api/monitoramento/registrar/          ← recebe eventos do JS
+    # /professor/monitoramento/<prova_id>/   ← relatório do professor
+    path('', include('monitoramento.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

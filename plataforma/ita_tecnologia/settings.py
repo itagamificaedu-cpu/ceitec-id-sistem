@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'gamificaedu.gamification',
     'gamificaedu.quiz.apps.QuizConfig',
     'corretor.core',
+    # Sistema de monitoramento de foco (anti-cheat)
+    'monitoramento.apps.MonitoramentoConfig',
 ]
 
 MIDDLEWARE = [
