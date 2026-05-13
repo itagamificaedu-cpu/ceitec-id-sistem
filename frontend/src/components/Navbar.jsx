@@ -123,26 +123,23 @@ export default function Navbar() {
     else abrirUrl(url)
   }
 
-  async function abrirCorretor() {
-    try {
-      const { data: alunos } = await api.get('/alunos')
-      await fetch('https://itatecnologiaeducacional.tech/corretor/api/sync-alunos/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chave: 'gamificaedu_secreto_2026',
-          email: usuario.email || '',
-          alunos: alunos.map(a => ({ nome: a.nome, turma: a.turma, codigo: a.codigo })),
-        }),
-      })
-    } catch (_) {}
-
+  function abrirCorretor() {
+    // Navega imediatamente — sem aguardar sincronização
     const url = corretorSsoUrl()
     if (window.electronAPI?.isElectron) {
       abrirUrl(url)
     } else {
       window.location.href = url
     }
+    // Sincroniza alunos em segundo plano (não bloqueia abertura)
+    api.get('/alunos').then(({ data: alunos }) => {
+      fetch('https://itatecnologiaeducacional.tech/corretor/api/sync-alunos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chave: 'gamificaedu_secreto_2026', email: usuario.email || '', alunos: alunos.map(a => ({ nome: a.nome, turma: a.turma, codigo: a.codigo })) }),
+        keepalive: true,
+      }).catch(() => {})
+    }).catch(() => {})
   }
 
   const isProfessor = usuario.perfil === 'professor'
