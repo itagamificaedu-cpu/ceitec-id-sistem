@@ -72,9 +72,9 @@ export default function Navbar() {
       email: usuario.email || '',
       nome: usuario.nome || '',
       chave: 'gamificaedu_secreto_2026',
-      next: '/corretor/',
+      next: '/home/',
     })
-    return `https://itatecnologiaeducacional.tech/accounts/login-magico/?${params.toString()}`
+    return `https://correcaoonlineita.pythonanywhere.com/login-magico/?${params.toString()}`
   }
 
   function abrirUrl(url) {
