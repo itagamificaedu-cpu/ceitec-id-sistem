@@ -124,9 +124,6 @@ export default function Navbar() {
   }
 
   async function abrirCorretor() {
-    // No navegador abre about:blank antes do await para evitar bloqueio de popup
-    const janela = window.electronAPI?.isElectron ? null : window.open('about:blank', '_blank')
-
     try {
       const { data: alunos } = await api.get('/alunos')
       await fetch('https://itatecnologiaeducacional.tech/corretor/api/sync-alunos/', {
@@ -141,8 +138,11 @@ export default function Navbar() {
     } catch (_) {}
 
     const url = corretorSsoUrl()
-    if (janela) janela.location.href = url
-    else abrirUrl(url)
+    if (window.electronAPI?.isElectron) {
+      abrirUrl(url)
+    } else {
+      window.location.href = url
+    }
   }
 
   const isProfessor = usuario.perfil === 'professor'
