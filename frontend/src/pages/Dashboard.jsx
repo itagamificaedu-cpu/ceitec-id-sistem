@@ -163,9 +163,14 @@ export default function Dashboard() {
               <h1 className="text-2xl font-bold text-textMain">Dashboard</h1>
               <p className="text-sm text-gray-400">Bem-vindo, {usuario.nome}</p>
             </div>
-            <Link to="/scanner" className="btn-primary hidden md:flex items-center gap-2">
-              <span>📷</span> Scanner
-            </Link>
+            <div className="hidden md:flex items-center gap-2">
+              <Link to="/scanner" className="btn-primary flex items-center gap-2">
+                <span>📷</span> Presença
+              </Link>
+              <Link to="/almoco/scanner" className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold text-sm hover:opacity-90 transition-opacity" style={{ background: '#b45309' }}>
+                <span>🍽️</span> Almoço
+              </Link>
+            </div>
           </div>
 
           {carregando ? (
@@ -185,6 +190,7 @@ export default function Dashboard() {
                   { icon: '📝', label: 'Avaliações', to: '/avaliacoes', cor: '#27ae60' },
                   { icon: '🎮', label: 'ItagGame', to: '/itagame', cor: '#f5a623' },
                   { icon: '🤖', label: 'IA', to: '/ia/questoes', cor: '#9b59b6' },
+                  { icon: '🍽️', label: 'Controle de Almoço', to: '/almoco/relatorio', cor: '#b45309' },
                   { icon: '📋', label: 'Corretor de Provas', to: '/corretor-resultados', cor: '#1a237e' },
                   { icon: '📊', label: 'Desempenho', to: '/desempenho', cor: '#8e44ad' },
                   { icon: '📈', label: 'Relatórios', to: '/relatorios', cor: '#16a085' },

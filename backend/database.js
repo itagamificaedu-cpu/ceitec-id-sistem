@@ -26,6 +26,7 @@ async function initDatabase() {
     `ALTER TABLE itagame_historico ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE justificativas    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE quiz_resultados   ADD COLUMN IF NOT EXISTS aluno_codigo TEXT`,
+    `ALTER TABLE almoco_registros  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     // Cada admin tem escola_id = próprio id
     `UPDATE usuarios SET escola_id = id WHERE perfil = 'admin' AND escola_id IS NULL`,
     // Demais usuários herdaram escola do admin ITA (dados demo)
@@ -67,6 +68,7 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS quizzes (id SERIAL PRIMARY KEY, titulo TEXT NOT NULL, descricao TEXT DEFAULT '', tempo_por_questao INTEGER DEFAULT 30, ativo INTEGER DEFAULT 1, codigo_acesso TEXT UNIQUE, escola_id INTEGER, criado_por INTEGER, criado_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS quiz_questoes (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, enunciado TEXT NOT NULL, alt_a TEXT NOT NULL, alt_b TEXT NOT NULL, alt_c TEXT, alt_d TEXT, resposta_correta INTEGER DEFAULT 0, ordem INTEGER DEFAULT 0)`,
     `CREATE TABLE IF NOT EXISTS quiz_resultados (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, aluno_nome TEXT DEFAULT 'Participante', acertos INTEGER DEFAULT 0, total INTEGER DEFAULT 0, percentual INTEGER DEFAULT 0, tempo_total INTEGER DEFAULT 0, respondido_em TIMESTAMP DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS almoco_registros (id SERIAL PRIMARY KEY, aluno_id INTEGER NOT NULL, data DATE NOT NULL, hora_registro TEXT, registrado_por TEXT DEFAULT 'scanner', escola_id INTEGER)`,
   ];
 
   for (const sql of tabelas) {
