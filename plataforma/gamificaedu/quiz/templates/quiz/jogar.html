@@ -109,7 +109,15 @@
 {% endblock %}
 
 {% block content %}
-{# data-prova-id lido pelo monitoramento_foco.js para identificar a prova #}
+{# Contexto para monitoramento_foco.js (anti-cheat) e verificacao_pin.js (identidade) #}
+<div id="verificacao-ctx"
+     data-autorizado="{{ ja_autorizado|yesno:'true,false' }}"
+     data-tem-pin="{{ tem_pin|yesno:'true,false' }}"
+     data-quiz-id="{{ quiz.pk }}"
+     data-nome-aluno="{{ request.user.get_full_name|default:request.user.email }}"
+     style="display:none;">
+</div>
+
 <div class="quiz-arena" id="monitoramento-ctx" data-prova-id="{{ quiz.pk }}">
 
   <!-- TELA INICIAL -->
@@ -328,6 +336,9 @@ function getCookie(name) {
 }
 </script>
 
-{# ── Monitoramento de foco — carregado APENAS nesta página de avaliação ── #}
+{# ── Monitoramento de foco — anti-cheat ────────────────────────────────── #}
 <script src="{% static 'monitoramento/js/monitoramento_foco.js' %}"></script>
+
+{# ── Verificação de identidade — modal de PIN antes de iniciar ─────────── #}
+<script src="{% static 'quiz/js/verificacao_pin.js' %}"></script>
 {% endblock %}

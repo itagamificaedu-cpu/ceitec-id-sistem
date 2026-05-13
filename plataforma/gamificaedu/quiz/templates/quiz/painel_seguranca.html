@@ -1,0 +1,321 @@
+{% extends 'ita_core/base_portal.html' %}
+{% block title %}Segurança das Avaliações — ItagGame{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Layout geral ────────────────────────────────── */
+  .seg-header {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(108,99,255,.3);
+    border-radius: 18px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+  }
+  .seg-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 0 0 6px;
+  }
+  .seg-header p { color: rgba(255,255,255,.5); font-size: .87rem; margin: 0; }
+
+  /* ── Cards de estatísticas rápidas ──────────────── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+    gap: 1rem;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--card, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: var(--shadow, 0 1px 4px rgba(0,0,0,.06));
+  }
+  .stat-card .num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #6c63ff;
+  }
+  .stat-card .lbl {
+    font-size: .73rem;
+    color: var(--muted, #6b7280);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 4px;
+    letter-spacing: .04em;
+  }
+
+  /* ── Painéis com abas ────────────────────────────── */
+  .seg-tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: -1px;
+    flex-wrap: wrap;
+  }
+  .seg-tab {
+    padding: 9px 20px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    font-size: .83rem;
+    font-weight: 700;
+    color: var(--muted, #6b7280);
+    background: var(--bg, #f9fafb);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .seg-tab.ativa {
+    background: var(--card, #fff);
+    color: #6c63ff;
+    border-color: var(--border, #e5e7eb);
+  }
+  .seg-panel {
+    background: var(--card, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 0 14px 14px 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .seg-panel-body { padding: 0; overflow-x: auto; }
+  .tab-content { display: none; }
+  .tab-content.ativo { display: block; }
+
+  /* ── Tabelas ─────────────────────────────────────── */
+  .tabela-seg th {
+    background: #f5f3ff;
+    color: #6c63ff;
+    font-size: .73rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border: none;
+    white-space: nowrap;
+  }
+  .tabela-seg td {
+    padding: 12px 16px;
+    font-size: .83rem;
+    border-color: #f5f3ff;
+    vertical-align: middle;
+  }
+  .tabela-seg tbody tr:hover { background: #faf9ff; }
+
+  /* ── Badges de método ────────────────────────────── */
+  .badge-sso { background: #e0e7ff; color: #3730a3; }
+  .badge-pin { background: #d1fae5; color: #065f46; }
+  .badge-block { background: #fee2e2; color: #991b1b; }
+  .metodo-badge {
+    font-size: .72rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    letter-spacing: .03em;
+  }
+
+  /* ── PIN status ──────────────────────────────────── */
+  .pin-ok    { color: #16a34a; font-weight: 800; }
+  .pin-block { color: #dc2626; font-weight: 800; }
+
+  /* ── Botões de exportação ────────────────────────── */
+  .btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: 7px 16px;
+    background: #6c63ff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: filter .2s;
+  }
+  .btn-export:hover { filter: brightness(1.12); color: #fff; }
+  .btn-export.verde { background: #16a34a; }
+
+  /* ── Mensagem vazia ──────────────────────────────── */
+  .vazio {
+    text-align: center;
+    padding: 36px;
+    color: var(--muted, #6b7280);
+    font-size: .87rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/portal/">🏠 Portal</a>
+  <span>/ <a href="/itagame/">🎮 ItagGame</a></span>
+  <span>/ 🔐 Segurança das Avaliações</span>
+</div>
+
+{# ── Cabeçalho ───────────────────────────────────────────────── #}
+<div class="seg-header">
+  <h1>🔐 Segurança das Avaliações</h1>
+  <p>PINs cadastrados, registros de acesso e tentativas suspeitas nos quizzes.</p>
+</div>
+
+{# ── Stats rápidas ───────────────────────────────────────────── #}
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="num">{{ pins|length }}</div>
+    <div class="lbl">PINs Cadastrados</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ acessos|length }}</div>
+    <div class="lbl">Acessos (200 recentes)</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ suspeitas|length }}</div>
+    <div class="lbl">Tentativas Suspeitas</div>
+  </div>
+</div>
+
+{# ── Abas ────────────────────────────────────────────────────── #}
+<div class="seg-tabs">
+  <button class="seg-tab ativa" onclick="trocarAba(this, 'aba-acessos')">📋 Acessos</button>
+  <button class="seg-tab"       onclick="trocarAba(this, 'aba-pins')">🔑 PINs por Aluno</button>
+  <button class="seg-tab"       onclick="trocarAba(this, 'aba-suspeitas')">⚠️ Tentativas Suspeitas</button>
+</div>
+
+<div class="seg-panel">
+  <div class="seg-panel-body">
+
+    {# ── ABA 1: Registros de Acesso ──────────────────────────── #}
+    <div id="aba-acessos" class="tab-content ativo">
+      <div style="padding:12px 16px;border-bottom:1px solid #f5f3ff;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span style="font-weight:700;font-size:.85rem;color:#6c63ff;">Últimos 200 acessos autenticados</span>
+        <a href="?exportar=acessos" class="btn-export verde">⬇ CSV</a>
+      </div>
+      {% if acessos %}
+      <table class="table tabela-seg mb-0">
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th>Quiz</th>
+            <th>Método</th>
+            <th>IP</th>
+            <th>Data / Hora</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in acessos %}
+          <tr>
+            <td>
+              <strong>{{ a.aluno.get_full_name|default:a.aluno.email }}</strong>
+              <small class="d-block text-muted">{{ a.aluno.email }}</small>
+            </td>
+            <td>{{ a.quiz.titulo }}</td>
+            <td>
+              <span class="metodo-badge {% if a.metodo_autenticacao == 'sso' %}badge-sso{% else %}badge-pin{% endif %}">
+                {% if a.metodo_autenticacao == 'sso' %}🛡 CEITEC ID{% else %}🔑 PIN{% endif %}
+              </span>
+            </td>
+            <td><code style="font-size:.78rem;">{{ a.ip|default:"—" }}</code></td>
+            <td style="white-space:nowrap;">{{ a.timestamp|date:"d/m/Y H:i:s" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="vazio">Nenhum acesso registrado ainda.</div>
+      {% endif %}
+    </div>
+
+    {# ── ABA 2: PINs por Aluno ────────────────────────────────── #}
+    <div id="aba-pins" class="tab-content">
+      <div style="padding:12px 16px;border-bottom:1px solid #f5f3ff;">
+        <span style="font-weight:700;font-size:.85rem;color:#6c63ff;">PINs cadastrados pelos alunos</span>
+      </div>
+      {% if pins %}
+      <table class="table tabela-seg mb-0">
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th>Email</th>
+            <th class="text-center">Tentativas Falhas</th>
+            <th class="text-center">Status</th>
+            <th>Cadastrado em</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pins %}
+          <tr>
+            <td><strong>{{ p.usuario.get_full_name|default:p.usuario.email }}</strong></td>
+            <td>{{ p.usuario.email }}</td>
+            <td class="text-center">{{ p.tentativas_falhas }}</td>
+            <td class="text-center">
+              {% if p.esta_bloqueado %}
+                <span class="metodo-badge badge-block">🔒 BLOQUEADO</span>
+              {% else %}
+                <span class="metodo-badge badge-pin">✅ ATIVO</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap;">{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="vazio">Nenhum aluno cadastrou PIN ainda.</div>
+      {% endif %}
+    </div>
+
+    {# ── ABA 3: Tentativas Suspeitas ──────────────────────────── #}
+    <div id="aba-suspeitas" class="tab-content">
+      <div style="padding:12px 16px;border-bottom:1px solid #f5f3ff;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span style="font-weight:700;font-size:.85rem;color:#dc2626;">⚠️ Alertas de segurança</span>
+        {% if suspeitas %}
+        <a href="?exportar=suspeitas" class="btn-export">⬇ CSV</a>
+        {% endif %}
+      </div>
+      {% if suspeitas %}
+      <table class="table tabela-seg mb-0">
+        <thead>
+          <tr>
+            <th>Identificação Tentada</th>
+            <th>Quiz</th>
+            <th>IP</th>
+            <th>Motivo</th>
+            <th>Data / Hora</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in suspeitas %}
+          <tr>
+            <td><strong>{{ s.aluno_tentado }}</strong></td>
+            <td>{{ s.quiz.titulo }}</td>
+            <td><code style="font-size:.78rem;">{{ s.ip|default:"—" }}</code></td>
+            <td><span style="color:#dc2626;font-size:.82rem;">{{ s.motivo }}</span></td>
+            <td style="white-space:nowrap;">{{ s.timestamp|date:"d/m/Y H:i:s" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="vazio">✅ Nenhuma tentativa suspeita registrada.</div>
+      {% endif %}
+    </div>
+
+  </div>{# /.seg-panel-body #}
+</div>{# /.seg-panel #}
+
+<script>
+/* Troca de abas sem reload */
+function trocarAba(btn, abaId) {
+  document.querySelectorAll('.seg-tab').forEach(function(b) { b.classList.remove('ativa'); });
+  document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('ativo'); });
+  btn.classList.add('ativa');
+  var el = document.getElementById(abaId);
+  if (el) el.classList.add('ativo');
+}
+</script>
+{% endblock %}

@@ -1,10 +1,62 @@
+import csv
 import json
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+
 from django.contrib import messages
-from .models import Quiz, Questao, Alternativa, ResultadoQuiz, RespostaUsuario
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from .models import (
+    AlunoPin, Quiz, Questao, Alternativa,
+    RegistroAcessoProva, RespostaUsuario, ResultadoQuiz, TentativaSuspeita,
+)
+
+
+# ── Helper: obtém IP real mesmo por trás de proxy/nginx ───────────
+def _obter_ip(request):
+    """Retorna o IP real do cliente considerando cabeçalhos de proxy."""
+    ip_forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if ip_forwarded:
+        return ip_forwarded.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', '')
+
+
+# ── Helper: concede badge "Acesso Autenticado" (apenas 1 vez) ─────
+def _conceder_badge_acesso_autenticado(usuario):
+    """
+    Cria o badge 'Acesso Autenticado' no tenant do usuário (se não existir)
+    e o concede ao usuário na primeira verificação bem-sucedida.
+    Não concede XP — é apenas um badge de segurança.
+    Retorna True se o badge foi concedido agora, False se já tinha.
+    """
+    try:
+        from gamificaedu.gamification.models import Conquista, ConquistaUsuario
+        tenant = getattr(usuario, 'tenant', None)
+
+        # Busca ou cria o badge de segurança
+        badge, _ = Conquista.objects.get_or_create(
+            titulo='Acesso Autenticado',
+            tenant=tenant,
+            defaults={
+                'descricao': 'Verificou a identidade para acessar uma avaliação com segurança.',
+                'icone': 'fa-shield-alt',
+                'pontos_necessarios': 0,
+            },
+        )
+
+        # Só concede se ainda não tem
+        if not ConquistaUsuario.objects.filter(usuario=usuario, conquista=badge).exists():
+            ConquistaUsuario.objects.create(
+                usuario=usuario,
+                conquista=badge,
+                tenant=tenant,
+            )
+            return True   # badge concedido agora
+        return False      # já possuía o badge
+    except Exception:
+        # Falha silenciosa — não bloqueia o fluxo de verificação
+        return False
 
 
 @login_required
@@ -116,6 +168,16 @@ def _reordenar_questoes(quiz):
 @login_required
 def jogar_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id, ativo=True)
+
+    # ── Verificação de identidade ──────────────────────────────────
+    # A chave de sessão confirma que o aluno passou pela verificação
+    # nesta sessão. O modal de PIN é mostrado no template se não autorizado.
+    sessao_key = f'quiz_autorizado_{quiz_id}'
+    ja_autorizado = (request.session.get(sessao_key) == request.user.pk)
+
+    # Verifica se o aluno já configurou um PIN
+    tem_pin = AlunoPin.objects.filter(usuario=request.user).exists()
+
     questoes_data = []
     for q in quiz.questoes.prefetch_related('alternativas'):
         alts = list(q.alternativas.values('id', 'texto', 'correta'))
@@ -130,6 +192,8 @@ def jogar_quiz(request, quiz_id):
         'quiz': quiz,
         'questoes_json': json.dumps(questoes_data, ensure_ascii=False),
         'usuario': request.user,
+        'ja_autorizado': ja_autorizado,
+        'tem_pin': tem_pin,
         'plano_atual': payload.get('plano', '') if payload else getattr(request.user, 'plano', ''),
         'dias_restantes': payload.get('dias_restantes', 0) if payload else 0,
     })
@@ -139,6 +203,22 @@ def jogar_quiz(request, quiz_id):
 @require_POST
 def salvar_resultado(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
+
+    # ── Proteção: rejeita envio se o aluno não passou pela verificação ──
+    sessao_key = f'quiz_autorizado_{quiz_id}'
+    if request.session.get(sessao_key) != request.user.pk:
+        # Registra como tentativa suspeita
+        TentativaSuspeita.objects.create(
+            aluno_tentado=str(request.user.email),
+            quiz=quiz,
+            ip=_obter_ip(request),
+            motivo='Tentativa de enviar respostas sem autorização de identidade',
+        )
+        return JsonResponse(
+            {'erro': 'Acesso não autorizado. Confirme sua identidade antes de iniciar a avaliação.'},
+            status=403,
+        )
+
     try:
         dados = json.loads(request.body)
         respostas = dados.get('respostas', [])
@@ -189,5 +269,235 @@ def ver_resultado(request, resultado_id):
         'respostas': respostas,
         'usuario': request.user,
         'plano_atual': payload.get('plano', '') if payload else getattr(request.user, 'plano', ''),
+        'dias_restantes': payload.get('dias_restantes', 0) if payload else 0,
+    })
+
+
+# ══════════════════════════════════════════════════════════════════
+# ENDPOINTS DE SEGURANÇA
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+@require_POST
+def verificar_pin(request):
+    """
+    POST /quiz/api/verificar-pin/
+
+    Verifica o PIN de segurança do aluno antes de iniciar o quiz.
+    Payload JSON esperado:
+        { "pin": "123456", "quiz_id": 42 }
+
+    Em caso de sucesso:
+        - Grava a chave de sessão 'quiz_autorizado_<quiz_id>'
+        - Registra o acesso em RegistroAcessoProva
+        - Concede o badge 'Acesso Autenticado' (1ª vez apenas)
+        - Retorna {"autorizado": true, "badge_concedido": bool}
+
+    Em caso de falha:
+        - Incrementa tentativas_falhas no AlunoPin
+        - Após 3 falhas: bloqueia por 10 min e registra TentativaSuspeita
+        - Retorna {"autorizado": false, "erro": "...", "tentativas_restantes": N}
+    """
+    try:
+        dados = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'autorizado': False, 'erro': 'Dados inválidos'}, status=400)
+
+    pin_texto = str(dados.get('pin', '')).strip()
+    quiz_id   = dados.get('quiz_id')
+
+    if not pin_texto or not quiz_id:
+        return JsonResponse({'autorizado': False, 'erro': 'PIN e quiz_id são obrigatórios'}, status=400)
+
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+
+    # Verifica se o aluno possui PIN cadastrado
+    try:
+        aluno_pin = AlunoPin.objects.get(usuario=request.user)
+    except AlunoPin.DoesNotExist:
+        return JsonResponse({'autorizado': False, 'erro': 'Nenhum PIN cadastrado. Use verificação via CEITEC ID.'}, status=400)
+
+    # Verifica se está bloqueado
+    if aluno_pin.esta_bloqueado:
+        return JsonResponse({
+            'autorizado':  False,
+            'bloqueado':   True,
+            'erro': 'Muitas tentativas incorretas. Descanse um pouco e tente novamente em 10 minutos.',
+        })
+
+    # Verifica o PIN
+    if not aluno_pin.verificar(pin_texto):
+        aluno_pin.registrar_tentativa_falha(quiz=quiz)
+        restantes = aluno_pin.tentativas_restantes
+        if aluno_pin.esta_bloqueado:
+            return JsonResponse({
+                'autorizado': False,
+                'bloqueado':  True,
+                'erro': 'Muitas tentativas incorretas. Descanse um pouco e tente novamente em 10 minutos.',
+            })
+        return JsonResponse({
+            'autorizado':         False,
+            'tentativas_restantes': restantes,
+            'erro': f'PIN incorreto. Você ainda tem {restantes} tentativa{"s" if restantes != 1 else ""}.',
+        })
+
+    # ── PIN correto ────────────────────────────────────────────────
+    aluno_pin.registrar_sucesso()
+
+    # Grava autorização na sessão
+    sessao_key = f'quiz_autorizado_{quiz_id}'
+    request.session[sessao_key] = request.user.pk
+
+    # Registra o acesso com método PIN
+    RegistroAcessoProva.objects.create(
+        aluno=request.user,
+        quiz=quiz,
+        ip=_obter_ip(request),
+        user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
+        metodo_autenticacao='pin',
+    )
+
+    # Concede badge de segurança (1ª vez)
+    badge_concedido = _conceder_badge_acesso_autenticado(request.user)
+
+    return JsonResponse({
+        'autorizado':     True,
+        'badge_concedido': badge_concedido,
+    })
+
+
+@login_required
+@require_POST
+def registro_acesso(request):
+    """
+    POST /quiz/api/registro-acesso/
+
+    Registra um acesso via CEITEC ID (SSO) sem necessidade de PIN.
+    Chamado pelo JS quando o aluno não possui PIN cadastrado ou
+    prefere verificar apenas com o login SSO.
+
+    Payload JSON esperado:
+        { "quiz_id": 42 }
+
+    Retorna {"autorizado": true, "badge_concedido": bool}
+    """
+    try:
+        dados = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'autorizado': False, 'erro': 'Dados inválidos'}, status=400)
+
+    quiz_id = dados.get('quiz_id')
+    if not quiz_id:
+        return JsonResponse({'autorizado': False, 'erro': 'quiz_id é obrigatório'}, status=400)
+
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+
+    # Grava autorização na sessão
+    sessao_key = f'quiz_autorizado_{quiz_id}'
+    request.session[sessao_key] = request.user.pk
+
+    # Registra o acesso com método SSO
+    RegistroAcessoProva.objects.create(
+        aluno=request.user,
+        quiz=quiz,
+        ip=_obter_ip(request),
+        user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
+        metodo_autenticacao='sso',
+    )
+
+    # Concede badge de segurança (1ª vez)
+    badge_concedido = _conceder_badge_acesso_autenticado(request.user)
+
+    return JsonResponse({
+        'autorizado':      True,
+        'badge_concedido': badge_concedido,
+    })
+
+
+# ══════════════════════════════════════════════════════════════════
+# PAINEL DO PROFESSOR — Segurança das Avaliações
+# ══════════════════════════════════════════════════════════════════
+
+@login_required
+def painel_seguranca_professor(request):
+    """
+    GET /quiz/professor/seguranca/
+
+    Seção de segurança do painel do professor. Mostra:
+      - PINs cadastrados por aluno (do mesmo tenant)
+      - Registros de acesso por quiz
+      - Tentativas suspeitas
+
+    Acessível apenas a usuários com is_staff=True.
+    Suporta exportação CSV via ?exportar=acessos ou ?exportar=suspeitas
+    """
+    if not request.user.is_staff:
+        messages.error(request, 'Acesso restrito a professores.')
+        return redirect('/itagame/')
+
+    tenant = getattr(request.user, 'tenant', None)
+
+    # Filtra pelo tenant da escola do professor
+    pins = (
+        AlunoPin.objects
+        .filter(usuario__tenant=tenant)
+        .select_related('usuario')
+        .order_by('usuario__first_name')
+    )
+    acessos = (
+        RegistroAcessoProva.objects
+        .filter(quiz__tenant=tenant)
+        .select_related('aluno', 'quiz')
+        .order_by('-timestamp')[:200]
+    )
+    suspeitas = (
+        TentativaSuspeita.objects
+        .filter(quiz__tenant=tenant)
+        .select_related('quiz')
+        .order_by('-timestamp')[:100]
+    )
+
+    # ── Exportação CSV — registros de acesso ──────────────────────
+    if request.GET.get('exportar') == 'acessos':
+        resp = HttpResponse(content_type='text/csv; charset=utf-8')
+        resp['Content-Disposition'] = 'attachment; filename="acessos_quizzes.csv"'
+        resp.write('﻿')  # BOM para Excel
+        writer = csv.writer(resp, delimiter=';')
+        writer.writerow(['Aluno', 'Email', 'Quiz', 'Método', 'IP', 'Data/Hora'])
+        for a in acessos:
+            writer.writerow([
+                a.aluno.get_full_name() or a.aluno.email,
+                a.aluno.email,
+                str(a.quiz),
+                a.get_metodo_autenticacao_display(),
+                a.ip or '—',
+                a.timestamp.strftime('%d/%m/%Y %H:%M:%S'),
+            ])
+        return resp
+
+    # ── Exportação CSV — tentativas suspeitas ─────────────────────
+    if request.GET.get('exportar') == 'suspeitas':
+        resp = HttpResponse(content_type='text/csv; charset=utf-8')
+        resp['Content-Disposition'] = 'attachment; filename="tentativas_suspeitas.csv"'
+        resp.write('﻿')
+        writer = csv.writer(resp, delimiter=';')
+        writer.writerow(['Aluno/ID Tentado', 'Quiz', 'IP', 'Motivo', 'Data/Hora'])
+        for s in suspeitas:
+            writer.writerow([
+                s.aluno_tentado,
+                str(s.quiz),
+                s.ip or '—',
+                s.motivo,
+                s.timestamp.strftime('%d/%m/%Y %H:%M:%S'),
+            ])
+        return resp
+
+    payload = getattr(request, 'sso_payload', None)
+    return render(request, 'quiz/painel_seguranca.html', {
+        'pins':     pins,
+        'acessos':  acessos,
+        'suspeitas': suspeitas,
+        'usuario':  request.user,
+        'plano_atual':    payload.get('plano', '')         if payload else getattr(request.user, 'plano', ''),
         'dias_restantes': payload.get('dias_restantes', 0) if payload else 0,
     })

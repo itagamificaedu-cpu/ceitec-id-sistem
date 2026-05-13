@@ -112,4 +112,32 @@
     </div>
   </div>
 </div>
+
+{# ── Seção de Segurança — visível apenas para professores (is_staff) ─── #}
+{% if request.user.is_staff %}
+<div style="margin-top:2rem;">
+  <div class="panel">
+    <div class="panel-head" style="background:linear-gradient(90deg,rgba(108,99,255,.12),transparent);">
+      <h2>🔐 Segurança das Avaliações</h2>
+      <a href="/quiz/professor/seguranca/" class="btn-mod">Ver painel completo →</a>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 .75rem;">
+        Monitore os acessos aos quizzes, PINs dos alunos e tentativas suspeitas.
+      </p>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <a href="/quiz/professor/seguranca/" class="btn-mod" style="background:linear-gradient(135deg,#4a4eff,#6c63ff);">
+          📋 Registros de Acesso
+        </a>
+        <a href="/quiz/professor/seguranca/?aba=pins" class="btn-mod" style="background:linear-gradient(135deg,#059669,#10b981);">
+          🔑 Gerenciar PINs
+        </a>
+        <a href="/quiz/professor/seguranca/?aba=suspeitas" class="btn-mod" style="background:linear-gradient(135deg,#dc2626,#ef4444);">
+          ⚠️ Tentativas Suspeitas
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
