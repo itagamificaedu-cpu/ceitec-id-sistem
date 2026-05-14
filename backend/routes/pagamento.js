@@ -21,7 +21,7 @@ const PLANOS = [
     periodo: 'mês',
     periodo_dias: 30,
     descricao: 'Para professores individuais',
-    subtitulo: 'ou R$ 590/ano — 2 meses grátis',
+    subtitulo: '',
     recursos: [
       'Corretor Automático com IA',
       'Gerador de Provas e Aulas',
