@@ -1,0 +1,288 @@
+{% extends "ita_core/base_portal.html" %}
+{% block title %}Painel ITA Admin — ITA Tecnologia{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+  }
+  .stat-card .stat-icon { font-size: 1.75rem; }
+  .stat-card .stat-valor {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--azul-escuro);
+    line-height: 1.1;
+  }
+  .stat-card .stat-label {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--muted);
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--azul-escuro);
+    margin: 1.75rem 0 .75rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--bg);
+    padding: .65rem 1rem;
+    text-align: left;
+    font-size: .72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: .7rem 1rem;
+    font-size: .875rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7f9ff; }
+
+  .badge {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: 999px;
+    font-size: .68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  .badge-ativo    { background: #e6fff4; color: #00855e; }
+  .badge-trial    { background: #fff3e0; color: #b35c00; }
+  .badge-bloqueado{ background: #fce4e4; color: #b71c1c; }
+  .badge-inadimp  { background: #fff8e1; color: #8a5c00; }
+
+  .log-lista { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+  .log-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem 1rem;
+    background: var(--bg);
+    border-radius: 10px;
+    font-size: .83rem;
+  }
+  .log-item .log-moment { color: var(--muted); font-size: .75rem; flex-shrink: 0; }
+  .log-item .log-acao {
+    font-weight: 700;
+    color: var(--azul-escuro);
+  }
+
+  .sem-grupo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .8rem;
+    background: #fff3e0;
+    color: #b35c00;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--azul-escuro);
+  }
+  .page-header .sub {
+    font-size: .85rem;
+    color: var(--muted);
+    margin-top: .2rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .55rem 1.2rem;
+    border-radius: 10px;
+    font-size: .85rem;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity .2s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primary { background: var(--azul-escuro); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>🛡️ Painel ITA Admin</h1>
+    <div class="sub">Olá, {{ usuario.first_name|default:usuario.email }} — visão completa do sistema</div>
+  </div>
+  <a href="/ita/usuarios/" class="btn btn-primary">👥 Gerenciar Usuários</a>
+</div>
+
+<!-- Cards de estatísticas -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-icon">🏫</span>
+    <span class="stat-valor">{{ total_escolas }}</span>
+    <span class="stat-label">Escolas ativas</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">👨‍🏫</span>
+    <span class="stat-valor">{{ total_professores }}</span>
+    <span class="stat-label">Professores</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">🔐</span>
+    <span class="stat-valor">{{ sessoes_ativas }}</span>
+    <span class="stat-label">Sessões ativas</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">⚠️</span>
+    <span class="stat-valor">{{ inadimplentes }}</span>
+    <span class="stat-label">Inadimplentes</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">💰</span>
+    <span class="stat-valor">R$ {{ mrr|floatformat:0 }}</span>
+    <span class="stat-label">MRR estimado</span>
+  </div>
+</div>
+
+<!-- Usuários sem grupo -->
+{% if sem_grupo %}
+<p class="section-title">⏳ Aguardando perfil de acesso</p>
+<div class="card" style="padding:1rem 1.5rem;">
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;">
+    {% for u in sem_grupo %}
+      <span class="sem-grupo-chip">
+        {{ u.email }}
+        <a href="/ita/usuarios/" style="margin-left:.3rem;color:inherit;">→ definir</a>
+      </span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Tabela de escolas -->
+<p class="section-title">🏫 Escolas cadastradas</p>
+<div class="card" style="overflow:hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>Escola / Tenant</th>
+        <th>Plano</th>
+        <th>Status</th>
+        <th>Dias restantes</th>
+        <th>Professores</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in escolas %}
+      <tr>
+        <td><strong>{{ item.tenant.nome }}</strong><br>
+            <span style="font-size:.75rem;color:var(--muted);">{{ item.tenant.dominio }}</span>
+        </td>
+        <td>
+          {% if item.plano %}
+            {{ item.plano.get_plano_display|default:item.plano.plano }}
+          {% else %}
+            <span style="color:var(--muted);">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if not item.plano %}
+            <span class="badge badge-trial">sem plano</span>
+          {% elif item.plano.status == 'ativo' %}
+            <span class="badge badge-ativo">ativo</span>
+          {% elif item.plano.status == 'trial' %}
+            <span class="badge badge-trial">trial</span>
+          {% elif item.plano.status == 'bloqueado' %}
+            <span class="badge badge-bloqueado">bloqueado</span>
+          {% else %}
+            <span class="badge badge-inadimp">{{ item.plano.status }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if item.plano %}
+            {{ item.dias }} dias
+          {% else %}—{% endif %}
+        </td>
+        <td>{{ item.qtd_professores }}</td>
+        <td>
+          <a href="/master/editar/{{ item.tenant.pk }}/"
+             style="font-size:.8rem;color:var(--azul-claro);font-weight:700;">✏️ Editar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">
+        Nenhuma escola cadastrada ainda.
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Logs recentes -->
+<p class="section-title">📋 Atividade recente</p>
+<div class="card" style="padding:1rem 1.5rem;">
+  <ul class="log-lista">
+    {% for log in logs_recentes %}
+    <li class="log-item">
+      <span class="log-moment">{{ log.momento|date:"d/m H:i" }}</span>
+      <div>
+        <span class="log-acao">{{ log.modulo }} / {{ log.acao }}</span>
+        {% if log.usuario %}
+          — <span style="color:var(--muted)">{{ log.usuario.email }}</span>
+        {% endif %}
+        {% if log.ip %}
+          <span style="font-size:.72rem;color:var(--muted);margin-left:.3rem;">({{ log.ip }})</span>
+        {% endif %}
+      </div>
+    </li>
+    {% empty %}
+    <li style="color:var(--muted);text-align:center;padding:1rem;">Nenhum log registrado ainda.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

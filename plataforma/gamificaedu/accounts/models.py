@@ -5,17 +5,24 @@ import uuid
 
 class Professor(AbstractUser):
     # TIPOS DE USUÁRIO (SaaS)
-    TYPE_ADMIN = 'admin'      # Super usuário do sistema
-    TYPE_SCHOOL = 'school'    # Gestor da escola
-    TYPE_PROFESSOR = 'prof'   # Professor
-    
+    TYPE_ADMIN     = 'admin'      # ITA Admin — acesso total ao sistema
+    TYPE_SCHOOL    = 'school'     # Gestor/Coordenador da escola
+    TYPE_PROFESSOR = 'prof'       # Professor — acessa só os próprios dados
+    TYPE_SEM_GRUPO = 'sem_grupo'  # Sem grupo — sem acesso a módulos
+
     TYPE_CHOICES = [
-        (TYPE_ADMIN, 'Administrador Geral'),
-        (TYPE_SCHOOL, 'Gestor Escolar'),
+        (TYPE_ADMIN,     'ITA Admin'),
+        (TYPE_SCHOOL,    'Gestor Escolar'),
         (TYPE_PROFESSOR, 'Professor'),
+        (TYPE_SEM_GRUPO, 'Sem Grupo'),
     ]
-    
-    type_user = models.CharField(max_length=10, choices=TYPE_CHOICES, default=TYPE_PROFESSOR)
+
+    type_user = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        default=TYPE_PROFESSOR,
+        verbose_name='Tipo de usuário',
+    )
     
     tenant = models.ForeignKey('gamificaedu_core.Tenant', on_delete=models.CASCADE, related_name='professores')
 
