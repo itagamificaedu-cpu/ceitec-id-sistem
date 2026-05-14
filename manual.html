@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual da Plataforma — ITA Tecnologia Educacional</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; line-height: 1.6; }
+
+  /* ---- BOTÃO IMPRIMIR ---- */
+  .btn-imprimir {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    background: #f5a623; color: #fff;
+    border: none; border-radius: 50px;
+    padding: 14px 28px; font-size: 15px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 6px 24px rgba(245,166,35,.5);
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: transform .15s;
+  }
+  .btn-imprimir:hover { transform: scale(1.04); }
+  @media print { .btn-imprimir { display: none; } }
+
+  /* ---- CAPA ---- */
+  .capa {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2340 60%, #1a1a2e 100%);
+    color: white; min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px 40px;
+    page-break-after: always;
+  }
+  .capa .logo-box {
+    width: 96px; height: 96px; background: #f5a623; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; margin: 0 auto 28px;
+    box-shadow: 0 8px 32px rgba(245,166,35,0.4);
+  }
+  .capa h1 { font-size: 38px; font-weight: 900; letter-spacing: 2px; color: #f5a623; margin-bottom: 6px; }
+  .capa h2 { font-size: 18px; font-weight: 400; color: rgba(255,255,255,.65); margin-bottom: 44px; }
+  .capa .titulo-manual { font-size: 30px; font-weight: 700; margin-bottom: 10px; }
+  .capa .subtitulo { font-size: 15px; color: rgba(255,255,255,.55); margin-bottom: 50px; }
+  .capa .badges { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 50px; }
+  .capa .badge { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 30px; padding: 8px 20px; font-size: 13px; color: rgba(255,255,255,.85); }
+  .capa .url-box { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); border-radius: 12px; padding: 16px 32px; margin-bottom: 40px; }
+  .capa .url-box .label-url { font-size: 11px; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .capa .url-box .valor-url { font-size: 17px; font-weight: 800; color: #f5a623; font-family: monospace; }
+  .capa .rodape { font-size: 11px; color: rgba(255,255,255,.35); margin-top: auto; }
+
+  /* ---- SUMÁRIO ---- */
+  .sumario { page-break-after: always; padding: 60px 60px; }
+  .sumario h2 { font-size: 22px; font-weight: 800; color: #1e3a5f; border-bottom: 3px solid #f5a623; padding-bottom: 10px; margin-bottom: 30px; }
+  .sumario .secao-titulo { font-weight: 800; font-size: 14px; color: #1e3a5f; margin-top: 22px; margin-bottom: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; }
+  .sumario ul { list-style: none; }
+  .sumario ul li { padding: 5px 0 5px 14px; border-bottom: 1px dotted #ddd; display: flex; justify-content: space-between; align-items: center; }
+  .sumario ul li a { color: #475569; text-decoration: none; font-size: 13px; }
+  .sumario ul li .num { color: #f5a623; font-weight: 700; font-size: 12px; min-width: 20px; text-align: right; }
+
+  /* ---- CABEÇALHO DE SEÇÃO ---- */
+  .secao-header {
+    background: linear-gradient(135deg, #1e3a5f, #0f2340);
+    color: white; padding: 50px 60px;
+    page-break-before: always; page-break-after: avoid;
+  }
+  .secao-header .num { font-size: 52px; font-weight: 900; color: #f5a623; opacity: .5; line-height: 1; margin-bottom: 6px; }
+  .secao-header h2 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .secao-header p { font-size: 14px; color: rgba(255,255,255,.6); }
+
+  /* ---- CONTEÚDO ---- */
+  .conteudo { padding: 42px 60px; }
+
+  /* ---- PERFIL HEADER ---- */
+  .perfil-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 22px; border-radius: 12px;
+    font-weight: 800; font-size: 15px; margin-bottom: 28px;
+  }
+  .perfil-master  { background: #fef3c7; color: #92400e; border: 2px solid #fde68a; }
+  .perfil-admin   { background: #f3e8ff; color: #7c3aed; border: 2px solid #c4b5fd; }
+  .perfil-sec     { background: #dbeafe; color: #1e40af; border: 2px solid #93c5fd; }
+  .perfil-prof    { background: #dcfce7; color: #15803d; border: 2px solid #86efac; }
+
+  /* ---- ACESSO BOX ---- */
+  .acesso-box {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-left: 4px solid #f5a623; border-radius: 8px;
+    padding: 20px 24px; margin-bottom: 24px;
+  }
+  .acesso-box h4 { font-size: 12px; font-weight: 800; color: #1e3a5f; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .acesso-box .campo { display: flex; gap: 12px; margin-bottom: 6px; font-size: 13px; }
+  .acesso-box .label { color: #64748b; min-width: 90px; }
+  .acesso-box .valor { font-weight: 700; color: #1e3a5f; }
+  .acesso-box .url { font-family: monospace; background: #1e3a5f; color: #f5a623; padding: 3px 10px; border-radius: 4px; font-size: 12.5px; }
+
+  /* ---- PERMISSÕES ---- */
+  .permissoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 28px; }
+  .perm-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 12px; }
+  .perm-item .ico { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .perm-sim { border-left: 3px solid #22c55e; }
+  .perm-nao { border-left: 3px solid #ef4444; opacity: .6; }
+
+  /* ---- FUNÇÕES ---- */
+  h3 { font-size: 16px; font-weight: 800; color: #1e3a5f; margin: 28px 0 14px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+  h3 .ico { font-size: 18px; margin-right: 6px; }
+
+  .func-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
+  .func-box h4 { font-size: 14px; font-weight: 800; color: #1e3a5f; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .func-box p { font-size: 12.5px; color: #475569; margin-bottom: 8px; }
+  .func-box ul { list-style: none; padding: 0; }
+  .func-box ul li { font-size: 12.5px; color: #475569; padding: 3px 0; padding-left: 16px; position: relative; }
+  .func-box ul li::before { content: '→'; position: absolute; left: 0; color: #f5a623; font-weight: 700; }
+
+  /* ---- PASSOS ---- */
+  .passos { margin-bottom: 12px; }
+  .passo { display: flex; gap: 14px; align-items: flex-start; padding: 10px 14px; margin-bottom: 7px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .passo-num { width: 26px; height: 26px; border-radius: 50%; background: #1e3a5f; color: #f5a623; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .passo-txt { font-size: 12.5px; color: #334155; }
+  .passo-txt strong { color: #1e3a5f; }
+
+  /* ---- ALERTAS ---- */
+  .alerta { padding: 13px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 12.5px; display: flex; gap: 10px; align-items: flex-start; }
+  .alerta-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .alerta-aviso   { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .alerta-sucesso { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+  .alerta-erro    { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+  /* ---- TABELAS ---- */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+  th { background: #1e3a5f; color: white; padding: 10px 14px; text-align: left; font-weight: 700; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  table.credenciais td:nth-child(4) { font-family: monospace; font-weight: 700; font-size: 11px; background: #1e3a5f; color: #f5a623; }
+
+  /* ---- CHIPS ---- */
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .chip-master { background: #fef3c7; color: #92400e; }
+  .chip-admin  { background: #f3e8ff; color: #7c3aed; }
+  .chip-sec    { background: #dbeafe; color: #1e40af; }
+  .chip-prof   { background: #dcfce7; color: #15803d; }
+
+  /* ---- DESTAQUE ---- */
+  .destaque { background: linear-gradient(135deg, #1e3a5f, #0f2340); color: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; }
+  .destaque h4 { color: #f5a623; font-size: 14px; margin-bottom: 8px; }
+  .destaque p { font-size: 12.5px; color: rgba(255,255,255,.8); }
+
+  /* ---- GRID ---- */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  /* ---- STATUS CARD ---- */
+  .status-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; text-align: center; }
+  .status-card .num { font-size: 36px; font-weight: 900; color: #1e3a5f; line-height: 1; }
+  .status-card .label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+
+  /* ---- MÓDULO CARD ---- */
+  .modulo-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+  .modulo-card .icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .modulo-card h4 { font-size: 13px; font-weight: 800; color: #1e3a5f; margin-bottom: 6px; }
+  .modulo-card p { font-size: 11.5px; color: #64748b; }
+
+  /* ---- ERRO CARD ---- */
+  .erro-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+  .erro-card .problema { background: #fef2f2; padding: 10px 16px; font-size: 12.5px; font-weight: 700; color: #991b1b; border-bottom: 1px solid #fecaca; }
+  .erro-card .solucao { padding: 10px 16px; font-size: 12.5px; color: #334155; }
+
+  .divisor { border: none; border-top: 2px solid #e2e8f0; margin: 26px 0; }
+
+  @media print {
+    .capa { min-height: 100vh; }
+    .secao-header { page-break-before: always; }
+    .no-break { page-break-inside: avoid; }
+    body { font-size: 11.5px; }
+    .conteudo { padding: 28px 48px; }
+    @page { margin: 1.5cm; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<!-- BOTÃO PDF -->
+<button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+
+<!-- ========================= CAPA ========================= -->
+<div class="capa">
+  <div class="logo-box">🎓</div>
+  <h1>ITA TECNOLOGIA</h1>
+  <h2>EDUCACIONAL</h2>
+  <div class="titulo-manual">Manual da Plataforma</div>
+  <div class="subtitulo">Guia completo de uso — Administrador, Secretaria e Professor</div>
+  <div class="badges">
+    <div class="badge">👑 Admin Mestre</div>
+    <div class="badge">🏫 Admin Escola</div>
+    <div class="badge">📋 Secretaria</div>
+    <div class="badge">👨‍🏫 Professor</div>
+  </div>
+  <div class="url-box">
+    <div class="label-url">Endereço do Sistema CEITEC</div>
+    <div class="valor-url">https://itatecnologiaeducacional.tech/login</div>
+  </div>
+  <div class="rodape">
+    ITA Tecnologia Educacional &nbsp;|&nbsp; Versão 2026<br>
+    Documento gerado em maio de 2026 &nbsp;|&nbsp; itagamificaedu@gmail.com
+  </div>
+</div>
+
+<!-- ========================= SUMÁRIO ========================= -->
+<div class="sumario">
+  <h2>📋 Sumário</h2>
+
+  <div class="secao-titulo">1. Visão Geral da Plataforma</div>
+  <ul>
+    <li><a>1.1 O que é e como funciona</a><span class="num">3</span></li>
+    <li><a>1.2 Perfis de usuário</a><span class="num">3</span></li>
+    <li><a>1.3 Módulos disponíveis</a><span class="num">4</span></li>
+    <li><a>1.4 Status atual do sistema CEITEC</a><span class="num">4</span></li>
+  </ul>
+
+  <div class="secao-titulo">2. Como Fazer Login</div>
+  <ul>
+    <li><a>2.1 Passo a passo de acesso</a><span class="num">5</span></li>
+    <li><a>2.2 Esqueci minha senha</a><span class="num">5</span></li>
+    <li><a>2.3 Credenciais da escola CEITEC</a><span class="num">5</span></li>
+  </ul>
+
+  <div class="secao-titulo">3. Perfil: Admin Mestre (Genezio)</div>
+  <ul>
+    <li><a>3.1 O que o Admin Mestre pode fazer</a><span class="num">7</span></li>
+    <li><a>3.2 Dashboard — ver todos os dados</a><span class="num">7</span></li>
+    <li><a>3.3 Criar e gerenciar usuários</a><span class="num">7</span></li>
+  </ul>
+
+  <div class="secao-titulo">4. Perfil: Administrador da Escola</div>
+  <ul>
+    <li><a>4.1 Dashboard e resumo da escola</a><span class="num">8</span></li>
+    <li><a>4.2 Gerenciar turmas e alunos</a><span class="num">8</span></li>
+    <li><a>4.3 Cadastrar professores</a><span class="num">9</span></li>
+    <li><a>4.4 Avaliações, ItagGame e IA</a><span class="num">9</span></li>
+  </ul>
+
+  <div class="secao-titulo">5. Perfil: Secretaria</div>
+  <ul>
+    <li><a>5.1 Funções da secretaria</a><span class="num">10</span></li>
+    <li><a>5.2 Scanner de presença</a><span class="num">10</span></li>
+    <li><a>5.3 Cadastro de alunos e carteirinha</a><span class="num">11</span></li>
+    <li><a>5.4 Justificativas e relatórios</a><span class="num">11</span></li>
+  </ul>
+
+  <div class="secao-titulo">6. Perfil: Professor</div>
+  <ul>
+    <li><a>6.1 Funções do professor</a><span class="num">12</span></li>
+    <li><a>6.2 Turmas, alunos e presença</a><span class="num">12</span></li>
+    <li><a>6.3 Criar avaliações com IA</a><span class="num">13</span></li>
+    <li><a>6.4 Ferramentas de IA educacional</a><span class="num">13</span></li>
+  </ul>
+
+  <div class="secao-titulo">7. Módulos em Detalhe</div>
+  <ul>
+    <li><a>7.1 Scanner de Presença (QR Code)</a><span class="num">14</span></li>
+    <li><a>7.2 ItagGame — Gamificação</a><span class="num">14</span></li>
+    <li><a>7.3 Desempenho e Relatórios</a><span class="num">15</span></li>
+    <li><a>7.4 Corretor de Provas (IA)</a><span class="num">15</span></li>
+  </ul>
+
+  <div class="secao-titulo">8. Tabela de Permissões</div>
+  <ul>
+    <li><a>8.1 Quem pode fazer o quê</a><span class="num">16</span></li>
+  </ul>
+
+  <div class="secao-titulo">9. Erros Comuns e Soluções</div>
+  <ul>
+    <li><a>9.1 Problemas e como resolver</a><span class="num">17</span></li>
+  </ul>
+
+  <div class="secao-titulo">10. Como Implantar em Nova Escola</div>
+  <ul>
+    <li><a>10.1 Passo a passo de onboarding</a><span class="num">18</span></li>
+  </ul>
+</div>
+
+<!-- ========================= SEÇÃO 1: VISÃO GERAL ========================= -->
+<div class="secao-header">
+  <div class="num">01</div>
+  <h2>Visão Geral da Plataforma</h2>
+  <p>O que é o sistema ITA Tecnologia Educacional e como ele funciona</p>
+</div>
+<div class="conteudo">
+
+  <div class="destaque">
+    <h4>O que é o ITA Tecnologia Educacional?</h4>
+    <p>É uma plataforma digital completa para gestão escolar. Ela centraliza em um único sistema: controle de presença por QR Code, cadastro de alunos com carteirinha digital, avaliações, ferramentas de inteligência artificial para professores e gamificação (ItagGame). Tudo acessível pelo navegador, sem instalar nada.</p>
+  </div>
+
+  <h3><span class="ico">👥</span> Perfis de Usuário</h3>
+  <table>
+    <tr>
+      <th>Perfil</th><th>Quem é</th><th>O que acessa</th>
+    </tr>
+    <tr>
+      <td><span class="chip chip-master">👑 Admin Mestre</span></td>
+      <td>Genezio — ITA Tecnologia</td>
+      <td>Todas as escolas + configurações globais</td>
+    </tr>
+    <tr>
+      <td><span class="chip chip-admin">🏫 Administrador</span></td>
+      <td>Diretor ou coordenador da escola</td>
+      <td>Acesso total à sua escola</td>
+    </tr>
+    <tr>
+      <td><span class="chip chip-sec">📋 Secretaria</span></td>
+      <td>Secretário(a) escolar</td>
+      <td>Alunos, presença, relatórios, ocorrências</td>
+    </tr>
+    <tr>
+      <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      <td>Docente</td>
+      <td>Suas turmas, avaliações, IA, ItagGame</td>
+    </tr>
+  </table>
+
+  <h3><span class="ico">📦</span> Módulos Disponíveis</h3>
+  <div class="grid-3">
+    <div class="modulo-card no-break">
+      <span class="icon">📊</span>
+      <h4>Dashboard</h4>
+      <p>Resumo em tempo real: alunos, presença, médias e atalhos rápidos.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">📷</span>
+      <h4>Scanner de Presença</h4>
+      <p>Leitura de QR Code da carteirinha para registrar presença com som e confirmação.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">👥</span>
+      <h4>Turmas e Alunos</h4>
+      <p>Cadastro completo de turmas e alunos com foto, carteirinha e QR Code único.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">📝</span>
+      <h4>Avaliações</h4>
+      <p>Criação manual ou com IA. Lançamento de resultados e relatório por questão.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">🎮</span>
+      <h4>ItagGame</h4>
+      <p>Gamificação com XP, níveis (Aprendiz → Lenda) e ranking da escola.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">📈</span>
+      <h4>Desempenho</h4>
+      <p>Médias, alunos em risco, comparativo por disciplina e exportação CSV.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">🤖</span>
+      <h4>IA Educacional</h4>
+      <p>Cria questões, planos de aula e conteúdos automaticamente com inteligência artificial.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">✅</span>
+      <h4>Corretor de Provas</h4>
+      <p>Upload da prova digitalizada → IA identifica e corrige as respostas.</p>
+    </div>
+    <div class="modulo-card no-break">
+      <span class="icon">⚠️</span>
+      <h4>Ocorrências</h4>
+      <p>Registro de advertências, suspensões, elogios e observações de alunos.</p>
+    </div>
+  </div>
+
+  <h3><span class="ico">📊</span> Status Atual — Escola CEITEC Itapipoca</h3>
+  <div class="grid-4" style="margin-bottom:20px;">
+    <div class="status-card no-break">
+      <div class="num">227</div>
+      <div class="label">Alunos cadastrados</div>
+    </div>
+    <div class="status-card no-break">
+      <div class="num">8</div>
+      <div class="label">Turmas ativas</div>
+    </div>
+    <div class="status-card no-break">
+      <div class="num">16</div>
+      <div class="label">Professores</div>
+    </div>
+    <div class="status-card no-break">
+      <div class="num">23</div>
+      <div class="label">Usuários do sistema</div>
+    </div>
+  </div>
+
+  <div class="alerta alerta-info">
+    <span>ℹ️</span>
+    <span>O servidor fica em <strong>https://itatecnologiaeducacional.tech</strong>, hospedado em VPS Ubuntu 22.04 com Docker. Os dados ficam no banco Neon PostgreSQL com backup automático na nuvem.</span>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 2: COMO FAZER LOGIN ========================= -->
+<div class="secao-header">
+  <div class="num">02</div>
+  <h2>Como Fazer Login</h2>
+  <p>Acesso ao sistema, credenciais e recuperação de senha</p>
+</div>
+<div class="conteudo">
+
+  <h3><span class="ico">🌐</span> Endereço de Acesso</h3>
+  <div class="acesso-box">
+    <h4>Sistema CEITEC ID — Login Principal</h4>
+    <div class="campo"><span class="label">URL:</span><span class="url">https://itatecnologiaeducacional.tech/login</span></div>
+    <div class="campo"><span class="label">Suporte:</span><span class="valor">itagamificaedu@gmail.com</span></div>
+    <div class="campo"><span class="label">Navegadores:</span><span class="valor">Chrome ou Firefox (recomendados)</span></div>
+  </div>
+
+  <h3><span class="ico">🔑</span> Passo a Passo para Entrar</h3>
+  <div class="passos">
+    <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Abra o Chrome ou Firefox e acesse: <strong>https://itatecnologiaeducacional.tech/login</strong></div></div>
+    <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Digite seu <strong>e-mail cadastrado</strong> (ex: joao@gmail.com).</div></div>
+    <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Digite sua <strong>senha</strong> e clique em <strong>Entrar</strong>.</div></div>
+    <div class="passo"><div class="passo-num">4</div><div class="passo-txt">O sistema redireciona para o <strong>Dashboard</strong> conforme seu perfil.</div></div>
+    <div class="passo"><div class="passo-num">5</div><div class="passo-txt">Para sair, clique em <strong>Sair do Sistema</strong> no menu lateral.</div></div>
+  </div>
+
+  <div class="alerta alerta-aviso">
+    <span>⚠️</span>
+    <span>O sistema faz logout automático após <strong>8 horas</strong>. Se fechar o navegador e reabrir, precisará entrar novamente.</span>
+  </div>
+
+  <div class="alerta alerta-info">
+    <span>🔑</span>
+    <span>Esqueceu a senha? Fale com o <strong>Administrador da escola</strong>. Ele pode redefinir sua senha em <strong>Gerenciar Usuários</strong>.</span>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">🔐</span> Credenciais da Escola CEITEC Itapipoca</h3>
+  <div class="alerta alerta-aviso">
+    <span>🔒</span>
+    <span>Este documento é <strong>confidencial</strong>. Não compartilhe as senhas com alunos ou pessoas não autorizadas.</span>
+  </div>
+
+  <p style="color:#475569;font-size:12.5px;margin-bottom:14px;"><strong>Senhas padrão dos usuários:</strong> Todos os professores, secretaria e admins da escola usam a senha padrão abaixo. O Admin Mestre possui senha diferente.</p>
+
+  <table class="credenciais">
+    <thead>
+      <tr>
+        <th>#</th><th>Nome</th><th>E-mail (login)</th><th>Senha</th><th>Perfil</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Genezio (Admin Mestre)</strong></td>
+        <td>itagamificaedu@gmail.com</td>
+        <td>E8@64F@6qzg8</td>
+        <td><span class="chip chip-master">👑 Mestre</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>CEITEC Itapipoca (Admin)</td>
+        <td>itaceitec@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>ANDREA VIRGINIA</td>
+        <td>andreavirginia@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>FRANCISCA</td>
+        <td>francisca@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>JUCERNEY</td>
+        <td>jucerney@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>LIDICIANY</td>
+        <td>lidiciany@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-sec">📋 Secretaria</span></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>MARCIA</td>
+        <td>marcia@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-sec">📋 Secretaria</span></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>ALEXANDRE ANDRADE</td>
+        <td>alexandreandrade@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>ALEXANDRE CANDIDO</td>
+        <td>alexandrecandido@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>ALEXANDRE ROCHA</td>
+        <td>alexandrerocha@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td>ANTONIO</td>
+        <td>antonio@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td>BIANCA MARA</td>
+        <td>biancamara@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td>BRENA GOMES</td>
+        <td>brenagomes@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>14</td>
+        <td>CARLOS ROBERTO</td>
+        <td>carlosroberto@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>15</td>
+        <td>ENILDA FROTA</td>
+        <td>eneildafrota@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>16</td>
+        <td>ESTER</td>
+        <td>ester@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>17</td>
+        <td>EZEQUIEL</td>
+        <td>ezequiel@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>18</td>
+        <td>GENEZIO DE LAVOR</td>
+        <td>gegeitp@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>19</td>
+        <td>LARIANY</td>
+        <td>lariany@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>LIVISSON</td>
+        <td>livisson@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>21</td>
+        <td>MARIO GLEDSON</td>
+        <td>mariogladson@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>22</td>
+        <td>NATALIA RIBEIRO</td>
+        <td>nataliaribeiro@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>23</td>
+        <td>PEDRO SANTANA</td>
+        <td>pedrosantana@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="alerta alerta-sucesso">
+    <span>✅</span>
+    <span>Todas as senhas foram verificadas e atualizadas em maio de 2026. Cada usuário pode trocar sua própria senha após o primeiro login pelo menu <strong>Perfil</strong>.</span>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 3: ADMIN MESTRE ========================= -->
+<div class="secao-header">
+  <div class="num">03</div>
+  <h2>Perfil: Admin Mestre</h2>
+  <p>Acesso exclusivo do responsável pela plataforma — Genezio (ITA Tecnologia)</p>
+</div>
+<div class="conteudo">
+
+  <div class="perfil-badge perfil-master">👑 &nbsp; ADMINISTRADOR MESTRE — Genezio / ITA Tecnologia</div>
+
+  <div class="acesso-box">
+    <h4>Credenciais do Admin Mestre</h4>
+    <div class="campo"><span class="label">E-mail:</span><span class="valor">itagamificaedu@gmail.com</span></div>
+    <div class="campo"><span class="label">Senha:</span><span class="url">E8@64F@6qzg8</span></div>
+    <div class="campo"><span class="label">URL:</span><span class="url">https://itatecnologiaeducacional.tech/login</span></div>
+  </div>
+
+  <h3><span class="ico">✅</span> Capacidades Exclusivas do Admin Mestre</h3>
+  <div class="permissoes">
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Ver dados de todas as escolas</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Criar novas escolas no sistema</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Gerenciar todos os usuários</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Acessar o painel como qualquer escola</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Ver total global de alunos e turmas</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Redefinir senhas de qualquer usuário</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Excluir ou desativar escolas</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Acesso a todos os módulos de todas as escolas</div>
+  </div>
+
+  <h3><span class="ico">🏠</span> Dashboard do Admin Mestre</h3>
+  <p style="color:#475569;margin-bottom:14px;">Ao fazer login, o Admin Mestre vê o dashboard da escola <strong>CEITEC Itapipoca</strong> (escola vinculada ao seu perfil). Para ver outras escolas futuras, basta trocar o escola_id no sistema.</p>
+  <div class="func-box">
+    <h4>O que aparece no Dashboard</h4>
+    <ul>
+      <li>Total de alunos da escola (atual: 227)</li>
+      <li>Presentes, ausentes e % de frequência no dia</li>
+      <li>Gráfico dos últimos 7 dias de frequência</li>
+      <li>Frequência por turma com barras coloridas</li>
+      <li>Últimos 5 registros de presença</li>
+      <li>Atalhos rápidos: Scanner, Turmas, Avaliações, ItagGame</li>
+    </ul>
+  </div>
+
+  <h3><span class="ico">🔑</span> Gerenciar Usuários</h3>
+  <div class="func-box">
+    <h4>Criar Novo Usuário</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">No menu lateral, clique em <strong>Gerenciar Usuários</strong>.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Clique em <strong>+ Novo Usuário</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Preencha: Nome, E-mail, Senha e Perfil (admin / secretaria / professor).</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Clique em <strong>Salvar</strong>. O usuário pode entrar imediatamente.</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>✏️ Editar Usuário</h4>
+      <ul>
+        <li>Clique no ícone ✏️ ao lado do usuário</li>
+        <li>Altere nome, email, perfil ou senha</li>
+        <li>Deixe a senha em branco para não alterar</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>🗑️ Excluir Usuário</h4>
+      <ul>
+        <li>Clique no ícone 🗑️ ao lado do usuário</li>
+        <li>Confirme a exclusão</li>
+        <li>Ação irreversível — confirme antes de excluir</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 4: ADMIN ESCOLA ========================= -->
+<div class="secao-header">
+  <div class="num">04</div>
+  <h2>Perfil: Administrador da Escola</h2>
+  <p>Guia para diretores e coordenadores com acesso total à escola</p>
+</div>
+<div class="conteudo">
+
+  <div class="perfil-badge perfil-admin">🏫 &nbsp; ADMINISTRADOR DA ESCOLA — Acesso Total</div>
+
+  <div class="acesso-box">
+    <h4>Credenciais do Admin CEITEC</h4>
+    <div class="campo"><span class="label">E-mail:</span><span class="valor">itaceitec@gmail.com</span></div>
+    <div class="campo"><span class="label">Senha:</span><span class="url">Ceitec@2024</span></div>
+    <div class="campo"><span class="label">URL:</span><span class="url">https://itatecnologiaeducacional.tech/login</span></div>
+  </div>
+
+  <h3><span class="ico">🏠</span> Dashboard da Escola</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>📊 Cards de Resumo</h4>
+      <ul>
+        <li>Total de alunos cadastrados</li>
+        <li>Presentes hoje</li>
+        <li>Ausentes hoje</li>
+        <li>Percentual geral de frequência</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>📈 Gráficos e Atalhos</h4>
+      <ul>
+        <li>Frequência dos últimos 7 dias</li>
+        <li>Frequência por turma (com cores)</li>
+        <li>Últimos registros de presença</li>
+        <li>Acesso rápido a todos os módulos</li>
+      </ul>
+    </div>
+  </div>
+  <div class="alerta alerta-info">
+    <span>ℹ️</span>
+    <span>Barras de frequência: <strong style="color:#22c55e">Verde</strong> = acima de 75% | <strong style="color:#f59e0b">Amarelo</strong> = 50–75% | <strong style="color:#ef4444">Vermelho</strong> = abaixo de 50%</span>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">👥</span> Turmas e Alunos</h3>
+  <div class="func-box">
+    <h4>🏫 Criar Nova Turma</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Turmas e Alunos</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Clique em <strong>+ Nova Turma</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Preencha: Nome, Curso, Turno (Manhã / Tarde / Noite), Ano Letivo e Máx. Alunos.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Clique em <strong>Salvar</strong>.</div></div>
+    </div>
+  </div>
+
+  <div class="func-box">
+    <h4>👤 Cadastrar Aluno</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Cadastrar Aluno</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Faça upload da <strong>foto do aluno</strong> (JPG ou PNG, máx. 2MB).</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Preencha: Nome completo, Turma, Curso, E-mail e WhatsApp do responsável (<code>5585999999999</code>).</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Clique em <strong>Salvar</strong>. O sistema gera automaticamente o código e o QR Code.</div></div>
+      <div class="passo"><div class="passo-num">5</div><div class="passo-txt">Clique em <strong>Ver Carteirinha</strong> → use <strong>Ctrl+P</strong> para imprimir.</div></div>
+    </div>
+  </div>
+
+  <div class="alerta alerta-sucesso">
+    <span>✅</span>
+    <span>Cada aluno recebe um <strong>QR Code único e permanente</strong>. Se perder a carteirinha, basta reimprimir — não precisa recadastrar.</span>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">👨‍🏫</span> Professores</h3>
+  <div class="func-box">
+    <h4>Cadastrar Professor</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Professores</strong> no menu.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Clique em <strong>+ Novo Professor</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Preencha: Nome, Especialidade, E-mail, Telefone e Disciplinas.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Salve. O professor aparece no detalhe das turmas.</div></div>
+    </div>
+  </div>
+  <div class="alerta alerta-info">
+    <span>ℹ️</span>
+    <span>Para o professor <strong>acessar o sistema</strong>, ele precisa ter um usuário criado em <strong>Gerenciar Usuários</strong> com o perfil "professor". O cadastro em Professores é apenas o perfil pedagógico.</span>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📝</span> Avaliações</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>📋 Criar Manualmente</h4>
+      <ul>
+        <li>Menu <strong>Avaliações → + Nova Avaliação</strong></li>
+        <li>Preencha título, disciplina, turma e data</li>
+        <li>Adicione questões com gabarito</li>
+        <li>Salve e lance os resultados</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>🤖 Criar com IA (recomendado)</h4>
+      <ul>
+        <li>Menu <strong>Criar Questões (IA)</strong></li>
+        <li>Informe tema, disciplina e quantidade</li>
+        <li>IA gera questões em segundos</li>
+        <li>Revise, edite e salve</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3><span class="ico">🎮</span> ItagGame e Gamificação</h3>
+  <div class="destaque">
+    <h4>Como funciona o ItagGame?</h4>
+    <p>O ItagGame motiva alunos com um sistema de pontos (XP) e níveis. Quanto mais o aluno participa e se destaca, mais XP ganha e sobe de nível no ranking. Professores e administradores podem atribuir XP manualmente.</p>
+  </div>
+  <table>
+    <tr><th>Nível</th><th>Nome</th><th>XP Necessário</th><th>Cor</th></tr>
+    <tr><td>1</td><td>🥉 Aprendiz</td><td>0 – 100 XP</td><td>Bronze</td></tr>
+    <tr><td>2</td><td>🥈 Explorador</td><td>100 – 300 XP</td><td>Prata</td></tr>
+    <tr><td>3</td><td>🥇 Guerreiro</td><td>300 – 700 XP</td><td>Ouro</td></tr>
+    <tr><td>4</td><td>🏆 Campeão</td><td>700 – 1.500 XP</td><td>Platina</td></tr>
+    <tr><td>5</td><td>👑 Lenda</td><td>1.500+ XP</td><td>Diamante</td></tr>
+  </table>
+
+</div>
+
+<!-- ========================= SEÇÃO 5: SECRETARIA ========================= -->
+<div class="secao-header">
+  <div class="num">05</div>
+  <h2>Perfil: Secretaria</h2>
+  <p>Guia para secretários(as) — gestão de alunos, presença e registros</p>
+</div>
+<div class="conteudo">
+
+  <div class="perfil-badge perfil-sec">📋 &nbsp; SECRETARIA</div>
+
+  <div class="acesso-box">
+    <h4>Credenciais das Secretárias CEITEC</h4>
+    <div class="campo"><span class="label">LIDICIANY:</span><span class="valor">lidiciany@gmail.com &nbsp;|&nbsp; <span class="url">Ceitec@2024</span></span></div>
+    <div class="campo"><span class="label">MARCIA:</span><span class="valor">marcia@gmail.com &nbsp;|&nbsp; <span class="url">Ceitec@2024</span></span></div>
+  </div>
+
+  <h3><span class="ico">✅</span> O que a Secretaria pode fazer</h3>
+  <div class="permissoes">
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Ver Dashboard geral</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Cadastrar e editar alunos</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Gerenciar turmas</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Usar Scanner de Presença</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Justificar faltas</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Registrar ocorrências</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Ver e exportar relatórios</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Atribuir XP no ItagGame</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Criar/editar usuários do sistema</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Criar avaliações</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Ferramentas de IA</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Configurações do sistema</div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📷</span> Scanner de Presença — Principal Função</h3>
+  <div class="destaque">
+    <h4>Como funciona o Scanner?</h4>
+    <p>O Scanner usa a câmera do dispositivo (celular, tablet ou computador com webcam) para ler o QR Code impresso na carteirinha do aluno. Em menos de 1 segundo, a presença é registrada com data e hora automaticamente.</p>
+  </div>
+
+  <div class="func-box">
+    <h4>Registrar Presença pelo Scanner</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Scanner de Presença</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Clique em <strong>Iniciar Scanner</strong> e <strong>permita o acesso à câmera</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Posicione o QR Code da carteirinha do aluno na área de leitura da tela.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">O sistema emite um <strong>som</strong> e exibe o resultado na tela. Aguarde 3 segundos e o scanner reinicia.</div></div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Resultado</th><th>Som</th><th>O que fazer</th></tr>
+    <tr><td>✅ Verde — Sucesso</td><td>Tom agudo</td><td>Presença registrada. Próximo aluno.</td></tr>
+    <tr><td>⚠️ Amarelo — Já registrado</td><td>Tom médio</td><td>Aluno já entrou hoje. Normal.</td></tr>
+    <tr><td>❌ Vermelho — Erro</td><td>Tom grave</td><td>QR Code não reconhecido. Tente novamente.</td></tr>
+  </table>
+
+  <div class="alerta alerta-info">
+    <span>💡</span>
+    <span>Dica prática: Use um <strong>tablet ou celular</strong> na entrada da escola/sala. Posicione na altura dos alunos. Com boa iluminação o scanner lê o QR em menos de 1 segundo.</span>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">👤</span> Cadastrar Aluno e Gerar Carteirinha</h3>
+  <div class="func-box">
+    <h4>Passo a passo completo</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">No menu lateral, clique em <strong>Cadastrar Aluno</strong>.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Clique na área da foto e faça upload da imagem do aluno (JPG ou PNG).</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Preencha: <strong>Nome completo</strong>, <strong>Turma</strong> e <strong>Curso</strong> (obrigatórios).</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Preencha o WhatsApp do responsável: <code>5585999999999</code> (DDI 55 + DDD + número, sem espaços).</div></div>
+      <div class="passo"><div class="passo-num">5</div><div class="passo-txt">Clique em <strong>Salvar</strong>. O sistema cria o código único e o QR Code.</div></div>
+      <div class="passo"><div class="passo-num">6</div><div class="passo-txt">Clique em <strong>Ver Carteirinha</strong>, depois <strong>Ctrl+P</strong> para imprimir. Plastifique e entregue ao aluno.</div></div>
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📋</span> Justificativas de Falta</h3>
+  <div class="func-box">
+    <h4>Justificar uma Falta</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Justificativas</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Localize o aluno na lista de faltas pendentes e clique em <strong>Justificar</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Selecione: <strong>Justificada</strong> (com documento) ou <strong>Injustificada</strong>.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Descreva o motivo e, opcionalmente, faça upload do atestado (PDF ou imagem, máx. 2MB).</div></div>
+      <div class="passo"><div class="passo-num">5</div><div class="passo-txt">Clique em <strong>Salvar</strong>. Os relatórios são atualizados automaticamente.</div></div>
+    </div>
+  </div>
+
+  <h3><span class="ico">📈</span> Relatórios</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>📋 Por Turma</h4>
+      <ul>
+        <li>Selecione a turma e a data</li>
+        <li>Veja lista de presentes, ausentes e justificados</li>
+        <li>Exporte em CSV para Excel</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>👤 Por Aluno</h4>
+      <ul>
+        <li>Busque o aluno pelo nome</li>
+        <li>Selecione o mês e o ano</li>
+        <li>Veja calendário mensal de presença</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 6: PROFESSOR ========================= -->
+<div class="secao-header">
+  <div class="num">06</div>
+  <h2>Perfil: Professor</h2>
+  <p>Guia para docentes — turmas, avaliações e ferramentas de IA educacional</p>
+</div>
+<div class="conteudo">
+
+  <div class="perfil-badge perfil-prof">👨‍🏫 &nbsp; PROFESSOR</div>
+
+  <div class="alerta alerta-info">
+    <span>ℹ️</span>
+    <span>Para fazer login, use seu e-mail e a senha <strong>Ceitec@2024</strong> (padrão). Veja a lista completa de credenciais na Seção 2.</span>
+  </div>
+
+  <h3><span class="ico">✅</span> O que o Professor pode fazer</h3>
+  <div class="permissoes">
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Ver Dashboard geral</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Visualizar turmas e alunos</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Usar Scanner de Presença</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Criar e aplicar avaliações</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Registrar ocorrências</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Justificar faltas</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Usar ferramentas de IA</div>
+    <div class="perm-item perm-sim"><span class="ico">✅</span>Atribuir XP no ItagGame</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Criar/editar usuários</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Cadastrar ou editar alunos</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Criar ou editar turmas</div>
+    <div class="perm-item perm-nao"><span class="ico">❌</span>Ver dados de outras escolas</div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">👥</span> Turmas e Alunos</h3>
+  <div class="func-box">
+    <h4>Visualizar Turma e Alunos</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Turmas e Alunos</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Clique na turma desejada.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Use as abas: <strong>Alunos</strong>, <strong>Frequência</strong>, <strong>Desempenho</strong> e <strong>Avaliações</strong>.</div></div>
+    </div>
+  </div>
+
+  <div class="func-box">
+    <h4>📷 Registrar Presença (Scanner)</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Scanner de Presença</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Permita o uso da câmera.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Peça aos alunos para apresentarem a carteirinha. Aponte a câmera para o QR Code.</div></div>
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📝</span> Criar Avaliações</h3>
+  <div class="func-box">
+    <h4>🤖 Criar com IA (mais rápido)</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Criar Questões (IA)</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Informe: <strong>tema</strong>, <strong>disciplina</strong>, <strong>nível</strong> e <strong>quantidade de questões</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Clique em <strong>Gerar</strong>. A IA cria as questões em segundos.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Revise, edite se necessário e salve como avaliação.</div></div>
+    </div>
+  </div>
+
+  <div class="func-box">
+    <h4>📋 Criar Manualmente</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>Avaliações → + Nova Avaliação</strong>.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Preencha título, disciplina, turma, tipo e data.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Adicione questões com gabarito e salve.</div></div>
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">🤖</span> Ferramentas de IA Educacional</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>📚 Plano de Aula</h4>
+      <ul>
+        <li>Menu: <strong>Planos de Aula (IA)</strong></li>
+        <li>Informe: disciplina, tema e objetivo</li>
+        <li>IA gera plano completo com introdução, desenvolvimento e avaliação</li>
+        <li>Salvo automaticamente no histórico</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>✅ Corrigir Provas</h4>
+      <ul>
+        <li>Menu: <strong>Corrigir Provas (IA)</strong></li>
+        <li>Faça upload da prova digitalizada</li>
+        <li>IA identifica e aponta os erros</li>
+        <li>Resultado exportável em PDF</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>🔬 Diagnóstico por Disciplina</h4>
+      <ul>
+        <li>Tópicos com maior erro na turma</li>
+        <li>% de aprovação por questão</li>
+        <li>Alunos que precisam de reforço</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>📄 Criar Conteúdo</h4>
+      <ul>
+        <li>Gera resumos, textos e exercícios</li>
+        <li>Informe o tema e o nível do aluno</li>
+        <li>Pronto para usar em sala de aula</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 7: MÓDULOS ========================= -->
+<div class="secao-header">
+  <div class="num">07</div>
+  <h2>Módulos em Detalhe</h2>
+  <p>Funcionamento completo dos principais módulos da plataforma</p>
+</div>
+<div class="conteudo">
+
+  <h3><span class="ico">📷</span> Scanner de Presença — Como Configurar</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>Dispositivos recomendados</h4>
+      <ul>
+        <li><strong>Tablet Android</strong> com Chrome → ideal para entrada da escola</li>
+        <li><strong>Celular</strong> (Android ou iPhone) → portátil, ideal em sala de aula</li>
+        <li><strong>Computador com webcam</strong> → para secretaria fixa</li>
+        <li>Evite iPad com Safari — pode ter limitações de câmera</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>Dicas para funcionar bem</h4>
+      <ul>
+        <li>Boa iluminação (evite reflexo no QR Code)</li>
+        <li>Carteirinha impressa claramente (não amassada)</li>
+        <li>Câmera limpa e sem tremor</li>
+        <li>Sempre use Chrome ou Firefox</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3><span class="ico">🪪</span> Carteirinha e QR Code do Aluno</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>Como gerar e imprimir</h4>
+      <ul>
+        <li>Cadastre o aluno com foto</li>
+        <li>Clique em <strong>Ver Carteirinha</strong></li>
+        <li>Pressione <strong>Ctrl+P</strong> para imprimir</li>
+        <li>Recomendado: plastificar antes de entregar</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>O QR Code contém</h4>
+      <ul>
+        <li>Código único do aluno (impossível duplicar)</li>
+        <li>Nome, turma e foto</li>
+        <li>Vinculado permanentemente ao sistema</li>
+        <li>Se perder, reimprima — não precisa recadastrar</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">🎮</span> ItagGame — Atribuir XP</h3>
+  <div class="func-box">
+    <h4>Como dar XP a um aluno</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Acesse <strong>ItagGame Dashboard</strong> no menu lateral.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Localize o aluno no ranking e clique em <strong>+ XP</strong>.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Informe a quantidade (1 a 500), o tipo e o motivo.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Clique em <strong>Confirmar</strong>. O ranking é atualizado imediatamente.</div></div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Tipo de XP</th><th>Quando usar</th><th>Sugestão de valor</th></tr>
+    <tr><td>🎯 Participação</td><td>Aluno participou ativamente da aula</td><td>5 – 20 XP</td></tr>
+    <tr><td>📝 Avaliação</td><td>Baseado na nota da avaliação</td><td>10 – 100 XP</td></tr>
+    <tr><td>🌟 Comportamento</td><td>Comportamento exemplar</td><td>10 – 50 XP</td></tr>
+    <tr><td>🏆 Desempenho</td><td>Destaque acadêmico</td><td>50 – 200 XP</td></tr>
+    <tr><td>🎁 Bônus</td><td>Evento especial, projeto extra</td><td>10 – 500 XP</td></tr>
+  </table>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📊</span> Desempenho e Relatórios</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>📈 Desempenho Acadêmico</h4>
+      <ul>
+        <li>Média geral da escola ou por turma</li>
+        <li>Alunos em risco (média abaixo de 5,0)</li>
+        <li>Comparativo por disciplina</li>
+        <li>Histórico de avaliações por aluno</li>
+        <li>Exportação em CSV para Excel</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>📋 Frequência</h4>
+      <ul>
+        <li>Frequência por turma em uma data</li>
+        <li>Calendário mensal do aluno</li>
+        <li>Percentual de presença individual</li>
+        <li>Lista de faltas com justificativas</li>
+        <li>Exportação em CSV para Excel</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">⚠️</span> Ocorrências</h3>
+  <div class="grid-2">
+    <div class="func-box no-break">
+      <h4>Tipos de Ocorrência</h4>
+      <ul>
+        <li>⚠️ <strong>Advertência</strong> (amarelo)</li>
+        <li>🚫 <strong>Suspensão</strong> (vermelho)</li>
+        <li>🌟 <strong>Elogio</strong> (verde)</li>
+        <li>📋 <strong>Observação</strong> geral (laranja)</li>
+      </ul>
+    </div>
+    <div class="func-box no-break">
+      <h4>Níveis de Gravidade</h4>
+      <ul>
+        <li>🟢 <strong>Baixa</strong> — observação simples</li>
+        <li>🟡 <strong>Média</strong> — requer acompanhamento</li>
+        <li>🔴 <strong>Alta</strong> — atenção imediata</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 8: TABELA DE PERMISSÕES ========================= -->
+<div class="secao-header">
+  <div class="num">08</div>
+  <h2>Tabela de Permissões</h2>
+  <p>Quem pode acessar o quê no sistema</p>
+</div>
+<div class="conteudo">
+
+  <h3><span class="ico">📋</span> Comparativo Completo de Acesso</h3>
+  <table>
+    <tr>
+      <th>Funcionalidade</th>
+      <th style="text-align:center">👑 Mestre</th>
+      <th style="text-align:center">🏫 Admin</th>
+      <th style="text-align:center">📋 Secretaria</th>
+      <th style="text-align:center">👨‍🏫 Professor</th>
+    </tr>
+    <tr><td>Dashboard geral</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Gerenciar usuários do sistema</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td></tr>
+    <tr><td>Cadastrar alunos</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td></tr>
+    <tr><td>Editar dados de alunos</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td></tr>
+    <tr><td>Criar turmas</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">Ver apenas</td></tr>
+    <tr><td>Cadastrar professores (perfil)</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td></tr>
+    <tr><td>Scanner de presença</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Justificar faltas</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Criar avaliações</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Ver resultados de avaliações</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Registrar ocorrências</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Relatórios de frequência</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Desempenho acadêmico</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>ItagGame — ver ranking</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>ItagGame — atribuir XP</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>IA — Criar questões</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td></tr>
+    <tr><td>IA — Plano de aula</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td></tr>
+    <tr><td>IA — Corrigir provas</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Exportar CSV</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td><td style="text-align:center">✅</td></tr>
+    <tr><td>Criar novas escolas</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td></tr>
+    <tr><td>Ver dados de outras escolas</td><td style="text-align:center">✅</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td><td style="text-align:center">❌</td></tr>
+  </table>
+
+</div>
+
+<!-- ========================= SEÇÃO 9: ERROS E SOLUÇÕES ========================= -->
+<div class="secao-header">
+  <div class="num">09</div>
+  <h2>Erros Comuns e Soluções</h2>
+  <p>Problemas que podem aparecer e como resolver</p>
+</div>
+<div class="conteudo">
+
+  <h3><span class="ico">🔧</span> Problemas de Acesso</h3>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ "Credenciais inválidas" na tela de login</div>
+    <div class="solucao">
+      <strong>Solução:</strong> Verifique se o e-mail está correto e se não há espaço antes ou depois da senha.
+      A senha padrão é <strong>Ceitec@2024</strong> (com C maiúsculo e @). Se ainda não funcionar, peça ao administrador para redefinir a senha em <strong>Gerenciar Usuários</strong>.
+    </div>
+  </div>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ O sistema deslogou sozinho</div>
+    <div class="solucao">
+      <strong>Normal.</strong> O sistema faz logout automático após 8 horas de inatividade por segurança. Basta entrar novamente com seu e-mail e senha.
+    </div>
+  </div>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ Dashboard mostrando dados zerados ou incorretos</div>
+    <div class="solucao">
+      <strong>Solução:</strong> Verifique se sua conta está vinculada à escola correta. Se for administrador e não ver dados, entre em contato com o suporte (<strong>itagamificaedu@gmail.com</strong>) para verificar o vínculo da conta.
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📷</span> Problemas com o Scanner</h3>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ Scanner não abre / câmera não aparece</div>
+    <div class="solucao">
+      <strong>Soluções:</strong><br>
+      1. Verifique se o navegador tem permissão para a câmera (clique no cadeado na barra de endereço → Câmera → Permitir).<br>
+      2. Use Chrome ou Firefox. Evite Safari no iPad.<br>
+      3. Recarregue a página e tente novamente.
+    </div>
+  </div>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ QR Code não está sendo lido</div>
+    <div class="solucao">
+      <strong>Soluções:</strong><br>
+      1. Melhore a iluminação do ambiente (luz direta no QR Code).<br>
+      2. Certifique que o código impresso está nítido e não está amassado.<br>
+      3. Distancie ou aproxime um pouco mais a carteirinha da câmera.<br>
+      4. Se a carteirinha estiver muito desgastada, reimprima.
+    </div>
+  </div>
+
+  <div class="erro-card no-break">
+    <div class="problema">⚠️ Scanner mostra "Aluno já registrado hoje"</div>
+    <div class="solucao">
+      <strong>Normal.</strong> Significa que a presença desse aluno já foi registrada hoje. Não é um erro — o sistema evita duplicação de registros.
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📝</span> Problemas com Turmas e Nomes</h3>
+
+  <div class="erro-card no-break">
+    <div class="problema">⚠️ Nome de turma com erro de digitação (ex: "Empreededorismo Digital")</div>
+    <div class="solucao">
+      <strong>Solução:</strong> Acesse <strong>Turmas e Alunos</strong> → clique na turma → clique em <strong>Editar Turma</strong> → corrija o nome → Salvar. O nome correto é "Empreendedorismo Digital".
+    </div>
+  </div>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ Aluno não aparece no scanner / presença não registra</div>
+    <div class="solucao">
+      <strong>Solução:</strong> Verifique se o aluno foi cadastrado corretamente em <strong>Cadastrar Aluno</strong> e se tem QR Code gerado. Se o aluno foi cadastrado em outra escola, ele não aparecerá no sistema desta escola.
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">🌐</span> Problemas de Conexão</h3>
+
+  <div class="erro-card no-break">
+    <div class="problema">❌ Página não carrega / "Erro 502" ou tela em branco</div>
+    <div class="solucao">
+      <strong>Soluções:</strong><br>
+      1. Verifique sua conexão com a internet.<br>
+      2. Aguarde 1 minuto e recarregue a página (F5).<br>
+      3. Se persistir, entre em contato: <strong>itagamificaedu@gmail.com</strong>.<br>
+      O servidor está em VPS dedicado e raramente sai do ar.
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================= SEÇÃO 10: NOVA ESCOLA ========================= -->
+<div class="secao-header">
+  <div class="num">10</div>
+  <h2>Como Implantar em Nova Escola</h2>
+  <p>Guia de onboarding para vendas e implantação em novas instituições</p>
+</div>
+<div class="conteudo">
+
+  <div class="destaque">
+    <h4>O que a escola recebe ao contratar o ITA Tecnologia</h4>
+    <p>Sistema completo de gestão escolar na nuvem: presença por QR Code, cadastro de alunos com carteirinha digital, avaliações com correção por IA, gamificação com ItagGame e relatórios completos. Sem instalação, acessível do celular, tablet ou computador.</p>
+  </div>
+
+  <h3><span class="ico">📋</span> Checklist de Implantação</h3>
+
+  <div class="func-box">
+    <h4>Fase 1 — Configuração do Sistema (responsabilidade ITA Tecnologia)</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Criar a escola no banco de dados com nome, cidade e código.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Criar o usuário <strong>Administrador</strong> da escola (diretor/coordenador).</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Enviar as credenciais de acesso ao responsável da escola.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Realizar um treinamento de 1 hora com o admin da escola.</div></div>
+    </div>
+  </div>
+
+  <div class="func-box">
+    <h4>Fase 2 — Configuração pela Escola (responsabilidade do admin da escola)</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Criar os usuários de <strong>secretaria</strong> (1 a 3 pessoas).</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Criar os usuários de <strong>professores</strong> (um para cada docente).</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Criar as <strong>turmas</strong> (ex: 1º Ano A, 2º Ano Manhã).</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Cadastrar todos os <strong>alunos</strong> com foto nas turmas corretas.</div></div>
+      <div class="passo"><div class="passo-num">5</div><div class="passo-txt">Imprimir e distribuir as <strong>carteirinhas com QR Code</strong>.</div></div>
+    </div>
+  </div>
+
+  <div class="func-box">
+    <h4>Fase 3 — Uso Diário (a partir do 1º dia de aula)</h4>
+    <div class="passos">
+      <div class="passo"><div class="passo-num">1</div><div class="passo-txt">Secretaria registra presença com o Scanner na entrada/saída.</div></div>
+      <div class="passo"><div class="passo-num">2</div><div class="passo-txt">Professores criam avaliações e lançam resultados.</div></div>
+      <div class="passo"><div class="passo-num">3</div><div class="passo-txt">Direção acompanha o Dashboard com dados em tempo real.</div></div>
+      <div class="passo"><div class="passo-num">4</div><div class="passo-txt">Exportar relatórios mensais para entrega aos responsáveis.</div></div>
+    </div>
+  </div>
+
+  <hr class="divisor">
+
+  <h3><span class="ico">📊</span> Informações Técnicas para Clientes</h3>
+  <table>
+    <tr><th>Item</th><th>Detalhe</th></tr>
+    <tr><td>Acesso</td><td>100% via navegador (Chrome, Firefox, Safari). Sem instalação.</td></tr>
+    <tr><td>Compatibilidade</td><td>Computador, tablet e celular (Android e iPhone)</td></tr>
+    <tr><td>Dados</td><td>Armazenados em banco PostgreSQL na nuvem com backup diário</td></tr>
+    <tr><td>Segurança</td><td>HTTPS (SSL), senhas criptografadas, login com token de 8h</td></tr>
+    <tr><td>Suporte</td><td>E-mail: itagamificaedu@gmail.com | WhatsApp disponível</td></tr>
+    <tr><td>Treinamento</td><td>1 treinamento online de 1h incluído na implantação</td></tr>
+    <tr><td>Manutenção</td><td>Atualizações automáticas no servidor sem interrupção</td></tr>
+    <tr><td>Limite de alunos</td><td>Sem limite por escola na versão atual</td></tr>
+    <tr><td>Limite de usuários</td><td>Sem limite de professores/secretaria por escola</td></tr>
+  </table>
+
+  <div class="alerta alerta-sucesso">
+    <span>🚀</span>
+    <span>Uma escola nova pode estar <strong>100% operacional em menos de 2 horas</strong> após a contratação, se os dados dos alunos estiverem disponíveis em planilha. Entre em contato: <strong>itagamificaedu@gmail.com</strong></span>
+  </div>
+
+  <hr class="divisor">
+
+  <div style="text-align:center; padding: 40px 0; border-top: 3px solid #f5a623; margin-top: 20px;">
+    <div style="font-size:40px; margin-bottom:16px;">🎓</div>
+    <div style="font-size:22px; font-weight:900; color:#1e3a5f; margin-bottom:8px;">ITA TECNOLOGIA EDUCACIONAL</div>
+    <div style="font-size:14px; color:#64748b; margin-bottom:20px;">Transformando a gestão escolar com tecnologia e inteligência artificial</div>
+    <div style="font-size:13px; font-weight:700; color:#f5a623;">📧 itagamificaedu@gmail.com</div>
+    <div style="font-size:12px; color:#94a3b8; margin-top:12px;">Manual versão 2026 — itatecnologiaeducacional.tech</div>
+  </div>
+
+</div>
+
+<script>
+  // Permite salvar como PDF ao clicar no botão
+  document.querySelector('.btn-imprimir').addEventListener('click', function() {
+    window.print();
+  });
+</script>
+</body>
+</html>
