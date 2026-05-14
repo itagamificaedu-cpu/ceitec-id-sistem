@@ -340,8 +340,24 @@
       <span class="nav-icon">📊</span> Relatórios
     </a>
 
-    {% if usuario and usuario.is_staff or usuario and usuario.is_superuser %}
-    <div class="nav-section-label">Gestão</div>
+    {% if usuario and usuario.type_user == 'admin' %}
+    <div class="nav-section-label">ITA Admin</div>
+    <a href="/ita/dashboard/" class="nav-item {% if '/ita/dashboard/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🛡️</span> Painel Admin
+    </a>
+    <a href="/ita/usuarios/" class="nav-item {% if '/ita/usuarios/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">👥</span> Usuários
+    </a>
+    <a href="/master/dashboard/" class="nav-item {% if '/master/dashboard/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🏫</span> Escolas
+    </a>
+    {% endif %}
+
+    {% if usuario and usuario.type_user == 'school' %}
+    <div class="nav-section-label">Gestão Escolar</div>
+    <a href="/escola/dashboard/" class="nav-item {% if '/escola/dashboard/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🏫</span> Minha Escola
+    </a>
     <a href="/gestao-professores/" class="nav-item {% if '/gestao-professores/' in request.path %}ativo{% endif %}">
       <span class="nav-icon">👥</span> Professores
     </a>

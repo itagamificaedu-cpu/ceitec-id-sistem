@@ -1,0 +1,207 @@
+{% extends "ita_core/base_portal.html" %}
+{% block title %}Gerenciar Usuários — ITA Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .page-header h1 { font-size: 1.5rem; font-weight: 900; color: var(--azul-escuro); }
+  .page-header .sub { font-size: .85rem; color: var(--muted); margin-top: .2rem; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--bg);
+    padding: .65rem 1rem;
+    text-align: left;
+    font-size: .72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: .65rem 1rem;
+    font-size: .875rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7f9ff; }
+
+  .tipo-badge {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    font-size: .68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .tipo-admin   { background: #e8eaf6; color: #3949ab; }
+  .tipo-school  { background: #e8f5e9; color: #2e7d32; }
+  .tipo-prof    { background: #e3f2fd; color: #1565c0; }
+  .tipo-sem_grupo { background: #fff3e0; color: #b35c00; }
+
+  .tipo-select {
+    padding: .35rem .6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .83rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    background: #fff;
+    cursor: pointer;
+  }
+  .btn-salvar {
+    padding: .35rem .9rem;
+    background: var(--azul-escuro);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: .83rem;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: opacity .2s;
+  }
+  .btn-salvar:hover { opacity: .8; }
+
+  .filter-bar {
+    display: flex;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: .4rem 1rem;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: #fff;
+    font-size: .8rem;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: all .15s;
+  }
+  .filter-btn.ativo, .filter-btn:hover {
+    border-color: var(--azul-escuro);
+    background: var(--azul-escuro);
+    color: #fff;
+  }
+
+  .search-input {
+    padding: .5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: .875rem;
+    font-family: 'Nunito', sans-serif;
+    outline: none;
+    width: 280px;
+    max-width: 100%;
+  }
+  .search-input:focus { border-color: var(--azul-claro); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>👥 Gerenciar Usuários</h1>
+    <div class="sub">Defina o perfil de acesso de cada usuário do sistema</div>
+  </div>
+  <a href="/ita/dashboard/" style="font-size:.85rem;color:var(--muted);font-weight:700;">
+    ← Voltar ao Painel
+  </a>
+</div>
+
+<!-- Barra de filtros -->
+<div class="filter-bar">
+  <input class="search-input" type="text" id="buscaInput"
+         placeholder="🔍 Buscar por email ou escola…" oninput="filtrar()">
+  <button class="filter-btn ativo" onclick="filtrarTipo('todos', this)">Todos</button>
+  <button class="filter-btn" onclick="filtrarTipo('admin', this)">🛡️ Admin</button>
+  <button class="filter-btn" onclick="filtrarTipo('school', this)">🏫 Gestor</button>
+  <button class="filter-btn" onclick="filtrarTipo('prof', this)">🎓 Professor</button>
+  <button class="filter-btn" onclick="filtrarTipo('sem_grupo', this)">⏳ Sem Grupo</button>
+</div>
+
+<div class="card" style="overflow:hidden;">
+  <table id="tabela-usuarios">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Nome</th>
+        <th>Escola / Tenant</th>
+        <th>Tipo atual</th>
+        <th>Alterar para</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for prof in professores %}
+      <tr data-tipo="{{ prof.type_user }}" data-busca="{{ prof.email|lower }} {{ prof.first_name|lower }} {{ prof.tenant.nome|lower|default:'' }}">
+        <td>{{ prof.email }}</td>
+        <td>{{ prof.first_name|default:"—" }}</td>
+        <td>{{ prof.tenant.nome|default:"—" }}</td>
+        <td>
+          <span class="tipo-badge tipo-{{ prof.type_user }}">
+            {{ prof.get_type_user_display }}
+          </span>
+        </td>
+        <td>
+          <form method="post" action="/ita/usuarios/"
+                style="display:flex;align-items:center;gap:.5rem;">
+            {% csrf_token %}
+            <input type="hidden" name="prof_id" value="{{ prof.pk }}">
+            <select name="type_user" class="tipo-select">
+              {% for val, label in tipo_choices %}
+              <option value="{{ val }}" {% if val == prof.type_user %}selected{% endif %}>
+                {{ label }}
+              </option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn-salvar">Salvar</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">
+          Nenhum usuário encontrado.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let tipoAtivo = 'todos';
+
+  function filtrar() {
+    const busca = document.getElementById('buscaInput').value.toLowerCase();
+    document.querySelectorAll('#tabela-usuarios tbody tr').forEach(tr => {
+      const dataBusca = tr.dataset.busca || '';
+      const dataTipo  = tr.dataset.tipo  || '';
+      const matchBusca = !busca || dataBusca.includes(busca);
+      const matchTipo  = tipoAtivo === 'todos' || dataTipo === tipoAtivo;
+      tr.style.display = (matchBusca && matchTipo) ? '' : 'none';
+    });
+  }
+
+  function filtrarTipo(tipo, btn) {
+    tipoAtivo = tipo;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    filtrar();
+  }
+</script>
+{% endblock %}

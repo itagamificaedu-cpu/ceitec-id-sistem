@@ -1,6 +1,7 @@
 import os
 import hashlib
 from datetime import timedelta
+from functools import wraps
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -15,6 +16,58 @@ from gamificaedu.accounts.models import Professor
 from gamificaedu.core.models import Tenant
 from .models import SessaoSSO, LogAcesso, PlanoEscola
 from . import sso
+
+
+# ─────────────────────────────────────────────────────────────
+# PERFIS DE ACESSO — helpers, decorator, redirect por tipo
+# ─────────────────────────────────────────────────────────────
+
+def _redirecionar_por_tipo(usuario):
+    """
+    Retorna o redirect correto de acordo com o tipo (perfil) do usuário.
+    Chamado após login bem-sucedido e no acesso ao portal.
+    """
+    tipo = getattr(usuario, 'type_user', 'prof')
+    if tipo == 'admin':
+        return redirect('/ita/dashboard/')
+    if tipo == 'school':
+        return redirect('/escola/dashboard/')
+    if tipo == 'sem_grupo':
+        return redirect('/sem-acesso/')
+    # 'prof' e qualquer valor desconhecido → portal padrão
+    return redirect('/portal/')
+
+
+def require_tipo(*tipos_permitidos):
+    """
+    Decorator que protege uma view exigindo que o usuário tenha
+    um dos tipos_permitidos em request.user.type_user.
+
+    Uso:
+        @require_tipo('admin')
+        def minha_view(request): ...
+
+        @require_tipo('admin', 'school')
+        def outra_view(request): ...
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            # Usuário não autenticado → vai para o login
+            if not request.user.is_authenticated:
+                return redirect(f'/login/?next={request.path}')
+            tipo = getattr(request.user, 'type_user', 'prof')
+            if tipo not in tipos_permitidos:
+                # Registra tentativa de acesso negado
+                _log(request, 'acesso', 'negado', {
+                    'tipos_requeridos': list(tipos_permitidos),
+                    'tipo_usuario': tipo,
+                    'url': request.path,
+                })
+                return redirect('/sem-acesso/')
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 # ─────────────────────────────────────────────────────────────
@@ -127,7 +180,17 @@ def portal_login(request):
 
     # Faz login Django e define cookie SSO
     auth_login(request, usuario)
-    response = redirect(next_url if next_url.startswith('/') else '/portal/')
+
+    # Determina destino: prioridade para next_url explícito (link externo),
+    # caso contrário redireciona pelo tipo de usuário
+    if next_url and next_url.startswith('/') and next_url not in ('/portal/', '/'):
+        destino = next_url
+    else:
+        # Redireciona pelo perfil do usuário
+        resp_perfil = _redirecionar_por_tipo(usuario)
+        destino = resp_perfil['Location']
+
+    response = redirect(destino)
     response.set_cookie(
         'sso_token',
         token_jwt,
@@ -592,11 +655,187 @@ def modulo_gestao_professores(request):
 
 
 # ─────────────────────────────────────────────────────────────
+# SEM ACESSO
+# ─────────────────────────────────────────────────────────────
+
+def sem_acesso(request):
+    """Página exibida para usuários sem grupo ou sem permissão."""
+    return render(request, 'ita_core/sem_acesso.html', {
+        'usuario': request.user if request.user.is_authenticated else None,
+    })
+
+
+# ─────────────────────────────────────────────────────────────
+# DASHBOARD ITA ADMIN
+# ─────────────────────────────────────────────────────────────
+
+@require_tipo('admin')
+def dashboard_ita_admin(request):
+    """
+    Painel do ITA Admin — visão completa de todas as escolas,
+    professores, planos e sessões SSO ativas.
+    Equivale ao master_dashboard mas autenticado por perfil de usuário.
+    """
+    from django.db.models import Count
+
+    # Dados gerais do sistema
+    tenants   = Tenant.objects.all().prefetch_related('plano_escola').annotate(
+        qtd_professores=Count('professores')
+    )
+    total_escolas      = tenants.count()
+    total_professores  = Professor.objects.filter(is_active=True).count()
+    sessoes_ativas     = SessaoSSO.objects.filter(
+        ativa=True, expira_em__gt=timezone.now()
+    ).count()
+    logs_recentes      = LogAcesso.objects.select_related('usuario').order_by('-momento')[:15]
+
+    # Resumo de planos
+    escolas_lista = []
+    inadimplentes = 0
+    mrr = 0
+    for t in tenants:
+        try:
+            p = t.plano_escola
+            escolas_lista.append({
+                'tenant': t,
+                'plano': p,
+                'ativo': p.ativo,
+                'dias': p.dias_restantes,
+                'qtd_professores': t.qtd_professores,
+            })
+            if p.status == 'inadimplente':
+                inadimplentes += 1
+            if p.status == 'ativo':
+                mrr += float(p.valor_mensal)
+        except PlanoEscola.DoesNotExist:
+            escolas_lista.append({
+                'tenant': t, 'plano': None,
+                'ativo': False, 'dias': 0,
+                'qtd_professores': t.qtd_professores,
+            })
+
+    # Professores sem escola/tenant ou sem_grupo
+    sem_grupo = Professor.objects.filter(
+        type_user='sem_grupo', is_active=True
+    ).order_by('email')[:20]
+
+    _log(request, 'ita_admin', 'acessou_dashboard')
+
+    return render(request, 'ita_core/dashboard_ita_admin.html', {
+        'usuario':           request.user,
+        'total_escolas':     total_escolas,
+        'total_professores': total_professores,
+        'sessoes_ativas':    sessoes_ativas,
+        'inadimplentes':     inadimplentes,
+        'mrr':               mrr,
+        'escolas':           escolas_lista,
+        'logs_recentes':     logs_recentes,
+        'sem_grupo':         sem_grupo,
+    })
+
+
+@require_tipo('admin')
+def ita_admin_usuarios(request):
+    """
+    Gerencia tipos de usuário — ITA Admin pode alterar
+    o type_user de qualquer professor.
+    """
+    if request.method == 'POST':
+        prof_id  = request.POST.get('prof_id')
+        novo_tipo = request.POST.get('type_user')
+        tipos_validos = ('admin', 'school', 'prof', 'sem_grupo')
+        if prof_id and novo_tipo in tipos_validos:
+            try:
+                p = Professor.objects.get(pk=prof_id)
+                p.type_user = novo_tipo
+                p.save(update_fields=['type_user'])
+                messages.success(request, f'{p.email} → tipo "{novo_tipo}" salvo.')
+                _log(request, 'ita_admin', 'tipo_alterado',
+                     {'prof_id': prof_id, 'novo_tipo': novo_tipo})
+            except Professor.DoesNotExist:
+                messages.error(request, 'Usuário não encontrado.')
+        return redirect('/ita/usuarios/')
+
+    professores = Professor.objects.select_related('tenant').order_by(
+        'type_user', 'email'
+    )
+    tipo_choices = Professor.TYPE_CHOICES
+    return render(request, 'ita_core/ita_admin_usuarios.html', {
+        'usuario':      request.user,
+        'professores':  professores,
+        'tipo_choices': tipo_choices,
+    })
+
+
+# ─────────────────────────────────────────────────────────────
+# DASHBOARD GESTOR ESCOLAR (Coordenador)
+# ─────────────────────────────────────────────────────────────
+
+@require_tipo('school')
+def dashboard_coordenador(request):
+    """
+    Painel do Gestor Escolar — exibe dados somente da própria escola
+    (tenant vinculado ao usuário logado).
+    """
+    from corretor.core.models import Avaliacao, Resultado
+    from django.db.models import Avg
+
+    tenant = getattr(request.user, 'tenant', None)
+    if not tenant:
+        messages.warning(request, 'Sua conta não está vinculada a nenhuma escola.')
+        return redirect('/sem-acesso/')
+
+    # Professores da escola
+    professores = Professor.objects.filter(
+        tenant=tenant, type_user='prof', is_active=True
+    )
+
+    # Avaliações e resultados da escola
+    avaliacoes = Avaliacao.objects.filter(
+        professor__tenant=tenant
+    ).select_related('professor').order_by('-data_criacao')
+
+    total_avaliacoes = avaliacoes.count()
+    total_correcoes  = Resultado.objects.filter(
+        avaliacao__professor__tenant=tenant
+    ).count()
+    media_geral = Resultado.objects.filter(
+        avaliacao__professor__tenant=tenant
+    ).aggregate(Avg('nota'))['nota__avg'] or 0
+
+    try:
+        plano_obj = tenant.plano_escola
+    except PlanoEscola.DoesNotExist:
+        plano_obj = None
+
+    _log(request, 'escola', 'acessou_dashboard', {'tenant': str(tenant)})
+
+    return render(request, 'ita_core/dashboard_coordenador.html', {
+        'usuario':           request.user,
+        'tenant':            tenant,
+        'plano_obj':         plano_obj,
+        'professores':       professores,
+        'total_professores': professores.count(),
+        'total_avaliacoes':  total_avaliacoes,
+        'total_correcoes':   total_correcoes,
+        'media_geral':       round(media_geral, 2),
+        'avaliacoes':        avaliacoes[:10],
+    })
+
+
+# ─────────────────────────────────────────────────────────────
 # REDIRECT RAIZ
 # ─────────────────────────────────────────────────────────────
 
 def redirect_raiz(request):
+    """
+    Redireciona a raiz (/) para o destino correto:
+    - Com SSO válido → dashboard do perfil
+    - Sem SSO → /login/
+    """
     token = sso.obter_token_do_request(request)
     if token and sso.decodificar_token_sso(token):
+        if request.user.is_authenticated:
+            return _redirecionar_por_tipo(request.user)
         return redirect('/portal/')
     return redirect('/login/')

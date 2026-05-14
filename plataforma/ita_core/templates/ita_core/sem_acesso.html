@@ -1,0 +1,25 @@
+{% extends "ita_core/base_portal.html" %}
+{% block title %}Sem Acesso — ITA Tecnologia{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:1rem;">
+  <div style="font-size:4rem;">🔒</div>
+  <h1 style="font-size:1.75rem;font-weight:900;color:var(--azul-escuro);">Acesso não autorizado</h1>
+  <p style="color:var(--muted);max-width:420px;line-height:1.6;">
+    Sua conta ainda não tem um perfil de acesso configurado.<br>
+    Entre em contato com o administrador do sistema para liberar seu acesso.
+  </p>
+  {% if usuario %}
+  <p style="font-size:.85rem;color:var(--muted);">
+    Conta: <strong>{{ usuario.email }}</strong> &mdash;
+    Tipo atual: <strong>{{ usuario.get_type_user_display }}</strong>
+  </p>
+  {% endif %}
+  <a href="/logout/" style="
+    margin-top:.5rem;padding:.65rem 1.5rem;
+    background:var(--vermelho-err);color:#fff;
+    border-radius:10px;font-weight:800;text-decoration:none;font-size:.9rem;">
+    🚪 Sair do sistema
+  </a>
+</div>
+{% endblock %}

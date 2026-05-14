@@ -25,6 +25,8 @@ SSO_REQUIRED_PREFIXES = (
     '/repositorio/',
     '/relatorios/',
     '/gestao-professores/',
+    '/ita/',       # dashboard e gerência do ITA Admin
+    '/escola/',    # dashboard do Gestor Escolar
 )
 
 
