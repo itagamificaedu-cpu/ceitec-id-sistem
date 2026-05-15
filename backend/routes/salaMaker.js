@@ -289,6 +289,140 @@ router.post('/inscricoes', async (req, res) => {
 });
 
 /**
+ * POST /api/sala-maker/inscricoes/admin
+ * Admin cria inscrição para qualquer pessoa (aluno ou professor).
+ * Inscrição já entra como 'aprovada' por padrão.
+ */
+router.post('/inscricoes/admin', async (req, res) => {
+  if (!exigeAdmin(req, res)) return;
+  try {
+    const eid = req.usuario.escola_id;
+    const {
+      tipo_inscrito, nome, email, turma_nome, disciplina,
+      area_interesse, tipo_uso, descricao_projeto,
+      tem_experiencia, descricao_experiencia, competencias_json,
+      status,
+    } = req.body;
+
+    if (!nome) return res.status(400).json({ erro: 'Nome é obrigatório.' });
+    if (!tipo_inscrito) return res.status(400).json({ erro: 'tipo_inscrito é obrigatório (aluno ou professor).' });
+
+    const result = await db.run(
+      `INSERT INTO sala_maker_inscricoes
+        (escola_id, usuario_id, tipo_inscrito, nome, email, turma_nome,
+         disciplina, area_interesse, tipo_uso, descricao_projeto,
+         tem_experiencia, descricao_experiencia, competencias_json,
+         aceite_regulamento, status, aprovado_por, aprovado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NOW())`,
+      [
+        eid,
+        req.usuario.id,   // admin que criou como responsável
+        tipo_inscrito,
+        nome,
+        email || null,
+        turma_nome || null,
+        disciplina || null,
+        area_interesse || null,
+        tipo_uso || null,
+        descricao_projeto || null,
+        tem_experiencia ? 1 : 0,
+        descricao_experiencia || null,
+        JSON.stringify(competencias_json || []),
+        status || 'aprovada',
+        req.usuario.id,
+      ]
+    );
+
+    const inscricao = await db.get(
+      'SELECT * FROM sala_maker_inscricoes WHERE id = ?', [result.lastInsertRowid]
+    );
+    res.status(201).json({
+      ...inscricao,
+      competencias_json: safeParse(inscricao.competencias_json, []),
+    });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+/**
+ * PUT /api/sala-maker/inscricoes/:id
+ * Admin edita dados de uma inscrição.
+ */
+router.put('/inscricoes/:id', async (req, res) => {
+  if (!exigeAdmin(req, res)) return;
+  try {
+    const eid = req.usuario.escola_id;
+    const inscricao = await db.get(
+      'SELECT * FROM sala_maker_inscricoes WHERE id = ? AND escola_id = ?',
+      [req.params.id, eid]
+    );
+    if (!inscricao) return res.status(404).json({ erro: 'Inscrição não encontrada.' });
+
+    const {
+      tipo_inscrito, nome, email, turma_nome, disciplina,
+      area_interesse, tipo_uso, descricao_projeto,
+      tem_experiencia, descricao_experiencia, competencias_json, status,
+    } = req.body;
+
+    await db.run(
+      `UPDATE sala_maker_inscricoes
+       SET tipo_inscrito = ?, nome = ?, email = ?, turma_nome = ?,
+           disciplina = ?, area_interesse = ?, tipo_uso = ?,
+           descricao_projeto = ?, tem_experiencia = ?,
+           descricao_experiencia = ?, competencias_json = ?, status = ?
+       WHERE id = ?`,
+      [
+        tipo_inscrito     || inscricao.tipo_inscrito,
+        nome              || inscricao.nome,
+        email             ?? inscricao.email,
+        turma_nome        ?? inscricao.turma_nome,
+        disciplina        ?? inscricao.disciplina,
+        area_interesse    ?? inscricao.area_interesse,
+        tipo_uso          ?? inscricao.tipo_uso,
+        descricao_projeto ?? inscricao.descricao_projeto,
+        tem_experiencia !== undefined ? (tem_experiencia ? 1 : 0) : inscricao.tem_experiencia,
+        descricao_experiencia ?? inscricao.descricao_experiencia,
+        JSON.stringify(competencias_json || safeParse(inscricao.competencias_json, [])),
+        status || inscricao.status,
+        req.params.id,
+      ]
+    );
+
+    const atualizada = await db.get(
+      'SELECT * FROM sala_maker_inscricoes WHERE id = ?', [req.params.id]
+    );
+    res.json({
+      ...atualizada,
+      competencias_json: safeParse(atualizada.competencias_json, []),
+    });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+/**
+ * DELETE /api/sala-maker/inscricoes/:id
+ * Admin exclui uma inscrição.
+ */
+router.delete('/inscricoes/:id', async (req, res) => {
+  if (!exigeAdmin(req, res)) return;
+  try {
+    const eid = req.usuario.escola_id;
+    const inscricao = await db.get(
+      'SELECT id FROM sala_maker_inscricoes WHERE id = ? AND escola_id = ?',
+      [req.params.id, eid]
+    );
+    if (!inscricao) return res.status(404).json({ erro: 'Inscrição não encontrada.' });
+
+    await db.run('DELETE FROM sala_maker_inscricoes WHERE id = ?', [req.params.id]);
+    res.json({ mensagem: 'Inscrição excluída com sucesso.' });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+/**
  * PATCH /api/sala-maker/inscricoes/:id/status
  * Admin aprova ou recusa uma inscrição.
  */
