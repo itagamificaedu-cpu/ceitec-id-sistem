@@ -4,12 +4,8 @@
 // Reutiliza a lógica do Scanner de Presença existente.
 // ============================================================
 
-import React, { useEffect, useRef, useState, useCallback } from 'react'
-import jsQR from 'jsqr'
+import React, { useEffect, useRef, useState } from 'react'
 import api from '../../api'
-
-// ── Constantes ────────────────────────────────────────────
-const ABAS_PRESENCA = ['scanner', 'manual', 'relatorio']
 
 export default function Presenca({ config, usuario }) {
   const [abaAtiva, setAbaAtiva] = useState('scanner')
@@ -47,23 +43,20 @@ export default function Presenca({ config, usuario }) {
 }
 
 // ============================================================
-// SCANNER QR
+// SCANNER QR — usa html5-qrcode (igual ao Scanner de Presença)
 // ============================================================
 function ScannerQR({ isAdmin, usuario }) {
-  const videoRef        = useRef(null)
-  const canvasRef       = useRef(null)
-  const streamRef       = useRef(null)
-  const animFrameRef    = useRef(null)
+  const scannerDivId                    = 'qr-reader-sala-maker'
+  const html5QrRef                      = useRef(null)
 
-  const [atividades, setAtividades]       = useState([])
-  const [atividadeId, setAtividadeId]     = useState('')
-  const [escaneando, setEscaneando]       = useState(false)
-  const [resultado, setResultado]         = useState(null)  // { ok, mensagem, aluno }
-  const [carregando, setCarregando]       = useState(false)
-  const [erroCamera, setErroCamera]       = useState('')
-  const [ultimosReg, setUltimosReg]       = useState([])    // últimas presenças registradas
+  const [atividades, setAtividades]     = useState([])
+  const [atividadeId, setAtividadeId]   = useState('')
+  const [escaneando, setEscaneando]     = useState(false)
+  const [resultado, setResultado]       = useState(null)   // { ok, mensagem, aluno }
+  const [carregando, setCarregando]     = useState(false)
+  const [ultimosReg, setUltimosReg]     = useState([])
 
-  // Carrega atividades disponíveis (ativas ou em andamento)
+  // Carrega atividades em andamento
   useEffect(() => {
     api.get('/sala-maker/atividades?status=em_andamento')
       .then(({ data }) => {
@@ -73,58 +66,48 @@ function ScannerQR({ isAdmin, usuario }) {
       .catch(() => {})
   }, [])
 
-  // Inicia câmera
-  async function iniciarCamera() {
-    setErroCamera('')
+  // Limpa scanner ao desmontar
+  useEffect(() => () => { pararScanner() }, [])
+
+  // Reinicia scanner automaticamente 2,5s após um resultado
+  useEffect(() => {
+    if (resultado && !carregando) {
+      const t = setTimeout(() => { setResultado(null); if (atividadeId) iniciarScanner() }, 2500)
+      return () => clearTimeout(t)
+    }
+  }, [resultado, carregando])
+
+  async function iniciarScanner() {
+    await pararScanner()
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-      })
-      streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        videoRef.current.play()
-      }
+      const { Html5QrcodeScanner } = await import('html5-qrcode')
+      const scanner = new Html5QrcodeScanner(
+        scannerDivId,
+        { fps: 10, qrbox: { width: 240, height: 240 }, showTorchButtonIfSupported: true },
+        false
+      )
+      scanner.render(
+        (decodedText) => onScanSuccess(decodedText, scanner),
+        () => {}
+      )
+      html5QrRef.current = scanner
       setEscaneando(true)
-      requestAnimationFrame(varrerFrame)
-    } catch {
-      setErroCamera('Não foi possível acessar a câmera. Verifique as permissões do navegador.')
+    } catch (err) {
+      console.error('Erro ao iniciar scanner:', err)
     }
   }
 
-  // Para câmera
-  function pararCamera() {
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
-    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop())
-    streamRef.current = null
+  async function pararScanner() {
+    if (html5QrRef.current) {
+      try { await html5QrRef.current.clear() } catch {}
+      html5QrRef.current = null
+    }
     setEscaneando(false)
   }
 
-  // Loop de leitura QR
-  const varrerFrame = useCallback(() => {
-    const video  = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas || video.readyState < 2) {
-      animFrameRef.current = requestAnimationFrame(varrerFrame)
-      return
-    }
-    const ctx = canvas.getContext('2d')
-    canvas.width  = video.videoWidth
-    canvas.height = video.videoHeight
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const code = jsQR(imageData.data, imageData.width, imageData.height)
-    if (code?.data) {
-      registrarQR(code.data)
-    } else {
-      animFrameRef.current = requestAnimationFrame(varrerFrame)
-    }
-  }, [atividadeId])
-
-  // Envia QR para o backend
-  async function registrarQR(qrCode) {
-    if (carregando || !atividadeId) return
-    pararCamera()
+  async function onScanSuccess(qrCode, scanner) {
+    await pararScanner()
+    if (!atividadeId) { setResultado({ ok: false, mensagem: 'Selecione uma atividade primeiro.' }); return }
     setCarregando(true)
     setResultado(null)
     try {
@@ -132,35 +115,30 @@ function ScannerQR({ isAdmin, usuario }) {
         qr_code:      qrCode,
         atividade_id: Number(atividadeId),
       })
-      setResultado({ ok: true, mensagem: data.mensagem, aluno: data.aluno_nome })
-      setUltimosReg(prev => [{ aluno: data.aluno_nome, hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), ok: true }, ...prev.slice(0, 9)])
+      const aluno = data.aluno_nome || ''
+      setResultado({ ok: data.tipo !== 'nao_encontrado', mensagem: data.mensagem, aluno })
+      setUltimosReg(prev => [{
+        aluno: aluno || data.mensagem,
+        hora:  new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        ok:    data.tipo !== 'nao_encontrado',
+      }, ...prev.slice(0, 9)])
     } catch (err) {
       const msg = err.response?.data?.erro || 'Erro ao registrar presença.'
       setResultado({ ok: false, mensagem: msg })
-      setUltimosReg(prev => [{ aluno: msg, hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), ok: false }, ...prev.slice(0, 9)])
+      setUltimosReg(prev => [{
+        aluno: msg,
+        hora:  new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        ok:    false,
+      }, ...prev.slice(0, 9)])
     } finally {
       setCarregando(false)
     }
   }
 
-  // Após resultado, aguarda 2,5s e reinicia scanner automaticamente
-  useEffect(() => {
-    if (resultado && !carregando) {
-      const t = setTimeout(() => {
-        setResultado(null)
-        if (atividadeId) iniciarCamera()
-      }, 2500)
-      return () => clearTimeout(t)
-    }
-  }, [resultado, carregando])
-
-  // Limpa câmera ao desmontar
-  useEffect(() => () => pararCamera(), [])
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      {/* Coluna principal — scanner */}
+      {/* Coluna principal */}
       <div className="lg:col-span-2 space-y-4">
         {/* Seleção de atividade */}
         <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
@@ -168,7 +146,7 @@ function ScannerQR({ isAdmin, usuario }) {
           <select
             className="input-field"
             value={atividadeId}
-            onChange={e => { setAtividadeId(e.target.value); pararCamera(); setResultado(null) }}
+            onChange={e => { setAtividadeId(e.target.value); pararScanner(); setResultado(null) }}
           >
             <option value="">— Selecione uma atividade —</option>
             {atividades.map(a => (
@@ -176,18 +154,20 @@ function ScannerQR({ isAdmin, usuario }) {
             ))}
           </select>
           {atividades.length === 0 && (
-            <p className="text-xs text-gray-400 mt-1">Nenhuma atividade em andamento. Ative uma atividade na aba "Atividades e Projetos".</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Nenhuma atividade em andamento. Ative uma na aba "Atividades e Projetos".
+            </p>
           )}
         </div>
 
-        {/* Área de scanner */}
+        {/* Área do scanner */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="bg-primary px-5 py-3">
             <h2 className="text-white font-bold text-sm">📷 Scanner de Presença — Sala Maker</h2>
           </div>
 
           <div className="p-5 space-y-4">
-            {/* Feedback de resultado */}
+            {/* Feedback */}
             {resultado && (
               <div className={`rounded-xl p-6 text-center border-2 ${resultado.ok
                 ? 'bg-green-50 border-green-400 text-green-800'
@@ -206,50 +186,23 @@ function ScannerQR({ isAdmin, usuario }) {
               </div>
             )}
 
-            {/* Viewfinder da câmera */}
+            {/* Div onde o html5-qrcode renderiza a câmera */}
             {!resultado && !carregando && (
-              <div className="relative bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center">
-                <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
-                <canvas ref={canvasRef} className="hidden" />
-
-                {/* Overlay quando não está escaneando */}
-                {!escaneando && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white">
-                    <div className="text-5xl mb-3">📷</div>
-                    <p className="text-sm text-center px-4">
-                      {!atividadeId
-                        ? 'Selecione uma atividade acima para iniciar o scanner'
-                        : 'Clique em "Iniciar Scanner" para abrir a câmera'}
-                    </p>
-                  </div>
-                )}
-
-                {/* Mira de leitura */}
-                {escaneando && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-48 h-48 border-4 border-white/80 rounded-2xl animate-pulse" />
-                  </div>
-                )}
-              </div>
+              <div id={scannerDivId} className="rounded-xl overflow-hidden" />
             )}
 
-            {/* Erro de câmera */}
-            {erroCamera && (
-              <p className="text-red-600 text-sm bg-red-50 rounded-lg p-3">{erroCamera}</p>
-            )}
-
-            {/* Botões de controle */}
+            {/* Botões */}
             <div className="flex gap-3">
               {!escaneando ? (
                 <button
-                  onClick={iniciarCamera}
+                  onClick={iniciarScanner}
                   disabled={!atividadeId || carregando}
                   className="btn-primary flex-1 disabled:opacity-40"
                 >
                   📷 Iniciar Scanner
                 </button>
               ) : (
-                <button onClick={pararCamera} className="btn-secondary flex-1">
+                <button onClick={pararScanner} className="btn-secondary flex-1">
                   ⏹ Parar Scanner
                 </button>
               )}
