@@ -41,6 +41,12 @@ const SECOES_ESTATICAS = [
     ]
   },
   {
+    titulo: 'MÓDULOS EXTRAS',
+    itens: [
+      { path: '/sala-maker', label: 'Sala Maker', icon: '🔧' },
+    ]
+  },
+  {
     titulo: 'RELATÓRIOS',
     itens: [
       { path: '/relatorios', label: 'Relatórios Gerais', icon: '📈' },
@@ -123,9 +129,26 @@ export default function Navbar() {
     else abrirUrl(url)
   }
 
-  function abrirCorretor() {
+  async function abrirCorretor() {
+    const janela = window.electronAPI?.isElectron ? null : window.open('about:blank', '_blank')
+
+    // Sincroniza alunos da plataforma ITA → Corretor de Provas (em segundo plano)
+    try {
+      const { data: alunos } = await api.get('/alunos')
+      await fetch('https://correcaoonlineita.pythonanywhere.com/api/sync-alunos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chave: 'gamificaedu_secreto_2026',
+          email: usuario.email || '',
+          alunos: alunos.map(a => ({ nome: a.nome, turma: a.turma || a.turma_nome || '', codigo: a.codigo || '' })),
+        }),
+      })
+    } catch (_) {}
+
     const url = corretorSsoUrl()
-    window.open(url, '_blank')
+    if (janela) janela.location.href = url
+    else abrirUrl(url)
   }
 
   const isProfessor = usuario.perfil === 'professor'
@@ -136,6 +159,12 @@ export default function Navbar() {
           titulo: 'MINHAS TURMAS',
           itens: [
             { path: '/dashboard', label: 'Painel do Professor', icon: '🏫' },
+          ]
+        },
+        {
+          titulo: 'MÓDULOS EXTRAS',
+          itens: [
+            { path: '/sala-maker', label: 'Sala Maker', icon: '🔧' },
           ]
         },
         {
