@@ -27,6 +27,7 @@ async function initDatabase() {
     `ALTER TABLE justificativas    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE quiz_resultados   ADD COLUMN IF NOT EXISTS aluno_codigo TEXT`,
     `ALTER TABLE almoco_registros  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
+    `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS trocar_senha INTEGER DEFAULT 0`,
     // Cada admin tem escola_id = próprio id
     `UPDATE usuarios SET escola_id = id WHERE perfil = 'admin' AND escola_id IS NULL`,
     // Demais usuários herdaram escola do admin ITA (dados demo)
@@ -69,6 +70,145 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS quiz_questoes (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, enunciado TEXT NOT NULL, alt_a TEXT NOT NULL, alt_b TEXT NOT NULL, alt_c TEXT, alt_d TEXT, resposta_correta INTEGER DEFAULT 0, ordem INTEGER DEFAULT 0)`,
     `CREATE TABLE IF NOT EXISTS quiz_resultados (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, aluno_nome TEXT DEFAULT 'Participante', acertos INTEGER DEFAULT 0, total INTEGER DEFAULT 0, percentual INTEGER DEFAULT 0, tempo_total INTEGER DEFAULT 0, respondido_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS almoco_registros (id SERIAL PRIMARY KEY, aluno_id INTEGER NOT NULL, data DATE NOT NULL, hora_registro TEXT, registrado_por TEXT DEFAULT 'scanner', escola_id INTEGER)`,
+
+    /* ========== SALA MAKER ========== */
+
+    /* Configuração: qual escola tem Sala Maker ativada */
+    `CREATE TABLE IF NOT EXISTS sala_maker_config (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER UNIQUE NOT NULL,
+      ativa INTEGER DEFAULT 1,
+      nome_sala TEXT DEFAULT 'Sala Maker',
+      descricao TEXT,
+      responsavel TEXT,
+      capacidade INTEGER DEFAULT 30,
+      regulamento TEXT,
+      criado_em TIMESTAMP DEFAULT NOW(),
+      atualizado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Inscrições de professores e alunos na Sala Maker */
+    `CREATE TABLE IF NOT EXISTS sala_maker_inscricoes (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      tipo_inscrito TEXT NOT NULL DEFAULT 'professor',
+      nome TEXT NOT NULL,
+      email TEXT,
+      turma_id INTEGER,
+      turma_nome TEXT,
+      disciplina TEXT,
+      modalidade TEXT,
+      nome_equipe TEXT,
+      area_interesse TEXT,
+      tipo_uso TEXT,
+      descricao_projeto TEXT,
+      tem_experiencia INTEGER DEFAULT 0,
+      descricao_experiencia TEXT,
+      competencias_json TEXT DEFAULT '[]',
+      aceite_regulamento INTEGER DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pendente',
+      justificativa_recusa TEXT,
+      aprovado_por INTEGER,
+      aprovado_em TIMESTAMP,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Agendamentos da Sala Maker */
+    `CREATE TABLE IF NOT EXISTS sala_maker_agendamentos (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      inscricao_id INTEGER,
+      responsavel_id INTEGER NOT NULL,
+      responsavel_nome TEXT NOT NULL,
+      data_agendamento DATE NOT NULL,
+      hora_inicio TEXT NOT NULL,
+      hora_fim TEXT NOT NULL,
+      nome_projeto TEXT NOT NULL,
+      descricao_projeto TEXT,
+      num_participantes INTEGER DEFAULT 1,
+      materiais_json TEXT DEFAULT '[]',
+      equipamentos_json TEXT DEFAULT '[]',
+      disciplinas_json TEXT DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'pendente',
+      justificativa_recusa TEXT,
+      aprovado_por INTEGER,
+      aprovado_em TIMESTAMP,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Atividades e projetos registrados na Sala Maker */
+    `CREATE TABLE IF NOT EXISTS sala_maker_atividades (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      professor_id INTEGER NOT NULL,
+      professor_nome TEXT NOT NULL,
+      tipo TEXT NOT NULL DEFAULT 'atividade',
+      titulo TEXT NOT NULL,
+      descricao TEXT,
+      turmas_json TEXT DEFAULT '[]',
+      equipes_json TEXT DEFAULT '[]',
+      data_realizacao DATE,
+      prazo_entrega DATE,
+      equipamentos_usados_json TEXT DEFAULT '[]',
+      competencias_json TEXT DEFAULT '[]',
+      steam_json TEXT DEFAULT '[]',
+      criterios_avaliacao TEXT,
+      status TEXT NOT NULL DEFAULT 'em_andamento',
+      etapas_json TEXT DEFAULT '[]',
+      fotos_json TEXT DEFAULT '[]',
+      resultado_json TEXT DEFAULT '[]',
+      vencedor TEXT,
+      criado_em TIMESTAMP DEFAULT NOW(),
+      atualizado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Presenças na Sala Maker (contexto separado das presenças de aula) */
+    `CREATE TABLE IF NOT EXISTS sala_maker_presencas (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      usuario_id INTEGER,        -- id do usuário inscrito (usuarios.id)
+      aluno_id INTEGER,          -- id do aluno via carteirinha (alunos.id)
+      aluno_nome TEXT NOT NULL,  -- nome armazenado para agilizar relatórios
+      atividade_id INTEGER,
+      atividade_titulo TEXT,     -- título armazenado para agilizar relatórios
+      data DATE NOT NULL,
+      metodo TEXT NOT NULL DEFAULT 'manual',  -- 'qr' | 'manual'
+      registrado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Cadastro de equipamentos da Sala Maker */
+    `CREATE TABLE IF NOT EXISTS sala_maker_equipamentos (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      nome TEXT NOT NULL,
+      modelo TEXT,
+      categoria TEXT,
+      numero_serie TEXT,
+      quantidade INTEGER DEFAULT 1,
+      localizacao TEXT,
+      descricao TEXT,
+      status TEXT NOT NULL DEFAULT 'disponivel',
+      criado_em TIMESTAMP DEFAULT NOW(),
+      atualizado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Registros de manutenção dos equipamentos */
+    `CREATE TABLE IF NOT EXISTS sala_maker_manutencoes (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      equipamento_id INTEGER NOT NULL,
+      tipo_manutencao TEXT NOT NULL DEFAULT 'corretiva',
+      descricao_problema TEXT NOT NULL,
+      tecnico_responsavel TEXT,
+      custo_estimado REAL,
+      observacoes TEXT,
+      observacao_conclusao TEXT,
+      status TEXT NOT NULL DEFAULT 'aberta',
+      aberta_em TIMESTAMP DEFAULT NOW(),
+      concluida_em TIMESTAMP,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
   ];
 
   for (const sql of tabelas) {

@@ -41,7 +41,8 @@ app.use('/api/itagame',      verificarLicenca, require('./routes/itagame'));
 app.use('/api/ia',           verificarLicenca, require('./routes/ia'));
 app.use('/api/usuarios',     verificarLicenca, require('./routes/usuarios'));
 app.use('/api/corretor',     verificarLicenca, require('./routes/corretor'));
-app.use('/api/almoco',      verificarLicenca, require('./routes/almoco'));
+app.use('/api/almoco',       verificarLicenca, require('./routes/almoco'));
+app.use('/api/sala-maker',   verificarLicenca, require('./routes/salaMaker')); // Módulo Sala Maker
 app.use('/api/portal',       require('./routes/portal')); // portal do aluno — sem check de licença
 app.use('/api/quiz',         require('./routes/quiz'));    // quiz público — sem check de licença
 

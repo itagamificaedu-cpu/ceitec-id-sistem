@@ -37,6 +37,8 @@ import MinhaLicenca from './pages/MinhaLicenca'
 import Usuarios from './pages/Usuarios'
 import CorretorResultados from './pages/CorretorResultados'
 import ResponderAvaliacao from './pages/ResponderAvaliacao'
+import TrocarSenha from './pages/TrocarSenha'
+import SalaMaker from './pages/salaMaker'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -127,8 +129,12 @@ export default function App() {
         {/* Corretor de Provas — resultados reais */}
         <Route path="/corretor-resultados" element={<Admin><CorretorResultados /></Admin>} />
 
+        {/* Sala Maker — acessível a todos os usuários autenticados */}
+        <Route path="/sala-maker" element={<P><SalaMaker /></P>} />
+
         {/* Usuários */}
         <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />
+        <Route path="/trocar-senha" element={<P><TrocarSenha /></P>} />
       </Routes>
     </BrowserRouter>
   )
