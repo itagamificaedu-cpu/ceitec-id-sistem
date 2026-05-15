@@ -1,7 +1,7 @@
 // ============================================================
 // ABA 2 — INSCRIÇÕES na Sala Maker
-// Formulários de adesão para professores e alunos.
-// Admin vê e gerencia todas; professor vê a própria inscrição.
+// Admin: lista completa + criar / editar / excluir / aprovar
+// Professor/Aluno: vê a própria inscrição ou faz a sua
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
@@ -16,7 +16,7 @@ const TIPOS_USO = [
   'Outro',
 ]
 
-// Áreas de interesse do aluno
+// Áreas de interesse
 const AREAS_INTERESSE = [
   'Robótica e Eletrônica',
   'Impressão 3D e Modelagem',
@@ -39,44 +39,60 @@ const COMPETENCIAS = [
 
 // Cores por status
 const COR_STATUS = {
-  pendente:  'bg-yellow-100 text-yellow-800',
-  aprovada:  'bg-green-100 text-green-800',
-  recusada:  'bg-red-100 text-red-800',
+  pendente:  'bg-yellow-100 text-yellow-800 border-yellow-200',
+  aprovada:  'bg-green-100  text-green-800  border-green-200',
+  recusada:  'bg-red-100    text-red-800    border-red-200',
 }
+const ICONE_STATUS = { pendente: '⏳', aprovada: '✅', recusada: '❌' }
 
+// ── Componente principal ──────────────────────────────────
 export default function Inscricoes({ config, usuario }) {
-  const [inscricoes, setInscricoes] = useState([])
-  const [carregando, setCarregando] = useState(true)
+  const [inscricoes, setInscricoes]   = useState([])
+  const [carregando, setCarregando]   = useState(true)
   const [minhaInscricao, setMinhaInscricao] = useState(null)
-  const [mostrarForm, setMostrarForm]       = useState(false)
-  const [filtroStatus, setFiltroStatus]     = useState('todos')
-  const [filtroTipo, setFiltroTipo]         = useState('todos')
+  const [mostrarForm, setMostrarForm] = useState(false)
+
+  // Admin: filtros e modal
+  const [filtroStatus, setFiltroStatus] = useState('todos')
+  const [filtroTipo,   setFiltroTipo]   = useState('todos')
+  const [modalForm,    setModalForm]    = useState(false)   // abrir modal de nova/edição
+  const [editando,     setEditando]     = useState(null)    // null = novo, obj = editar
+  const [confirmExcluir, setConfirmExcluir] = useState(null)
 
   const isAdmin = usuario.perfil === 'admin'
 
-  // Carrega inscrições
   function carregar() {
     setCarregando(true)
     api.get('/sala-maker/inscricoes')
       .then(({ data }) => {
         setInscricoes(data)
-        // Verifica se o usuário atual já tem inscrição
         const minha = data.find(i => i.usuario_id === usuario.id)
         setMinhaInscricao(minha || null)
       })
+      .catch(() => {})
       .finally(() => setCarregando(false))
   }
 
   useEffect(carregar, [])
 
-  // Filtragem da lista (apenas para admin)
-  const inscricoesFiltradas = inscricoes.filter(i => {
-    if (filtroStatus !== 'todos' && i.status !== filtroStatus) return false
-    if (filtroTipo   !== 'todos' && i.tipo_inscrito !== filtroTipo) return false
+  // Filtragem da lista (admin)
+  const lista = inscricoes.filter(i => {
+    if (filtroStatus !== 'todos' && i.status       !== filtroStatus) return false
+    if (filtroTipo   !== 'todos' && i.tipo_inscrito !== filtroTipo)  return false
     return true
   })
 
-  // ── Se professor: mostrar sua inscrição ou formulário ─────
+  async function excluir(id) {
+    try {
+      await api.delete(`/sala-maker/inscricoes/${id}`)
+      setConfirmExcluir(null)
+      carregar()
+    } catch (err) {
+      alert(err.response?.data?.erro || 'Erro ao excluir.')
+    }
+  }
+
+  // ── Vista do professor/aluno ──────────────────────────────
   if (!isAdmin) {
     return (
       <div className="max-w-2xl">
@@ -84,6 +100,7 @@ export default function Inscricoes({ config, usuario }) {
           <CartaoMinhaInscricao inscricao={minhaInscricao} />
         ) : mostrarForm ? (
           <FormularioInscricao
+            config={config}
             usuario={usuario}
             onSalvo={(nova) => { setMinhaInscricao(nova); setMostrarForm(false) }}
             onCancelar={() => setMostrarForm(false)}
@@ -93,10 +110,10 @@ export default function Inscricoes({ config, usuario }) {
             <div className="text-5xl mb-4">📋</div>
             <h2 className="text-xl font-bold text-textMain mb-2">Inscrição na Sala Maker</h2>
             <p className="text-gray-500 text-sm mb-6">
-              Você ainda não está inscrito na Sala Maker. Faça sua inscrição para solicitar agendamentos e registrar atividades.
+              Você ainda não está inscrito. Faça sua inscrição para solicitar agendamentos e registrar atividades.
             </p>
             <button onClick={() => setMostrarForm(true)} className="btn-primary">
-              📋 Fazer Inscrição
+              📋 Fazer minha Inscrição
             </button>
           </div>
         )}
@@ -104,20 +121,26 @@ export default function Inscricoes({ config, usuario }) {
     )
   }
 
-  // ── Vista do Admin: lista completa ────────────────────────
+  // ── Vista do Admin ────────────────────────────────────────
   return (
     <div className="space-y-5">
 
-      {/* Cabeçalho com botão de nova inscrição */}
+      {/* Cabeçalho */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-bold text-textMain text-lg">📋 Gerenciar Inscrições</h2>
         <div className="flex gap-2 flex-wrap">
-          <BotaoExportar inscricoes={inscricoesFiltradas} />
+          <BotaoExportar inscricoes={lista} />
+          <button
+            onClick={() => { setEditando(null); setModalForm(true) }}
+            className="btn-primary"
+          >
+            + Nova Inscrição
+          </button>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-3">
+      <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-3 items-end">
         <div>
           <label className="label">Status</label>
           <select className="input-field text-sm w-40" value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}>
@@ -135,60 +158,93 @@ export default function Inscricoes({ config, usuario }) {
             <option value="aluno">Aluno</option>
           </select>
         </div>
-        <div className="flex items-end">
-          <span className="text-sm text-gray-500">{inscricoesFiltradas.length} inscrição(ões)</span>
-        </div>
+        <span className="text-sm text-gray-500 pb-1">{lista.length} inscrição(ões)</span>
       </div>
 
+      {/* Lista */}
       {carregando ? (
         <div className="text-center py-12 text-gray-400">Carregando…</div>
-      ) : inscricoesFiltradas.length === 0 ? (
+      ) : lista.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-10 text-center text-gray-400">
           <div className="text-4xl mb-3">📋</div>
           <p>Nenhuma inscrição encontrada.</p>
+          <button onClick={() => { setEditando(null); setModalForm(true) }} className="btn-primary mt-4">
+            + Criar primeira inscrição
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
-          {inscricoesFiltradas.map(inscricao => (
+          {lista.map(inscricao => (
             <CardInscricaoAdmin
               key={inscricao.id}
               inscricao={inscricao}
               onAtualizada={carregar}
+              onEditar={() => { setEditando(inscricao); setModalForm(true) }}
+              onExcluir={() => setConfirmExcluir(inscricao)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Modal formulário admin (criar / editar) */}
+      {modalForm && (
+        <ModalFormAdmin
+          inicial={editando}
+          config={config}
+          onSalvo={() => { setModalForm(false); setEditando(null); carregar() }}
+          onFechar={() => { setModalForm(false); setEditando(null) }}
+        />
+      )}
+
+      {/* Confirmar exclusão */}
+      {confirmExcluir && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
+            <p className="text-3xl mb-3">🗑️</p>
+            <p className="font-bold text-textMain mb-1">Excluir inscrição?</p>
+            <p className="text-sm text-gray-500 mb-5">
+              A inscrição de <strong>{confirmExcluir.nome}</strong> será removida permanentemente.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmExcluir(null)} className="btn-secondary flex-1">Cancelar</button>
+              <button onClick={() => excluir(confirmExcluir.id)} className="btn-danger flex-1">Excluir</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-// ── Cartão da inscrição do professor logado ───────────────
-
+// ── Card da própria inscrição (professor/aluno logado) ────
 function CartaoMinhaInscricao({ inscricao }) {
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex items-start justify-between mb-4">
         <div>
           <h2 className="text-lg font-bold text-textMain">Minha Inscrição</h2>
-          <p className="text-sm text-gray-400">Inscrito em {new Date(inscricao.criado_em).toLocaleDateString('pt-BR')}</p>
+          <p className="text-sm text-gray-400">
+            Inscrito em {new Date(inscricao.criado_em).toLocaleDateString('pt-BR')}
+          </p>
         </div>
-        <span className={`text-xs font-bold px-3 py-1 rounded-full capitalize ${COR_STATUS[inscricao.status] || 'bg-gray-100 text-gray-600'}`}>
-          {inscricao.status}
+        <span className={`text-xs font-bold px-3 py-1 rounded-full border capitalize
+          ${COR_STATUS[inscricao.status] || 'bg-gray-100 text-gray-600'}`}>
+          {ICONE_STATUS[inscricao.status]} {inscricao.status}
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <Info label="Nome"       value={inscricao.nome} />
-        <Info label="Tipo"       value={inscricao.tipo_inscrito} />
-        <Info label="Disciplina" value={inscricao.disciplina || '—'} />
-        <Info label="Turma"      value={inscricao.turma_nome   || '—'} />
-        {inscricao.tipo_uso && <Info label="Tipo de uso" value={inscricao.tipo_uso} />}
-        {inscricao.area_interesse && <Info label="Área de interesse" value={inscricao.area_interesse} />}
+        <Info label="Tipo"       value={inscricao.tipo_inscrito === 'professor' ? 'Professor' : 'Aluno'} />
+        {inscricao.disciplina  && <Info label="Disciplina"      value={inscricao.disciplina} />}
+        {inscricao.turma_nome  && <Info label="Turma"           value={inscricao.turma_nome} />}
+        {inscricao.tipo_uso    && <Info label="Tipo de uso"     value={inscricao.tipo_uso} />}
+        {inscricao.area_interesse && <Info label="Área" value={inscricao.area_interesse} />}
       </div>
 
       {inscricao.descricao_projeto && (
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Descrição do projeto</p>
+          <p className="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Projeto</p>
           <p className="text-sm text-gray-700">{inscricao.descricao_projeto}</p>
         </div>
       )}
@@ -212,19 +268,401 @@ function CartaoMinhaInscricao({ inscricao }) {
   )
 }
 
-// ── Formulário de inscrição ───────────────────────────────
+// ── Card de inscrição na lista do admin ───────────────────
+function CardInscricaoAdmin({ inscricao, onAtualizada, onEditar, onExcluir }) {
+  const [expandido, setExpandido]       = useState(false)
+  const [modalStatus, setModalStatus]   = useState(null) // 'aprovar' | 'recusar'
+  const [justificativa, setJustificativa] = useState('')
+  const [salvando, setSalvando]         = useState(false)
 
-function FormularioInscricao({ usuario, onSalvo, onCancelar }) {
+  async function alterar(status) {
+    setSalvando(true)
+    try {
+      await api.patch(`/sala-maker/inscricoes/${inscricao.id}/status`, {
+        status,
+        justificativa_recusa: justificativa || undefined,
+      })
+      setModalStatus(null)
+      setJustificativa('')
+      onAtualizada()
+    } catch (err) {
+      alert(err.response?.data?.erro || 'Erro ao alterar status.')
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Linha principal */}
+      <div className="flex items-center gap-4 p-4">
+        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">
+          {inscricao.tipo_inscrito === 'professor' ? '👨‍🏫' : '🎓'}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-textMain truncate">{inscricao.nome}</p>
+          <p className="text-sm text-gray-400">
+            {inscricao.tipo_inscrito === 'professor' ? 'Professor' : 'Aluno'}
+            {inscricao.disciplina  && ` · ${inscricao.disciplina}`}
+            {inscricao.turma_nome  && ` · ${inscricao.turma_nome}`}
+          </p>
+        </div>
+
+        {/* Badge de status */}
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border flex-shrink-0
+          ${COR_STATUS[inscricao.status] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+          {ICONE_STATUS[inscricao.status]} {inscricao.status}
+        </span>
+
+        {/* Ações rápidas: editar, excluir, expandir */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={onEditar}
+            title="Editar inscrição"
+            className="p-1.5 text-gray-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            ✏️
+          </button>
+          <button
+            onClick={onExcluir}
+            title="Excluir inscrição"
+            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            🗑️
+          </button>
+          <button
+            onClick={() => setExpandido(!expandido)}
+            className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+          >
+            {expandido ? '▲' : '▼'}
+          </button>
+        </div>
+      </div>
+
+      {/* Detalhes expandidos */}
+      {expandido && (
+        <div className="border-t border-gray-100 p-4 bg-gray-50/50 space-y-3">
+          {inscricao.email && (
+            <p className="text-sm"><span className="font-medium text-gray-500">E-mail:</span> {inscricao.email}</p>
+          )}
+          {inscricao.descricao_projeto && (
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Projeto</p>
+              <p className="text-sm text-gray-700">{inscricao.descricao_projeto}</p>
+            </div>
+          )}
+          {inscricao.area_interesse && (
+            <p className="text-sm"><span className="font-medium">Área:</span> {inscricao.area_interesse}</p>
+          )}
+          {inscricao.tipo_uso && (
+            <p className="text-sm"><span className="font-medium">Uso:</span> {inscricao.tipo_uso}</p>
+          )}
+          {Array.isArray(inscricao.competencias_json) && inscricao.competencias_json.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {inscricao.competencias_json.map(c => (
+                <span key={c} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{c}</span>
+              ))}
+            </div>
+          )}
+          {inscricao.justificativa_recusa && (
+            <p className="text-sm text-red-600">
+              <span className="font-medium">Motivo da recusa:</span> {inscricao.justificativa_recusa}
+            </p>
+          )}
+          <p className="text-xs text-gray-400">
+            Inscrito em {new Date(inscricao.criado_em).toLocaleDateString('pt-BR')}
+          </p>
+
+          {/* Botões de aprovação/recusa para pendentes */}
+          {inscricao.status === 'pendente' && !modalStatus && (
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setModalStatus('aprovar')}
+                className="text-sm bg-green-100 hover:bg-green-200 text-green-700 px-4 py-1.5 rounded-lg font-medium transition-colors">
+                ✅ Aprovar
+              </button>
+              <button onClick={() => setModalStatus('recusar')}
+                className="text-sm bg-red-100 hover:bg-red-200 text-red-700 px-4 py-1.5 rounded-lg font-medium transition-colors">
+                ❌ Recusar
+              </button>
+            </div>
+          )}
+
+          {/* Re-aprovar ou re-processar inscricões já decididas */}
+          {inscricao.status === 'recusada' && !modalStatus && (
+            <button onClick={() => alterar('aprovada')}
+              className="text-sm bg-green-100 hover:bg-green-200 text-green-700 px-4 py-1.5 rounded-lg font-medium transition-colors">
+              ✅ Aprovar mesmo assim
+            </button>
+          )}
+          {inscricao.status === 'aprovada' && !modalStatus && (
+            <button onClick={() => setModalStatus('recusar')}
+              className="text-sm bg-red-100 hover:bg-red-200 text-red-700 px-4 py-1.5 rounded-lg font-medium transition-colors">
+              ❌ Cancelar aprovação
+            </button>
+          )}
+
+          {/* Modal inline de confirmação */}
+          {modalStatus && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+              {modalStatus === 'recusar' && (
+                <div>
+                  <label className="label">Motivo da recusa (opcional)</label>
+                  <input className="input-field text-sm"
+                    placeholder="Ex: Horário indisponível, equipamento em manutenção…"
+                    value={justificativa}
+                    onChange={e => setJustificativa(e.target.value)} />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <button
+                  disabled={salvando}
+                  onClick={() => alterar(modalStatus === 'aprovar' ? 'aprovada' : 'recusada')}
+                  className={`text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-50 transition-colors
+                    ${modalStatus === 'aprovar'
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-red-600 hover:bg-red-700 text-white'}`}
+                >
+                  {salvando ? '…' : modalStatus === 'aprovar' ? '✅ Confirmar aprovação' : '❌ Confirmar recusa'}
+                </button>
+                <button onClick={() => { setModalStatus(null); setJustificativa('') }}
+                  className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Modal para admin criar ou editar inscrição ────────────
+function ModalFormAdmin({ inicial, config, onSalvo, onFechar }) {
+  const [form, setForm] = useState({
+    tipo_inscrito:        inicial?.tipo_inscrito        || 'aluno',
+    nome:                 inicial?.nome                 || '',
+    email:                inicial?.email                || '',
+    turma_nome:           inicial?.turma_nome           || '',
+    disciplina:           inicial?.disciplina           || '',
+    area_interesse:       inicial?.area_interesse       || '',
+    tipo_uso:             inicial?.tipo_uso             || '',
+    descricao_projeto:    inicial?.descricao_projeto    || '',
+    tem_experiencia:      inicial?.tem_experiencia      ? true : false,
+    descricao_experiencia:inicial?.descricao_experiencia|| '',
+    competencias_json:    Array.isArray(inicial?.competencias_json)
+                            ? inicial.competencias_json : [],
+    status:               inicial?.status               || 'aprovada',
+  })
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro]         = useState('')
+
+  function atualizar(campo, valor) {
+    setForm(prev => ({ ...prev, [campo]: valor }))
+  }
+
+  function toggleCompetencia(comp) {
+    setForm(prev => ({
+      ...prev,
+      competencias_json: prev.competencias_json.includes(comp)
+        ? prev.competencias_json.filter(c => c !== comp)
+        : [...prev.competencias_json, comp],
+    }))
+  }
+
+  async function salvar(e) {
+    e.preventDefault()
+    if (!form.nome.trim()) { setErro('Nome é obrigatório.'); return }
+    setSalvando(true)
+    setErro('')
+    try {
+      if (inicial) {
+        await api.put(`/sala-maker/inscricoes/${inicial.id}`, form)
+      } else {
+        await api.post('/sala-maker/inscricoes/admin', form)
+      }
+      onSalvo()
+    } catch (err) {
+      setErro(err.response?.data?.erro || 'Erro ao salvar.')
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  const isProfessor = form.tipo_inscrito === 'professor'
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-4">
+
+        {/* Cabeçalho */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="font-bold text-textMain">
+            {inicial ? '✏️ Editar Inscrição' : '+ Nova Inscrição'}
+          </h2>
+          <button onClick={onFechar} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+        </div>
+
+        <form onSubmit={salvar} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
+
+          {/* Tipo de inscrito */}
+          <div>
+            <label className="label">Tipo de inscrito *</label>
+            <div className="flex gap-3">
+              {[
+                { value: 'aluno',     label: '🎓 Aluno' },
+                { value: 'professor', label: '👨‍🏫 Professor' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => atualizar('tipo_inscrito', value)}
+                  className={`flex-1 py-2.5 text-sm font-medium rounded-xl border-2 transition-colors
+                    ${form.tipo_inscrito === value
+                      ? 'border-primary bg-blue-50 text-primary'
+                      : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Dados básicos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="label">Nome completo *</label>
+              <input
+                className="input-field"
+                value={form.nome}
+                onChange={e => atualizar('nome', e.target.value)}
+                placeholder="Nome do aluno ou professor"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">E-mail</label>
+              <input
+                type="email"
+                className="input-field"
+                value={form.email}
+                onChange={e => atualizar('email', e.target.value)}
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <div>
+              <label className="label">Turma</label>
+              <input
+                className="input-field"
+                value={form.turma_nome}
+                onChange={e => atualizar('turma_nome', e.target.value)}
+                placeholder="Ex: 9º A"
+              />
+            </div>
+            {isProfessor && (
+              <div className="sm:col-span-2">
+                <label className="label">Disciplina que leciona</label>
+                <input
+                  className="input-field"
+                  value={form.disciplina}
+                  onChange={e => atualizar('disciplina', e.target.value)}
+                  placeholder="Ex: Matemática, Ciências…"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Tipo de uso (professor) */}
+          {isProfessor && (
+            <div>
+              <label className="label">Tipo de uso</label>
+              <select className="input-field" value={form.tipo_uso} onChange={e => atualizar('tipo_uso', e.target.value)}>
+                <option value="">— Selecione —</option>
+                {TIPOS_USO.map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Área de interesse (aluno) */}
+          {!isProfessor && (
+            <div>
+              <label className="label">Área de interesse</label>
+              <select className="input-field" value={form.area_interesse} onChange={e => atualizar('area_interesse', e.target.value)}>
+                <option value="">— Selecione —</option>
+                {AREAS_INTERESSE.map(a => <option key={a}>{a}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Descrição do projeto */}
+          <div>
+            <label className="label">Descrição do projeto / intenção de uso</label>
+            <textarea
+              className="input-field resize-none"
+              rows={3}
+              placeholder="O que pretende desenvolver na Sala Maker…"
+              value={form.descricao_projeto}
+              onChange={e => atualizar('descricao_projeto', e.target.value)}
+            />
+          </div>
+
+          {/* Competências */}
+          <div>
+            <label className="label">Competências a desenvolver</label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {COMPETENCIAS.map(comp => (
+                <button
+                  key={comp}
+                  type="button"
+                  onClick={() => toggleCompetencia(comp)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors
+                    ${form.competencias_json.includes(comp)
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-white text-gray-600 border-gray-300 hover:border-primary'}`}
+                >
+                  {comp}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Status (admin pode definir diretamente) */}
+          <div>
+            <label className="label">Status da inscrição</label>
+            <select className="input-field" value={form.status} onChange={e => atualizar('status', e.target.value)}>
+              <option value="aprovada">✅ Aprovada</option>
+              <option value="pendente">⏳ Pendente</option>
+              <option value="recusada">❌ Recusada</option>
+            </select>
+          </div>
+
+          {erro && <p className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{erro}</p>}
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onFechar} className="btn-secondary flex-1">
+              Cancelar
+            </button>
+            <button type="submit" disabled={salvando} className="btn-primary flex-1 disabled:opacity-50">
+              {salvando ? 'Salvando…' : inicial ? '💾 Salvar alterações' : '+ Criar inscrição'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ── Formulário de auto-inscrição (professor/aluno logado) ──
+function FormularioInscricao({ config, usuario, onSalvo, onCancelar }) {
   const isProfessor = usuario.perfil === 'professor'
 
   const [form, setForm] = useState({
     tipo_inscrito:     isProfessor ? 'professor' : 'aluno',
-    nome:              usuario.nome || '',
+    nome:              usuario.nome  || '',
     email:             usuario.email || '',
     disciplina:        '',
     turma_nome:        '',
-    modalidade:        '',
-    nome_equipe:       '',
     area_interesse:    '',
     tipo_uso:          '',
     descricao_projeto: '',
@@ -266,77 +704,62 @@ function FormularioInscricao({ usuario, onSalvo, onCancelar }) {
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-bold text-textMain">📋 Nova Inscrição — Sala Maker</h2>
-        <button onClick={onCancelar} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+        <h2 className="text-lg font-bold text-textMain">📋 Inscrição — Sala Maker</h2>
+        <button onClick={onCancelar} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
       </div>
 
       <form onSubmit={salvar} className="space-y-5">
 
-        {/* Dados básicos */}
-        <Secao titulo="Dados do Inscrito">
+        <Secao titulo="Seus dados">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Nome completo *</label>
-              <input className="input-field" value={form.nome} readOnly disabled
-                     style={{ backgroundColor: '#f9fafb' }} />
+              <label className="label">Nome</label>
+              <input className="input-field" value={form.nome} readOnly disabled style={{ backgroundColor: '#f9fafb' }} />
             </div>
             <div>
               <label className="label">E-mail</label>
-              <input className="input-field" value={form.email} readOnly disabled
-                     style={{ backgroundColor: '#f9fafb' }} />
+              <input className="input-field" value={form.email} readOnly disabled style={{ backgroundColor: '#f9fafb' }} />
             </div>
             {isProfessor && (
               <div>
                 <label className="label">Disciplina que leciona</label>
                 <input className="input-field" placeholder="Ex: Matemática"
-                       value={form.disciplina}
-                       onChange={e => setForm(f => ({ ...f, disciplina: e.target.value }))} />
+                  value={form.disciplina}
+                  onChange={e => setForm(f => ({ ...f, disciplina: e.target.value }))} />
               </div>
             )}
             <div>
               <label className="label">Turma</label>
               <input className="input-field" placeholder="Ex: 9º A"
-                     value={form.turma_nome}
-                     onChange={e => setForm(f => ({ ...f, turma_nome: e.target.value }))} />
+                value={form.turma_nome}
+                onChange={e => setForm(f => ({ ...f, turma_nome: e.target.value }))} />
             </div>
           </div>
         </Secao>
 
-        {/* Tipo de uso (professor) */}
-        {isProfessor && (
+        {isProfessor ? (
           <Secao titulo="Tipo de uso pretendido">
             <div className="space-y-2">
               {TIPOS_USO.map(tipo => (
                 <label key={tipo} className="flex items-center gap-2 cursor-pointer text-sm">
-                  <input
-                    type="radio"
-                    name="tipo_uso"
-                    value={tipo}
+                  <input type="radio" name="tipo_uso" value={tipo}
                     checked={form.tipo_uso === tipo}
                     onChange={() => setForm(f => ({ ...f, tipo_uso: tipo }))}
-                    className="accent-primary"
-                  />
+                    className="accent-primary" />
                   {tipo}
                 </label>
               ))}
             </div>
           </Secao>
-        )}
-
-        {/* Área de interesse (aluno) */}
-        {!isProfessor && (
+        ) : (
           <Secao titulo="Área de interesse">
             <div className="space-y-2">
               {AREAS_INTERESSE.map(area => (
                 <label key={area} className="flex items-center gap-2 cursor-pointer text-sm">
-                  <input
-                    type="radio"
-                    name="area_interesse"
-                    value={area}
+                  <input type="radio" name="area_interesse" value={area}
                     checked={form.area_interesse === area}
                     onChange={() => setForm(f => ({ ...f, area_interesse: area }))}
-                    className="accent-primary"
-                  />
+                    className="accent-primary" />
                   {area}
                 </label>
               ))}
@@ -344,69 +767,50 @@ function FormularioInscricao({ usuario, onSalvo, onCancelar }) {
           </Secao>
         )}
 
-        {/* Descrição do projeto */}
-        <Secao titulo="Descrição do que pretende desenvolver">
-          <textarea
-            className="input-field resize-none"
-            rows={4}
+        <Secao titulo="O que pretende desenvolver">
+          <textarea className="input-field resize-none" rows={4}
             placeholder="Descreva o que você planeja fazer na Sala Maker…"
             value={form.descricao_projeto}
-            onChange={e => setForm(f => ({ ...f, descricao_projeto: e.target.value }))}
-          />
+            onChange={e => setForm(f => ({ ...f, descricao_projeto: e.target.value }))} />
         </Secao>
 
-        {/* Experiência prévia */}
-        <Secao titulo="Experiência com ferramentas maker">
+        <Secao titulo="Experiência prévia">
           <label className="flex items-center gap-2 cursor-pointer text-sm mb-3">
-            <input
-              type="checkbox"
-              checked={form.tem_experiencia}
+            <input type="checkbox" checked={form.tem_experiencia}
               onChange={e => setForm(f => ({ ...f, tem_experiencia: e.target.checked }))}
-              className="accent-primary"
-            />
-            Sim, já tenho experiência com ferramentas maker
+              className="accent-primary" />
+            Já tenho experiência com ferramentas maker
           </label>
           {form.tem_experiencia && (
-            <textarea
-              className="input-field resize-none"
-              rows={2}
+            <textarea className="input-field resize-none" rows={2}
               placeholder="Descreva sua experiência…"
               value={form.descricao_experiencia}
-              onChange={e => setForm(f => ({ ...f, descricao_experiencia: e.target.value }))}
-            />
+              onChange={e => setForm(f => ({ ...f, descricao_experiencia: e.target.value }))} />
           )}
         </Secao>
 
-        {/* Competências a desenvolver */}
-        <Secao titulo="Competências que deseja desenvolver">
+        <Secao titulo="Competências a desenvolver">
           <div className="flex flex-wrap gap-2">
             {COMPETENCIAS.map(comp => (
-              <button
-                key={comp}
-                type="button"
-                onClick={() => toggleCompetencia(comp)}
+              <button key={comp} type="button" onClick={() => toggleCompetencia(comp)}
                 className={`text-sm px-3 py-1.5 rounded-full border transition-colors
                   ${form.competencias_json.includes(comp)
                     ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-gray-600 border-gray-300 hover:border-primary'}`}
-              >
+                    : 'bg-white text-gray-600 border-gray-300 hover:border-primary'}`}>
                 {comp}
               </button>
             ))}
           </div>
         </Secao>
 
-        {/* Aceite do regulamento */}
+        {/* Aceite */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              className="accent-primary mt-0.5"
+            <input type="checkbox" className="accent-primary mt-0.5"
               checked={form.aceite_regulamento}
-              onChange={e => setForm(f => ({ ...f, aceite_regulamento: e.target.checked }))}
-            />
+              onChange={e => setForm(f => ({ ...f, aceite_regulamento: e.target.checked }))} />
             <span className="text-sm text-blue-800">
-              <strong>Li e aceito o regulamento da Sala Maker</strong>. Comprometo-me a usar os equipamentos com responsabilidade, respeitar os horários agendados e seguir as normas de segurança.
+              <strong>Li e aceito o regulamento da Sala Maker.</strong> Comprometo-me a usar os equipamentos com responsabilidade, respeitar os horários e seguir as normas de segurança.
               {config?.regulamento && (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-blue-600 hover:underline text-xs">Ver regulamento completo</summary>
@@ -417,20 +821,13 @@ function FormularioInscricao({ usuario, onSalvo, onCancelar }) {
           </label>
         </div>
 
-        {/* Erro */}
         {erro && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">
-            {erro}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">{erro}</div>
         )}
 
-        {/* Botões */}
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={salvando || !form.aceite_regulamento}
-            className="btn-primary flex-1 disabled:opacity-50"
-          >
+          <button type="submit" disabled={salvando || !form.aceite_regulamento}
+            className="btn-primary flex-1 disabled:opacity-50">
             {salvando ? 'Enviando…' : '📋 Enviar Inscrição'}
           </button>
           <button type="button" onClick={onCancelar}
@@ -443,138 +840,16 @@ function FormularioInscricao({ usuario, onSalvo, onCancelar }) {
   )
 }
 
-// ── Card de inscrição na lista do admin ───────────────────
-
-function CardInscricaoAdmin({ inscricao, onAtualizada }) {
-  const [expandido, setExpandido]   = useState(false)
-  const [modal, setModal]           = useState(null) // 'aprovar' | 'recusar'
-  const [justificativa, setJustificativa] = useState('')
-  const [salvando, setSalvando]     = useState(false)
-
-  async function alterar(status) {
-    setSalvando(true)
-    try {
-      await api.patch(`/sala-maker/inscricoes/${inscricao.id}/status`, {
-        status,
-        justificativa_recusa: justificativa || undefined,
-      })
-      setModal(null)
-      setJustificativa('')
-      onAtualizada()
-    } catch (err) {
-      alert(err.response?.data?.erro || 'Erro ao alterar status.')
-    } finally {
-      setSalvando(false)
-    }
-  }
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Linha principal */}
-      <div className="flex items-center gap-4 p-4">
-        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">
-          {inscricao.tipo_inscrito === 'professor' ? '👨‍🏫' : '🎓'}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-textMain truncate">{inscricao.nome}</p>
-          <p className="text-sm text-gray-400">
-            {inscricao.tipo_inscrito === 'professor' ? 'Professor' : 'Aluno'}
-            {inscricao.disciplina && ` · ${inscricao.disciplina}`}
-            {inscricao.turma_nome && ` · ${inscricao.turma_nome}`}
-          </p>
-        </div>
-        <span className={`text-xs font-bold px-2.5 py-1 rounded-full capitalize flex-shrink-0 ${COR_STATUS[inscricao.status] || 'bg-gray-100 text-gray-600'}`}>
-          {inscricao.status}
-        </span>
-        <button onClick={() => setExpandido(!expandido)}
-          className="text-gray-400 hover:text-gray-600 text-lg flex-shrink-0 w-6">
-          {expandido ? '▲' : '▼'}
-        </button>
-      </div>
-
-      {/* Detalhes expandidos */}
-      {expandido && (
-        <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-3">
-          {inscricao.descricao_projeto && (
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Projeto</p>
-              <p className="text-sm text-gray-700">{inscricao.descricao_projeto}</p>
-            </div>
-          )}
-          {inscricao.area_interesse && (
-            <p className="text-sm"><span className="font-medium">Área:</span> {inscricao.area_interesse}</p>
-          )}
-          {inscricao.tipo_uso && (
-            <p className="text-sm"><span className="font-medium">Uso:</span> {inscricao.tipo_uso}</p>
-          )}
-          {inscricao.competencias_json?.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {inscricao.competencias_json.map(c => (
-                <span key={c} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{c}</span>
-              ))}
-            </div>
-          )}
-          {inscricao.justificativa_recusa && (
-            <p className="text-sm text-red-600"><span className="font-medium">Recusa:</span> {inscricao.justificativa_recusa}</p>
-          )}
-
-          {/* Botões de ação para inscrições pendentes */}
-          {inscricao.status === 'pendente' && (
-            <div className="flex gap-2 pt-1">
-              <button onClick={() => setModal('aprovar')}
-                className="btn-secondary text-sm px-4 py-1.5">
-                ✅ Aprovar
-              </button>
-              <button onClick={() => setModal('recusar')}
-                className="btn-danger text-sm px-4 py-1.5">
-                ❌ Recusar
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Modal de confirmação */}
-      {modal && (
-        <div className="border-t border-gray-100 p-4 bg-white">
-          {modal === 'recusar' && (
-            <div className="mb-3">
-              <label className="label">Justificativa da recusa (opcional)</label>
-              <input className="input-field text-sm" placeholder="Ex: Horário já ocupado…"
-                     value={justificativa}
-                     onChange={e => setJustificativa(e.target.value)} />
-            </div>
-          )}
-          <div className="flex gap-2">
-            <button
-              disabled={salvando}
-              onClick={() => alterar(modal === 'aprovar' ? 'aprovada' : 'recusada')}
-              className={`${modal === 'aprovar' ? 'btn-secondary' : 'btn-danger'} text-sm disabled:opacity-50`}
-            >
-              {salvando ? '…' : (modal === 'aprovar' ? '✅ Confirmar aprovação' : '❌ Confirmar recusa')}
-            </button>
-            <button onClick={() => setModal(null)}
-              className="text-sm text-gray-500 hover:text-gray-700 px-3">
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ── Exportar CSV ──────────────────────────────────────────
-
 function BotaoExportar({ inscricoes }) {
   function exportar() {
-    const cabecalho = ['Nome', 'Tipo', 'Email', 'Turma', 'Disciplina', 'Status', 'Data']
+    const cab = ['Nome', 'Tipo', 'Email', 'Turma', 'Disciplina', 'Status', 'Data']
     const linhas = inscricoes.map(i => [
       i.nome, i.tipo_inscrito, i.email || '', i.turma_nome || '',
       i.disciplina || '', i.status,
       new Date(i.criado_em).toLocaleDateString('pt-BR'),
     ])
-    const csv = [cabecalho, ...linhas].map(l => l.join(';')).join('\n')
+    const csv  = [cab, ...linhas].map(l => l.join(';')).join('\n')
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
@@ -591,7 +866,6 @@ function BotaoExportar({ inscricoes }) {
 }
 
 // ── Componentes auxiliares ────────────────────────────────
-
 function Secao({ titulo, children }) {
   return (
     <div>
