@@ -44,6 +44,7 @@ const SECOES_ESTATICAS = [
     titulo: 'MÓDULOS EXTRAS',
     itens: [
       { path: '/sala-maker', label: 'Sala Maker', icon: '🔧' },
+      { path: '/curso-ferias', label: 'Curso de Férias Maker', icon: '🚀' },
     ]
   },
   {
