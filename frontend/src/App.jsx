@@ -39,6 +39,7 @@ import CorretorResultados from './pages/CorretorResultados'
 import ResponderAvaliacao from './pages/ResponderAvaliacao'
 import TrocarSenha from './pages/TrocarSenha'
 import SalaMaker from './pages/salaMaker'
+import CursoFerias from './pages/CursoFerias'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -131,6 +132,9 @@ export default function App() {
 
         {/* Sala Maker — acessível a todos os usuários autenticados */}
         <Route path="/sala-maker" element={<P><SalaMaker /></P>} />
+
+        {/* Curso de Férias — landing page e gerenciamento (só admin) */}
+        <Route path="/curso-ferias" element={<Admin><CursoFerias /></Admin>} />
 
         {/* Usuários */}
         <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />
