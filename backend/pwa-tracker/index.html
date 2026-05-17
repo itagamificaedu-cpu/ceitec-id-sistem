@@ -339,6 +339,17 @@
           if (data.fora_horario) {
             setStatus('🌙', 'Fora do horário', 'Monitoramento ativo só das 06h às 18h', 'badge-cinza');
           }
+        } else if (resp.status === 403) {
+          // Consentimento não registrado no servidor — tenta de novo
+          await fetch(`${API_BASE}/consentimento`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: TOKEN }),
+          }).catch(() => {});
+          document.getElementById('msg-erro').textContent = 'Ativando... tente de novo em 10s';
+        } else {
+          const data = await resp.json().catch(() => ({}));
+          document.getElementById('msg-erro').textContent = data.erro || `Erro ${resp.status}`;
         }
       } catch (_) {
         // Sem internet — salva no IndexedDB para Background Sync
