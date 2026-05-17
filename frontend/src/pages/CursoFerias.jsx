@@ -5,8 +5,8 @@ const WA_NUMERO = '5588988411890'
 const WA_MSG = encodeURIComponent('Olá! Quero garantir minha vaga no curso Alunos Maker Não Tiram Férias! Pode me enviar mais informações?')
 const WA_LINK = `https://wa.me/${WA_NUMERO}?text=${WA_MSG}`
 
-const URL_INSCRICAO = 'https://itatecnologiaeducacional.tech/inscricao/'
-const URL_LANDING = URL_INSCRICAO
+const URL_LANDING = window.location.origin + '/curso-ferias.html'
+const URL_INSCRICAO = window.location.origin + '/inscricao/formulario/'
 
 function InfoCard({ icon, label, valor, cor }) {
   return (
