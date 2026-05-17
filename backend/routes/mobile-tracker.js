@@ -9,9 +9,9 @@ const { autenticar } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Coordenadas fixas do CEITEC em Itapipoca-CE
-const CEITEC_LAT = -3.4970;
-const CEITEC_LNG = -39.5785;
+// Coordenadas do CEITEC — Av. Manoel Alves de Freitas, 130, Bairro Maranhão, Itapipoca-CE
+const CEITEC_LAT = -3.4844572;
+const CEITEC_LNG = -39.5868931;
 const RAIO_ESCOLA_METROS = 100;
 const RAIO_CASA_METROS = 50;
 const HORARIO_INICIO = 6;  // 06h00

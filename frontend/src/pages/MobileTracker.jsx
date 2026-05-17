@@ -9,8 +9,9 @@ import api from '../api'
 const LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
 const LEAFLET_JS  = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 
-const CEITEC_LAT = -3.4970
-const CEITEC_LNG = -39.5785
+// Av. Manoel Alves de Freitas, 130 — Bairro Maranhão, Itapipoca-CE
+const CEITEC_LAT = -3.4844572
+const CEITEC_LNG = -39.5868931
 
 const STATUS_CONFIG = {
   na_escola:    { cor: '#00e676', label: 'Na Escola',      icone: '🟢' },
@@ -52,10 +53,17 @@ export default function MobileTracker() {
   const [linkPwa, setLinkPwa]         = useState(null)
   const [salvando, setSalvando]       = useState(false)
   const [msgPerfil, setMsgPerfil]     = useState('')
+  const [camadaMapa, setCamadaMapa]   = useState('rua') // 'rua' | 'satelite'
+  const [modalUsuario, setModalUsuario] = useState(false)
+  const [novoUsuario, setNovoUsuario] = useState({ nome: '', email: '', senha: '', perfil: 'secretaria' })
+  const [salvandoUsuario, setSalvandoUsuario] = useState(false)
+  const [msgUsuario, setMsgUsuario]   = useState('')
 
-  const mapRef     = useRef(null)
-  const mapaObj    = useRef(null)
-  const marcadores = useRef({})
+  const mapRef       = useRef(null)
+  const mapaObj      = useRef(null)
+  const marcadores   = useRef({})
+  const camadaRua    = useRef(null)
+  const camadaSat    = useRef(null)
   const socketRef  = useRef(null)
   const usuario    = JSON.parse(localStorage.getItem('usuario') || '{}')
 
@@ -80,31 +88,55 @@ export default function MobileTracker() {
   function inicializarMapa() {
     if (!mapRef.current || mapaObj.current) return
     const L = window.L
-    const mapa = L.map(mapRef.current, { zoomControl: true }).setView([CEITEC_LAT, CEITEC_LNG], 14)
+    const mapa = L.map(mapRef.current, { zoomControl: true }).setView([CEITEC_LAT, CEITEC_LNG], 16)
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Camada de ruas (OpenStreetMap)
+    const rua = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',
       maxZoom: 19,
-    }).addTo(mapa)
+    })
+    rua.addTo(mapa)
+    camadaRua.current = rua
 
-    // Marcador fixo do CEITEC
+    // Camada de satélite (Esri WorldImagery — gratuito, sem chave de API)
+    const sat = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri WorldImagery', maxZoom: 19 }
+    )
+    camadaSat.current = sat
+
+    // Marcador do CEITEC — draggable para o admin ajustar a posição exata
     const iconCeitec = L.divIcon({
       className: '',
-      html: `<div style="background:#f5a623;border:3px solid #0d1b2e;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.4)">🏫</div>`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
+      html: `<div style="background:#f5a623;border:3px solid #0d1b2e;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,0.5);cursor:grab">🏫</div>`,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
     })
-    L.marker([CEITEC_LAT, CEITEC_LNG], { icon: iconCeitec })
+    L.marker([CEITEC_LAT, CEITEC_LNG], { icon: iconCeitec, draggable: true })
       .addTo(mapa)
-      .bindPopup('<b>CEITEC</b><br>Centro Educacional de Inovação e Tecnologia')
+      .bindPopup('<b>CEITEC</b><br>Av. Manoel Alves de Freitas, 130<br>Bairro Maranhão, Itapipoca-CE<br><small style="color:#888">Arraste para ajustar posição</small>')
+      .openPopup()
 
     // Geofence da escola (100m)
     L.circle([CEITEC_LAT, CEITEC_LNG], {
       radius: 100, color: '#00e676', fillColor: '#00e676',
-      fillOpacity: 0.08, weight: 2, dashArray: '6,4',
+      fillOpacity: 0.1, weight: 2, dashArray: '6,4',
     }).addTo(mapa)
 
     mapaObj.current = mapa
+  }
+
+  // Alterna entre mapa de ruas e satélite
+  function alternarCamada(tipo) {
+    if (!mapaObj.current || !camadaRua.current || !camadaSat.current) return
+    if (tipo === 'satelite') {
+      mapaObj.current.removeLayer(camadaRua.current)
+      camadaSat.current.addTo(mapaObj.current)
+    } else {
+      mapaObj.current.removeLayer(camadaSat.current)
+      camadaRua.current.addTo(mapaObj.current)
+    }
+    setCamadaMapa(tipo)
   }
 
   // Busca status geral e alertas
@@ -272,6 +304,23 @@ export default function MobileTracker() {
     }
   }
 
+  // Cadastra novo usuário do sistema (professor, assistente, secretaria)
+  async function salvarNovoUsuario(e) {
+    e.preventDefault()
+    setSalvandoUsuario(true)
+    setMsgUsuario('')
+    try {
+      await api.post('/usuarios', novoUsuario)
+      setMsgUsuario('Usuário cadastrado com sucesso!')
+      setNovoUsuario({ nome: '', email: '', senha: '', perfil: 'secretaria' })
+      setTimeout(() => { setModalUsuario(false); setMsgUsuario('') }, 1500)
+    } catch (err) {
+      setMsgUsuario(err.response?.data?.erro || 'Erro ao cadastrar')
+    } finally {
+      setSalvandoUsuario(false)
+    }
+  }
+
   // Gera link PWA para o aluno
   async function gerarLinkPwa(aluno_id) {
     try {
@@ -305,7 +354,7 @@ export default function MobileTracker() {
               <h1 className="text-xl font-black" style={{ color: '#f5a623' }}>📍 CEITEC MOBILE TRACKER</h1>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Monitoramento GPS de alunos em tempo real</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {['mapa','lista','perfis'].map(aba => (
                 <button key={aba} onClick={() => setAbaAtiva(aba)}
                   className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
@@ -316,6 +365,11 @@ export default function MobileTracker() {
                   {aba === 'mapa' ? '🗺️ Mapa' : aba === 'lista' ? '📋 Lista' : '⚙️ Perfis'}
                 </button>
               ))}
+              <button onClick={() => setModalUsuario(true)}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                style={{ background: 'rgba(0,230,118,0.15)', color: '#00e676', border: '1px solid rgba(0,230,118,0.3)' }}>
+                ➕ Novo Usuário
+              </button>
             </div>
           </div>
 
@@ -428,6 +482,27 @@ export default function MobileTracker() {
             {/* Mapa */}
             <div className="flex-1 relative">
               <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+
+              {/* Toggle satélite / rua */}
+              <div className="absolute top-3 left-3 z-50 flex rounded-xl overflow-hidden shadow-lg"
+                style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
+                <button onClick={() => alternarCamada('rua')}
+                  className="px-3 py-1.5 text-xs font-semibold transition-all"
+                  style={{
+                    background: camadaMapa === 'rua' ? '#f5a623' : 'rgba(13,27,46,0.9)',
+                    color: camadaMapa === 'rua' ? '#0d1b2e' : 'rgba(255,255,255,0.7)',
+                  }}>
+                  🗺️ Ruas
+                </button>
+                <button onClick={() => alternarCamada('satelite')}
+                  className="px-3 py-1.5 text-xs font-semibold transition-all"
+                  style={{
+                    background: camadaMapa === 'satelite' ? '#f5a623' : 'rgba(13,27,46,0.9)',
+                    color: camadaMapa === 'satelite' ? '#0d1b2e' : 'rgba(255,255,255,0.7)',
+                  }}>
+                  🛰️ Satélite
+                </button>
+              </div>
 
               {/* Controles de histórico */}
               <div className="absolute top-3 right-3 z-50 flex flex-col gap-2">
@@ -667,6 +742,71 @@ export default function MobileTracker() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+        {/* ── MODAL NOVO USUÁRIO ── */}
+        {modalUsuario && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.75)' }}>
+            <div className="w-full max-w-md rounded-2xl p-6"
+              style={{ background: '#0d1b2e', border: '1px solid rgba(0,230,118,0.3)' }}>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="font-bold text-lg" style={{ color: '#00e676' }}>➕ Novo Usuário</h3>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Professor, assistente ou secretaria</p>
+                </div>
+                <button onClick={() => { setModalUsuario(false); setMsgUsuario('') }}
+                  style={{ color: 'rgba(255,255,255,0.4)', fontSize: '22px', lineHeight: 1 }}>×</button>
+              </div>
+              <form onSubmit={salvarNovoUsuario} className="flex flex-col gap-3">
+                {[
+                  { key: 'nome',  label: 'Nome completo',  type: 'text',     placeholder: 'Ex: Genezio Barros' },
+                  { key: 'email', label: 'E-mail',          type: 'email',    placeholder: 'Ex: genezio@ceitec.com' },
+                  { key: 'senha', label: 'Senha inicial',   type: 'password', placeholder: 'Mínimo 6 caracteres' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="text-xs block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>{f.label}</label>
+                    <input
+                      type={f.type}
+                      placeholder={f.placeholder}
+                      value={novoUsuario[f.key]}
+                      onChange={e => setNovoUsuario(prev => ({ ...prev, [f.key]: e.target.value }))}
+                      required
+                      className="w-full px-3 py-2 rounded-lg text-sm"
+                      style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }} />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-xs block mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Perfil de acesso</label>
+                  <select
+                    value={novoUsuario.perfil}
+                    onChange={e => setNovoUsuario(prev => ({ ...prev, perfil: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg text-sm"
+                    style={{ background: '#1a2a40', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}>
+                    <option value="secretaria">Secretaria / Assistente</option>
+                    <option value="professor">Professor</option>
+                    <option value="admin">Coordenador (admin)</option>
+                  </select>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    Professor: só lê dados das suas turmas. Secretaria: acesso intermediário. Coordenador: acesso total.
+                  </p>
+                </div>
+                {msgUsuario && (
+                  <div className="py-2 px-3 rounded-lg text-sm"
+                    style={{
+                      background: msgUsuario.includes('ucesso') ? 'rgba(0,230,118,0.1)' : 'rgba(255,23,68,0.1)',
+                      color: msgUsuario.includes('ucesso') ? '#00e676' : '#ff6b6b',
+                    }}>
+                    {msgUsuario}
+                  </div>
+                )}
+                <button type="submit" disabled={salvandoUsuario}
+                  className="py-3 rounded-xl font-bold text-sm mt-1"
+                  style={{ background: '#00e676', color: '#0d1b2e', opacity: salvandoUsuario ? 0.6 : 1 }}>
+                  {salvandoUsuario ? 'Salvando...' : 'Criar Usuário'}
+                </button>
+              </form>
             </div>
           </div>
         )}
