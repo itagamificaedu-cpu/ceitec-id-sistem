@@ -395,6 +395,38 @@
       badge.className = `badge ${badgeClass}`;
     }
 
+    // Detecta iOS (iPhone/iPad) e exibe aviso de limitação
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+    if (isIOS) {
+      const aviso = document.createElement('div')
+      aviso.style.cssText = `
+        position:fixed; bottom:0; left:0; right:0; z-index:999;
+        background:#1a2a40; border-top:2px solid #ffd600;
+        padding:14px 16px; font-family:sans-serif;
+      `
+      aviso.innerHTML = `
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:22px;flex-shrink:0">⚠️</span>
+          <div>
+            <div style="color:#ffd600;font-weight:700;font-size:13px;margin-bottom:4px">
+              iPhone detectado — rastreamento limitado
+            </div>
+            <div style="color:rgba(255,255,255,0.7);font-size:12px;line-height:1.5">
+              No iPhone, o GPS <b style="color:#fff">para quando a tela é bloqueada</b>.
+              Mantenha este app aberto e a tela acesa para o rastreamento funcionar.
+              Para rastreamento em segundo plano, use um <b style="color:#fff">celular Android</b>.
+            </div>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()"
+              style="margin-top:8px;background:rgba(255,255,255,0.1);border:none;color:#fff;
+                     padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer">
+              Entendi
+            </button>
+          </div>
+        </div>
+      `
+      document.body.appendChild(aviso)
+    }
+
     // Inicia tudo
     init();
   </script>
