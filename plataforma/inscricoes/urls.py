@@ -4,7 +4,8 @@ from . import views
 app_name = 'inscricoes'
 
 urlpatterns = [
-    path('', views.formulario_inscricao, name='formulario'),
+    path('', views.landing_page, name='landing'),
+    path('formulario/', views.formulario_inscricao, name='formulario'),
     path('pagamento/<uuid:codigo>/', views.pagamento_inscricao, name='pagamento'),
     path('pagamento/notificacao/', views.webhook_pagseguro, name='webhook'),
     path('pagamento/confirmado/<uuid:codigo>/', views.pagamento_confirmado, name='confirmado'),
