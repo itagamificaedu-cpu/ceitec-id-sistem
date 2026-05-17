@@ -159,19 +159,33 @@ export default function Navbar() {
         {
           titulo: 'MINHAS TURMAS',
           itens: [
-            { path: '/dashboard', label: 'Painel do Professor', icon: '🏫' },
+            { path: '/dashboard',      label: 'Painel do Professor',  icon: '🏫' },
+            { path: '/scanner',        label: 'Scanner de Presença',  icon: '📷' },
+            { path: '/justificativas', label: 'Justificativas',       icon: '📋' },
+          ]
+        },
+        {
+          titulo: 'PEDAGÓGICO',
+          itens: [
+            { path: '/corretor-resultados', label: 'Resultados Corretor',       icon: '📋' },
+            { path: '/avaliacoes',          label: 'Avaliações da Plataforma',  icon: '📝' },
+            { path: '/quiz',                label: 'Quiz Interativo',           icon: '🎯' },
+            { path: '/desempenho',          label: 'Desempenho Acadêmico',      icon: '📊' },
+            { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',icon: '🔬' },
+            { path: '/ocorrencias',         label: 'Ocorrências',               icon: '⚠️' },
           ]
         },
         {
           titulo: 'MÓDULOS EXTRAS',
           itens: [
-            { path: '/sala-maker', label: 'Sala Maker', icon: '🔧' },
+            { path: '/sala-maker', label: 'Sala Maker', icon: '🔬' },
           ]
         },
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
-            { onClick: abrirItagame, label: 'ItagGame — Painel do Professor', icon: '🎮' },
+            { onClick: abrirItagame,  label: 'ItagGame — Painel do Professor', icon: '🎮' },
+            { onClick: abrirCorretor, label: 'Corretor de Provas',             icon: '✅' },
           ]
         }
       ]
