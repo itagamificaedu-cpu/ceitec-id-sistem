@@ -143,6 +143,25 @@ router.post('/localizar', async (req, res) => {
   }
 });
 
+// POST /api/mobile-tracker/consentimento — público (PWA do aluno usa token)
+router.post('/consentimento', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ erro: 'Token obrigatório' });
+
+    const perfil = await db.get('SELECT id FROM tracker_perfis WHERE token_pwa = ?', [token]);
+    if (!perfil) return res.status(404).json({ erro: 'Token inválido' });
+
+    await db.run(
+      'UPDATE tracker_perfis SET consentimento_aceito=1, consentimento_em=NOW() WHERE token_pwa=?',
+      [token]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 // ──────────────────────────────────────────────────────────────────
 // ROTAS PROTEGIDAS — somente admin/coordenador
 // ──────────────────────────────────────────────────────────────────
@@ -329,26 +348,6 @@ router.get('/link-pwa/:aluno_id', async (req, res) => {
     const baseUrl = process.env.APP_URL || 'https://itatecnologiaeducacional.tech';
     const link = `${baseUrl}/pwa/tracker/?token=${perfil.token_pwa}&nome=${encodeURIComponent(aluno.nome)}`;
     res.json({ link, token: perfil.token_pwa, aluno: aluno.nome });
-  } catch (err) {
-    res.status(500).json({ erro: err.message });
-  }
-});
-
-// POST /api/mobile-tracker/consentimento
-// Aluno aceita o termo de consentimento pelo PWA (usa token)
-router.post('/consentimento', async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) return res.status(400).json({ erro: 'Token obrigatório' });
-
-    const perfil = await db.get('SELECT id FROM tracker_perfis WHERE token_pwa = ?', [token]);
-    if (!perfil) return res.status(404).json({ erro: 'Token inválido' });
-
-    await db.run(
-      'UPDATE tracker_perfis SET consentimento_aceito=1, consentimento_em=NOW() WHERE token_pwa=?',
-      [token]
-    );
-    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
