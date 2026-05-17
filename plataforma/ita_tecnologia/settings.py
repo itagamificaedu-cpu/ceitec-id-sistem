@@ -17,6 +17,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://itatecnologiaeducacional.tech',
 ]
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
