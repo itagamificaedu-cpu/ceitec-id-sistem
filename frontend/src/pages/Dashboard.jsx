@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import GraficoFrequencia from '../components/GraficoFrequencia'
+import CardTurma from '../components/CardTurma'
 import api from '../api'
 
 function Card({ titulo, valor, icone, cor, sub }) {
@@ -21,12 +22,19 @@ function Card({ titulo, valor, icone, cor, sub }) {
 
 function DashboardProfessor({ usuario }) {
   const [prof, setProf] = useState(null)
+  const [turmas, setTurmas] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
 
   useEffect(() => {
-    api.get('/professores/eu')
-      .then(({ data }) => setProf(data))
+    Promise.all([
+      api.get('/professores/eu'),
+      api.get('/turmas'),
+    ])
+      .then(([{ data: profData }, { data: turmasData }]) => {
+        setProf(profData)
+        setTurmas(turmasData)
+      })
       .catch(err => setErro(err.response?.data?.erro || 'Erro ao carregar dados'))
       .finally(() => setCarregando(false))
   }, [])
@@ -78,58 +86,16 @@ function DashboardProfessor({ usuario }) {
       </div>
 
       {/* Minhas turmas */}
-      {prof.turmas?.length === 0 ? (
+      {turmas.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-10 text-center text-gray-400">
           <div className="text-4xl mb-3">📚</div>
           <p className="font-medium">Nenhuma turma vinculada ainda</p>
           <p className="text-sm mt-1">Peça ao administrador para vincular suas turmas no cadastro de professor.</p>
         </div>
       ) : (
-        <div className="space-y-5">
-          {prof.turmas?.map(turma => (
-            <div key={turma.id} className="bg-white rounded-xl shadow-md overflow-hidden">
-              {/* Cabeçalho da turma */}
-              <div className="bg-primary p-4 flex items-center justify-between">
-                <div>
-                  <h2 className="text-white font-bold text-lg">{turma.nome}</h2>
-                  <p className="text-white/70 text-sm">
-                    {turma.disciplinas?.join(', ') || turma.curso} • {turma.alunos?.length || 0} alunos
-                  </p>
-                </div>
-                <Link
-                  to={`/turmas/${turma.id}`}
-                  className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-medium transition-colors"
-                >
-                  Ver turma →
-                </Link>
-              </div>
-
-              {/* Lista de alunos (prévia) */}
-              {turma.alunos?.length > 0 ? (
-                <div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-0">
-                    {turma.alunos.slice(0, 8).map(a => (
-                      <div key={a.id} className="flex items-center gap-2 px-4 py-2.5 border-b border-r border-gray-100">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {a.foto_path ? <img src={a.foto_path} alt={a.nome} className="w-full h-full object-cover" /> : <span className="text-sm">👤</span>}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-medium text-textMain truncate">{a.nome.split(' ')[0]}</p>
-                          <p className="text-xs text-gray-400 font-mono truncate">{a.codigo}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {turma.alunos.length > 8 && (
-                    <div className="px-4 py-2 text-xs text-gray-400 text-center border-t">
-                      + {turma.alunos.length - 8} aluno(s) — <Link to={`/turmas/${turma.id}`} className="text-primary hover:underline">ver todos</Link>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="px-4 py-6 text-sm text-gray-400 text-center">Nenhum aluno cadastrado nesta turma ainda</p>
-              )}
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {turmas.map(turma => (
+            <CardTurma key={turma.id} turma={turma} />
           ))}
         </div>
       )}

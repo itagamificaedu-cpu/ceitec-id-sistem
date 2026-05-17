@@ -44,20 +44,22 @@ export default function CardTurma({ turma, onEditar, onExcluir }) {
           Ver Turma →
         </Link>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => onEditar && onEditar(turma)}
-            className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors border border-yellow-200"
-          >
-            ✏️ Editar
-          </button>
-          <button
-            onClick={() => onExcluir && onExcluir(turma)}
-            className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors border border-red-200"
-          >
-            🗑️ Excluir
-          </button>
-        </div>
+        {(onEditar || onExcluir) && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => onEditar && onEditar(turma)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors border border-yellow-200"
+            >
+              ✏️ Editar
+            </button>
+            <button
+              onClick={() => onExcluir && onExcluir(turma)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors border border-red-200"
+            >
+              🗑️ Excluir
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

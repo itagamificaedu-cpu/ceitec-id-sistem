@@ -72,12 +72,12 @@ export default function App() {
         <Route path="/alunos/:id/editar" element={<Admin><CadastroAluno /></Admin>} />
         <Route path="/alunos/:id/carteirinha" element={<Admin><Carteirinha /></Admin>} />
         <Route path="/alunos/:id/perfil" element={<Admin><PerfilAluno /></Admin>} />
-        <Route path="/scanner" element={<Admin><Scanner /></Admin>} />
+        <Route path="/scanner" element={<P><Scanner /></P>} />
         <Route path="/almoco/scanner" element={<Admin><ScannerAlmoco /></Admin>} />
         <Route path="/almoco/relatorio" element={<Admin><RelatorioAlmoco /></Admin>} />
         <Route path="/relatorios" element={<Admin><Relatorios /></Admin>} />
-        <Route path="/justificativas" element={<Admin><Justificativas /></Admin>} />
-        <Route path="/desempenho" element={<Admin><Desempenho /></Admin>} />
+        <Route path="/justificativas" element={<P><Justificativas /></P>} />
+        <Route path="/desempenho" element={<P><Desempenho /></P>} />
 
         {/* Turmas */}
         <Route path="/turmas" element={<Admin><ListaTurmas /></Admin>} />
@@ -89,25 +89,25 @@ export default function App() {
         <Route path="/professores/:id/editar" element={<Admin><CadastroProfessor /></Admin>} />
 
         {/* Avaliações */}
-        <Route path="/avaliacoes" element={<Admin><ListaAvaliacoes /></Admin>} />
+        <Route path="/avaliacoes" element={<P><ListaAvaliacoes /></P>} />
         <Route path="/avaliacoes/nova" element={<Admin><CriadorAvaliacao /></Admin>} />
-        <Route path="/avaliacoes/:id" element={<Admin><ResultadosAvaliacao /></Admin>} />
+        <Route path="/avaliacoes/:id" element={<P><ResultadosAvaliacao /></P>} />
         <Route path="/avaliacoes/:id/editar" element={<Admin><CriadorAvaliacao /></Admin>} />
 
         {/* Ocorrências */}
-        <Route path="/ocorrencias" element={<Admin><ListaOcorrencias /></Admin>} />
-        <Route path="/ocorrencias/nova" element={<Admin><NovaOcorrencia /></Admin>} />
+        <Route path="/ocorrencias" element={<P><ListaOcorrencias /></P>} />
+        <Route path="/ocorrencias/nova" element={<P><NovaOcorrencia /></P>} />
 
         {/* Quiz */}
-        <Route path="/quiz" element={<Admin><ListaQuizzes /></Admin>} />
+        <Route path="/quiz" element={<P><ListaQuizzes /></P>} />
         <Route path="/quiz/novo" element={<Admin><CriadorQuiz /></Admin>} />
         <Route path="/quiz/:id/editar" element={<Admin><CriadorQuiz /></Admin>} />
-        <Route path="/quiz/:id/ranking" element={<Admin><RankingQuiz /></Admin>} />
+        <Route path="/quiz/:id/ranking" element={<P><RankingQuiz /></P>} />
         {/* Rota pública para jogar */}
         <Route path="/q/:codigo" element={<JogarQuiz />} />
 
         {/* ItagGame */}
-        <Route path="/itagame" element={<Admin><ItagameDashboard /></Admin>} />
+        <Route path="/itagame" element={<P><ItagameDashboard /></P>} />
         <Route path="/itagame/aluno" element={<ItagameAluno />} />
         <Route path="/aluno/:codigo" element={<ItagameAluno />} />
 
@@ -118,7 +118,7 @@ export default function App() {
         <Route path="/ia/plano-aula" element={<Admin><PlanoDeAula /></Admin>} />
         <Route path="/ia/questoes" element={<Admin><CriadorQuestoes /></Admin>} />
         <Route path="/ia/corretor" element={<Admin><CorretorProvas /></Admin>} />
-        <Route path="/diagnostico" element={<Admin><DiagnosticoAluno /></Admin>} />
+        <Route path="/diagnostico" element={<P><DiagnosticoAluno /></P>} />
         <Route path="/ia/conteudo" element={<Admin><CriadorConteudo /></Admin>} />
 
         {/* Planos de Assinatura — público para novos clientes */}
@@ -128,7 +128,7 @@ export default function App() {
         <Route path="/minha-licenca" element={<P><MinhaLicenca /></P>} />
 
         {/* Corretor de Provas — resultados reais */}
-        <Route path="/corretor-resultados" element={<Admin><CorretorResultados /></Admin>} />
+        <Route path="/corretor-resultados" element={<P><CorretorResultados /></P>} />
 
         {/* Sala Maker — acessível a todos os usuários autenticados */}
         <Route path="/sala-maker" element={<P><SalaMaker /></P>} />
