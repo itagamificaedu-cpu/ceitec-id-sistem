@@ -1,155 +1,157 @@
-import requests
+import mercadopago
 from django.conf import settings
 
 
-def _base_url():
-    if getattr(settings, 'PAGSEGURO_SANDBOX', True):
-        return 'https://sandbox.api.pagseguro.com'
-    return 'https://api.pagseguro.com'
+def _sdk():
+    return mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
 
 
-def _headers():
-    return {
-        'Authorization': f'Bearer {settings.PAGSEGURO_TOKEN}',
-        'Content-Type': 'application/json',
-    }
-
-
-def _telefone_parts(telefone_str):
-    digitos = ''.join(c for c in telefone_str if c.isdigit())
-    area = digitos[:2]
-    numero = digitos[2:]
-    return area, numero
-
-
-def criar_pedido_pagseguro(inscricao):
-    area, numero = _telefone_parts(inscricao.telefone)
-    cpf_limpo = ''.join(c for c in inscricao.cpf_responsavel if c.isdigit())
+def criar_pedido_mercadopago(inscricao):
+    """
+    Cria uma preferência de pagamento no Mercado Pago.
+    Retorna o link de checkout (init_point) e o ID da preferência.
+    Aceita PIX, Cartão de Crédito (até 3x sem juros) e Boleto.
+    """
     base_url = getattr(settings, 'BASE_URL', 'https://itatecnologiaeducacional.tech')
 
-    payload = {
-        'reference_id': str(inscricao.codigo_inscricao),
-        'customer': {
-            'name': inscricao.nome_responsavel,
-            'email': inscricao.email,
-            'tax_id': cpf_limpo,
-            'phones': [{
-                'country': '55',
-                'area': area,
-                'number': numero,
-                'type': 'MOBILE',
-            }],
-        },
-        'items': [{
-            'reference_id': 'CURSO-MAKER-2026',
-            'name': 'Curso de Férias Maker — CEITEC Itapipoca',
-            'quantity': 1,
-            'unit_amount': 19900,
+    nome_partes = inscricao.nome_responsavel.split()
+    primeiro_nome = nome_partes[0] if nome_partes else inscricao.nome_responsavel
+    sobrenome = ' '.join(nome_partes[1:]) if len(nome_partes) > 1 else ''
+
+    preference_data = {
+        "items": [{
+            "id": "CURSO-MAKER-2026",
+            "title": "Curso de Férias Maker — CEITEC Itapipoca",
+            "description": "Alunos Maker Não Tiram Férias · Julho 2026 · 40h",
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": float(inscricao.valor_pago),
         }],
-        'payment_methods': [
-            {'type': 'PIX'},
-            {'type': 'CREDIT_CARD'},
-            {'type': 'BOLETO'},
-        ],
-        'payment_methods_configs': [
-            {
-                'type': 'CREDIT_CARD',
-                'config_options': [
-                    {'option': 'INSTALLMENTS_LIMIT', 'value': '3'},
-                    {'option': 'NO_INTEREST_INSTALLMENTS_LIMIT', 'value': '3'},
-                ],
-            }
-        ],
-        'notification_urls': [
-            f"{base_url}/inscricao/pagamento/notificacao/",
-        ],
-        'redirect_url': f"{base_url}/inscricao/pagamento/confirmado/{inscricao.codigo_inscricao}/",
+        "payer": {
+            "name": primeiro_nome,
+            "surname": sobrenome,
+            "email": inscricao.email,
+        },
+        "back_urls": {
+            "success": f"{base_url}/inscricao/pagamento/confirmado/{inscricao.codigo_inscricao}/",
+            "failure": f"{base_url}/inscricao/pagamento/{inscricao.codigo_inscricao}/",
+            "pending": f"{base_url}/inscricao/pagamento/confirmado/{inscricao.codigo_inscricao}/",
+        },
+        "auto_return": "approved",
+        "notification_url": f"{base_url}/inscricao/pagamento/notificacao/",
+        "external_reference": str(inscricao.codigo_inscricao),
+        "statement_descriptor": "CEITEC MAKER",
+        "payment_methods": {
+            "installments": 3,
+            "default_installments": 1,
+        },
     }
 
+    sdk = _sdk()
+    result = sdk.preference().create(preference_data)
+    response = result.get("response", {})
+    status = result.get("status")
+
+    if status not in (200, 201):
+        erro = response.get("message") or str(response)
+        raise Exception(f"Mercado Pago: erro {status} — {erro}")
+
+    # Em sandbox usa sandbox_init_point; em produção usa init_point
+    link = response.get("init_point") or response.get("sandbox_init_point")
+
+    return {
+        "id_pedido": response.get("id", ""),
+        "link_pagamento": link,
+        "status": "criado",
+    }
+
+
+# Mantém o nome antigo como alias para não quebrar views.py
+criar_pedido_pagseguro = criar_pedido_mercadopago
+
+
+def verificar_status_pedido(preference_id):
+    """
+    Consulta pagamentos vinculados a uma referência externa.
+    Retorna 'PAID', 'PENDING' ou 'ERRO'.
+    """
     try:
-        response = requests.post(
-            f'{_base_url()}/orders',
-            headers=_headers(),
-            json=payload,
-            timeout=30,
-        )
-    except requests.Timeout:
-        raise Exception('PagSeguro: tempo de resposta esgotado. Tente novamente.')
-    except requests.RequestException as e:
-        raise Exception(f'PagSeguro: erro de conexão — {e}')
-
-    if response.status_code == 201:
-        data = response.json()
-        link_pag = next(
-            (lnk['href'] for lnk in data.get('links', []) if lnk.get('rel') == 'PAY'),
-            None
-        )
-        if not link_pag:
-            links = data.get('links', [])
-            link_pag = links[0]['href'] if links else None
-
-        return {
-            'id_pedido': data.get('id', ''),
-            'link_pagamento': link_pag,
-            'status': 'criado',
-        }
-    else:
-        raise Exception(
-            f'PagSeguro: erro {response.status_code} — {response.text[:300]}'
-        )
-
-
-def verificar_status_pedido(id_pedido):
-    try:
-        response = requests.get(
-            f'{_base_url()}/orders/{id_pedido}',
-            headers=_headers(),
-            timeout=20,
-        )
-        if response.status_code == 200:
-            data = response.json()
-            charges = data.get('charges', [])
-            if charges:
-                return charges[0].get('status', 'PENDING')
-            return data.get('status', 'PENDING')
-    except requests.RequestException:
+        sdk = _sdk()
+        # Busca pagamentos pela external_reference (UUID da inscrição)
+        result = sdk.payment().search({"external_reference": preference_id})
+        response = result.get("response", {})
+        resultados = response.get("results", [])
+        if resultados:
+            status = resultados[0].get("status", "pending")
+            if status == "approved":
+                return "PAID"
+            if status in ("cancelled", "rejected"):
+                return "DECLINED"
+            return "PENDING"
+    except Exception:
         pass
-    return 'ERRO'
+    return "ERRO"
 
 
 def webhook_pagseguro_handler(request):
+    """
+    Processa notificações IPN/Webhook do Mercado Pago.
+    MP envia POST com query params: type=payment&data.id=<id>
+    ou JSON com {"type": "payment", "data": {"id": "..."}}.
+    """
     import json
     from django.http import JsonResponse
     from django.utils import timezone
     from inscricoes.models import Inscricao
     from inscricoes.utils.email_utils import enviar_email_confirmacao
 
+    # Tenta ler o payment_id do body JSON ou dos query params
+    payment_id = None
     try:
-        payload = json.loads(request.body)
+        body = json.loads(request.body or b'{}')
+        if body.get("type") == "payment":
+            payment_id = str(body.get("data", {}).get("id", ""))
     except (json.JSONDecodeError, ValueError):
-        return JsonResponse({'erro': 'payload inválido'}, status=400)
+        pass
 
-    referencia = payload.get('reference_id', '')
-    charges = payload.get('charges', [{}])
-    status_pag = charges[0].get('status', '') if charges else ''
-    id_transacao = charges[0].get('id', '') if charges else ''
+    if not payment_id:
+        payment_id = request.GET.get("data.id") or request.POST.get("data_id", "")
+
+    if not payment_id:
+        return JsonResponse({"status": "sem_payment_id"})
+
+    # Consulta detalhes do pagamento
+    try:
+        sdk = _sdk()
+        result = sdk.payment().get(payment_id)
+        pagamento = result.get("response", {})
+    except Exception:
+        return JsonResponse({"status": "erro_consulta"})
+
+    status_mp = pagamento.get("status", "")
+    referencia = str(pagamento.get("external_reference", ""))
+
+    if not referencia:
+        return JsonResponse({"status": "sem_referencia"})
 
     try:
         inscricao = Inscricao.objects.get(codigo_inscricao=referencia)
     except (Inscricao.DoesNotExist, Exception):
-        return JsonResponse({'status': 'referencia_desconhecida'})
+        return JsonResponse({"status": "referencia_desconhecida"})
 
-    if status_pag == 'PAID' and inscricao.status != 'pago':
-        inscricao.status = 'pago'
+    if status_mp == "approved" and inscricao.status not in ("pago", "certificado_emitido"):
+        inscricao.status = "pago"
         inscricao.data_pagamento = timezone.now()
-        inscricao.id_transacao_pag = id_transacao
+        inscricao.id_transacao_pag = payment_id
         inscricao.save()
         try:
             enviar_email_confirmacao(inscricao)
         except Exception:
             pass
-    elif status_pag in ('DECLINED', 'CANCELED'):
-        inscricao.status = 'cancelado'
-        inscricao.save()
 
-    return JsonResponse({'status': 'ok'})
+    elif status_mp in ("cancelled", "rejected"):
+        if inscricao.status not in ("pago", "certificado_emitido"):
+            inscricao.status = "cancelado"
+            inscricao.save()
+
+    return JsonResponse({"status": "ok"})
