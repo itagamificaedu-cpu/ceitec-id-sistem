@@ -183,7 +183,8 @@
     const params = new URLSearchParams(location.search);
     const TOKEN = params.get('token');
     const NOME = params.get('nome') || 'Aluno';
-    const API_BASE = '/api/mobile-tracker';
+    // /node-api/ é reescrito pelo Nginx para /api/ no Node.js
+    const API_BASE = '/node-api/mobile-tracker';
 
     let watchId = null;
     let ultimaPosicao = null;
