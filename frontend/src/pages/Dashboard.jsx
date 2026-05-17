@@ -57,6 +57,26 @@ function DashboardProfessor({ usuario }) {
         <Card titulo="ItagGame" valor="🎮" icone="⭐" cor="border-yellow-400" sub="Acesse pelo menu" />
       </div>
 
+      {/* Atalhos rápidos */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+        {[
+          { to: '/scanner',              icon: '📷', label: 'Scanner de Presença' },
+          { to: '/avaliacoes',           icon: '📝', label: 'Avaliações' },
+          { to: '/desempenho',           icon: '📊', label: 'Desempenho Acadêmico' },
+          { to: '/diagnostico',          icon: '🔬', label: 'Diagnóstico por Disciplina' },
+          { to: '/ocorrencias',          icon: '⚠️', label: 'Ocorrências' },
+          { to: '/quiz',                 icon: '🎯', label: 'Quiz Interativo' },
+          { to: '/corretor-resultados',  icon: '📋', label: 'Resultados Corretor' },
+          { to: '/sala-maker',           icon: '🔧', label: 'Sala Maker' },
+        ].map(a => (
+          <Link key={a.to} to={a.to}
+            className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col items-center gap-2 text-center hover:border-primary hover:shadow-md transition-all">
+            <span className="text-2xl">{a.icon}</span>
+            <span className="text-xs font-medium text-gray-600 leading-tight">{a.label}</span>
+          </Link>
+        ))}
+      </div>
+
       {/* Minhas turmas */}
       {prof.turmas?.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-10 text-center text-gray-400">
