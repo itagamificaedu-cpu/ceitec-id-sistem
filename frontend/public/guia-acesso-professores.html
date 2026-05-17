@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia de Acesso — Professores e Secretaria | CEITEC</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    color: #1a1a2e;
+    font-size: 13px;
+  }
+
+  @media print {
+    body { background: white; }
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    .card { break-inside: avoid; }
+    header { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-prof { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-sec { background: #0d7377 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .instrucoes { background: #fff8e1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .step-num { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .alerta { background: #fff3cd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* Print button */
+  .no-print {
+    text-align: center;
+    padding: 16px;
+    background: #1e3a5f;
+  }
+  .no-print button {
+    background: #f5a623;
+    color: #1a1a2e;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+  .no-print span { color: white; font-size: 13px; }
+
+  /* Header */
+  header {
+    background: #1e3a5f;
+    color: white;
+    padding: 28px 40px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .logo-box {
+    width: 56px; height: 56px;
+    background: #f5a623;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; flex-shrink: 0;
+  }
+  header h1 { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+  header p { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 3px; }
+  .header-right { margin-left: auto; text-align: right; }
+  .header-right .url-box {
+    background: rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f5a623;
+    letter-spacing: 0.3px;
+  }
+  .header-right small { display: block; color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 4px; }
+
+  /* Content */
+  .content { max-width: 900px; margin: 0 auto; padding: 24px 20px 40px; }
+
+  /* Instrucoes */
+  .instrucoes {
+    background: #fff8e1;
+    border: 1.5px solid #f5a623;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .instrucoes h2 { font-size: 14px; color: #1e3a5f; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .steps { display: flex; flex-direction: column; gap: 10px; }
+  .step { display: flex; align-items: flex-start; gap: 12px; }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #1e3a5f; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .step p { font-size: 13px; color: #333; line-height: 1.5; }
+  .step strong { color: #1e3a5f; }
+  .step a { color: #1e3a5f; font-weight: 700; }
+
+  .alerta {
+    background: #fff3cd;
+    border-left: 4px solid #f5a623;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: #856404;
+    line-height: 1.5;
+  }
+
+  /* Section title */
+  .section-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 700;
+    color: #1e3a5f;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    margin-top: 4px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1.5px; background: #e2e8f0;
+  }
+
+  /* Cards grid */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+
+  .card {
+    background: white;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card-top { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #e8f0fe;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .avatar.sec { background: #e0f7f7; }
+  .card-name { font-weight: 700; font-size: 13px; color: #1a1a2e; line-height: 1.3; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    margin-top: 1px;
+  }
+  .badge-prof { background: #1e3a5f; }
+  .badge-sec  { background: #0d7377; }
+
+  .card-fields { display: flex; flex-direction: column; gap: 5px; }
+  .field { display: flex; gap: 6px; align-items: flex-start; }
+  .field-label {
+    font-size: 10px; font-weight: 600; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    width: 50px; flex-shrink: 0; padding-top: 1px;
+  }
+  .field-value { font-size: 12px; color: #333; word-break: break-all; }
+  .field-value.senha {
+    font-family: 'Courier New', monospace;
+    background: #f0f4f8;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: #1e3a5f;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .field-value.obs {
+    color: #888; font-style: italic; font-size: 11px;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+    color: #999;
+    font-size: 11px;
+  }
+  footer strong { color: #1e3a5f; }
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  <span>Use Ctrl+P → Salvar como PDF no navegador</span>
+</div>
+
+<header>
+  <div class="logo-box">🎓</div>
+  <div>
+    <h1>ITA TECNOLOGIA EDUCACIONAL</h1>
+    <p>Guia de Acesso — Professores e Secretaria · CEITEC Itapipoca</p>
+  </div>
+  <div class="header-right">
+    <div class="url-box">🌐 itatecnologiaeducacional.tech</div>
+    <small>Plataforma de Gestão Educacional</small>
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- Instrucoes -->
+  <div class="instrucoes">
+    <h2>📋 Como acessar o sistema pela primeira vez</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <p>Abra o navegador (Chrome ou Firefox) e acesse: <a href="https://itatecnologiaeducacional.tech" target="_blank"><strong>itatecnologiaeducacional.tech</strong></a></p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <p>Na tela de login, digite seu <strong>e-mail</strong> e a <strong>senha provisória</strong> informada neste documento.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <p>O sistema vai pedir que você <strong>crie uma nova senha</strong> — escolha uma senha segura e guarde-a.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <p>Após trocar a senha, você será redirecionado ao seu <strong>painel</strong> com acesso a todas as turmas.</p>
+      </div>
+    </div>
+    <div class="alerta">
+      ⚠️ <strong>Atenção:</strong> A senha provisória <strong>Ceitec@2024</strong> é temporária. Após o primeiro acesso você será obrigado a criar uma senha nova e pessoal. Guarde bem — o sistema não envia e-mail de recuperação automaticamente.
+    </div>
+  </div>
+
+  <!-- Professores -->
+  <div class="section-title">👨‍🏫 Professores</div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">ALEXANDRE ANDRADE</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">alexandreandrade@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">ALEXANDRE CANDIDO</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">alexandrecandido@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">ALEXANDRE ROCHA</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">alexandrerocha@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">ANTONIO</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">antonio@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">BIANCA MARA</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">biancamara@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">BRENA GOMES</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">brenagomes@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">CARLOS ROBERTO</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">carlosroberto@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">ENILDA FROTA</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">eneildafrota@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">ESTER</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">ester@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">EZEQUIEL</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">ezequiel@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">LARIANY</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">lariany@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">LIVISSON</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">livisson@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">MARIO GLEDSON</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">mariogladson@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">NATALIA RIBEIRO</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">nataliaribeiro@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">👨‍🏫</div>
+        <div>
+          <div class="card-name">PEDRO SANTANA</div>
+          <span class="badge badge-prof">Professor</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">pedrosantana@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <!-- Genezio — admin/professor -->
+    <div class="card" style="border-color:#f5a623;">
+      <div class="card-top">
+        <div class="avatar">👑</div>
+        <div>
+          <div class="card-name">GENEZIO DE LAVOR OLIVEIRA</div>
+          <span class="badge badge-prof">Professor / Coordenador</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">gegeitp@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value obs">Senha pessoal (não provisória)</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Secretaria -->
+  <div class="section-title">📋 Secretaria</div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar sec">📋</div>
+        <div>
+          <div class="card-name">LIDICIANY</div>
+          <span class="badge badge-sec">Secretaria</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">lidiciany@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar sec">📋</div>
+        <div>
+          <div class="card-name">MARCIA</div>
+          <span class="badge badge-sec">Secretaria</span>
+        </div>
+      </div>
+      <div class="card-fields">
+        <div class="field"><span class="field-label">E-mail</span><span class="field-value">marcia@gmail.com</span></div>
+        <div class="field"><span class="field-label">Senha</span><span class="field-value senha">Ceitec@2024</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- O que cada perfil acessa -->
+  <div class="instrucoes" style="margin-top:8px;">
+    <h2>🔐 O que cada perfil pode fazer</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">👨‍🏫</div>
+        <p><strong>Professor</strong> — Acessa Scanner de Presença, Avaliações, Quiz, Desempenho, Diagnóstico, Ocorrências, Sala Maker, Corretor de Provas e ItagGame. <strong>Não pode alterar</strong> dados de alunos ou turmas.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">📋</div>
+        <p><strong>Secretaria</strong> — Acesso completo igual ao administrador: gerencia alunos, turmas, professores, relatórios, frequência e todos os módulos da plataforma.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>ITA Tecnologia Educacional</strong> · Sistema CEITEC Itapipoca<br>
+    Documento gerado em <?php echo date('d/m/Y'); ?> · Confidencial — não compartilhe publicamente
+  </footer>
+
+</div>
+
+<script>
+  // Fix date (PHP won't run as static file)
+  document.querySelector('footer').innerHTML = document.querySelector('footer').innerHTML
+    .replace('<?php echo date(\'d/m/Y\'); ?>', new Date().toLocaleDateString('pt-BR'));
+</script>
+
+</body>
+</html>
