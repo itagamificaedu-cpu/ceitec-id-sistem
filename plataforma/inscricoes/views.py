@@ -307,6 +307,48 @@ def api_lista_inscricoes(request):
 
 
 @csrf_exempt
+def api_editar_inscricao(request, codigo):
+    """Edita dados de uma inscrição via painel React."""
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'método inválido'}, status=405)
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    inscricao = get_object_or_404(Inscricao, codigo_inscricao=codigo)
+    try:
+        dados = json.loads(request.body or b'{}')
+    except Exception:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+
+    campos_permitidos = ['nome_completo', 'escola', 'serie', 'turno',
+                         'nome_responsavel', 'telefone', 'email', 'status']
+    for campo in campos_permitidos:
+        if campo in dados:
+            setattr(inscricao, campo, dados[campo])
+
+    if dados.get('status') == 'pago' and not inscricao.data_pagamento:
+        inscricao.data_pagamento = timezone.now()
+
+    inscricao.save()
+    return JsonResponse({'status': 'ok'})
+
+
+@csrf_exempt
+def api_excluir_inscricao(request, codigo):
+    """Exclui uma inscrição via painel React."""
+    if request.method != 'DELETE':
+        return JsonResponse({'erro': 'método inválido'}, status=405)
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    inscricao = get_object_or_404(Inscricao, codigo_inscricao=codigo)
+    inscricao.delete()
+    return JsonResponse({'status': 'ok'})
+
+
+@csrf_exempt
 @require_POST
 def api_marcar_pago_react(request, codigo):
     """Marca inscrição como paga via painel React — usa chave interna."""
