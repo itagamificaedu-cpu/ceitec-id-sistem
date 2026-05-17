@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credenciais — CEITEC Itapipoca · ITA Tecnologia Educacional</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; line-height: 1.6; }
+
+  .btn-imprimir {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    background: #f5a623; color: #fff;
+    border: none; border-radius: 50px;
+    padding: 14px 28px; font-size: 15px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 6px 24px rgba(245,166,35,.5);
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Segoe UI', Arial, sans-serif; transition: transform .15s;
+  }
+  .btn-imprimir:hover { transform: scale(1.04); }
+  @media print { .btn-imprimir { display: none; } }
+
+  /* CAPA */
+  .capa {
+    background: linear-gradient(135deg, #7c1d1d 0%, #4a0a0a 60%, #1a1a2e 100%);
+    color: white; min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px 40px; page-break-after: always;
+  }
+  .capa .logo-box {
+    width: 96px; height: 96px; background: #f5a623; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; margin: 0 auto 28px;
+    box-shadow: 0 8px 32px rgba(245,166,35,.4);
+  }
+  .capa h1 { font-size: 38px; font-weight: 900; letter-spacing: 2px; color: #f5a623; margin-bottom: 6px; }
+  .capa h2 { font-size: 18px; font-weight: 400; color: rgba(255,255,255,.65); margin-bottom: 44px; }
+  .capa .titulo-manual { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+  .capa .subtitulo { font-size: 14px; color: rgba(255,255,255,.55); margin-bottom: 40px; }
+  .capa .aviso-box {
+    background: rgba(239,68,68,.15); border: 2px solid rgba(239,68,68,.5);
+    border-radius: 14px; padding: 20px 32px; margin-bottom: 40px; max-width: 540px;
+  }
+  .capa .aviso-box p { font-size: 14px; font-weight: 700; color: #fca5a5; }
+  .capa .rodape { font-size: 11px; color: rgba(255,255,255,.35); margin-top: auto; }
+
+  /* CONTEÚDO */
+  .conteudo { padding: 42px 60px; }
+  h2 { font-size: 22px; font-weight: 800; color: #1e3a5f; border-bottom: 3px solid #f5a623; padding-bottom: 10px; margin-bottom: 24px; }
+  h3 { font-size: 16px; font-weight: 800; color: #1e3a5f; margin: 28px 0 14px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+
+  /* ALERTAS */
+  .alerta { padding: 13px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 12.5px; display: flex; gap: 10px; align-items: flex-start; }
+  .alerta-aviso   { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .alerta-erro    { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .alerta-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .alerta-sucesso { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+  /* TABELA */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 28px; font-size: 12px; }
+  th { background: #1e3a5f; color: white; padding: 10px 14px; text-align: left; font-weight: 700; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  table.credenciais td:nth-child(4) { font-family: monospace; font-weight: 700; font-size: 11px; background: #1e3a5f; color: #f5a623; }
+
+  /* CHIPS */
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .chip-master { background: #fef3c7; color: #92400e; }
+  .chip-admin  { background: #f3e8ff; color: #7c3aed; }
+  .chip-sec    { background: #dbeafe; color: #1e40af; }
+  .chip-prof   { background: #dcfce7; color: #15803d; }
+
+  /* ACESSO BOX */
+  .acesso-box {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-left: 4px solid #ef4444; border-radius: 8px;
+    padding: 20px 24px; margin-bottom: 24px;
+  }
+  .acesso-box h4 { font-size: 12px; font-weight: 800; color: #991b1b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .acesso-box .campo { display: flex; gap: 12px; margin-bottom: 6px; font-size: 13px; }
+  .acesso-box .label { color: #64748b; min-width: 90px; }
+  .acesso-box .valor { font-weight: 700; color: #1e3a5f; }
+  .acesso-box .url { font-family: monospace; background: #1e3a5f; color: #f5a623; padding: 3px 10px; border-radius: 4px; font-size: 12.5px; }
+
+  .divisor { border: none; border-top: 2px solid #e2e8f0; margin: 26px 0; }
+
+  .rodape-doc {
+    text-align: center; padding: 40px 0; border-top: 3px solid #ef4444; margin-top: 20px;
+  }
+
+  @media print {
+    .conteudo { padding: 28px 48px; }
+    @page { margin: 1.5cm; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+
+<!-- CAPA -->
+<div class="capa">
+  <div class="logo-box">🔐</div>
+  <h1>ITA TECNOLOGIA</h1>
+  <h2>EDUCACIONAL</h2>
+  <div class="titulo-manual">Credenciais de Acesso</div>
+  <div class="subtitulo">CEITEC Itapipoca — Logins e senhas de todos os usuários</div>
+  <div class="aviso-box">
+    <p>🔒 DOCUMENTO CONFIDENCIAL<br>Não compartilhe com alunos ou pessoas não autorizadas.<br>Guarde em local seguro — não deixe impresso em área pública.</p>
+  </div>
+  <div class="rodape">
+    ITA Tecnologia Educacional &nbsp;|&nbsp; Atualizado em maio de 2026<br>
+    itagamificaedu@gmail.com
+  </div>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="conteudo">
+
+  <h2>🔐 Credenciais da Escola CEITEC Itapipoca</h2>
+
+  <div class="alerta alerta-erro">
+    <span>🔒</span>
+    <span><strong>CONFIDENCIAL.</strong> Este documento contém senhas reais do sistema. Não compartilhe por e-mail, WhatsApp ou grupos. Mantenha impresso apenas em local seguro.</span>
+  </div>
+
+  <div class="alerta alerta-info">
+    <span>ℹ️</span>
+    <span>URL de acesso: <strong>https://itatecnologiaeducacional.tech/login</strong> &nbsp;|&nbsp; Navegadores recomendados: Chrome ou Firefox</span>
+  </div>
+
+  <!-- ADMIN MESTRE -->
+  <h3>👑 Admin Mestre</h3>
+  <div class="acesso-box">
+    <h4>Credenciais do Admin Mestre — acesso global a todas as escolas</h4>
+    <div class="campo"><span class="label">Nome:</span><span class="valor">Genezio (ITA Tecnologia)</span></div>
+    <div class="campo"><span class="label">E-mail:</span><span class="valor">itagamificaedu@gmail.com</span></div>
+    <div class="campo"><span class="label">Senha:</span><span class="url">E8@64F@6qzg8</span></div>
+    <div class="campo"><span class="label">Perfil:</span><span class="valor"><span class="chip chip-master">👑 Admin Mestre</span></span></div>
+  </div>
+
+  <hr class="divisor">
+
+  <!-- TODOS OS USUÁRIOS -->
+  <h3>📋 Todos os Usuários — CEITEC Itapipoca</h3>
+  <p style="color:#475569;font-size:12.5px;margin-bottom:14px;">Senha padrão de todos os professores, secretaria e admins da escola: <strong style="font-family:monospace;background:#1e3a5f;color:#f5a623;padding:2px 8px;border-radius:4px;">Ceitec@2024</strong> &nbsp; (C maiúsculo + @)</p>
+
+  <table class="credenciais">
+    <thead>
+      <tr>
+        <th>#</th><th>Nome</th><th>E-mail (login)</th><th>Senha</th><th>Perfil</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Genezio (Admin Mestre)</strong></td>
+        <td>itagamificaedu@gmail.com</td>
+        <td>E8@64F@6qzg8</td>
+        <td><span class="chip chip-master">👑 Mestre</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>CEITEC Itapipoca (Admin)</td>
+        <td>itaceitec@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>ANDREA VIRGINIA</td>
+        <td>andreavirginia@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>FRANCISCA</td>
+        <td>francisca@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>JUCERNEY</td>
+        <td>jucerney@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-admin">🏫 Admin</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>LIDICIANY</td>
+        <td>lidiciany@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-sec">📋 Secretaria</span></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>MARCIA</td>
+        <td>marcia@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-sec">📋 Secretaria</span></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>ALEXANDRE ANDRADE</td>
+        <td>alexandreandrade@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>ALEXANDRE CANDIDO</td>
+        <td>alexandrecandido@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>ALEXANDRE ROCHA</td>
+        <td>alexandrerocha@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td>ANTONIO</td>
+        <td>antonio@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td>BIANCA MARA</td>
+        <td>biancamara@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td>BRENA GOMES</td>
+        <td>brenagomes@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>14</td>
+        <td>CARLOS ROBERTO</td>
+        <td>carlosroberto@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>15</td>
+        <td>ENILDA FROTA</td>
+        <td>eneildafrota@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>16</td>
+        <td>ESTER</td>
+        <td>ester@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>17</td>
+        <td>EZEQUIEL</td>
+        <td>ezequiel@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>18</td>
+        <td>GENEZIO DE LAVOR</td>
+        <td>gegeitp@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>19</td>
+        <td>LARIANY</td>
+        <td>lariany@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td>LIVISSON</td>
+        <td>livisson@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>21</td>
+        <td>MARIO GLEDSON</td>
+        <td>mariogladson@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>22</td>
+        <td>NATALIA RIBEIRO</td>
+        <td>nataliaribeiro@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+      <tr>
+        <td>23</td>
+        <td>PEDRO SANTANA</td>
+        <td>pedrosantana@gmail.com</td>
+        <td>Ceitec@2024</td>
+        <td><span class="chip chip-prof">👨‍🏫 Professor</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="alerta alerta-sucesso">
+    <span>✅</span>
+    <span>Senhas verificadas em maio de 2026. Cada usuário pode trocar sua senha após o login pelo menu <strong>Perfil → Trocar Senha</strong>.</span>
+  </div>
+
+  <div class="alerta alerta-aviso">
+    <span>⚠️</span>
+    <span>Esqueceu a senha? O <strong>Administrador da escola</strong> pode redefinir em <strong>Gerenciar Usuários → Editar → Nova Senha</strong>. Se for o Admin Mestre, entre em contato com o suporte ITA.</span>
+  </div>
+
+  <div class="rodape-doc">
+    <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+    <div style="font-size:18px;font-weight:900;color:#1e3a5f;margin-bottom:6px;">ITA TECNOLOGIA EDUCACIONAL</div>
+    <div style="font-size:13px;color:#ef4444;font-weight:700;margin-bottom:12px;">DOCUMENTO CONFIDENCIAL — NÃO DISTRIBUIR</div>
+    <div style="font-size:12px;color:#94a3b8;">📧 itagamificaedu@gmail.com &nbsp;|&nbsp; itatecnologiaeducacional.tech &nbsp;|&nbsp; Maio 2026</div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelector('.btn-imprimir').addEventListener('click', function() {
+    window.print();
+  });
+</script>
+</body>
+</html>
