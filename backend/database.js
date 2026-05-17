@@ -193,6 +193,19 @@ async function initDatabase() {
       atualizado_em TIMESTAMP DEFAULT NOW()
     )`,
 
+    /* Log de acessos: registra cada login bem-sucedido */
+    `CREATE TABLE IF NOT EXISTS log_acessos (
+      id SERIAL PRIMARY KEY,
+      usuario_id INTEGER NOT NULL,
+      nome TEXT NOT NULL,
+      email TEXT NOT NULL,
+      perfil TEXT NOT NULL,
+      escola_id INTEGER,
+      ip TEXT,
+      user_agent TEXT,
+      logado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
     /* Registros de manutenção dos equipamentos */
     `CREATE TABLE IF NOT EXISTS sala_maker_manutencoes (
       id SERIAL PRIMARY KEY,

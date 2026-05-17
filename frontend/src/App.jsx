@@ -38,6 +38,7 @@ import Usuarios from './pages/Usuarios'
 import CorretorResultados from './pages/CorretorResultados'
 import ResponderAvaliacao from './pages/ResponderAvaliacao'
 import TrocarSenha from './pages/TrocarSenha'
+import AtividadeUsuarios from './pages/AtividadeUsuarios'
 import SalaMaker from './pages/salaMaker'
 import CursoFerias from './pages/CursoFerias'
 
@@ -138,6 +139,7 @@ export default function App() {
 
         {/* Usuários */}
         <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />
+        <Route path="/atividade-usuarios" element={<Admin><AtividadeUsuarios /></Admin>} />
         <Route path="/trocar-senha" element={<P><TrocarSenha /></P>} />
       </Routes>
     </BrowserRouter>

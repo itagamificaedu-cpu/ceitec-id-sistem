@@ -13,6 +13,7 @@ const SECOES_ESTATICAS = [
       { path: '/almoco/scanner', label: 'Scanner de Almoço', icon: '🍽️' },
       { path: '/almoco/relatorio', label: 'Relatório de Almoço', icon: '📋' },
       { path: '/usuarios', label: 'Gerenciar Usuários', icon: '🔑' },
+      { path: '/atividade-usuarios', label: 'Atividade dos Usuários', icon: '📡' },
     ]
   },
   {
