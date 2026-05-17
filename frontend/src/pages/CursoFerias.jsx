@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 
-const WA_NUMERO = '5585992858889'
+const WA_NUMERO = '5588888411890'
 const WA_MSG = encodeURIComponent('Olá! Quero garantir minha vaga no curso Alunos Maker Não Tiram Férias! Pode me enviar mais informações?')
 const WA_LINK = `https://wa.me/${WA_NUMERO}?text=${WA_MSG}`
 
-const URL_LANDING = window.location.origin + '/curso-ferias.html'
+const URL_INSCRICAO = 'https://itatecnologiaeducacional.tech/inscricao/'
+const URL_LANDING = URL_INSCRICAO
 
 function InfoCard({ icon, label, valor, cor }) {
   return (
@@ -61,12 +62,14 @@ export default function CursoFerias() {
               >
                 {copiado ? '✅ Copiado!' : '🔗 Copiar Link'}
               </button>
-              <button
-                onClick={abrirLanding}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
+              <a
+                href={URL_INSCRICAO}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors"
               >
-                ↗ Abrir Página
-              </button>
+                🚀 Abrir Página de Inscrição
+              </a>
               <button
                 onClick={abrirWhatsApp}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-bold hover:opacity-90 transition-opacity"
@@ -127,8 +130,8 @@ export default function CursoFerias() {
                   </button>
                 </div>
                 <iframe
-                  src="/curso-ferias.html"
-                  title="Landing Page — Curso de Férias Maker"
+                  src={URL_INSCRICAO}
+                  title="Página de Inscrição — Curso de Férias Maker"
                   className="w-full"
                   style={{ height: '700px', border: 'none' }}
                   loading="lazy"
