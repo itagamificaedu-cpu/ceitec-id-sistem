@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5a623" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>CEITEC Tracker</title>
+  <link rel="manifest" href="/pwa/tracker/manifest.json" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1b2e;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .logo {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+    .titulo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f5a623;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .subtitulo {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    .status-icon { font-size: 3rem; margin-bottom: 12px; }
+    .status-texto {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .status-detalhe {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 20px;
+      min-height: 20px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin: 4px;
+    }
+    .badge-verde { background: rgba(0,230,118,0.15); color: #00e676; border: 1px solid #00e676; }
+    .badge-amarelo { background: rgba(255,214,0,0.15); color: #ffd600; border: 1px solid #ffd600; }
+    .badge-vermelho { background: rgba(255,23,68,0.15); color: #ff1744; border: 1px solid #ff1744; }
+    .badge-cinza { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.15); }
+    .nome-aluno {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #f5a623;
+      margin-bottom: 16px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: opacity 0.2s;
+    }
+    .btn:active { opacity: 0.7; }
+    .btn-primario { background: #f5a623; color: #0d1b2e; }
+    .btn-secundario { background: rgba(255,255,255,0.08); color: #fff; }
+    .bateria {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 12px;
+    }
+    .termo {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      text-align: left;
+      margin-bottom: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .termo h4 { color: #f5a623; margin-bottom: 8px; }
+    .erro { color: #ff1744; font-size: 0.85rem; margin-top: 10px; }
+    #tela-erro, #tela-termo, #tela-principal { display: none; }
+    .pulsar {
+      animation: pulsar 2s infinite;
+    }
+    @keyframes pulsar {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">📍</div>
+  <div class="titulo">CEITEC TRACKER</div>
+  <div class="subtitulo">ITA Tecnologia Educacional</div>
+
+  <!-- Tela de carregando -->
+  <div id="tela-carregando" class="card">
+    <div class="status-icon pulsar">⏳</div>
+    <div class="status-texto">Conectando...</div>
+  </div>
+
+  <!-- Tela de erro / sem token -->
+  <div id="tela-erro" class="card">
+    <div class="status-icon">❌</div>
+    <div class="status-texto">Link inválido</div>
+    <div class="status-detalhe">Peça ao coordenador um novo link de instalação.</div>
+  </div>
+
+  <!-- Tela de consentimento LGPD -->
+  <div id="tela-termo" class="card">
+    <div class="status-icon">📋</div>
+    <div class="status-texto">Termo de Consentimento</div>
+    <div class="nome-aluno" id="nome-aluno-termo"></div>
+    <div class="termo">
+      <h4>Autorização de Monitoramento de Localização</h4>
+      <p>Ao aceitar este termo, você autoriza o CEITEC / ITA Tecnologia Educacional a coletar e processar dados de localização GPS do seu dispositivo nos seguintes termos:</p>
+      <br>
+      <p><strong>O que coletamos:</strong> Latitude, longitude, velocidade e nível de bateria do dispositivo.</p>
+      <br>
+      <p><strong>Quando coletamos:</strong> Somente nos dias letivos (segunda a sexta), entre 06h00 e 18h00 (horário de Brasília).</p>
+      <br>
+      <p><strong>Quem vê os dados:</strong> Apenas o coordenador da escola. Professores não têm acesso.</p>
+      <br>
+      <p><strong>Por quanto tempo:</strong> Os dados são mantidos por 30 dias e depois anonimizados.</p>
+      <br>
+      <p><strong>Seus direitos (LGPD):</strong> Você pode solicitar exclusão dos seus dados entrando em contato com a coordenação.</p>
+    </div>
+    <button class="btn btn-primario" onclick="aceitarTermo()">Aceitar e Ativar Rastreamento</button>
+    <button class="btn btn-secundario" onclick="recusarTermo()">Não aceitar agora</button>
+  </div>
+
+  <!-- Tela principal do aluno -->
+  <div id="tela-principal" class="card">
+    <div class="status-icon" id="status-icon">📡</div>
+    <div class="nome-aluno" id="nome-aluno-principal"></div>
+    <div class="status-texto" id="status-texto">Iniciando...</div>
+    <div class="status-detalhe" id="status-detalhe">Aguardando GPS...</div>
+    <span class="badge badge-verde" id="badge-gps">GPS ativo</span>
+    <span class="badge badge-cinza" id="badge-envio" style="display:none">Enviando...</span>
+    <div class="bateria" id="bateria-info"></div>
+    <br>
+    <button class="btn btn-secundario" onclick="forcarEnvio()">Atualizar localização agora</button>
+    <div class="erro" id="msg-erro"></div>
+  </div>
+
+  <script>
+    // Lê parâmetros da URL
+    const params = new URLSearchParams(location.search);
+    const TOKEN = params.get('token');
+    const NOME = params.get('nome') || 'Aluno';
+    const API_BASE = '/api/mobile-tracker';
+
+    let watchId = null;
+    let ultimaPosicao = null;
+    let intervaloPing = null;
+    let db = null;
+
+    // ──────────────────────────────────────
+    // Inicialização
+    // ──────────────────────────────────────
+    async function init() {
+      if (!TOKEN) {
+        mostrarTela('tela-erro');
+        return;
+      }
+
+      // Registra Service Worker
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('/pwa/tracker/service-worker.js', { scope: '/pwa/tracker/' });
+        } catch (_) {}
+      }
+
+      // Abre IndexedDB para fila offline
+      db = await abrirIndexedDB();
+
+      // Verifica se consentimento já foi aceito
+      const estado = localStorage.getItem(`ceitec-tracker-consentiu-${TOKEN}`);
+      if (estado === 'sim') {
+        mostrarPrincipal();
+      } else {
+        document.getElementById('nome-aluno-termo').textContent = NOME;
+        mostrarTela('tela-termo');
+      }
+    }
+
+    // ──────────────────────────────────────
+    // Consentimento
+    // ──────────────────────────────────────
+    async function aceitarTermo() {
+      try {
+        await fetch(`${API_BASE}/consentimento`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: TOKEN }),
+        });
+        localStorage.setItem(`ceitec-tracker-consentiu-${TOKEN}`, 'sim');
+        mostrarPrincipal();
+      } catch (_) {
+        // Aceita offline e sincroniza depois
+        localStorage.setItem(`ceitec-tracker-consentiu-${TOKEN}`, 'sim');
+        mostrarPrincipal();
+      }
+    }
+
+    function recusarTermo() {
+      mostrarTela('tela-erro');
+      document.getElementById('tela-erro').querySelector('.status-texto').textContent = 'Monitoramento não ativado';
+      document.getElementById('tela-erro').querySelector('.status-detalhe').textContent = 'Para ativar, reabra o link e aceite o termo.';
+    }
+
+    // ──────────────────────────────────────
+    // Tela principal — ativa GPS
+    // ──────────────────────────────────────
+    function mostrarPrincipal() {
+      document.getElementById('nome-aluno-principal').textContent = NOME;
+      mostrarTela('tela-principal');
+      iniciarGPS();
+    }
+
+    function iniciarGPS() {
+      if (!navigator.geolocation) {
+        setStatus('❌', 'GPS não disponível', 'Seu dispositivo não suporta localização.', 'badge-vermelho');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(posicaoOk, erroPosicao, { enableHighAccuracy: true, timeout: 15000 });
+      watchId = navigator.geolocation.watchPosition(posicaoOk, erroPosicao, {
+        enableHighAccuracy: true,
+        maximumAge: 30000,
+        timeout: 20000,
+      });
+
+      // Pings adaptativos conforme velocidade e status
+      agendarPing();
+    }
+
+    async function posicaoOk(pos) {
+      ultimaPosicao = pos;
+      const { latitude, longitude, accuracy, speed, altitude } = pos.coords;
+      const velocidade_kmh = speed ? (speed * 3.6).toFixed(1) : 0;
+
+      setStatus('📍', 'CEITEC te vê!', `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`, 'badge-verde');
+      document.getElementById('badge-gps').textContent = `Precisão: ${accuracy.toFixed(0)}m`;
+
+      // Nível de bateria (quando suportado)
+      let bateria = null;
+      if (navigator.getBattery) {
+        try {
+          const bat = await navigator.getBattery();
+          bateria = Math.round(bat.level * 100);
+          document.getElementById('bateria-info').textContent = `Bateria: ${bateria}%`;
+        } catch (_) {}
+      }
+
+      await enviarLocalizacao({ latitude, longitude, precisao: accuracy, velocidade: velocidade_kmh, altitude, bateria });
+    }
+
+    function erroPosicao(err) {
+      const msgs = {
+        1: 'Permissão de localização negada. Ative nas configurações.',
+        2: 'Sinal GPS indisponível. Aguardando...',
+        3: 'Tempo esgotado. Tentando novamente...',
+      };
+      setStatus('⚠️', 'GPS com problema', msgs[err.code] || 'Erro desconhecido', 'badge-amarelo');
+    }
+
+    // ──────────────────────────────────────
+    // Envio adaptativo de localização
+    // ──────────────────────────────────────
+    function agendarPing() {
+      if (intervaloPing) clearTimeout(intervaloPing);
+
+      const velocidade = ultimaPosicao?.coords?.speed || 0;
+      const bateria = parseInt(document.getElementById('bateria-info').textContent.replace(/\D/g, '') || '100');
+
+      // Intervalo em ms baseado na situação
+      let intervalo = 5 * 60 * 1000; // 5 min parado
+      if (velocidade > 0.56) intervalo = 60 * 1000; // 1 min em movimento (>2km/h)
+      if (bateria < 15) intervalo = 15 * 60 * 1000; // 15 min com bateria baixa
+
+      intervaloPing = setTimeout(() => {
+        if (ultimaPosicao) posicaoOk(ultimaPosicao);
+        agendarPing();
+      }, intervalo);
+    }
+
+    async function enviarLocalizacao(dados) {
+      const payload = { token: TOKEN, ...dados };
+      document.getElementById('badge-envio').style.display = 'inline';
+
+      try {
+        const resp = await fetch(`${API_BASE}/localizar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        document.getElementById('badge-envio').style.display = 'none';
+        document.getElementById('msg-erro').textContent = '';
+
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.fora_horario) {
+            setStatus('🌙', 'Fora do horário', 'Monitoramento ativo só das 06h às 18h', 'badge-cinza');
+          }
+        }
+      } catch (_) {
+        // Sem internet — salva no IndexedDB para Background Sync
+        document.getElementById('badge-envio').style.display = 'none';
+        document.getElementById('msg-erro').textContent = 'Offline — enviando quando reconectar';
+        await salvarPendente(payload);
+      }
+    }
+
+    function forcarEnvio() {
+      if (ultimaPosicao) posicaoOk(ultimaPosicao);
+      else navigator.geolocation.getCurrentPosition(posicaoOk, erroPosicao, { enableHighAccuracy: true });
+    }
+
+    // ──────────────────────────────────────
+    // IndexedDB — fila offline
+    // ──────────────────────────────────────
+    function abrirIndexedDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('ceitec-tracker', 1);
+        req.onupgradeneeded = e => e.target.result.createObjectStore('pendentes', { keyPath: 'id', autoIncrement: true });
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    function salvarPendente(payload) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('pendentes', 'readwrite');
+        tx.objectStore('pendentes').add(payload);
+        tx.oncomplete = resolve;
+        tx.onerror = reject;
+        // Pede ao service worker para sincronizar quando voltar a internet
+        navigator.serviceWorker.ready.then(sw => {
+          sw.active?.postMessage({ tipo: 'registrar-sync' });
+        });
+      });
+    }
+
+    // ──────────────────────────────────────
+    // Utilitários de UI
+    // ──────────────────────────────────────
+    function mostrarTela(id) {
+      ['tela-carregando', 'tela-erro', 'tela-termo', 'tela-principal'].forEach(t => {
+        document.getElementById(t).style.display = t === id ? 'block' : 'none';
+      });
+    }
+
+    function setStatus(icon, texto, detalhe, badgeClass) {
+      document.getElementById('status-icon').textContent = icon;
+      document.getElementById('status-texto').textContent = texto;
+      document.getElementById('status-detalhe').textContent = detalhe;
+      const badge = document.getElementById('badge-gps');
+      badge.className = `badge ${badgeClass}`;
+    }
+
+    // Inicia tudo
+    init();
+  </script>
+</body>
+</html>

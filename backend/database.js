@@ -222,6 +222,63 @@ async function initDatabase() {
       concluida_em TIMESTAMP,
       criado_em TIMESTAMP DEFAULT NOW()
     )`,
+
+    /* ========== MOBILE TRACKER ========== */
+
+    /* Perfil estendido do aluno para rastreamento GPS */
+    `CREATE TABLE IF NOT EXISTS tracker_perfis (
+      id SERIAL PRIMARY KEY,
+      aluno_id INTEGER UNIQUE NOT NULL,
+      escola_id INTEGER NOT NULL,
+      endereco_residencia TEXT,
+      bairro TEXT DEFAULT '',
+      referencia_local TEXT DEFAULT '',
+      lat_casa DECIMAL(10,7),
+      lng_casa DECIMAL(10,7),
+      meio_transporte TEXT DEFAULT 'a_pe',
+      tempo_medio_trajeto_minutos INTEGER DEFAULT 30,
+      distancia_km DECIMAL(5,2),
+      tem_celular INTEGER DEFAULT 1,
+      modelo_celular TEXT DEFAULT '',
+      numero_celular TEXT DEFAULT '',
+      token_pwa TEXT UNIQUE,
+      consentimento_aceito INTEGER DEFAULT 0,
+      consentimento_em TIMESTAMP,
+      criado_em TIMESTAMP DEFAULT NOW(),
+      atualizado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Histórico de localizações GPS (séries temporais) */
+    `CREATE TABLE IF NOT EXISTS tracker_localizacoes (
+      id SERIAL PRIMARY KEY,
+      aluno_id INTEGER NOT NULL,
+      escola_id INTEGER NOT NULL,
+      timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
+      latitude DECIMAL(10,7) NOT NULL,
+      longitude DECIMAL(10,7) NOT NULL,
+      precisao_metros FLOAT DEFAULT 0,
+      velocidade_kmh FLOAT,
+      altitude FLOAT,
+      status TEXT DEFAULT 'desconhecido',
+      bateria_percent INTEGER,
+      celular_online INTEGER DEFAULT 1
+    )`,
+
+    /* Snapshot do estado atual de cada aluno (atualizado em tempo real) */
+    `CREATE TABLE IF NOT EXISTS tracker_status_atual (
+      id SERIAL PRIMARY KEY,
+      aluno_id INTEGER UNIQUE NOT NULL,
+      escola_id INTEGER NOT NULL,
+      status_atual TEXT DEFAULT 'offline',
+      ultima_atualizacao TIMESTAMP,
+      ultima_lat DECIMAL(10,7),
+      ultima_lng DECIMAL(10,7),
+      bateria_atual INTEGER,
+      chegou_escola_hoje INTEGER DEFAULT 0,
+      horario_chegada TIMESTAMP,
+      saiu_escola INTEGER DEFAULT 0,
+      horario_saida TIMESTAMP
+    )`,
   ];
 
   for (const sql of tabelas) {
