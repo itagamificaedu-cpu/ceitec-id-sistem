@@ -184,7 +184,7 @@ export default function Navbar() {
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
-            { onClick: abrirItagame,  label: 'ItagGame — Painel do Professor', icon: '🎮' },
+            { path: '/itagame',       label: 'ItagGame — Painel do Professor', icon: '🎮' },
             { onClick: abrirCorretor, label: 'Corretor de Provas',             icon: '✅' },
           ]
         }
