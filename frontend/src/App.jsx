@@ -70,8 +70,8 @@ export default function App() {
         <Route path="/alunos" element={<Admin><Alunos /></Admin>} />
         <Route path="/alunos/novo" element={<Admin><CadastroAluno /></Admin>} />
         <Route path="/alunos/:id/editar" element={<Admin><CadastroAluno /></Admin>} />
-        <Route path="/alunos/:id/carteirinha" element={<Admin><Carteirinha /></Admin>} />
-        <Route path="/alunos/:id/perfil" element={<Admin><PerfilAluno /></Admin>} />
+        <Route path="/alunos/:id/carteirinha" element={<P><Carteirinha /></P>} />
+        <Route path="/alunos/:id/perfil" element={<P><PerfilAluno /></P>} />
         <Route path="/scanner" element={<P><Scanner /></P>} />
         <Route path="/almoco/scanner" element={<Admin><ScannerAlmoco /></Admin>} />
         <Route path="/almoco/relatorio" element={<Admin><RelatorioAlmoco /></Admin>} />
