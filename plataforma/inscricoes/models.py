@@ -46,7 +46,7 @@ class Inscricao(models.Model):
     data_pagamento      = models.DateTimeField(null=True, blank=True)
 
     # ─── Pagamento ────────────────────────────────────────────────────────────
-    valor_pago          = models.DecimalField(max_digits=8, decimal_places=2, default=1.00)
+    valor_pago          = models.DecimalField(max_digits=8, decimal_places=2, default=199.00)
     id_transacao_pag    = models.CharField(max_length=200, blank=True)
     referencia_pag      = models.CharField(max_length=200, blank=True)
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 
 const WA_NUMERO = '5588988411890'
@@ -22,7 +22,44 @@ function InfoCard({ icon, label, valor, cor }) {
 
 export default function CursoFerias() {
   const [copiado, setCopiado] = useState(false)
-  const [abaPreview, setAbaPreview] = useState('preview')
+  const [abaPreview, setAbaPreview] = useState('inscritos')
+  const [inscritos, setInscritos] = useState([])
+  const [statsInscritos, setStatsInscritos] = useState(null)
+  const [loadingInscritos, setLoadingInscritos] = useState(false)
+  const [marcandoPago, setMarcandoPago] = useState(null)
+  const [filtroStatus, setFiltroStatus] = useState('todos')
+
+  async function carregarInscritos() {
+    setLoadingInscritos(true)
+    try {
+      const res = await fetch('/inscricao/api/inscricoes/?chave=gamificaedu_secreto_2026')
+      const data = await res.json()
+      setInscritos(data.inscricoes || [])
+      setStatsInscritos(data.stats || null)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingInscritos(false)
+    }
+  }
+
+  async function marcarComoPago(id) {
+    setMarcandoPago(id)
+    try {
+      await fetch(`/inscricao/api/inscricao/${id}/pagar/?chave=gamificaedu_secreto_2026`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      await carregarInscritos()
+    } catch (e) {
+      console.error(e)
+    }
+    setMarcandoPago(null)
+  }
+
+  useEffect(() => {
+    if (abaPreview === 'inscritos') carregarInscritos()
+  }, [abaPreview])
 
   function copiarLink() {
     navigator.clipboard.writeText(URL_LANDING).then(() => {
@@ -92,6 +129,7 @@ export default function CursoFerias() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="flex border-b border-gray-100">
               {[
+                { id: 'inscritos', label: '👥 Inscritos' },
                 { id: 'preview', label: '👁️ Preview da Página' },
                 { id: 'info', label: '📋 Informações do Curso' },
                 { id: 'compartilhar', label: '📤 Compartilhar' },
@@ -109,6 +147,150 @@ export default function CursoFerias() {
                 </button>
               ))}
             </div>
+
+            {/* Aba Inscritos */}
+            {abaPreview === 'inscritos' && (
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <h3 className="font-semibold text-textMain text-base">👥 Pessoas Inscritas</h3>
+                  <button
+                    onClick={carregarInscritos}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    🔄 Atualizar
+                  </button>
+                </div>
+
+                {/* Cards de resumo */}
+                {statsInscritos && (
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-black text-blue-600">{statsInscritos.total}</p>
+                      <p className="text-xs text-blue-500 font-semibold mt-0.5">Total</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-black text-green-600">{statsInscritos.pagas}</p>
+                      <p className="text-xs text-green-500 font-semibold mt-0.5">Confirmadas</p>
+                    </div>
+                    <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-black text-orange-500">{statsInscritos.pendentes}</p>
+                      <p className="text-xs text-orange-400 font-semibold mt-0.5">Aguardando</p>
+                    </div>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-black text-red-500">{statsInscritos.vagas_restantes}</p>
+                      <p className="text-xs text-red-400 font-semibold mt-0.5">Vagas Restantes</p>
+                    </div>
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                      <p className="text-xl font-black text-emerald-600">R$ {Number(statsInscritos.receita).toFixed(0)}</p>
+                      <p className="text-xs text-emerald-500 font-semibold mt-0.5">Receita</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Filtro */}
+                <div className="flex gap-2 mb-4 flex-wrap">
+                  {[
+                    { v: 'todos', label: 'Todos' },
+                    { v: 'pago', label: '✅ Confirmados' },
+                    { v: 'aguardando_pagamento', label: '⏳ Aguardando' },
+                    { v: 'cancelado', label: '❌ Cancelados' },
+                  ].map(f => (
+                    <button
+                      key={f.v}
+                      onClick={() => setFiltroStatus(f.v)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                        filtroStatus === f.v
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-primary hover:text-primary'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                {loadingInscritos ? (
+                  <div className="text-center py-12 text-gray-400">Carregando...</div>
+                ) : inscritos.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <p className="text-4xl mb-3">📭</p>
+                    <p className="text-sm">Nenhuma inscrição ainda.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-gray-100">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 text-left">
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Código</th>
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aluno</th>
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Escola</th>
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Turno</th>
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Data</th>
+                          <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {inscritos
+                          .filter(i => filtroStatus === 'todos' || i.status === filtroStatus || (filtroStatus === 'pago' && i.status === 'certificado_emitido'))
+                          .map(inscrito => (
+                          <tr key={inscrito.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3">
+                              <span className="font-mono text-xs font-bold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded">
+                                {inscrito.codigo}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-gray-800 leading-tight">{inscrito.nome}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">{inscrito.responsavel} · {inscrito.email}</p>
+                            </td>
+                            <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                              {inscrito.escola}<br/>
+                              <span className="text-xs text-gray-400">{inscrito.serie}</span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{inscrito.turno}</td>
+                            <td className="px-4 py-3">
+                              {inscrito.status === 'pago' || inscrito.status === 'certificado_emitido' ? (
+                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">✅ Pago</span>
+                              ) : inscrito.status === 'aguardando_pagamento' ? (
+                                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">⏳ Aguardando</span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded-full">❌ {inscrito.status_display}</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-400 hidden md:table-cell">{inscrito.data_inscricao}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5">
+                                <a
+                                  href={`https://wa.me/55${inscrito.telefone.replace(/\D/g, '')}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 rounded-lg text-white text-xs"
+                                  style={{ backgroundColor: '#25D366' }}
+                                  title="WhatsApp do responsável"
+                                >
+                                  📱
+                                </a>
+                                {inscrito.status === 'aguardando_pagamento' && (
+                                  <button
+                                    onClick={() => marcarComoPago(inscrito.id)}
+                                    disabled={marcandoPago === inscrito.id}
+                                    className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
+                                    title="Marcar como pago manualmente"
+                                  >
+                                    {marcandoPago === inscrito.id ? '...' : '✓ Pago'}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Aba Preview */}
             {abaPreview === 'preview' && (
