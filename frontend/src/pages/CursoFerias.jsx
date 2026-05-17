@@ -369,7 +369,7 @@ export default function CursoFerias() {
                   </button>
                 </div>
                 <iframe
-                  src={URL_INSCRICAO}
+                  src={URL_LANDING}
                   title="Página de Inscrição — Curso de Férias Maker"
                   className="w-full"
                   style={{ height: '700px', border: 'none' }}
