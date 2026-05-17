@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 
-const WA_NUMERO = '5588888411890'
+const WA_NUMERO = '5588988411890'
 const WA_MSG = encodeURIComponent('Olá! Quero garantir minha vaga no curso Alunos Maker Não Tiram Férias! Pode me enviar mais informações?')
 const WA_LINK = `https://wa.me/${WA_NUMERO}?text=${WA_MSG}`
 
