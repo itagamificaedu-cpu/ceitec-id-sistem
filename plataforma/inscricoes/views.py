@@ -21,6 +21,29 @@ def _vagas_usadas():
     return Inscricao.objects.filter(status__in=['pago', 'certificado_emitido']).count()
 
 
+DIAS_PROGRAMA = [
+    {'dia': 'Dia 1', 'icon': '🔬', 'titulo': 'Mundo Maker & Eletrônica Básica',
+     'desc': 'Componentes, circuitos, lei de Ohm e primeira montagem'},
+    {'dia': 'Dia 2', 'icon': '⚡', 'titulo': 'Arduino na Prática',
+     'desc': 'Programação em blocos e C++ — semáforo, alarme e sensor'},
+    {'dia': 'Dia 3', 'icon': '🤖', 'titulo': 'Robótica e Movimento',
+     'desc': 'Servo motores, sensores ultrassônicos e robô autônomo'},
+    {'dia': 'Dia 4', 'icon': '📡', 'titulo': 'ESP32 & Controle Sem Fio',
+     'desc': 'Wi-Fi, Bluetooth e app no celular para controlar o projeto'},
+    {'dia': 'Dia 5', 'icon': '🏆', 'titulo': 'Demo Day — Mostra Maker',
+     'desc': 'Apresentação do projeto final para família e convidados'},
+]
+
+
+def landing_page(request):
+    vagas_disp = VAGAS_TOTAL - _vagas_usadas()
+    return render(request, 'inscricoes/landing.html', {
+        'vagas_disponiveis': vagas_disp,
+        'vagas_total': VAGAS_TOTAL,
+        'dias_programa': DIAS_PROGRAMA,
+    })
+
+
 def formulario_inscricao(request):
     if _vagas_usadas() >= VAGAS_TOTAL:
         return redirect('inscricoes:lista_espera')

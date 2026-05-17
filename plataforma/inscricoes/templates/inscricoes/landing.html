@@ -1,0 +1,171 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}Alunos Maker Não Tiram Férias — ITA Tecnologia Educacional{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+
+  <!-- ── HERO ── -->
+  <div style="text-align:center;padding-top:8px;margin-bottom:48px">
+    <div class="badge" style="margin-bottom:20px;display:inline-flex">
+      <span class="badge-dot"></span>
+      Inscrições Abertas · Turma Julho 2026 · Itapipoca, CE
+    </div>
+
+    <h1 class="page-title" style="font-size:clamp(34px,5vw,54px);margin-bottom:16px">
+      ALUNOS MAKER<br><span style="color:var(--orange)">NÃO TIRAM FÉRIAS!</span>
+    </h1>
+
+    <p class="page-sub" style="max-width:540px;margin:0 auto 32px;font-size:17px;line-height:1.7">
+      5 dias de imersão em <strong>Robótica, Arduino e Eletrônica</strong> para jovens de 11 a 17 anos.
+      Projeto real, certificado impresso e portfólio no fim!
+    </p>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:440px;margin:0 auto 32px">
+      <div style="background:#fff;border:1.5px solid var(--orange-b);border-radius:var(--r2);padding:16px 12px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:var(--orange);line-height:1">5</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">dias de imersão</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--orange-b);border-radius:var(--r2);padding:16px 12px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:var(--orange);line-height:1">30</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">vagas no total</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--orange-b);border-radius:var(--r2);padding:16px 12px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:var(--orange);line-height:1">40h</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">de carga horária</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--orange-b);border-radius:var(--r2);padding:16px 12px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:var(--orange);line-height:1">Jul/26</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">início do curso</div>
+      </div>
+    </div>
+
+    <!-- Vagas -->
+    <div style="margin-bottom:24px">
+      {% if vagas_disponiveis > 0 %}
+      <div style="display:inline-flex;align-items:center;gap:10px;background:var(--orange-bg);border:1.5px solid var(--orange-b);border-radius:12px;padding:10px 20px;font-size:14px;color:var(--text2);margin-bottom:20px">
+        <span style="font-size:22px;font-weight:900;color:var(--orange)">{{ vagas_disponiveis }}</span>
+        vagas disponíveis de {{ vagas_total }}
+      </div>
+      {% else %}
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);border-radius:12px;padding:10px 20px;font-size:14px;color:#ef4444;margin-bottom:20px">
+        ❌ Vagas esgotadas
+      </div>
+      {% endif %}
+    </div>
+
+    {% if vagas_disponiveis > 0 %}
+    <a href="/inscricao/formulario/" class="btn btn-primary btn-lg"
+       style="font-size:17px;padding:16px 48px;display:inline-flex;gap:10px;box-shadow:0 8px 24px rgba(245,166,35,.35)">
+      🚀 QUERO ME INSCREVER
+    </a>
+    <p style="font-size:13px;color:var(--muted);margin-top:12px">
+      Leva menos de 3 minutos · Pagamento via PIX, Cartão ou Boleto
+    </p>
+    {% else %}
+    <a href="/inscricao/lista-espera/" class="btn btn-ghost btn-lg" style="font-size:16px;padding:14px 40px">
+      📋 Entrar na Lista de Espera
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- ── PROGRAMA DO CURSO ── -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px;letter-spacing:.3px">
+      📚 PROGRAMA DO CURSO
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      {% for item in dias_programa %}
+      <div style="display:flex;align-items:center;gap:14px;background:var(--bg);border-radius:var(--r);padding:14px 16px">
+        <span style="font-size:24px">{{ item.icon }}</span>
+        <div>
+          <div style="font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:1px">{{ item.dia }}</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">{{ item.titulo }}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">{{ item.desc }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── O QUE ESTÁ INCLUÍDO ── -->
+  <div class="card card-green" style="margin-bottom:20px">
+    <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:16px">✅ O QUE ESTÁ INCLUÍDO</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      {% for item in "5 dias de imersão prática (40h+),Todos os materiais e equipamentos,Apostila digital completa,Certificado impresso pela ITA,Acesso ao Clube de Robótica,Registro fotográfico do projeto,Participação no Demo Day,Suporte via WhatsApp"|split:"," %}
+      <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2)">
+        <span style="color:var(--green);font-weight:800;flex-shrink:0;margin-top:1px">✓</span> {{ item }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── PREÇO ── -->
+  <div class="card card-orange" style="margin-bottom:20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Investimento</div>
+        <div style="font-size:13px;color:var(--muted);text-decoration:line-through">De R$ 350,00</div>
+        <div style="display:flex;align-items:baseline;gap:4px;line-height:1;margin:4px 0 4px">
+          <span style="font-size:20px;font-weight:900;color:var(--orange);margin-top:4px">R$</span>
+          <span style="font-size:60px;font-weight:900;color:var(--orange)">199</span>
+        </div>
+        <div style="font-size:13px;color:var(--text2)">ou 3× de R$ 66,33 sem juros no cartão</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px">⚡ PIX — aprovação imediata</div>
+        <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px">💳 Cartão em até 3× sem juros</div>
+        <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px">📄 Boleto bancário</div>
+        <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px">🔒 Processado pelo Mercado Pago</div>
+      </div>
+    </div>
+
+    {% if vagas_disponiveis > 0 %}
+    <a href="/inscricao/formulario/" class="btn btn-primary btn-lg btn-full" style="margin-top:20px;font-size:16px">
+      🚀 Garantir Minha Vaga — R$ 199
+    </a>
+    {% else %}
+    <a href="/inscricao/lista-espera/" class="btn btn-ghost btn-lg btn-full" style="margin-top:20px">
+      📋 Entrar na Lista de Espera
+    </a>
+    {% endif %}
+
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px">
+      Inscrições abertas até 30 de junho de 2026 ou enquanto houver vagas
+    </p>
+  </div>
+
+  <!-- ── QUEM PODE PARTICIPAR ── -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:16px">🎯 QUEM PODE PARTICIPAR</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2)">
+        <span style="font-size:20px">🧒</span>
+        <span><strong style="color:var(--text)">Idade:</strong> jovens de 11 a 17 anos (6º ano do Ensino Fundamental ao 3º ano do Médio)</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2)">
+        <span style="font-size:20px">🔰</span>
+        <span><strong style="color:var(--text)">Experiência:</strong> do zero — aceitamos iniciantes totais! O curso começa do básico.</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2)">
+        <span style="font-size:20px">📍</span>
+        <span><strong style="color:var(--text)">Local:</strong> Laboratório CEITEC — Itapipoca, Ceará. Endereço enviado após confirmação do pagamento.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTATO ── -->
+  <div style="text-align:center;padding:24px 0">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:16px">Ficou com dúvida? Fale com a gente!</p>
+    <a href="https://wa.me/5588988411890?text=Ol%C3%A1!%20Tenho%20d%C3%BAvidas%20sobre%20o%20Curso%20de%20F%C3%A9rias%20Maker."
+       target="_blank"
+       style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;font-size:15px;font-weight:700;padding:13px 28px;border-radius:var(--r);text-decoration:none">
+      📱 Falar pelo WhatsApp
+    </a>
+    <p style="font-size:12px;color:var(--muted);margin-top:16px">
+      ITA Tecnologia Educacional · itatecnologiaeducacional.tech
+    </p>
+  </div>
+
+</div>
+{% endblock %}
