@@ -14,6 +14,7 @@ from .utils.certificado import gerar_certificado_pdf, gerar_certificado_svg
 from .utils.email_utils import enviar_email_confirmacao, enviar_certificado_email
 
 VAGAS_TOTAL = 30
+CHAVE_API_INTERNA = 'gamificaedu_secreto_2026'
 
 
 def _vagas_usadas():
@@ -261,6 +262,69 @@ def emitir_certificado_admin(request, codigo):
         return JsonResponse({'status': 'ok', 'mensagem': 'Certificado emitido e enviado por e-mail.'})
     except Exception as e:
         return JsonResponse({'erro': str(e)}, status=500)
+
+
+def api_lista_inscricoes(request):
+    """API JSON consumida pelo painel React — lista todas as inscrições."""
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    inscricoes = Inscricao.objects.all().order_by('-data_inscricao')
+    dados = []
+    for i in inscricoes:
+        dados.append({
+            'id': str(i.codigo_inscricao),
+            'codigo': i.codigo_curto(),
+            'nome': i.nome_completo,
+            'escola': i.escola,
+            'serie': i.serie,
+            'turno': i.get_turno_display(),
+            'responsavel': i.nome_responsavel,
+            'telefone': i.telefone_formatado(),
+            'email': i.email,
+            'status': i.status,
+            'status_display': i.get_status_display(),
+            'data_inscricao': i.data_inscricao.strftime('%d/%m/%Y %H:%M'),
+            'valor': float(i.valor_pago),
+            'certificado_gerado': i.certificado_gerado,
+        })
+
+    pagas = sum(1 for i in dados if i['status'] in ('pago', 'certificado_emitido'))
+    pendentes = sum(1 for i in dados if i['status'] == 'aguardando_pagamento')
+    receita = sum(i['valor'] for i in dados if i['status'] in ('pago', 'certificado_emitido'))
+
+    return JsonResponse({
+        'inscricoes': dados,
+        'stats': {
+            'total': len(dados),
+            'pagas': pagas,
+            'pendentes': pendentes,
+            'vagas_restantes': VAGAS_TOTAL - pagas,
+            'receita': receita,
+        }
+    })
+
+
+@csrf_exempt
+@require_POST
+def api_marcar_pago_react(request, codigo):
+    """Marca inscrição como paga via painel React — usa chave interna."""
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    inscricao = get_object_or_404(Inscricao, codigo_inscricao=codigo)
+    if inscricao.status not in ('pago', 'certificado_emitido'):
+        inscricao.status = 'pago'
+        inscricao.data_pagamento = timezone.now()
+        inscricao.referencia_pag = 'MANUAL-PAINEL'
+        inscricao.save()
+        try:
+            enviar_email_confirmacao(inscricao)
+        except Exception:
+            pass
+    return JsonResponse({'status': 'ok', 'nome': inscricao.nome_completo})
 
 
 @staff_member_required
