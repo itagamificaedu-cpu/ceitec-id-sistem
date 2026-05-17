@@ -1,0 +1,439 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}Inscrição — Alunos Maker Não Tiram Férias{% endblock %}
+
+{% block extra_css %}
+<style>
+.progress-bar{display:flex;align-items:center;gap:0;margin-bottom:40px;position:relative}
+.progress-bar::before{content:'';position:absolute;top:18px;left:18px;right:18px;height:2px;background:rgba(255,255,255,.08);z-index:0}
+.progress-fill{position:absolute;top:18px;left:18px;height:2px;background:var(--orange);z-index:1;transition:width .4s ease}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;position:relative;z-index:2;cursor:default}
+.prog-circle{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);transition:all .3s}
+.prog-step.ativo .prog-circle{border-color:var(--orange);background:var(--orange);color:#0A0E1A}
+.prog-step.completo .prog-circle{border-color:var(--green);background:var(--green);color:#0A0E1A}
+.prog-label{font-size:11px;color:var(--muted);font-weight:500;text-align:center;white-space:nowrap}
+.prog-step.ativo .prog-label{color:var(--orange);font-weight:600}
+.prog-step.completo .prog-label{color:var(--green)}
+
+.etapa{display:none}
+.etapa.ativa{display:block;animation:fadeSlide .3s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+.revisao-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rev-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px 14px}
+.rev-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.rev-valor{font-size:14px;color:var(--text);font-weight:500}
+
+.vagas-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:8px 14px;font-size:13px;margin-bottom:24px}
+.vagas-num{font-family:var(--fh);font-size:22px;color:var(--orange);line-height:1}
+
+.django-errors{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r);padding:14px 18px;margin-bottom:20px}
+.django-errors p{font-size:13px;color:#fca5a5;margin-bottom:4px}
+.django-errors p:last-child{margin-bottom:0}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+
+  <div class="badge" style="margin-bottom:20px">
+    <span class="badge-dot"></span>
+    Inscrições Abertas · Turma Julho 2026
+  </div>
+  <h1 class="page-title">GARANTA <span style="color:var(--orange)">SUA</span><br>VAGA AGORA.</h1>
+  <p class="page-sub">Preencha o formulário abaixo em 3 etapas rápidas. Leva menos de 3 minutos.</p>
+
+  <div class="vagas-badge">
+    <span class="vagas-num">{{ vagas_disponiveis }}</span>
+    <span style="color:var(--text2)">vagas disponíveis de {{ vagas_total }}</span>
+  </div>
+
+  {% if form.errors %}
+  <div class="django-errors">
+    <p style="font-weight:600;color:#f87171;margin-bottom:8px">⚠️ Corrija os campos abaixo:</p>
+    {% for campo, erros in form.errors.items %}
+      {% for erro in erros %}
+        <p>• {{ erro }}</p>
+      {% endfor %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    <div class="prog-step ativo" id="ps1">
+      <div class="prog-circle">1</div>
+      <span class="prog-label">Dados do Aluno</span>
+    </div>
+    <div class="prog-step" id="ps2">
+      <div class="prog-circle">2</div>
+      <span class="prog-label">Responsável</span>
+    </div>
+    <div class="prog-step" id="ps3">
+      <div class="prog-circle">3</div>
+      <span class="prog-label">Revisão</span>
+    </div>
+  </div>
+
+  <form method="post" id="formInscricao" novalidate>
+    {% csrf_token %}
+
+    <!-- ══ ETAPA 1 ══ -->
+    <div class="etapa ativa" id="etapa1">
+      <div class="card card-orange" style="margin-bottom:20px">
+        <div class="sec-title">👤 Dados do Aluno</div>
+        <div class="sec-sub">Informações pessoais do participante</div>
+
+        <div class="form-group">
+          <label class="form-label">Nome completo<span class="req">*</span></label>
+          <input type="text" name="nome_completo" class="form-input" id="id_nome_completo"
+                 placeholder="Ex: João Pedro Silva" value="{{ form.nome_completo.value|default:'' }}"
+                 autocomplete="name">
+          <div class="form-error" id="err_nome_completo">Informe o nome completo (nome e sobrenome).</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Data de nascimento<span class="req">*</span></label>
+          <input type="date" name="data_nascimento" class="form-input" id="id_data_nascimento"
+                 value="{{ form.data_nascimento.value|default:'' }}"
+                 min="2005-01-01" max="2015-12-31">
+          <div class="form-error" id="err_data_nascimento">Aluno deve ter entre 11 e 17 anos.</div>
+          <div class="form-hint" id="hint_idade"></div>
+        </div>
+
+        <div class="grid2">
+          <div class="form-group">
+            <label class="form-label">Escola onde estuda<span class="req">*</span></label>
+            <input type="text" name="escola" class="form-input" id="id_escola"
+                   placeholder="Nome da escola" value="{{ form.escola.value|default:'' }}">
+            <div class="form-error" id="err_escola">Campo obrigatório.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Série / Ano<span class="req">*</span></label>
+            <select name="serie" class="form-input" id="id_serie">
+              <option value="">Selecione...</option>
+              {% for s in "6º Ano,7º Ano,8º Ano,9º Ano,1º Médio,2º Médio,3º Médio"|split:"," %}
+              <option value="{{ s }}" {% if form.serie.value == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-error" id="err_serie">Selecione a série.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nível de experiência com tecnologia<span class="req">*</span></label>
+          <div class="radio-grid">
+            {% for val, label in form.fields.nivel_experiencia.choices %}
+            <label class="radio-card">
+              <input type="radio" name="nivel_experiencia" value="{{ val }}"
+                     {% if form.nivel_experiencia.value == val %}checked{% endif %}>
+              <div class="radio-card-inner">
+                <span class="radio-card-icon">
+                  {% if val == 'iniciante' %}🔬{% elif val == 'basico' %}⚡{% else %}🚀{% endif %}
+                </span>
+                <div><div class="radio-card-label">{{ label }}</div></div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          <div class="form-error" id="err_nivel">Selecione seu nível.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Turno preferido<span class="req">*</span></label>
+          <div class="radio-grid cols2">
+            {% for val, label in form.fields.turno.choices %}
+            <label class="radio-card">
+              <input type="radio" name="turno" value="{{ val }}"
+                     {% if form.turno.value == val %}checked{% endif %}>
+              <div class="radio-card-inner">
+                <span class="radio-card-icon">{% if val == 'manha' %}🌅{% else %}☀️{% endif %}</span>
+                <div><div class="radio-card-label">{{ label }}</div></div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          <div class="form-error" id="err_turno">Selecione o turno.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end">
+        <button type="button" class="btn btn-primary btn-lg" onclick="irParaEtapa(2)">
+          Próximo — Dados do Responsável →
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ ETAPA 2 ══ -->
+    <div class="etapa" id="etapa2">
+      <div class="card card-orange" style="margin-bottom:20px">
+        <div class="sec-title">👨‍👩‍👧 Dados do Responsável</div>
+        <div class="sec-sub">Quem autoriza e recebe as confirmações</div>
+
+        <div class="form-group">
+          <label class="form-label">Nome completo do responsável<span class="req">*</span></label>
+          <input type="text" name="nome_responsavel" class="form-input" id="id_nome_responsavel"
+                 placeholder="Ex: Maria das Graças Silva" value="{{ form.nome_responsavel.value|default:'' }}"
+                 autocomplete="name">
+          <div class="form-error" id="err_nome_responsavel">Informe o nome completo.</div>
+        </div>
+
+        <div class="grid2">
+          <div class="form-group">
+            <label class="form-label">Telefone / WhatsApp<span class="req">*</span></label>
+            <input type="tel" name="telefone" class="form-input" id="id_telefone"
+                   placeholder="(85) 99999-9999" value="{{ form.telefone.value|default:'' }}"
+                   maxlength="16" autocomplete="tel">
+            <div class="form-error" id="err_telefone">Telefone inválido.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPF do responsável<span class="req">*</span></label>
+            <input type="text" name="cpf_responsavel" class="form-input" id="id_cpf_responsavel"
+                   placeholder="000.000.000-00" value="{{ form.cpf_responsavel.value|default:'' }}"
+                   maxlength="14" autocomplete="off">
+            <div class="form-error" id="err_cpf">CPF inválido.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">E-mail do responsável<span class="req">*</span></label>
+          <input type="email" name="email" class="form-input" id="id_email"
+                 placeholder="responsavel@email.com" value="{{ form.email.value|default:'' }}"
+                 autocomplete="email">
+          <div class="form-error" id="err_email">E-mail inválido.</div>
+          <div class="form-hint">A confirmação de pagamento será enviada para este e-mail.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;gap:12px">
+        <button type="button" class="btn btn-ghost" onclick="irParaEtapa(1)">← Voltar</button>
+        <button type="button" class="btn btn-primary btn-lg" onclick="irParaEtapa(3)">
+          Próximo — Revisar →
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ ETAPA 3 ══ -->
+    <div class="etapa" id="etapa3">
+      <div class="card card-orange" style="margin-bottom:20px">
+        <div class="sec-title">✅ Revisão dos Dados</div>
+        <div class="sec-sub">Confira tudo antes de ir para o pagamento</div>
+        <div class="revisao-grid" id="revisaoGrid"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="sec-title" style="margin-bottom:16px">📋 Termos e Autorizações</div>
+
+        <div class="form-group">
+          <label class="checkbox-wrap">
+            <input type="checkbox" name="aceita_termos" id="id_aceita_termos"
+                   {% if form.aceita_termos.value %}checked{% endif %}>
+            <span class="checkbox-label">
+              <strong>Li e aceito os termos de participação</strong> do Curso de Férias Maker CEITEC.
+              O valor pago não é reembolsável em caso de desistência com menos de 48h de antecedência.
+              <span class="req">*</span>
+            </span>
+          </label>
+          <div class="form-error" id="err_termos">Você precisa aceitar os termos para continuar.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-wrap">
+            <input type="checkbox" name="autoriza_imagem" id="id_autoriza_imagem"
+                   {% if form.autoriza_imagem.value %}checked{% endif %}>
+            <span class="checkbox-label">
+              Autorizo o uso de imagens e vídeos do aluno nas redes sociais do CEITEC
+              e ITA Tecnologia Educacional (opcional).
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;border-color:var(--orange-b);background:rgba(245,166,35,.04)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:13px;color:var(--muted);text-decoration:line-through">De R$ 350,00</div>
+            <div style="font-family:var(--fh);font-size:48px;color:var(--orange);line-height:1">
+              <sup style="font-size:20px;vertical-align:top;margin-top:10px">R$</sup>199
+            </div>
+            <div style="font-size:13px;color:var(--text2)">ou 3× de R$ 66,33 sem juros</div>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+            {% for item in "5 dias de imersão prática,Todos os materiais inclusos,Apostila digital,Certificado impresso,Clube de Robótica"|split:"," %}
+            <li style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px">
+              <span style="color:var(--green);font-weight:700">✓</span> {{ item }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <button type="button" class="btn btn-ghost" onclick="irParaEtapa(2)">← Voltar</button>
+        <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+          🚀 Ir para Pagamento — R$199
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:24px">
+    🔒 Seus dados são protegidos · Pagamento processado pelo PagSeguro
+  </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let etapaAtual = 1;
+
+{% if form.errors %}
+(function() {
+  const errosEt2 = ['nome_responsavel','telefone','email','cpf_responsavel'];
+  const erros = {{ form.errors|safe }};
+  const keys = Object.keys(erros);
+  etapaAtual = keys.some(k => errosEt2.includes(k)) ? 2 : 1;
+  mostrarEtapa(etapaAtual);
+})();
+{% endif %}
+
+function mostrarEtapa(n) {
+  document.querySelectorAll('.etapa').forEach(e => e.classList.remove('ativa'));
+  document.getElementById('etapa' + n).classList.add('ativa');
+  for (let i = 1; i <= 3; i++) {
+    const ps = document.getElementById('ps' + i);
+    ps.classList.remove('ativo','completo');
+    if (i < n) ps.classList.add('completo');
+    if (i === n) ps.classList.add('ativo');
+  }
+  document.getElementById('progressFill').style.width = ((n-1)/2*100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function irParaEtapa(destino) {
+  if (destino > etapaAtual && !validarEtapa(etapaAtual)) return;
+  if (destino === 3) preencherRevisao();
+  etapaAtual = destino;
+  mostrarEtapa(etapaAtual);
+}
+
+function mostrarErro(id, msg) {
+  const el = document.getElementById('err_' + id);
+  const inp = document.getElementById('id_' + id) || document.querySelector('[name=' + id + ']');
+  if (el) { if (msg) el.textContent = msg; el.classList.add('visivel'); }
+  if (inp) inp.classList.add('erro');
+}
+function limparErro(id) {
+  const el = document.getElementById('err_' + id);
+  const inp = document.getElementById('id_' + id) || document.querySelector('[name=' + id + ']');
+  if (el) el.classList.remove('visivel');
+  if (inp) inp.classList.remove('erro');
+}
+
+function validarCPF(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += +cpf[i] * (10 - i);
+  let r = (s * 10) % 11; if (r >= 10) r = 0;
+  if (r !== +cpf[9]) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += +cpf[i] * (11 - i);
+  r = (s * 10) % 11; if (r >= 10) r = 0;
+  return r === +cpf[10];
+}
+
+function calcularIdade(dataStr) {
+  if (!dataStr) return null;
+  const hoje = new Date(); const nasc = new Date(dataStr);
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  return idade;
+}
+
+function validarEtapa(n) {
+  let ok = true;
+  if (n === 1) {
+    const nome = document.getElementById('id_nome_completo').value.trim();
+    if (nome.split(' ').filter(p => p.length > 0).length < 2) { mostrarErro('nome_completo'); ok = false; } else limparErro('nome_completo');
+    const nasc = document.getElementById('id_data_nascimento').value;
+    const idade = calcularIdade(nasc);
+    if (!nasc || idade === null || idade < 11 || idade > 17) { mostrarErro('data_nascimento', 'Aluno deve ter entre 11 e 17 anos.'); ok = false; } else limparErro('data_nascimento');
+    const escola = document.getElementById('id_escola').value.trim();
+    if (!escola) { mostrarErro('escola', 'Campo obrigatório.'); ok = false; } else limparErro('escola');
+    const serie = document.getElementById('id_serie').value;
+    if (!serie) { mostrarErro('serie', 'Selecione a série.'); ok = false; } else limparErro('serie');
+    if (!document.querySelector('[name=nivel_experiencia]:checked')) { mostrarErro('nivel'); ok = false; } else limparErro('nivel');
+    if (!document.querySelector('[name=turno]:checked')) { mostrarErro('turno'); ok = false; } else limparErro('turno');
+  }
+  if (n === 2) {
+    const resp = document.getElementById('id_nome_responsavel').value.trim();
+    if (resp.split(' ').filter(p => p.length > 0).length < 2) { mostrarErro('nome_responsavel'); ok = false; } else limparErro('nome_responsavel');
+    const tel = document.getElementById('id_telefone').value.replace(/\D/g,'');
+    if (tel.length < 10 || tel.length > 11) { mostrarErro('telefone'); ok = false; } else limparErro('telefone');
+    if (!validarCPF(document.getElementById('id_cpf_responsavel').value)) { mostrarErro('cpf', 'CPF inválido.'); ok = false; } else limparErro('cpf');
+    const email = document.getElementById('id_email').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { mostrarErro('email', 'E-mail inválido.'); ok = false; } else limparErro('email');
+  }
+  if (n === 3) {
+    if (!document.getElementById('id_aceita_termos').checked) { mostrarErro('termos', 'Aceite os termos para continuar.'); ok = false; } else limparErro('termos');
+  }
+  return ok;
+}
+
+const NIVEIS = { iniciante:'Iniciante', basico:'Básico', intermediario:'Intermediário' };
+const TURNOS = { manha:'Manhã (8h–12h)', tarde:'Tarde (13h–17h)' };
+
+function preencherRevisao() {
+  const itens = [
+    ['Nome do Aluno', document.getElementById('id_nome_completo').value],
+    ['Data de Nascimento', document.getElementById('id_data_nascimento').value.split('-').reverse().join('/')],
+    ['Escola', document.getElementById('id_escola').value],
+    ['Série', document.getElementById('id_serie').value],
+    ['Nível', NIVEIS[(document.querySelector('[name=nivel_experiencia]:checked')||{}).value]||'—'],
+    ['Turno', TURNOS[(document.querySelector('[name=turno]:checked')||{}).value]||'—'],
+    ['Responsável', document.getElementById('id_nome_responsavel').value],
+    ['Telefone', document.getElementById('id_telefone').value],
+    ['E-mail', document.getElementById('id_email').value],
+    ['CPF', document.getElementById('id_cpf_responsavel').value],
+  ];
+  document.getElementById('revisaoGrid').innerHTML = itens.map(([l, v]) =>
+    `<div class="rev-item"><div class="rev-label">${l}</div><div class="rev-valor">${v||'—'}</div></div>`
+  ).join('');
+}
+
+document.getElementById('id_telefone').addEventListener('input', function() {
+  let v = this.value.replace(/\D/g,'').slice(0,11);
+  if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+  if (v.replace(/\D/g,'').length > 6) {
+    const d = v.replace(/\D/g,'');
+    v = '(' + d.slice(0,2) + ') ' + d.slice(2,d.length===11?7:6) + '-' + d.slice(d.length===11?7:6);
+  }
+  this.value = v;
+});
+
+document.getElementById('id_cpf_responsavel').addEventListener('input', function() {
+  let v = this.value.replace(/\D/g,'').slice(0,11);
+  if (v.length > 3) v = v.slice(0,3) + '.' + v.slice(3);
+  if (v.replace(/\D/g,'').length > 6) { const d=v.replace(/\D/g,''); v=d.slice(0,3)+'.'+d.slice(3,6)+'.'+d.slice(6); }
+  if (v.replace(/\D/g,'').length > 9) { const d=v.replace(/\D/g,''); v=d.slice(0,3)+'.'+d.slice(3,6)+'.'+d.slice(6,9)+'-'+d.slice(9); }
+  this.value = v;
+});
+
+document.getElementById('id_data_nascimento').addEventListener('change', function() {
+  const idade = calcularIdade(this.value);
+  const hint = document.getElementById('hint_idade');
+  if (idade !== null) {
+    hint.textContent = `Idade calculada: ${idade} anos`;
+    hint.style.color = (idade >= 11 && idade <= 17) ? '#22c55e' : '#ef4444';
+  } else hint.textContent = '';
+});
+
+document.getElementById('formInscricao').addEventListener('submit', function(e) {
+  if (!validarEtapa(3)) { e.preventDefault(); return; }
+  document.getElementById('btnSubmit').disabled = true;
+  document.getElementById('btnSubmit').innerHTML = '<span class="loader"></span> Processando...';
+});
+</script>
+{% endblock %}

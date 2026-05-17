@@ -33,6 +33,12 @@ urlpatterns = [
     # Rotas legacy do gamificaedu.core (URLs usadas em templates existentes)
     path('', include('gamificaedu.core.urls')),
 
+    # ── Inscrições Curso de Férias Maker ──────────────────────────
+    # /inscricao/            → formulário público
+    # /inscricao/painel/     → painel admin (staff only)
+    # /inscricao/verificar/  → verificação de certificados
+    path('inscricao/', include('inscricoes.urls', namespace='inscricoes')),
+
     # ── Monitoramento de foco (anti-cheat) ────────────────────────
     # /api/monitoramento/registrar/          ← recebe eventos do JS
     # /professor/monitoramento/<prova_id>/   ← relatório do professor

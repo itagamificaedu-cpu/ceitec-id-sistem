@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscrição Confirmada — CEITEC</title>
+</head>
+<body style="margin:0;padding:0;background:#0A0E1A;font-family:'Segoe UI',Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0E1A;padding:40px 20px">
+  <tr>
+    <td align="center">
+      <table width="580" cellpadding="0" cellspacing="0"
+             style="background:#0D1525;border:1px solid rgba(245,166,35,.25);border-radius:16px;overflow:hidden;max-width:580px;width:100%">
+
+        <tr>
+          <td style="background:#F5A623;padding:24px 32px;text-align:center">
+            <div style="font-size:28px;font-weight:900;color:#0A0E1A;letter-spacing:2px;line-height:1">CEITEC</div>
+            <div style="font-size:11px;color:#0A0E1A;letter-spacing:3px;text-transform:uppercase;margin-top:4px;opacity:.8">
+              CENTRO EDUCACIONAL DE INOVAÇÃO E TECNOLOGIA
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="text-align:center;padding:32px 32px 16px">
+            <div style="width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.3);display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px">
+              ✅
+            </div>
+            <div style="font-size:32px;font-weight:900;color:#F0F4FF;letter-spacing:1px;line-height:1.1">
+              INSCRIÇÃO CONFIRMADA!
+            </div>
+            <div style="font-size:15px;color:#8A95B5;margin-top:10px">
+              Olá, <strong style="color:#F0F4FF">{{ inscricao.nome_responsavel.split.0 }}</strong>! O pagamento foi recebido com sucesso.
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:8px 32px 24px">
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:hidden">
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05)">
+                  <div style="font-size:11px;color:#8A95B5;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Aluno</div>
+                  <div style="font-size:15px;font-weight:600;color:#F0F4FF">{{ inscricao.nome_completo }}</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05)">
+                  <div style="font-size:11px;color:#8A95B5;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Curso</div>
+                  <div style="font-size:15px;font-weight:600;color:#F5A623">Alunos Maker Não Tiram Férias</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05)">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td width="50%">
+                        <div style="font-size:11px;color:#8A95B5;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Turno</div>
+                        <div style="font-size:14px;color:#F0F4FF">{{ inscricao.get_turno_display }}</div>
+                      </td>
+                      <td width="50%">
+                        <div style="font-size:11px;color:#8A95B5;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Escola</div>
+                        <div style="font-size:14px;color:#F0F4FF">{{ inscricao.escola }}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px">
+                  <div style="font-size:11px;color:#8A95B5;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Código da Inscrição</div>
+                  <div style="font-family:monospace;font-size:22px;color:#F5A623;letter-spacing:4px;font-weight:700">{{ inscricao.codigo_curto }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 32px 24px">
+            <div style="font-size:18px;font-weight:900;color:#F0F4FF;letter-spacing:1px;margin-bottom:14px">
+              📋 PRÓXIMOS PASSOS
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#F5A623;color:#0A0E1A;font-size:12px;font-weight:700;text-align:center;line-height:26px;flex-shrink:0">1</div>
+              <div style="font-size:14px;color:#C8D0E8;padding-top:4px">Nossa equipe enviará um WhatsApp com o endereço e horário exatos do laboratório.</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#F5A623;color:#0A0E1A;font-size:12px;font-weight:700;text-align:center;line-height:26px;flex-shrink:0">2</div>
+              <div style="font-size:14px;color:#C8D0E8;padding-top:4px">Apareça no primeiro dia — todo o material e equipamento estão incluídos.</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#F5A623;color:#0A0E1A;font-size:12px;font-weight:700;text-align:center;line-height:26px;flex-shrink:0">3</div>
+              <div style="font-size:14px;color:#C8D0E8;padding-top:4px">Ao final do curso, seu certificado estará disponível para download.</div>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 32px 32px;text-align:center">
+            <a href="{{ base_url }}/inscricao/pagamento/confirmado/{{ inscricao.codigo_inscricao }}/"
+               style="display:inline-block;background:#F5A623;color:#0A0E1A;font-weight:700;font-size:15px;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:.3px">
+              Ver Confirmação Online →
+            </a>
+            <div style="margin-top:16px">
+              <a href="https://wa.me/5585992858889" target="_blank"
+                 style="display:inline-block;background:#25D366;color:#fff;font-weight:700;font-size:14px;padding:11px 24px;border-radius:10px;text-decoration:none">
+                📱 Falar pelo WhatsApp
+              </a>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background:rgba(0,0,0,.3);padding:20px 32px;border-top:1px solid rgba(255,255,255,.06);text-align:center">
+            <div style="font-size:12px;color:#8A95B5;line-height:1.8">
+              <strong style="color:#F5A623">CEITEC — ITA Tecnologia Educacional</strong><br>
+              Itapipoca, Ceará, Brasil<br>
+              itagamificaedu@gmail.com
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

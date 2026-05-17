@@ -1,0 +1,157 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}
+  {% if inscricao.status == 'pago' or inscricao.status == 'certificado_emitido' %}Inscrição Confirmada{% else %}Aguardando Pagamento{% endif %} — {{ inscricao.nome_completo }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-check{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
+.hero-check.pago{background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.3)}
+.hero-check.aguardando{background:rgba(245,166,35,.12);border:2px solid var(--orange-b)}
+.steps-list{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.step-item{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:var(--r)}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--orange);color:#0A0E1A;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-txt{font-size:14px;color:var(--text2);line-height:1.6}
+.step-txt strong{color:var(--text)}
+.spinner{width:32px;height:32px;border:3px solid rgba(245,166,35,.2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+  {% if inscricao.status == 'pago' or inscricao.status == 'certificado_emitido' %}
+
+  <div style="text-align:center;margin-bottom:40px">
+    <div class="hero-check pago">✅</div>
+    <h1 class="page-title" style="margin-bottom:8px">
+      INSCRIÇÃO<br><span style="color:var(--green)">CONFIRMADA!</span>
+    </h1>
+    <p class="page-sub" style="max-width:420px;margin:0 auto">
+      Pagamento recebido. {{ inscricao.nome_completo.split.0 }} está inscrito(a) no Curso de Férias Maker!
+    </p>
+  </div>
+
+  {% if erro_cert %}
+  <div class="alert alert-orange" style="margin-bottom:20px">⚠️ {{ erro_cert }}</div>
+  {% endif %}
+
+  <div class="card card-orange" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Código da Inscrição</div>
+        <div style="font-family:monospace;font-size:24px;color:var(--orange);letter-spacing:3px;font-weight:700">{{ inscricao.codigo_curto }}</div>
+      </div>
+      <span class="pill pill-pago">✅ Pago</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Aluno</div>
+        <div style="font-size:14px;font-weight:500">{{ inscricao.nome_completo }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Turno</div>
+        <div style="font-size:14px;font-weight:500">{{ inscricao.get_turno_display }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Escola</div>
+        <div style="font-size:14px;font-weight:500">{{ inscricao.escola }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Série</div>
+        <div style="font-size:14px;font-weight:500">{{ inscricao.serie }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-family:var(--fh);font-size:20px;letter-spacing:.5px;margin-bottom:16px">📋 PRÓXIMOS PASSOS</div>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-txt"><strong>E-mail de confirmação enviado</strong><br>Verifique a caixa de entrada e spam de {{ inscricao.email }}</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-txt"><strong>Aguarde o contato do CEITEC</strong><br>Nossa equipe enviará um WhatsApp para {{ inscricao.telefone_formatado }} com endereço e horário.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-txt"><strong>Apareça no primeiro dia</strong><br>Traga apenas disposição — todo material está incluído. Julho de 2026, Itapipoca, CE.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-txt"><strong>Após o curso: certificado disponível</strong><br>Seu certificado digital estará disponível nesta página com seu código de inscrição.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    {% if inscricao.certificado_gerado %}
+    <a href="{% url 'inscricoes:certificado' inscricao.codigo_inscricao %}" class="btn btn-primary btn-lg" style="flex:1">
+      🏆 Baixar Certificado PDF
+    </a>
+    <a href="{% url 'inscricoes:visualizar' inscricao.codigo_inscricao %}" class="btn btn-ghost" style="flex:1">
+      👁️ Visualizar Certificado
+    </a>
+    {% else %}
+    <a href="https://wa.me/5585992858889?text=Ol%C3%A1%21%20Minha%20inscri%C3%A7%C3%A3o%20foi%20confirmada%21%20C%C3%B3digo%3A%20{{ inscricao.codigo_curto }}"
+       target="_blank" class="btn btn-primary btn-lg" style="flex:1;background:#25D366">
+      📱 Confirmar pelo WhatsApp
+    </a>
+    <a href="/inscricao/" class="btn btn-ghost" style="flex:1">← Voltar ao Início</a>
+    {% endif %}
+  </div>
+
+  {% elif inscricao.status == 'aguardando_pagamento' %}
+
+  <div style="text-align:center;margin-bottom:40px">
+    <div class="hero-check aguardando">⏳</div>
+    <h1 class="page-title" style="margin-bottom:8px">AGUARDANDO<br><span style="color:var(--orange)">PAGAMENTO</span></h1>
+    <p class="page-sub" style="max-width:420px;margin:0 auto">
+      Seu pagamento ainda está sendo processado. Isso pode levar alguns minutos.
+    </p>
+  </div>
+
+  <div class="card card-orange" style="text-align:center;margin-bottom:20px;padding:40px 28px">
+    <div class="spinner" style="margin-bottom:20px"></div>
+    <div style="font-size:15px;color:var(--text2);margin-bottom:8px">Verificando status do pagamento...</div>
+    <div style="font-size:13px;color:var(--muted)">Esta página atualiza automaticamente a cada 10 segundos.</div>
+    <div style="margin-top:16px;font-family:monospace;font-size:18px;color:var(--orange);letter-spacing:2px">{{ inscricao.codigo_curto }}</div>
+  </div>
+
+  <div class="alert alert-orange">
+    💡 Se pagou via PIX, a confirmação é instantânea. Se pagou no boleto, pode levar até 2 dias úteis.
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
+    <a href="{% url 'inscricoes:pagamento' inscricao.codigo_inscricao %}" class="btn btn-ghost" style="flex:1">
+      ↩ Voltar ao pagamento
+    </a>
+    <a href="https://wa.me/5585992858889?text=Paguei%20mas%20n%C3%A3o%20confirmou.%20C%C3%B3digo%3A%20{{ inscricao.codigo_curto }}"
+       target="_blank" class="btn btn-primary" style="flex:1;background:#25D366">
+      📱 Paguei mas não confirmou
+    </a>
+  </div>
+
+  {% else %}
+
+  <div style="text-align:center;margin-bottom:32px">
+    <div class="hero-check" style="background:rgba(239,68,68,.12);border:2px solid rgba(239,68,68,.3)">❌</div>
+    <h1 class="page-title">INSCRIÇÃO<br><span style="color:#ef4444">CANCELADA</span></h1>
+    <p class="page-sub">Esta inscrição foi cancelada ou expirou.</p>
+  </div>
+  <div style="text-align:center">
+    <a href="/inscricao/" class="btn btn-primary btn-lg">🔄 Fazer Nova Inscrição</a>
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if inscricao.status == 'aguardando_pagamento' %}
+<script>setTimeout(() => location.reload(), 10000);</script>
+{% endif %}
+{% endblock %}

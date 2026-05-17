@@ -1,0 +1,263 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}Painel Admin — Inscrições Maker{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card{background:var(--card);border:1px solid var(--card-b);border-radius:var(--r2);padding:22px 24px;border-left:4px solid transparent}
+.stat-card.laranja{border-left-color:var(--orange)}
+.stat-card.verde{border-left-color:#22c55e}
+.stat-card.azul{border-left-color:#3b82f6}
+.stat-card.roxo{border-left-color:#a855f7}
+.stat-card.vermelho{border-left-color:#ef4444}
+.stat-card.teal{border-left-color:#14b8a6}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stat-val{font-family:var(--fh);font-size:38px;line-height:1;color:var(--text)}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+
+.table-wrap{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--card-b)}
+table{width:100%;border-collapse:collapse;min-width:800px}
+thead{background:rgba(255,255,255,.03)}
+th{padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1px solid var(--card-b)}
+td{padding:12px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.03)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-btn{padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;border:1.5px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.filter-btn.ativo,.filter-btn:hover{border-color:var(--orange);color:var(--orange)}
+.filter-input{background:#0A0E1A;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;font-family:var(--fb);font-size:13px;color:var(--text);outline:none;min-width:220px}
+.filter-input:focus{border-color:var(--orange-b)}
+
+.action-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.ab-green{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25)}
+.ab-green:hover{background:rgba(34,197,94,.2)}
+.ab-blue{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+.ab-blue:hover{background:rgba(59,130,246,.2)}
+.ab-orange{background:rgba(245,166,35,.12);color:var(--orange);border:1px solid var(--orange-b)}
+.ab-orange:hover{background:rgba(245,166,35,.2)}
+
+#toast{position:fixed;bottom:24px;right:24px;background:#1a2744;border:1px solid var(--orange-b);border-radius:var(--r);padding:12px 20px;font-size:14px;color:var(--text);z-index:999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block nav_extra %}
+<div style="display:flex;align-items:center;gap:10px">
+  <a href="{% url 'inscricoes:exportar_csv' %}" class="btn btn-ghost" style="font-size:13px;padding:8px 16px">📥 Exportar CSV</a>
+  <a href="/django-admin/inscricoes/inscricao/" class="btn btn-ghost" style="font-size:13px;padding:8px 16px">⚙️ Admin Django</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="wrap" style="max-width:1200px">
+
+  <div style="margin-bottom:28px">
+    <div class="badge" style="margin-bottom:12px"><span class="badge-dot"></span> Painel em Tempo Real</div>
+    <h1 class="page-title" style="font-size:clamp(28px,4vw,44px)">PAINEL DE <span style="color:var(--orange)">INSCRIÇÕES</span></h1>
+    <p style="font-size:14px;color:var(--muted)">Curso de Férias Maker · Alunos Maker Não Tiram Férias · Julho 2026</p>
+  </div>
+
+  <!-- Métricas -->
+  <div class="stats-grid">
+    <div class="stat-card laranja">
+      <div class="stat-label">Total de Inscrições</div>
+      <div class="stat-val">{{ stats.total }}</div>
+      <div class="stat-sub">formulários enviados</div>
+    </div>
+    <div class="stat-card verde">
+      <div class="stat-label">Pagamentos Confirmados</div>
+      <div class="stat-val">{{ stats.pagas }}</div>
+      <div class="stat-sub">vagas garantidas</div>
+    </div>
+    <div class="stat-card vermelho">
+      <div class="stat-label">Vagas Restantes</div>
+      <div class="stat-val">{{ stats.vagas_restantes }}</div>
+      <div class="stat-sub">de 30 vagas totais</div>
+    </div>
+    <div class="stat-card azul">
+      <div class="stat-label">Aguardando Pagamento</div>
+      <div class="stat-val">{{ stats.pendentes }}</div>
+      <div class="stat-sub">formulários sem pagamento</div>
+    </div>
+    <div class="stat-card roxo">
+      <div class="stat-label">Certificados Emitidos</div>
+      <div class="stat-val">{{ stats.certificados }}</div>
+      <div class="stat-sub">PDFs gerados</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-label">Receita Total</div>
+      <div class="stat-val" style="font-size:28px">R$ {{ stats.receita|floatformat:0 }}</div>
+      <div class="stat-sub">pagamentos recebidos</div>
+    </div>
+  </div>
+
+  <!-- Barra de progresso de vagas -->
+  <div class="card" style="margin-bottom:24px;padding:20px 24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600;color:var(--text2)">Ocupação da Turma</span>
+      <span style="font-size:13px;color:var(--muted)">{{ stats.pagas }}/30 vagas</span>
+    </div>
+    <div style="height:10px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden">
+      <div style="height:100%;width:{{ stats.pagas|floatformat:0 }}%;background:{% if stats.pagas >= 25 %}#ef4444{% elif stats.pagas >= 20 %}var(--orange){% else %}#22c55e{% endif %};border-radius:100px;transition:width .5s ease;min-width:{% if stats.pagas > 0 %}4px{% else %}0{% endif %}"></div>
+    </div>
+  </div>
+
+  <!-- Filtros e tabela -->
+  <div style="margin-bottom:16px">
+    <div class="filters">
+      <button class="filter-btn ativo" onclick="filtrar(this,'todos')">Todos ({{ stats.total }})</button>
+      <button class="filter-btn" onclick="filtrar(this,'pago')">✅ Pagos ({{ stats.pagas }})</button>
+      <button class="filter-btn" onclick="filtrar(this,'aguardando_pagamento')">⏳ Aguardando ({{ stats.pendentes }})</button>
+      <button class="filter-btn" onclick="filtrar(this,'certificado_emitido')">🏆 Certificado</button>
+      <input type="text" class="filter-input" placeholder="🔍 Buscar por nome, e-mail, código..." id="searchInput" oninput="buscar(this.value)">
+    </div>
+  </div>
+
+  {% if inscricoes %}
+  <div class="table-wrap">
+    <table id="tabelaInscricoes">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Aluno</th>
+          <th>Escola / Série</th>
+          <th>Turno</th>
+          <th>Responsável</th>
+          <th>E-mail / Tel</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in inscricoes %}
+        <tr data-status="{{ i.status }}" data-busca="{{ i.nome_completo|lower }} {{ i.email|lower }} {{ i.codigo_curto|lower }} {{ i.escola|lower }}">
+          <td style="font-family:monospace;color:var(--orange);font-weight:700;font-size:12px;letter-spacing:1px">{{ i.codigo_curto }}</td>
+          <td>
+            <div style="font-weight:600;color:var(--text)">{{ i.nome_completo }}</div>
+            <div style="font-size:11px;color:var(--muted)">{{ i.get_nivel_experiencia_display }}</div>
+          </td>
+          <td>
+            <div>{{ i.escola }}</div>
+            <div style="font-size:11px;color:var(--muted)">{{ i.serie }}</div>
+          </td>
+          <td>{{ i.get_turno_display }}</td>
+          <td style="font-size:12px">{{ i.nome_responsavel }}</td>
+          <td>
+            <div style="font-size:12px">{{ i.email }}</div>
+            <div style="font-size:11px;color:var(--muted)">{{ i.telefone_formatado }}</div>
+          </td>
+          <td>
+            {% if i.status == 'pago' %}
+              <span class="pill pill-pago" style="font-size:11px">✅ Pago</span>
+            {% elif i.status == 'certificado_emitido' %}
+              <span class="pill" style="background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.25);font-size:11px">🏆 Certificado</span>
+            {% elif i.status == 'aguardando_pagamento' %}
+              <span class="pill pill-pendente" style="font-size:11px">⏳ Aguardando</span>
+            {% elif i.status == 'cancelado' %}
+              <span class="pill pill-cancelado" style="font-size:11px">❌ Cancelado</span>
+            {% else %}
+              <span class="pill" style="font-size:11px">{{ i.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ i.data_inscricao|date:"d/m H:i" }}</td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              {% if i.status == 'aguardando_pagamento' %}
+              <button class="action-btn ab-green"
+                      onclick="marcarPago('{{ i.codigo_inscricao }}', this)">
+                ✅ Pago
+              </button>
+              {% endif %}
+              {% if i.status in 'pago,certificado_emitido' %}
+              <button class="action-btn ab-orange"
+                      onclick="emitirCert('{{ i.codigo_inscricao }}', this)">
+                🏆 Certificado
+              </button>
+              <a href="{% url 'inscricoes:certificado' i.codigo_inscricao %}" class="action-btn ab-blue">
+                ⬇️ PDF
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card" style="text-align:center;padding:60px 28px">
+    <div style="font-size:48px;margin-bottom:16px">📭</div>
+    <div style="font-size:18px;color:var(--muted)">Nenhuma inscrição ainda.</div>
+  </div>
+  {% endif %}
+
+</div>
+
+<div id="toast"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'rgba(34,197,94,.4)' : 'rgba(239,68,68,.4)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function marcarPago(codigo, btn) {
+  if (!confirm('Marcar esta inscrição como PAGA manualmente?')) return;
+  btn.disabled = true; btn.textContent = '...';
+  fetch(`/inscricao/painel/inscricao/${codigo}/pago/`, {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.status === 'ok') { toast('✅ Marcado como pago! Recarregando...'); setTimeout(() => location.reload(), 1500); }
+    else { toast('Erro: ' + (d.erro || '?'), false); btn.disabled = false; btn.textContent = '✅ Pago'; }
+  })
+  .catch(() => { toast('Erro de conexão.', false); btn.disabled = false; });
+}
+
+function emitirCert(codigo, btn) {
+  if (!confirm('Emitir certificado e enviar por e-mail?')) return;
+  btn.disabled = true; btn.textContent = '⏳ ...';
+  fetch(`/inscricao/painel/certificado/${codigo}/emitir/`, {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.status === 'ok') { toast('🏆 Certificado emitido e enviado por e-mail!'); btn.textContent = '✅ Emitido'; }
+    else { toast('Erro: ' + (d.erro || '?'), false); btn.disabled = false; btn.textContent = '🏆 Certificado'; }
+  })
+  .catch(() => { toast('Erro de conexão.', false); btn.disabled = false; });
+}
+
+let filtroAtual = 'todos';
+function filtrar(btn, status) {
+  filtroAtual = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  aplicarFiltros();
+}
+
+function buscar(q) { aplicarFiltros(q); }
+
+function aplicarFiltros(q) {
+  q = (q || document.getElementById('searchInput').value).toLowerCase();
+  document.querySelectorAll('#tabelaInscricoes tbody tr').forEach(tr => {
+    const statusOk = filtroAtual === 'todos' || tr.dataset.status === filtroAtual;
+    const buscaOk = !q || tr.dataset.busca.includes(q);
+    tr.style.display = (statusOk && buscaOk) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}
