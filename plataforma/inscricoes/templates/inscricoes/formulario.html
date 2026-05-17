@@ -3,31 +3,31 @@
 
 {% block extra_css %}
 <style>
-.progress-bar{display:flex;align-items:center;gap:0;margin-bottom:40px;position:relative}
-.progress-bar::before{content:'';position:absolute;top:18px;left:18px;right:18px;height:2px;background:rgba(255,255,255,.08);z-index:0}
+.progress-bar{display:flex;align-items:center;gap:0;margin-bottom:36px;position:relative}
+.progress-bar::before{content:'';position:absolute;top:18px;left:18px;right:18px;height:2px;background:var(--card-b);z-index:0}
 .progress-fill{position:absolute;top:18px;left:18px;height:2px;background:var(--orange);z-index:1;transition:width .4s ease}
 .prog-step{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;position:relative;z-index:2;cursor:default}
-.prog-circle{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);transition:all .3s}
-.prog-step.ativo .prog-circle{border-color:var(--orange);background:var(--orange);color:#0A0E1A}
-.prog-step.completo .prog-circle{border-color:var(--green);background:var(--green);color:#0A0E1A}
-.prog-label{font-size:11px;color:var(--muted);font-weight:500;text-align:center;white-space:nowrap}
-.prog-step.ativo .prog-label{color:var(--orange);font-weight:600}
+.prog-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--card-b);background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);transition:all .3s;box-shadow:var(--shadow)}
+.prog-step.ativo .prog-circle{border-color:var(--orange);background:var(--orange);color:#fff;box-shadow:0 0 0 4px rgba(245,166,35,.15)}
+.prog-step.completo .prog-circle{border-color:var(--green);background:var(--green);color:#fff}
+.prog-label{font-size:11px;color:var(--muted);font-weight:600;text-align:center;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
+.prog-step.ativo .prog-label{color:var(--orange-d)}
 .prog-step.completo .prog-label{color:var(--green)}
 
 .etapa{display:none}
 .etapa.ativa{display:block;animation:fadeSlide .3s ease}
-@keyframes fadeSlide{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .revisao-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.rev-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px 14px}
-.rev-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.rev-valor{font-size:14px;color:var(--text);font-weight:500}
+.rev-item{background:var(--bg);border:1px solid var(--card-b);border-radius:8px;padding:12px 14px}
+.rev-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600}
+.rev-valor{font-size:14px;color:var(--text);font-weight:600}
 
-.vagas-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:8px;padding:8px 14px;font-size:13px;margin-bottom:24px}
-.vagas-num{font-family:var(--fh);font-size:22px;color:var(--orange);line-height:1}
+.vagas-badge{display:inline-flex;align-items:center;gap:8px;background:var(--orange-bg);border:1px solid var(--orange-b);border-radius:10px;padding:10px 18px;font-size:14px;margin-bottom:24px;font-weight:500;color:var(--text2)}
+.vagas-num{font-size:26px;font-weight:900;color:var(--orange);line-height:1}
 
-.django-errors{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r);padding:14px 18px;margin-bottom:20px}
-.django-errors p{font-size:13px;color:#fca5a5;margin-bottom:4px}
+.django-errors{background:var(--red-bg);border:1px solid var(--red-b);border-radius:var(--r);padding:14px 18px;margin-bottom:20px}
+.django-errors p{font-size:13px;color:var(--red);margin-bottom:4px;font-weight:500}
 .django-errors p:last-child{margin-bottom:0}
 </style>
 {% endblock %}
@@ -277,7 +277,7 @@
   </form>
 
   <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:24px">
-    🔒 Seus dados são protegidos · Pagamento processado pelo PagSeguro
+    🔒 Seus dados são protegidos · Pagamento seguro via Mercado Pago
   </p>
 </div>
 {% endblock %}
