@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'corretor.core',
     # Sistema de monitoramento de foco (anti-cheat)
     'monitoramento.apps.MonitoramentoConfig',
+    # Sistema de inscrições — Curso de Férias Maker
+    'inscricoes.apps.InscricoesConfig',
 ]
 
 MIDDLEWARE = [
@@ -169,6 +171,11 @@ SSO_COOKIE_DOMAIN = os.getenv('SSO_COOKIE_DOMAIN', '')
 
 # --- MASTER ---
 MASTER_PASSWORD = os.getenv('MASTER_PASSWORD', '')
+
+# --- PAGSEGURO (Inscrições Curso de Férias) ---
+PAGSEGURO_TOKEN = os.getenv('PAGSEGURO_TOKEN', '')
+PAGSEGURO_SANDBOX = os.getenv('PAGSEGURO_SANDBOX', 'True') == 'True'
+BASE_URL = os.getenv('BASE_URL', 'https://itatecnologiaeducacional.tech')
 
 # --- PLANOS ---
 PLANOS = {
