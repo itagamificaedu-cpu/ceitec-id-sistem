@@ -41,6 +41,7 @@ import TrocarSenha from './pages/TrocarSenha'
 import AtividadeUsuarios from './pages/AtividadeUsuarios'
 import SalaMaker from './pages/salaMaker'
 import CursoFerias from './pages/CursoFerias'
+import MobileTracker from './pages/MobileTracker'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -136,6 +137,9 @@ export default function App() {
 
         {/* Curso de Férias — landing page e gerenciamento (só admin) */}
         <Route path="/curso-ferias" element={<Admin><CursoFerias /></Admin>} />
+
+        {/* Mobile Tracker — GPS de alunos */}
+        <Route path="/mobile-tracker" element={<Admin><MobileTracker /></Admin>} />
 
         {/* Usuários */}
         <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />

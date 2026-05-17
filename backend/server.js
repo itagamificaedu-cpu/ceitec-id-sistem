@@ -15,6 +15,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/pwa/tracker', express.static(path.join(__dirname, 'pwa-tracker'))); // PWA do aluno
 
 // Vercel strips /api prefix — add it back if missing
 app.use((req, res, next) => {
@@ -45,6 +46,7 @@ app.use('/api/almoco',       verificarLicenca, require('./routes/almoco'));
 app.use('/api/sala-maker',   verificarLicenca, require('./routes/salaMaker')); // Módulo Sala Maker
 app.use('/api/portal',       require('./routes/portal')); // portal do aluno — sem check de licença
 app.use('/api/quiz',         require('./routes/quiz'));    // quiz público — sem check de licença
+app.use('/api/mobile-tracker', require('./routes/mobile-tracker')); // tracker GPS (POST /localizar é público)
 
 app.get('/api/status', (req, res) => {
   res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });
@@ -62,6 +64,10 @@ app.get('/api/debug-db', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
+  // Admin entra na sala da escola para receber atualizações do tracker
+  socket.on('tracker:entrar', ({ escola_id }) => {
+    if (escola_id) socket.join(`tracker-escola-${escola_id}`);
+  });
   socket.on('disconnect', () => {});
 });
 app.set('io', io);
