@@ -26,6 +26,14 @@ router.post('/login', async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    // Registra login no log de acessos
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+    const ua = req.headers['user-agent'] || '';
+    db.run(
+      'INSERT INTO log_acessos (usuario_id, nome, email, perfil, escola_id, ip, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [usuario.id, usuario.nome, usuario.email, usuario.perfil, escola_id, ip, ua]
+    ).catch(() => {});
+
     res.json({
       token,
       usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, escola_id },

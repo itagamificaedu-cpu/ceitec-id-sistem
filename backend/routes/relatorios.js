@@ -124,4 +124,67 @@ router.get('/frequencia-semanal', async (req, res) => {
   }
 });
 
+// Atividade de usuários: logins e ações na plataforma
+router.get('/atividade-usuarios', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+
+    // Todos os usuários da escola
+    const usuarios = await db.all(
+      "SELECT id, nome, email, perfil, criado_em FROM usuarios WHERE escola_id = ? ORDER BY nome",
+      [eid]
+    );
+
+    // Último login de cada usuário
+    const ultimosLogins = await db.all(
+      "SELECT DISTINCT ON (usuario_id) usuario_id, logado_em, ip FROM log_acessos WHERE escola_id = ? ORDER BY usuario_id, logado_em DESC",
+      [eid]
+    );
+    const loginMap = {};
+    ultimosLogins.forEach(l => { loginMap[l.usuario_id] = l; });
+
+    // Histórico de logins recentes (últimos 50)
+    const loginsRecentes = await db.all(
+      "SELECT la.nome, la.email, la.perfil, la.logado_em, la.ip FROM log_acessos la WHERE la.escola_id = ? ORDER BY la.logado_em DESC LIMIT 50",
+      [eid]
+    );
+
+    // Contagem de ações por usuário_id (via email)
+    const presencasRegistradas = await db.all(
+      "SELECT registrado_por, COUNT(*) as total FROM presencas p JOIN alunos a ON p.aluno_id = a.id WHERE a.escola_id = ? GROUP BY registrado_por",
+      [eid]
+    );
+    const presencaMap = {};
+    presencasRegistradas.forEach(p => { presencaMap[p.registrado_por] = p.total; });
+
+    const ocorrenciasCriadas = await db.all(
+      "SELECT u.id, COUNT(o.id) as total FROM usuarios u LEFT JOIN professores pr ON pr.email = u.email LEFT JOIN ocorrencias o ON o.professor_id = pr.id AND o.escola_id = ? WHERE u.escola_id = ? GROUP BY u.id",
+      [eid, eid]
+    );
+    const ocorrenciaMap = {};
+    ocorrenciasCriadas.forEach(o => { ocorrenciaMap[o.id] = parseInt(o.total) || 0; });
+
+    const quizzesCriados = await db.all(
+      "SELECT criado_por, COUNT(*) as total FROM quizzes WHERE escola_id = ? GROUP BY criado_por",
+      [eid]
+    );
+    const quizMap = {};
+    quizzesCriados.forEach(q => { quizMap[q.criado_por] = q.total; });
+
+    // Monta resultado por usuário
+    const resultado = usuarios.map(u => ({
+      ...u,
+      ultimo_login: loginMap[u.id]?.logado_em || null,
+      ultimo_ip: loginMap[u.id]?.ip || null,
+      presencas_registradas: parseInt(presencaMap[u.email]) || 0,
+      ocorrencias_criadas: ocorrenciaMap[u.id] || 0,
+      quizzes_criados: parseInt(quizMap[u.id]) || 0,
+    }));
+
+    res.json({ usuarios: resultado, logins_recentes: loginsRecentes });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 module.exports = router;
