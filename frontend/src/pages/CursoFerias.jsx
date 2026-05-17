@@ -28,6 +28,9 @@ export default function CursoFerias() {
   const [loadingInscritos, setLoadingInscritos] = useState(false)
   const [marcandoPago, setMarcandoPago] = useState(null)
   const [filtroStatus, setFiltroStatus] = useState('todos')
+  const [editando, setEditando] = useState(null)
+  const [dadosEdicao, setDadosEdicao] = useState({})
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false)
 
   async function carregarInscritos() {
     setLoadingInscritos(true)
@@ -55,6 +58,46 @@ export default function CursoFerias() {
       console.error(e)
     }
     setMarcandoPago(null)
+  }
+
+  async function excluirInscricao(id, nome) {
+    if (!window.confirm(`Excluir a inscrição de ${nome}? Esta ação não pode ser desfeita.`)) return
+    try {
+      await fetch(`/inscricao/api/inscricao/${id}/excluir/?chave=gamificaedu_secreto_2026`, { method: 'DELETE' })
+      await carregarInscritos()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  function abrirEdicao(inscrito) {
+    setEditando(inscrito.id)
+    setDadosEdicao({
+      nome_completo: inscrito.nome,
+      escola: inscrito.escola,
+      serie: inscrito.serie,
+      turno: inscrito.turno === 'Manhã (8h–12h)' ? 'manha' : 'tarde',
+      nome_responsavel: inscrito.responsavel,
+      telefone: inscrito.telefone,
+      email: inscrito.email,
+      status: inscrito.status,
+    })
+  }
+
+  async function salvarEdicao() {
+    setSalvandoEdicao(true)
+    try {
+      await fetch(`/inscricao/api/inscricao/${editando}/editar/?chave=gamificaedu_secreto_2026`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dadosEdicao),
+      })
+      setEditando(null)
+      await carregarInscritos()
+    } catch (e) {
+      console.error(e)
+    }
+    setSalvandoEdicao(false)
   }
 
   useEffect(() => {
@@ -127,7 +170,7 @@ export default function CursoFerias() {
 
           {/* Abas */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="flex border-b border-gray-100">
+            <div className="flex border-b border-gray-100 overflow-x-auto">
               {[
                 { id: 'inscritos', label: '👥 Inscritos' },
                 { id: 'preview', label: '👁️ Preview da Página' },
@@ -260,7 +303,7 @@ export default function CursoFerias() {
                             </td>
                             <td className="px-4 py-3 text-xs text-gray-400 hidden md:table-cell">{inscrito.data_inscricao}</td>
                             <td className="px-4 py-3">
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <a
                                   href={`https://wa.me/55${inscrito.telefone.replace(/\D/g, '')}`}
                                   target="_blank"
@@ -276,11 +319,25 @@ export default function CursoFerias() {
                                     onClick={() => marcarComoPago(inscrito.id)}
                                     disabled={marcandoPago === inscrito.id}
                                     className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
-                                    title="Marcar como pago manualmente"
+                                    title="Marcar como pago"
                                   >
                                     {marcandoPago === inscrito.id ? '...' : '✓ Pago'}
                                   </button>
                                 )}
+                                <button
+                                  onClick={() => abrirEdicao(inscrito)}
+                                  className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-lg hover:bg-blue-600 transition-colors"
+                                  title="Editar inscrição"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => excluirInscricao(inscrito.id, inscrito.nome)}
+                                  className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors"
+                                  title="Excluir inscrição"
+                                >
+                                  🗑️
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -444,6 +501,78 @@ export default function CursoFerias() {
 
         </div>
       </main>
+
+      {/* Modal de edição */}
+      {editando && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-800">✏️ Editar Inscrição</h2>
+              <button onClick={() => setEditando(null)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+            </div>
+            <div className="p-6 space-y-4">
+              {[
+                { field: 'nome_completo', label: 'Nome do Aluno' },
+                { field: 'escola', label: 'Escola' },
+                { field: 'serie', label: 'Série/Ano' },
+                { field: 'nome_responsavel', label: 'Nome do Responsável' },
+                { field: 'telefone', label: 'Telefone/WhatsApp' },
+                { field: 'email', label: 'E-mail' },
+              ].map(({ field, label }) => (
+                <div key={field}>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</label>
+                  <input
+                    type="text"
+                    value={dadosEdicao[field] || ''}
+                    onChange={e => setDadosEdicao(d => ({ ...d, [field]: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-orange-400"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Turno</label>
+                <select
+                  value={dadosEdicao.turno || ''}
+                  onChange={e => setDadosEdicao(d => ({ ...d, turno: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-orange-400"
+                >
+                  <option value="manha">Manhã (8h–12h)</option>
+                  <option value="tarde">Tarde (13h–17h)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                <select
+                  value={dadosEdicao.status || ''}
+                  onChange={e => setDadosEdicao(d => ({ ...d, status: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-orange-400"
+                >
+                  <option value="pendente">Pendente</option>
+                  <option value="aguardando_pagamento">Aguardando Pagamento</option>
+                  <option value="pago">Pago ✅</option>
+                  <option value="cancelado">Cancelado</option>
+                  <option value="certificado_emitido">Certificado Emitido</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={salvarEdicao}
+                disabled={salvandoEdicao}
+                className="flex-1 py-2.5 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors"
+              >
+                {salvandoEdicao ? 'Salvando...' : '💾 Salvar Alterações'}
+              </button>
+              <button
+                onClick={() => setEditando(null)}
+                className="px-6 py-2.5 border border-gray-200 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
