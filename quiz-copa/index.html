@@ -2,1830 +2,1123 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copa do Saber — ITA Tecnologia Educacional</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>⚽ Copa do Saber — ITA Tecnologia</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;700&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ===== VARIÁVEIS DE COR ===== */
-:root {
-  --cor-fundo: #0a0f1e;
-  --cor-primaria: #00c896;
-  --cor-secundaria: #f5a623;
-  --cor-acento: #1a2744;
-  --cor-texto: #e8eaf0;
-  --cor-erro: #ff4757;
-  --cor-sucesso: #2ed573;
-  --cor-card: #111827;
-  --cor-borda: #1f2d47;
+:root{
+  --verde:#00c896; --laranja:#f5a623; --vermelho:#ff4757;
+  --azul:#1a91ff; --roxo:#a855f7; --fundo:#070d1a;
+  --card:#0f1929; --borda:#1f3050; --texto:#e8eaf0;
 }
-
-/* ===== RESET & BASE ===== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--cor-fundo);
-  color: var(--cor-texto);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow-x:hidden;font-family:'DM Sans',sans-serif;background:var(--fundo);color:var(--texto)}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+#cv-fundo{z-index:0}
+#cv-explode{z-index:100}
 
 /* ===== TELAS ===== */
-.tela {
-  display: none;
-  min-height: 100vh;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  position: relative;
-}
-.tela.ativa { display: flex; }
+.tela{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:16px 12px;gap:12px;position:relative;z-index:1}
+.tela.ativa{display:flex;animation:telaIn .45s cubic-bezier(.22,1,.36,1)}
+@keyframes telaIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:none}}
+.shake{animation:shakeX .4s ease!important}
+@keyframes shakeX{0%,100%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(12px)}45%{transform:translateX(-9px)}60%{transform:translateX(9px)}75%{transform:translateX(-5px)}90%{transform:translateX(5px)}}
 
-/* Efeito de entrada: gol — tela cai de cima como uma rede */
-.tela.ativa { animation: telaEntradaGol 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@keyframes telaEntradaGol {
-  0%  { opacity: 0; transform: translateY(-60px) scaleY(0.92); }
-  60% { opacity: 1; transform: translateY(6px) scaleY(1.02); }
-  100%{ opacity: 1; transform: none; }
-}
+/* Flash de tela */
+#flash{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0}
+#flash.verde{background:radial-gradient(circle,rgba(0,200,150,.6) 0%,transparent 70%);animation:flashOut .6s ease}
+#flash.vermelho{background:radial-gradient(circle,rgba(255,71,87,.5) 0%,transparent 70%);animation:flashOut .6s ease}
+@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
 
-/* Shake de tela ao errar */
-@keyframes telaShake {
-  0%,100%{ transform: translateX(0); }
-  15%    { transform: translateX(-8px); }
-  30%    { transform: translateX(8px); }
-  45%    { transform: translateX(-6px); }
-  60%    { transform: translateX(6px); }
-  75%    { transform: translateX(-3px); }
-  90%    { transform: translateX(3px); }
-}
-.shake { animation: telaShake 0.5s ease both !important; }
+/* ===== LOGO ===== */
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,11vw,5.5rem);line-height:1;text-align:center;background:linear-gradient(135deg,var(--verde),var(--laranja),#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,200,150,.5));animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(0,200,150,.4))}50%{filter:drop-shadow(0 0 45px rgba(0,200,150,.8))}}
+.logo-sub{font-family:'Rajdhani',sans-serif;letter-spacing:4px;text-transform:uppercase;font-size:.85rem;opacity:.6;text-align:center}
 
-/* ===== FUNDO PARTÍCULAS NA ENTRADA ===== */
-#canvas-fundo {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-}
-.tela > * { position: relative; z-index: 1; }
+/* ===== CAMPO SVG ===== */
+.campo-svg-wrap{width:min(320px,90vw);margin:0 auto;filter:drop-shadow(0 0 20px rgba(0,200,150,.4));animation:campoGlow 2.5s ease-in-out infinite}
+@keyframes campoGlow{0%,100%{filter:drop-shadow(0 0 15px rgba(0,200,150,.3))}50%{filter:drop-shadow(0 0 35px rgba(0,200,150,.7))}}
 
-/* ===== GRAMADO ANIMADO NA TELA ENTRADA ===== */
-.campo-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 340px;
-  margin: 0 auto 20px;
-  border-radius: 14px;
-  overflow: hidden;
-}
-.campo-svg { width: 100%; border-radius: 12px; display: block; }
-/* Ondas de cor sobre o campo */
-.campo-wrapper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  background: linear-gradient(135deg,
-    rgba(0,200,150,0) 0%,
-    rgba(0,200,150,0.12) 50%,
-    rgba(0,200,150,0) 100%
-  );
-  background-size: 200% 200%;
-  animation: gramadoOnda 3s ease-in-out infinite;
-}
-@keyframes gramadoOnda {
-  0%,100%{ background-position: 0% 0%; filter: drop-shadow(0 0 10px rgba(0,200,150,0.3)); }
-  50%    { background-position: 100% 100%; filter: drop-shadow(0 0 24px rgba(0,200,150,0.7)); }
-}
-.bola-animada {
-  animation: bolaRola 4s linear infinite;
-  transform-origin: 50% 50%;
-}
-@keyframes bolaRola {
-  0%  { transform: translateX(-60px) rotate(0deg); }
-  50% { transform: translateX(60px)  rotate(360deg); }
-  100%{ transform: translateX(-60px) rotate(720deg); }
-}
+/* ===== CARD ===== */
+.card{background:var(--card);border:1px solid var(--borda);border-radius:18px;padding:22px;width:100%;max-width:480px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--verde),var(--laranja),transparent)}
 
-/* ===== LOGO / TÍTULO ===== */
-.logo-topo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2rem, 8vw, 4.5rem);
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  letter-spacing: 2px;
-  line-height: 1;
-}
-.sub-titulo {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: clamp(0.9rem, 3vw, 1.2rem);
-  color: rgba(232,234,240,0.7);
-  text-align: center;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-.badge-ita {
-  display: inline-block;
-  background: linear-gradient(135deg, var(--cor-acento), #0d1b36);
-  border: 1px solid var(--cor-borda);
-  border-radius: 999px;
-  padding: 4px 14px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--cor-primaria);
-  margin-top: 8px;
-  text-transform: uppercase;
-}
+/* ===== BTN ===== */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:none;border-radius:14px;font-family:'Rajdhani',sans-serif;font-size:1.15rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.btn:active{transform:scale(.96)}
+.btn-g{background:linear-gradient(135deg,var(--verde),#00a878);color:#070d1a;box-shadow:0 4px 20px rgba(0,200,150,.35)}
+.btn-g:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,200,150,.6)}
+.btn-o{background:linear-gradient(135deg,var(--laranja),#d4891d);color:#070d1a;box-shadow:0 4px 20px rgba(245,166,35,.35)}
+.btn-o:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(245,166,35,.6)}
+.btn-ghost{background:transparent;border:2px solid var(--borda);color:var(--texto)}
+.btn-ghost:hover{border-color:var(--verde);color:var(--verde)}
 
-/* ===== CARDS ===== */
-.card {
-  background: var(--cor-card);
-  border: 1px solid var(--cor-borda);
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  max-width: 600px;
-}
-.card-sm { max-width: 440px; }
-
-/* ===== BOTÕES COM RIPPLE ===== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 28px;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-transform: uppercase;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-}
-/* Ripple ao clicar */
-.btn::after {
-  content: '';
-  position: absolute;
-  width: 0; height: 0;
-  background: rgba(255,255,255,0.25);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.5s, height 0.5s, opacity 0.5s;
-  opacity: 0;
-  pointer-events: none;
-  top: var(--ry, 50%);
-  left: var(--rx, 50%);
-}
-.btn.ripple-ativo::after {
-  width: 300px; height: 300px;
-  opacity: 0;
-  transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
-}
-.btn-primario {
-  background: linear-gradient(135deg, var(--cor-primaria), #00a878);
-  color: #0a0f1e;
-}
-.btn-primario:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,200,150,0.4); }
-.btn-secundario {
-  background: linear-gradient(135deg, var(--cor-secundaria), #d4891d);
-  color: #0a0f1e;
-}
-.btn-secundario:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,166,35,0.4); }
-.btn-fantasma {
-  background: transparent;
-  border: 2px solid var(--cor-borda);
-  color: var(--cor-texto);
-}
-.btn-fantasma:hover { border-color: var(--cor-primaria); color: var(--cor-primaria); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+/* ===== SELETOR SÉRIE / DISCIPLINA ===== */
+.sel-row{display:flex;gap:10px;width:100%;max-width:480px}
+.sel-btn{flex:1;padding:14px 8px;background:rgba(255,255,255,.04);border:2px solid var(--borda);border-radius:12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;color:var(--texto);text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s;text-transform:uppercase;letter-spacing:1px}
+.sel-btn .ic{font-size:1.5rem}
+.sel-btn.on{border-color:var(--verde);background:rgba(0,200,150,.12);color:var(--verde);box-shadow:0 0 20px rgba(0,200,150,.3)}
+.sel-btn.on-o{border-color:var(--laranja);background:rgba(245,166,35,.12);color:var(--laranja);box-shadow:0 0 20px rgba(245,166,35,.3)}
 
 /* ===== INPUT ===== */
-.input-jogo {
-  width: 100%;
-  padding: 12px 16px;
-  background: var(--cor-acento);
-  border: 2px solid var(--cor-borda);
-  border-radius: 10px;
-  color: var(--cor-texto);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.input-jogo:focus { border-color: var(--cor-primaria); }
-.input-jogo::placeholder { color: rgba(232,234,240,0.4); }
-label.label-jogo {
-  display: block;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(232,234,240,0.6);
-  margin-bottom: 6px;
-}
+.inp{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);border:2px solid var(--borda);border-radius:12px;color:var(--texto);font-size:1rem;outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--verde)}
+.inp::placeholder{opacity:.4}
+.lbl{display:block;font-family:'Rajdhani',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.5;margin-bottom:6px}
 
-/* ===== TELA ENTRADA ===== */
-#tela-entrada { gap: 16px; }
-.selecionar-serie {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 440px;
-}
-.btn-serie {
-  flex: 1;
-  padding: 16px;
-  background: var(--cor-acento);
-  border: 2px solid var(--cor-borda);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--cor-texto);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.btn-serie.ativo, .btn-serie:hover {
-  border-color: var(--cor-primaria);
-  background: rgba(0,200,150,0.1);
-  color: var(--cor-primaria);
-  box-shadow: 0 0 18px rgba(0,200,150,0.25);
-}
-.selecionar-disciplina {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 440px;
-}
-.btn-disciplina {
-  flex: 1;
-  padding: 14px;
-  background: var(--cor-acento);
-  border: 2px solid var(--cor-borda);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--cor-texto);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.btn-disciplina .icone { font-size: 1.6rem; }
-.btn-disciplina.ativo, .btn-disciplina:hover {
-  border-color: var(--cor-secundaria);
-  background: rgba(245,166,35,0.1);
-  color: var(--cor-secundaria);
-  box-shadow: 0 0 18px rgba(245,166,35,0.2);
-}
-
-/* ===== HUD DE JOGO ===== */
-#tela-jogo {
-  justify-content: flex-start;
-  padding-top: 16px;
-  gap: 0;
-}
-.hud {
-  width: 100%;
-  max-width: 700px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: var(--cor-card);
-  border: 1px solid var(--cor-borda);
-  border-radius: 12px;
-  margin-bottom: 12px;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.hud-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: 'Rajdhani', sans-serif;
-}
-.hud-valor {
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1;
-}
-.hud-label {
-  font-size: 0.65rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-.hud-pontos .hud-valor { color: var(--cor-primaria); }
-.hud-combo .hud-valor  { color: var(--cor-secundaria); }
-
-/* Chamas no combo > 3 */
-.hud-combo-chama {
-  display: none;
-  font-size: 1rem;
-  animation: chamaFlicker 0.4s ease-in-out infinite alternate;
-}
-.hud-combo.em-chamas .hud-combo-chama { display: inline; }
-@keyframes chamaFlicker {
-  0%  { filter: drop-shadow(0 0 4px #ff6b00) brightness(1); transform: scaleY(1) rotate(-3deg); }
-  100%{ filter: drop-shadow(0 0 10px #ffdd00) brightness(1.3); transform: scaleY(1.1) rotate(3deg); }
-}
-.hud-tempo.urgente .hud-valor {
-  color: var(--cor-erro);
-  animation: pisca 0.5s infinite, timerShake 0.3s ease-in-out infinite;
-}
-@keyframes pisca { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
-@keyframes timerShake {
-  0%,100%{ transform: translateX(0); }
-  25%    { transform: translateX(-3px); }
-  75%    { transform: translateX(3px); }
-}
-
-/* Barra de progresso */
-.barra-progresso-wrapper {
-  width: 100%;
-  max-width: 700px;
-  margin-bottom: 12px;
-}
-.barra-progresso-labels {
-  display: flex;
-  justify-content: space-between;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.75rem;
-  opacity: 0.6;
-  margin-bottom: 4px;
-}
-.barra-progresso-track {
-  height: 6px;
-  background: var(--cor-acento);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.barra-progresso-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--cor-primaria), var(--cor-secundaria));
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
+/* ===== HUD ===== */
+#tela-jogo{justify-content:flex-start;padding-top:12px}
+.hud{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card);border:1px solid var(--borda);border-radius:14px;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.hud-n{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;line-height:1;transition:transform .15s}
+.hud-n.bump{transform:scale(1.4)}
+.hud-l{font-family:'Rajdhani',sans-serif;font-size:.6rem;letter-spacing:1px;text-transform:uppercase;opacity:.5}
+.hud-col{display:flex;flex-direction:column;align-items:center}
+.hud-pts .hud-n{color:var(--verde)}
+.hud-combo .hud-n{color:var(--laranja)}
+.chama{display:inline;animation:chamaF .2s ease-in-out infinite alternate}
+@keyframes chamaF{from{filter:brightness(1)}to{filter:brightness(1.6)}}
 
 /* Timer ring */
-.timer-ring-wrapper {
-  position: relative;
-  width: 50px;
-  height: 50px;
-  flex-shrink: 0;
-}
-.timer-ring-svg { transform: rotate(-90deg); }
-.timer-ring-bg   { stroke: var(--cor-acento); }
-.timer-ring-fill {
-  stroke: var(--cor-primaria);
-  stroke-dasharray: 126;
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
-}
-.timer-ring-text {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.1rem;
-  color: var(--cor-texto);
-}
+.ring-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{stroke:rgba(255,255,255,.08)}
+.ring-fill{stroke:var(--verde);stroke-dasharray:126;stroke-dashoffset:0;transition:stroke-dashoffset .8s linear,stroke .3s}
+.ring-txt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:1.2rem}
+.ring-wrap.urgente .ring-fill{stroke:var(--vermelho);animation:ringPulse .4s ease-in-out infinite}
+@keyframes ringPulse{0%,100%{filter:drop-shadow(0 0 4px var(--vermelho))}50%{filter:drop-shadow(0 0 12px var(--vermelho))}}
 
-/* Bloco da questão */
-.questao-container {
-  width: 100%;
-  max-width: 700px;
-  background: var(--cor-card);
-  border: 1px solid var(--cor-borda);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 12px;
-}
-.questao-tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-.tag-portugues  { background: rgba(0,200,150,0.15);  color: var(--cor-primaria);   border: 1px solid rgba(0,200,150,0.3); }
-.tag-matematica { background: rgba(245,166,35,0.15); color: var(--cor-secundaria); border: 1px solid rgba(245,166,35,0.3); }
+/* Barra progresso */
+.prog-wrap{width:100%;max-width:720px;margin-bottom:10px}
+.prog-info{display:flex;justify-content:space-between;font-family:'Rajdhani',sans-serif;font-size:.72rem;opacity:.5;margin-bottom:3px}
+.prog-track{height:5px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--verde),var(--laranja));border-radius:999px;transition:width .5s ease}
 
-/* Efeito typewriter no enunciado */
-.questao-enunciado {
-  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
-  line-height: 1.6;
-  margin-bottom: 20px;
-  min-height: 60px;
-}
-/* Cursor piscante durante typewriter */
-.typewriter-cursor::after {
-  content: '|';
-  color: var(--cor-primaria);
-  animation: cursorPisca 0.7s step-end infinite;
-}
-@keyframes cursorPisca { 0%,100%{opacity:1;} 50%{opacity:0;} }
+/* ===== QUESTÃO ===== */
+.q-box{width:100%;max-width:720px;background:var(--card);border:1px solid var(--borda);border-radius:18px;padding:22px;margin-bottom:10px;position:relative;overflow:hidden}
+.q-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--verde),transparent)}
+.q-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-family:'Rajdhani',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.tag-pt{background:rgba(0,200,150,.15);color:var(--verde);border:1px solid rgba(0,200,150,.3)}
+.tag-mt{background:rgba(245,166,35,.15);color:var(--laranja);border:1px solid rgba(245,166,35,.3)}
+.q-txt{font-size:clamp(.95rem,2.8vw,1.15rem);line-height:1.65;min-height:2.5em}
+.cursor-blink{display:inline-block;width:2px;height:1.1em;background:var(--verde);vertical-align:text-bottom;animation:blink .6s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.opcoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+@media(max-width:460px){.opcoes{grid-template-columns:1fr}}
+.op{padding:13px 15px;background:rgba(255,255,255,.04);border:2px solid var(--borda);border-radius:13px;color:var(--texto);font-family:'DM Sans',sans-serif;font-size:.95rem;cursor:pointer;transition:all .15s;text-align:left;line-height:1.4;position:relative;overflow:hidden}
+.op:hover:not(:disabled){border-color:var(--verde);background:rgba(0,200,150,.08);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,200,150,.2)}
+.op.certa{border-color:var(--verde)!important;background:rgba(0,200,150,.18)!important;color:var(--verde)!important;box-shadow:0 0 20px rgba(0,200,150,.4)!important;transform:scale(1.02)}
+.op.errada{border-color:var(--vermelho)!important;background:rgba(255,71,87,.18)!important;color:var(--vermelho)!important;box-shadow:0 0 20px rgba(255,71,87,.4)!important}
+.op:disabled{cursor:default}
+/* Brilho no botão ao aparecer */
+.op{animation:opEntra .3s ease both}
+.op:nth-child(2){animation-delay:.06s}
+.op:nth-child(3){animation-delay:.12s}
+.op:nth-child(4){animation-delay:.18s}
+@keyframes opEntra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-.opcoes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-@media (max-width: 480px) { .opcoes-grid { grid-template-columns: 1fr; } }
+/* ===== MASCOTE ===== */
+#mascote{position:fixed;bottom:0;right:-10px;width:130px;height:170px;z-index:10;pointer-events:none;transform-origin:bottom center;transition:transform .3s}
+#mascote.idle{animation:mascoteIdle 3s ease-in-out infinite}
+@keyframes mascoteIdle{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+#mascote.acertou{animation:mascotePula .5s cubic-bezier(.175,.885,.32,1.275);z-index:150}
+@keyframes mascotePula{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-50px) scale(1.15) rotate(-8deg)}60%{transform:translateY(-30px) scale(1.1) rotate(6deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
+#mascote.errou{animation:mascoteTremble .4s ease}
+@keyframes mascoteTremble{0%,100%{transform:rotate(0)}20%{transform:rotate(-10deg)}40%{transform:rotate(10deg)}60%{transform:rotate(-7deg)}80%{transform:rotate(7deg)}}
+#mascote.danca{animation:mascoteDanca .6s ease-in-out infinite alternate}
+@keyframes mascoteDanca{from{transform:translateY(-10px) rotate(-8deg) scale(1.05)}to{transform:translateY(5px) rotate(8deg) scale(.98)}}
 
-.opcao-btn {
-  padding: 12px 16px;
-  background: var(--cor-acento);
-  border: 2px solid var(--cor-borda);
-  border-radius: 12px;
-  color: var(--cor-texto);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.18s;
-  text-align: left;
-  line-height: 1.4;
-  position: relative;
-  overflow: hidden;
-}
-.opcao-btn:hover:not(:disabled) {
-  border-color: var(--cor-primaria);
-  background: rgba(0,200,150,0.08);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,200,150,0.15);
-}
-.opcao-btn.correta {
-  border-color: var(--cor-sucesso);
-  background: rgba(46,213,115,0.15);
-  color: var(--cor-sucesso);
-  animation: btnCorretaExplode 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@keyframes btnCorretaExplode {
-  0%  { transform: scale(1); }
-  40% { transform: scale(1.07); box-shadow: 0 0 30px rgba(46,213,115,0.6); }
-  100%{ transform: scale(1); }
-}
-.opcao-btn.errada {
-  border-color: var(--cor-erro);
-  background: rgba(255,71,87,0.15);
-  color: var(--cor-erro);
-}
-.opcao-btn:disabled { cursor: default; }
-
-/* ===== MASCOTE LEÃO CSS ===== */
-.mascote-wrapper {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 110px;
-  height: 140px;
-  z-index: 200;
-  pointer-events: none;
-  display: none;
-  transform-origin: bottom center;
-}
-/* Exibe o mascote apenas nas telas relevantes */
-#tela-jogo.ativa .mascote-wrapper,
-#tela-feedback.ativa .mascote-wrapper,
-#tela-resultado.ativa .mascote-wrapper { display: block; }
-
-/* Animações do mascote */
-@keyframes mascoteIdle {
-  0%,100%{ transform: translateY(0) rotate(0deg); }
-  50%    { transform: translateY(-6px) rotate(1deg); }
-}
-@keyframes mascotePula {
-  0%  { transform: translateY(0) scale(1); }
-  30% { transform: translateY(-30px) scale(1.08) rotate(-5deg); }
-  55% { transform: translateY(-20px) scale(1.05) rotate(5deg); }
-  80% { transform: translateY(-8px) scale(1.02); }
-  100%{ transform: translateY(0) scale(1); }
-}
-@keyframes mascoteTrist {
-  0%,100%{ transform: translateY(0) rotate(0deg); }
-  50%    { transform: translateY(4px) rotate(-8deg); }
-}
-@keyframes mascoteDanca {
-  0%  { transform: translateX(0) rotate(0deg) scale(1); }
-  20% { transform: translateX(-10px) rotate(-10deg) scale(1.05); }
-  40% { transform: translateX(10px)  rotate(10deg)  scale(1.05); }
-  60% { transform: translateX(-8px)  rotate(-7deg)  scale(1.03); }
-  80% { transform: translateX(8px)   rotate(7deg)   scale(1.03); }
-  100%{ transform: translateX(0) rotate(0deg) scale(1); }
-}
-@keyframes mascoteAbana {
-  0%,100%{ transform: rotate(0deg); }
-  20%    { transform: rotate(-15deg); }
-  40%    { transform: rotate(10deg); }
-  60%    { transform: rotate(-10deg); }
-  80%    { transform: rotate(5deg); }
-}
-@keyframes olhoBrilha {
-  0%,85%,100%{ opacity:1; transform:scale(1); }
-  90%         { opacity:0.3; transform:scale(0.5); }
-}
-
-.mascote-wrapper.idle     { animation: mascoteIdle 2.5s ease-in-out infinite; }
-.mascote-wrapper.celebra  { animation: mascotePula 0.7s cubic-bezier(0.22,1,0.36,1) both; }
-.mascote-wrapper.triste   { animation: mascoteTrist 1s ease-in-out infinite; }
-.mascote-wrapper.danca    { animation: mascoteDanca 0.8s ease-in-out infinite; }
-
-/* ===== SVG LEÃO INLINE ===== */
-/* (gerado via CSS shapes + SVG inline) */
-
-/* ===== PARTÍCULAS DE EXPLOSÃO ===== */
-.particula {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9990;
-  border-radius: 50%;
-  animation: particulaVoa linear both;
-}
-@keyframes particulaVoa {
-  0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translate(var(--px), var(--py)) rotate(var(--pr)) scale(0); opacity: 0; }
-}
+/* Balão de fala do mascote */
+#balao{position:fixed;bottom:160px;right:130px;background:white;color:#111;border-radius:16px 16px 4px 16px;padding:8px 14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;z-index:11;pointer-events:none;opacity:0;transition:opacity .3s;max-width:160px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+#balao.vis{opacity:1}
 
 /* ===== TELA FEEDBACK ===== */
-#tela-feedback { gap: 16px; }
-.feedback-icone {
-  font-size: 5rem;
-  line-height: 1;
-  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-@keyframes pop {
-  from{ transform: scale(0.4); opacity: 0; }
-  to  { transform: scale(1); opacity: 1; }
-}
-.feedback-titulo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(1.8rem, 6vw, 3rem);
-  text-align: center;
-  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s both;
-}
-.feedback-titulo.correto { color: var(--cor-sucesso); text-shadow: 0 0 20px rgba(46,213,115,0.6); }
-.feedback-titulo.errado  { color: var(--cor-erro);    text-shadow: 0 0 20px rgba(255,71,87,0.6); }
-.feedback-explicacao {
-  font-size: 0.93rem;
-  line-height: 1.6;
-  opacity: 0.85;
-  text-align: center;
-  max-width: 480px;
-}
-.pontos-ganhos {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
-  color: var(--cor-secundaria);
-  animation: slideUp 0.4s ease 0.2s both;
-}
-@keyframes slideUp {
-  from{ transform: translateY(20px); opacity: 0; }
-  to  { transform: translateY(0); opacity: 1; }
-}
+#tela-feedback{gap:10px}
+.fb-icone{font-size:4.5rem;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{from{transform:scale(0.3) rotate(-20deg);opacity:0}to{transform:scale(1);opacity:1}}
+.fb-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.5rem);text-align:center;animation:popIn .35s ease}
+.fb-certo{color:var(--verde)}
+.fb-errado{color:var(--vermelho)}
+.pts-badge{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--laranja);animation:slideUp .4s ease .2s both;text-align:center}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.fb-resposta{color:var(--verde);font-weight:700;font-size:1rem;margin:6px 0}
+.fb-exp{font-size:.9rem;line-height:1.6;opacity:.8;text-align:center;max-width:460px}
 
-/* ===== TELA INTERVALO ===== */
-#tela-intervalo { gap: 20px; }
-.placar-intervalo {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  width: 100%;
-  max-width: 440px;
-}
-.placar-item {
-  text-align: center;
-  background: var(--cor-acento);
-  border: 1px solid var(--cor-borda);
-  border-radius: 12px;
-  padding: 14px 8px;
-}
-.placar-numero {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
-  line-height: 1;
-}
-.placar-legenda {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-.placar-item.verde   .placar-numero { color: var(--cor-sucesso); }
-.placar-item.vermelho.placar-numero { color: var(--cor-erro); }
-.placar-item.amarelo .placar-numero { color: var(--cor-secundaria); }
+/* ===== INTERVALO ===== */
+#tela-intervalo{gap:16px}
+.placar-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:440px}
+.pl-item{text-align:center;background:rgba(255,255,255,.04);border:1px solid var(--borda);border-radius:14px;padding:14px 8px}
+.pl-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1}
+.pl-lbl{font-family:'Rajdhani',sans-serif;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;opacity:.5}
+.pl-verde .pl-num{color:var(--verde)}
+.pl-red .pl-num{color:var(--vermelho)}
+.pl-lar .pl-num{color:var(--laranja)}
 
-/* ===== TELA RESULTADO ===== */
-#tela-resultado { gap: 20px; }
-.resultado-trofeu {
-  font-size: clamp(4rem, 15vw, 8rem);
-  line-height: 1;
-  animation: trofeuEntrada 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-@keyframes trofeuEntrada {
-  from{ transform: scale(0) rotate(-20deg); opacity: 0; }
-  to  { transform: scale(1) rotate(0); opacity: 1; }
-}
-.resultado-pontuacao {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(3rem, 12vw, 6rem);
-  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-}
-.resultado-subtexto {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: clamp(0.9rem, 3vw, 1.1rem);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  opacity: 0.7;
-  text-align: center;
-}
-.resultado-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  width: 100%;
-  max-width: 440px;
-}
-.stat-item {
-  background: var(--cor-acento);
-  border: 1px solid var(--cor-borda);
-  border-radius: 12px;
-  padding: 14px;
-  text-align: center;
-}
-.stat-valor {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.8rem;
-  line-height: 1;
-  color: var(--cor-primaria);
-}
-.stat-legenda {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  opacity: 0.6;
-  margin-top: 2px;
-}
-.resultado-botoes {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 440px;
-  flex-wrap: wrap;
-}
-.resultado-botoes .btn { flex: 1; min-width: 140px; }
-.medalha-badge {
-  display: inline-block;
-  padding: 8px 20px;
-  border-radius: 999px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 2px;
-  animation: glow 2s ease-in-out infinite;
-}
-.medalha-ouro     { background: linear-gradient(135deg, #f5a623, #d4891d); color: #0a0f1e; }
-.medalha-prata    { background: linear-gradient(135deg, #9ba3b0, #6b7280); color: #0a0f1e; }
-.medalha-bronze   { background: linear-gradient(135deg, #cd7f32, #a0632a); color: #0a0f1e; }
-.medalha-participou { background: var(--cor-acento); border: 1px solid var(--cor-borda); color: var(--cor-texto); }
-@keyframes glow {
-  0%,100%{ box-shadow: 0 0 10px rgba(245,166,35,0.3); }
-  50%    { box-shadow: 0 0 25px rgba(245,166,35,0.7); }
-}
+/* ===== RESULTADO ===== */
+#tela-resultado{gap:14px}
+.trofeu-anim{font-size:clamp(5rem,18vw,9rem);line-height:1;animation:trofeuIn .8s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes trofeuIn{from{transform:scale(0) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.pts-grande{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,14vw,7rem);background:linear-gradient(135deg,var(--verde),var(--laranja));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;filter:drop-shadow(0 0 20px rgba(0,200,150,.5))}
+.res-sub{font-family:'Rajdhani',sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:clamp(.85rem,2.5vw,1.05rem);opacity:.6;text-align:center}
+.res-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:440px}
+.rs{background:rgba(255,255,255,.04);border:1px solid var(--borda);border-radius:14px;padding:14px;text-align:center}
+.rs-v{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;line-height:1;color:var(--verde)}
+.rs-l{font-family:'Rajdhani',sans-serif;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;opacity:.5;margin-top:2px}
+.medalha{display:inline-block;padding:8px 22px;border-radius:999px;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;animation:glow 2s ease-in-out infinite}
+.m-ouro{background:linear-gradient(135deg,#f5c542,#e8a000);color:#111;box-shadow:0 0 20px rgba(245,165,0,.5)}
+.m-prata{background:linear-gradient(135deg,#c0c8d4,#8a9ab0);color:#111}
+.m-bronze{background:linear-gradient(135deg,#cd7f32,#a06228);color:#111}
+.m-part{background:rgba(255,255,255,.08);border:1px solid var(--borda);color:var(--texto)}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(245,165,0,.4)}50%{box-shadow:0 0 30px rgba(245,165,0,.8)}}
+.estrelas{display:flex;gap:6px;font-size:2.2rem}
+.est{animation:estIn .35s ease both}
+.est:nth-child(2){animation-delay:.15s}
+.est:nth-child(3){animation-delay:.3s}
+@keyframes estIn{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+.est.off{opacity:.2;filter:grayscale(1)}
+.res-bts{display:flex;gap:10px;width:100%;max-width:440px;flex-wrap:wrap}
+.res-bts .btn{flex:1;min-width:120px}
 
-/* ===== ESTRELAS ===== */
-.estrelas-animadas { display: flex; gap: 8px; font-size: 2rem; }
-.estrela { animation: estrelaEntrada 0.3s ease both; }
-.estrela:nth-child(2) { animation-delay: 0.15s; }
-.estrela:nth-child(3) { animation-delay: 0.3s; }
-@keyframes estrelaEntrada { from{ transform: scale(0) rotate(-30deg); } to{ transform: scale(1) rotate(0); } }
-.estrela.vazia { opacity: 0.25; }
+/* ===== CONFETTI DOM ===== */
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+.cp{position:absolute;border-radius:2px;animation:cpCair linear both}
+@keyframes cpCair{0%{top:-10px;opacity:1;transform:translateX(0) rotate(0)}100%{top:110vh;opacity:.2;transform:translateX(var(--tx)) rotate(var(--rot))}}
 
-/* ===== CONFETTI ===== */
-.confetti-container { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; overflow:hidden; }
-.confetti-piece {
-  position: absolute;
-  border-radius: 2px;
-  animation: confettiCair linear both;
-}
-@keyframes confettiCair {
-  0%  { top: -10px; transform: translateX(0) rotate(0deg); opacity: 1; }
-  100%{ top: 110vh; transform: translateX(var(--tx)) rotate(var(--rot)); opacity: 0.3; }
-}
+.rodape{font-family:'Rajdhani',sans-serif;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;opacity:.25;text-align:center;margin-top:8px}
 
-/* ===== RODAPÉ ===== */
-.rodape-ita { margin-top:12px; font-family:'Rajdhani',sans-serif; font-size:0.72rem; letter-spacing:1px; text-transform:uppercase; opacity:0.35; text-align:center; }
-.divisor { width:100%; max-width:440px; height:1px; background:var(--cor-borda); margin:4px 0; }
-
-@media (max-width: 640px) {
-  .hud { padding: 8px 12px; gap: 8px; }
-  .questao-container { padding: 16px; }
-  .card { padding: 16px; }
-  .mascote-wrapper { width: 80px; height: 100px; bottom: 10px; right: 10px; }
+@media(max-width:640px){
+  .hud{padding:8px;gap:6px}
+  .q-box,.card{padding:16px}
+  #mascote{width:100px;height:130px}
+  #balao{bottom:120px;right:100px;font-size:.8rem}
 }
 </style>
 </head>
 <body>
 
-<!-- Canvas de partículas de fundo -->
-<canvas id="canvas-fundo"></canvas>
+<!-- Canvases -->
+<canvas id="cv-fundo"></canvas>
+<canvas id="cv-explode"></canvas>
 
-<!-- Container de confetti -->
+<!-- Flash de tela -->
+<div id="flash"></div>
+
+<!-- Confetti -->
 <div class="confetti-container" id="confetti"></div>
 
-<!-- Container de partículas de explosão (botões) -->
-<div id="explosao-container" style="position:fixed;inset:0;pointer-events:none;z-index:9980;overflow:hidden;"></div>
+<!-- ===== MASCOTE — LEÃO SVG 3D ===== -->
+<div id="mascote" class="idle">
+<svg viewBox="0 0 130 170" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <radialGradient id="gCorpo" cx="42%" cy="35%" r="58%">
+    <stop offset="0%" stop-color="#f0b050"/>
+    <stop offset="55%" stop-color="#c87820"/>
+    <stop offset="100%" stop-color="#7a4808"/>
+  </radialGradient>
+  <radialGradient id="gJuba" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#8b4810"/>
+    <stop offset="50%" stop-color="#6a3208"/>
+    <stop offset="100%" stop-color="#3a1804"/>
+  </radialGradient>
+  <radialGradient id="gBarriga" cx="40%" cy="35%" r="60%">
+    <stop offset="0%" stop-color="#fcd890"/>
+    <stop offset="100%" stop-color="#e09830"/>
+  </radialGradient>
+  <radialGradient id="gOlho" cx="30%" cy="30%" r="65%">
+    <stop offset="0%" stop-color="#fff8b0"/>
+    <stop offset="35%" stop-color="#f0b000"/>
+    <stop offset="70%" stop-color="#804000"/>
+    <stop offset="100%" stop-color="#1a0800"/>
+  </radialGradient>
+  <radialGradient id="gNariz" cx="40%" cy="30%" r="60%">
+    <stop offset="0%" stop-color="#804060"/>
+    <stop offset="100%" stop-color="#300820"/>
+  </radialGradient>
+  <filter id="sombra3d" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="rgba(0,0,0,.6)"/>
+  </filter>
+  <filter id="brilho3d" x="-10%" y="-10%" width="120%" height="120%">
+    <feGaussianBlur stdDeviation="1.5" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
 
-<!-- ===== MASCOTE LEÃO (SVG inline, posicionado fixed) ===== -->
-<div class="mascote-wrapper idle" id="mascote">
-  <svg viewBox="0 0 110 140" xmlns="http://www.w3.org/2000/svg" width="110" height="140">
-    <defs>
-      <!-- Gradiente do corpo -->
-      <radialGradient id="gradCorpo" cx="50%" cy="40%" r="55%">
-        <stop offset="0%"   stop-color="#e8a030"/>
-        <stop offset="60%"  stop-color="#c07820"/>
-        <stop offset="100%" stop-color="#8b5010"/>
-      </radialGradient>
-      <!-- Gradiente da juba -->
-      <radialGradient id="gradJuba" cx="50%" cy="50%" r="50%">
-        <stop offset="0%"   stop-color="#a05010"/>
-        <stop offset="50%"  stop-color="#7a3a08"/>
-        <stop offset="100%" stop-color="#4a2005"/>
-      </radialGradient>
-      <!-- Gradiente da barriga -->
-      <radialGradient id="gradBarriga" cx="50%" cy="50%" r="50%">
-        <stop offset="0%"   stop-color="#f5c87a"/>
-        <stop offset="100%" stop-color="#d4962a"/>
-      </radialGradient>
-      <!-- Brilho dos olhos -->
-      <radialGradient id="gradOlho" cx="35%" cy="35%" r="60%">
-        <stop offset="0%"   stop-color="#ffe080"/>
-        <stop offset="40%"  stop-color="#f5a020"/>
-        <stop offset="100%" stop-color="#8b4000"/>
-      </radialGradient>
-      <!-- Filtro brilho -->
-      <filter id="brilho">
-        <feGaussianBlur stdDeviation="2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
+<!-- SOMBRA NO CHÃO -->
+<ellipse cx="65" cy="167" rx="45" ry="7" fill="rgba(0,0,0,.4)"/>
 
-    <!-- CORPO -->
-    <ellipse cx="55" cy="105" rx="30" ry="32" fill="url(#gradCorpo)"/>
-    <!-- Barriga clara -->
-    <ellipse cx="55" cy="110" rx="18" ry="20" fill="url(#gradBarriga)" opacity="0.7"/>
+<!-- CORPO -->
+<ellipse cx="65" cy="118" rx="34" ry="36" fill="url(#gCorpo)" filter="url(#sombra3d)"/>
+<!-- Barriga -->
+<ellipse cx="63" cy="123" rx="20" ry="22" fill="url(#gBarriga)" opacity=".75"/>
 
-    <!-- PERNAS -->
-    <ellipse cx="40" cy="132" rx="10" ry="8" fill="#b06820"/>
-    <ellipse cx="70" cy="132" rx="10" ry="8" fill="#b06820"/>
-    <!-- Patas -->
-    <ellipse cx="40" cy="137" rx="11" ry="5" fill="#c07820"/>
-    <ellipse cx="70" cy="137" rx="11" ry="5" fill="#c07820"/>
-    <!-- Dedos pata esquerda -->
-    <circle cx="33" cy="139" r="3.5" fill="#a06010"/>
-    <circle cx="40" cy="140" r="3.5" fill="#a06010"/>
-    <circle cx="47" cy="139" r="3.5" fill="#a06010"/>
-    <!-- Dedos pata direita -->
-    <circle cx="63" cy="139" r="3.5" fill="#a06010"/>
-    <circle cx="70" cy="140" r="3.5" fill="#a06010"/>
-    <circle cx="77" cy="139" r="3.5" fill="#a06010"/>
+<!-- PERNAS -->
+<ellipse cx="48" cy="150" rx="12" ry="10" fill="#b87220"/>
+<ellipse cx="82" cy="150" rx="12" ry="10" fill="#b87220"/>
+<!-- Patas -->
+<ellipse cx="48" cy="158" rx="14" ry="7" fill="#c88028"/>
+<ellipse cx="82" cy="158" rx="14" ry="7" fill="#c88028"/>
+<circle cx="41" cy="161" r="5" fill="#9a6018"/>
+<circle cx="48" cy="163" r="5" fill="#9a6018"/>
+<circle cx="55" cy="161" r="5" fill="#9a6018"/>
+<circle cx="75" cy="161" r="5" fill="#9a6018"/>
+<circle cx="82" cy="163" r="5" fill="#9a6018"/>
+<circle cx="89" cy="161" r="5" fill="#9a6018"/>
 
-    <!-- BRAÇOS -->
-    <ellipse cx="27" cy="108" rx="9" ry="14" fill="#c07820" transform="rotate(-15,27,108)"/>
-    <ellipse cx="83" cy="108" rx="9" ry="14" fill="#c07820" transform="rotate(15,83,108)"/>
+<!-- BRAÇOS -->
+<ellipse cx="32" cy="120" rx="10" ry="16" fill="#c87820" transform="rotate(-20 32 120)" filter="url(#sombra3d)"/>
+<ellipse cx="98" cy="120" rx="10" ry="16" fill="#c87820" transform="rotate(20 98 120)" filter="url(#sombra3d)"/>
+<!-- Mãozinhas -->
+<circle cx="25" cy="132" r="8" fill="#b87220"/>
+<circle cx="105" cy="132" r="8" fill="#b87220"/>
 
-    <!-- JUBA (atrás da cabeça) -->
-    <!-- Pétalas da juba -->
-    <ellipse cx="55" cy="42" rx="28" ry="30" fill="url(#gradJuba)" opacity="0.9"/>
-    <!-- Pontas da juba -->
-    <ellipse cx="30" cy="48" rx="10" ry="16" fill="#6a2e06" transform="rotate(-30,30,48)"/>
-    <ellipse cx="80" cy="48" rx="10" ry="16" fill="#6a2e06" transform="rotate(30,80,48)"/>
-    <ellipse cx="25" cy="62" rx="8"  ry="14" fill="#7a3a08" transform="rotate(-50,25,62)"/>
-    <ellipse cx="85" cy="62" rx="8"  ry="14" fill="#7a3a08" transform="rotate(50,85,62)"/>
-    <ellipse cx="55" cy="18" rx="10" ry="14" fill="#8a4010"/>
-    <ellipse cx="38" cy="24" rx="8"  ry="12" fill="#7a3808" transform="rotate(-15,38,24)"/>
-    <ellipse cx="72" cy="24" rx="8"  ry="12" fill="#7a3808" transform="rotate(15,72,24)"/>
+<!-- JUBA (atrás) — forma de raios/pétalas -->
+<g id="juba" filter="url(#sombra3d)">
+  <ellipse cx="65" cy="52" rx="32" ry="35" fill="url(#gJuba)"/>
+  <ellipse cx="34" cy="55" rx="13" ry="20" fill="#5a2806" transform="rotate(-35 34 55)"/>
+  <ellipse cx="96" cy="55" rx="13" ry="20" fill="#5a2806" transform="rotate(35 96 55)"/>
+  <ellipse cx="26" cy="72" rx="10" ry="17" fill="#6a3208" transform="rotate(-55 26 72)"/>
+  <ellipse cx="104" cy="72" rx="10" ry="17" fill="#6a3208" transform="rotate(55 104 72)"/>
+  <ellipse cx="65" cy="20" rx="11" ry="16" fill="#7a3c0a"/>
+  <ellipse cx="42" cy="26" rx="9" ry="14" fill="#6a3008" transform="rotate(-20 42 26)"/>
+  <ellipse cx="88" cy="26" rx="9" ry="14" fill="#6a3008" transform="rotate(20 88 26)"/>
+  <!-- Brilho juba -->
+  <ellipse cx="55" cy="44" rx="8" ry="10" fill="rgba(255,180,80,.12)"/>
+</g>
 
-    <!-- CABEÇA -->
-    <ellipse cx="55" cy="58" rx="26" ry="25" fill="url(#gradCorpo)"/>
+<!-- CABEÇA -->
+<ellipse cx="65" cy="65" rx="30" ry="28" fill="url(#gCorpo)" filter="url(#brilho3d)"/>
+<!-- Highlight cabeça -->
+<ellipse cx="55" cy="50" rx="12" ry="8" fill="rgba(255,220,120,.18)" transform="rotate(-15 55 50)"/>
 
-    <!-- ORELHAS -->
-    <ellipse cx="34" cy="38" rx="9" ry="11" fill="#c07820" transform="rotate(-20,34,38)"/>
-    <ellipse cx="34" cy="38" rx="5" ry="7"  fill="#d4642a" transform="rotate(-20,34,38)" opacity="0.7"/>
-    <ellipse cx="76" cy="38" rx="9" ry="11" fill="#c07820" transform="rotate(20,76,38)"/>
-    <ellipse cx="76" cy="38" rx="5" ry="7"  fill="#d4642a" transform="rotate(20,76,38)" opacity="0.7"/>
+<!-- ORELHAS -->
+<ellipse cx="40" cy="42" rx="11" ry="13" fill="#c87820" transform="rotate(-25 40 42)"/>
+<ellipse cx="40" cy="42" rx="6.5" ry="8" fill="#d44030" transform="rotate(-25 40 42)" opacity=".7"/>
+<ellipse cx="90" cy="42" rx="11" ry="13" fill="#c87820" transform="rotate(25 90 42)"/>
+<ellipse cx="90" cy="42" rx="6.5" ry="8" fill="#d44030" transform="rotate(25 90 42)" opacity=".7"/>
 
-    <!-- OLHOS -->
-    <!-- Olho esquerdo -->
-    <ellipse cx="43" cy="55" rx="9" ry="9" fill="url(#gradOlho)" filter="url(#brilho)"/>
-    <ellipse cx="43" cy="55" rx="6" ry="6" fill="#3a1800"/>
-    <circle  cx="43" cy="55" r="3.5" fill="#1a0800"/>
-    <!-- Brilho do olho esquerdo -->
-    <circle  cx="40.5" cy="52.5" r="2" fill="white" opacity="0.9" class="olho-brilho"/>
-    <circle  cx="45.5" cy="56.5" r="1" fill="white" opacity="0.5" class="olho-brilho"/>
+<!-- OLHOS -->
+<g id="olhos">
+  <!-- Olho esquerdo -->
+  <circle cx="52" cy="62" r="10" fill="url(#gOlho)" filter="url(#brilho3d)"/>
+  <circle cx="52" cy="62" r="6" fill="#200c00"/>
+  <circle cx="49" cy="59" r="2.5" fill="white" opacity=".9"/>
+  <circle cx="54" cy="64" r="1.5" fill="white" opacity=".5"/>
+  <!-- Olho direito -->
+  <circle cx="78" cy="62" r="10" fill="url(#gOlho)" filter="url(#brilho3d)"/>
+  <circle cx="78" cy="62" r="6" fill="#200c00"/>
+  <circle cx="75" cy="59" r="2.5" fill="white" opacity=".9"/>
+  <circle cx="80" cy="64" r="1.5" fill="white" opacity=".5"/>
+</g>
+<!-- Sobrancelhas -->
+<path id="sobrancelha-e" d="M43 53 Q52 48 58 52" stroke="#6a3208" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<path id="sobrancelha-d" d="M72 52 Q78 48 87 53" stroke="#6a3208" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 
-    <!-- Olho direito -->
-    <ellipse cx="67" cy="55" rx="9" ry="9" fill="url(#gradOlho)" filter="url(#brilho)"/>
-    <ellipse cx="67" cy="55" rx="6" ry="6" fill="#3a1800"/>
-    <circle  cx="67" cy="55" r="3.5" fill="#1a0800"/>
-    <!-- Brilho do olho direito -->
-    <circle  cx="64.5" cy="52.5" r="2" fill="white" opacity="0.9" class="olho-brilho"/>
-    <circle  cx="69.5" cy="56.5" r="1" fill="white" opacity="0.5" class="olho-brilho"/>
+<!-- NARIZ -->
+<ellipse cx="65" cy="73" rx="8" ry="5.5" fill="url(#gNariz)"/>
+<ellipse cx="62" cy="71.5" rx="2" ry="1.5" fill="rgba(255,255,255,.25)"/>
 
-    <!-- Sobrancelhas (estado neutro) -->
-    <path id="sobrancelha-esq" d="M36,46 Q43,42 50,45" stroke="#5a2a00" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path id="sobrancelha-dir" d="M60,45 Q67,42 74,46" stroke="#5a2a00" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<!-- BOCA FELIZ (default) -->
+<path id="boca" d="M55 80 Q65 88 75 80" stroke="#7a3820" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<!-- Bigodes -->
+<line x1="35" y1="73" x2="55" y2="76" stroke="#7a4808" stroke-width="1.5" opacity=".7"/>
+<line x1="35" y1="79" x2="55" y2="78" stroke="#7a4808" stroke-width="1.5" opacity=".7"/>
+<line x1="95" y1="73" x2="75" y2="76" stroke="#7a4808" stroke-width="1.5" opacity=".7"/>
+<line x1="95" y1="79" x2="75" y2="78" stroke="#7a4808" stroke-width="1.5" opacity=".7"/>
 
-    <!-- FOCINHO -->
-    <ellipse cx="55" cy="67" rx="13" ry="9" fill="#d4962a" opacity="0.8"/>
-    <ellipse cx="55" cy="67" rx="11" ry="7" fill="#f0c060" opacity="0.6"/>
+<!-- Bola de futebol na mão -->
+<g id="bolaMao" transform="translate(97,128)">
+  <circle r="10" fill="white"/>
+  <circle r="10" fill="none" stroke="rgba(0,0,0,.2)" stroke-width="1"/>
+  <polygon points="0,-6 4,1 2,6 -2,6 -4,1" fill="rgba(0,0,0,.45)" transform="scale(.7)"/>
+  <circle cx="-3" cy="-2" r="2" fill="rgba(0,0,0,.35)"/>
+  <circle cx="3" cy="-2" r="1.5" fill="rgba(0,0,0,.35)"/>
+  <circle cx="0" cy="4" r="1.5" fill="rgba(0,0,0,.35)"/>
+</g>
 
-    <!-- Nariz -->
-    <path d="M50,63 Q55,60 60,63 Q57,67 55,67 Q53,67 50,63Z" fill="#3a1800"/>
-    <!-- Narinas -->
-    <ellipse cx="52" cy="63" rx="2" ry="1.5" fill="#2a0e00" opacity="0.7"/>
-    <ellipse cx="58" cy="63" rx="2" ry="1.5" fill="#2a0e00" opacity="0.7"/>
-
-    <!-- Boca (sorriso) -->
-    <path id="boca-leao" d="M49,70 Q55,76 61,70" stroke="#3a1800" stroke-width="2" fill="none" stroke-linecap="round"/>
-
-    <!-- Bigodes -->
-    <line x1="25" y1="65" x2="44" y2="67" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
-    <line x1="25" y1="70" x2="44" y2="69" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
-    <line x1="66" y1="67" x2="85" y2="65" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
-    <line x1="66" y1="69" x2="85" y2="70" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
-
-    <!-- COROA do mascote no resultado -->
-    <g id="coroa-mascote" style="display:none">
-      <polygon points="55,8 49,18 43,12 47,22 55,20 63,22 67,12 61,18" fill="#f5a623" filter="url(#brilho)"/>
-      <circle cx="55" cy="10" r="3" fill="#ff4757"/>
-      <circle cx="46" cy="15" r="2" fill="#2ed573"/>
-      <circle cx="64" cy="15" r="2" fill="#1a91ff"/>
-    </g>
-
-    <!-- Estrelas nos olhos (celebração) -->
-    <g id="estrelas-olhos" style="display:none">
-      <text x="35" y="62" font-size="12" fill="#ffdd00">★</text>
-      <text x="59" y="62" font-size="12" fill="#ffdd00">★</text>
-    </g>
-  </svg>
+<!-- Coroa (oculta por padrão) -->
+<g id="coroa" style="display:none">
+  <path d="M45 22 L55 10 L65 20 L75 10 L85 22 L80 30 L50 30 Z" fill="#f5c542" stroke="#d4a000" stroke-width="1.5"/>
+  <circle cx="55" cy="15" r="3" fill="#ff4444"/>
+  <circle cx="65" cy="20" r="3" fill="#44ff44"/>
+  <circle cx="75" cy="15" r="3" fill="#4444ff"/>
+</g>
+</svg>
 </div>
+
+<!-- Balão de fala -->
+<div id="balao">😄 Vamos lá!</div>
 
 <!-- ===== TELA 1: ENTRADA ===== -->
 <div id="tela-entrada" class="tela ativa">
-  <div class="campo-wrapper" style="max-width:320px">
-    <svg viewBox="0 0 320 200" class="campo-svg" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Campo SVG animado -->
+  <div class="campo-svg-wrap">
+    <svg viewBox="0 0 320 190" xmlns="http://www.w3.org/2000/svg" width="100%">
       <defs>
-        <linearGradient id="gramado" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#0d3d1a"/>
-          <stop offset="100%" stop-color="#0a2e14"/>
-        </linearGradient>
-        <linearGradient id="gradLinha" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stop-color="rgba(0,200,150,0)"/>
-          <stop offset="50%"  stop-color="rgba(0,200,150,0.8)"/>
-          <stop offset="100%" stop-color="rgba(0,200,150,0)"/>
+        <linearGradient id="gram" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0b3a14"/>
+          <stop offset="100%" stop-color="#082a0e"/>
         </linearGradient>
       </defs>
-      <rect width="320" height="200" rx="8" fill="url(#gramado)"/>
-      <!-- Listras do gramado -->
-      <rect x="0"   y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
-      <rect x="80"  y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
-      <rect x="160" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
-      <rect x="240" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
-      <!-- Linhas do campo -->
-      <rect x="10" y="10" width="300" height="180" rx="4" fill="none" stroke="rgba(0,200,150,0.5)" stroke-width="2"/>
-      <line x1="160" y1="10" x2="160" y2="190" stroke="rgba(0,200,150,0.5)" stroke-width="1.5"/>
-      <circle cx="160" cy="100" r="35" fill="none" stroke="rgba(0,200,150,0.5)" stroke-width="1.5"/>
-      <circle cx="160" cy="100" r="3"  fill="rgba(0,200,150,0.8)"/>
-      <rect x="10"  y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
-      <rect x="10"  y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
-      <rect x="260" y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
-      <rect x="288" y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
-      <line x1="0" y1="100" x2="320" y2="100" stroke="url(#gradLinha)" stroke-width="2" opacity="0.5"/>
+      <!-- Faixas gramado -->
+      <rect width="320" height="190" rx="10" fill="url(#gram)"/>
+      <rect x="0" width="40" height="190" fill="rgba(0,0,0,.1)"/>
+      <rect x="80" width="40" height="190" fill="rgba(0,0,0,.1)"/>
+      <rect x="160" width="40" height="190" fill="rgba(0,0,0,.1)"/>
+      <rect x="240" width="40" height="190" fill="rgba(0,0,0,.1)"/>
+      <!-- Linhas -->
+      <rect x="8" y="8" width="304" height="174" rx="5" fill="none" stroke="rgba(0,200,150,.55)" stroke-width="2"/>
+      <line x1="160" y1="8" x2="160" y2="182" stroke="rgba(0,200,150,.5)" stroke-width="1.5"/>
+      <circle cx="160" cy="95" r="34" fill="none" stroke="rgba(0,200,150,.5)" stroke-width="1.5"/>
+      <circle cx="160" cy="95" r="3" fill="rgba(0,200,150,.9)"/>
+      <rect x="8" y="58" width="48" height="74" fill="none" stroke="rgba(0,200,150,.4)" stroke-width="1.2"/>
+      <rect x="8" y="75" width="20" height="40" fill="none" stroke="rgba(0,200,150,.35)" stroke-width="1"/>
+      <rect x="264" y="58" width="48" height="74" fill="none" stroke="rgba(0,200,150,.4)" stroke-width="1.2"/>
+      <rect x="292" y="75" width="20" height="40" fill="none" stroke="rgba(0,200,150,.35)" stroke-width="1"/>
       <!-- Bola animada -->
-      <g class="bola-animada">
-        <circle cx="160" cy="100" r="9" fill="white"/>
-        <circle cx="157" cy="97"  r="2.5" fill="rgba(0,0,0,0.35)"/>
-        <circle cx="163" cy="97"  r="2"   fill="rgba(0,0,0,0.35)"/>
-        <circle cx="160" cy="103" r="2"   fill="rgba(0,0,0,0.35)"/>
+      <g style="animation:bolaRola 3.5s linear infinite">
+        <circle cx="160" cy="95" r="10" fill="white"/>
+        <circle cx="156" cy="91" r="3" fill="rgba(0,0,0,.4)"/>
+        <circle cx="163" cy="91" r="2.5" fill="rgba(0,0,0,.4)"/>
+        <circle cx="160" cy="99" r="2.5" fill="rgba(0,0,0,.4)"/>
       </g>
+      <style>@keyframes bolaRola{0%{transform:translateX(-55px) rotate(0deg)}50%{transform:translateX(55px) rotate(360deg)}100%{transform:translateX(-55px) rotate(720deg)}}</style>
     </svg>
   </div>
 
-  <div class="logo-topo">Copa do Saber</div>
-  <div class="sub-titulo">Campeonato do Conhecimento</div>
-  <div class="badge-ita">ITA Tecnologia Educacional</div>
+  <div class="logo">Copa do Saber</div>
+  <div class="logo-sub">⚽ Campeonato do Conhecimento · ITA Tecnologia</div>
 
-  <div class="card card-sm" style="margin-top:16px">
+  <div class="card" style="max-width:460px;margin-top:8px">
     <div style="margin-bottom:14px">
-      <label class="label-jogo">Seu nome</label>
-      <input type="text" id="input-nome" class="input-jogo" placeholder="Digite seu nome..." maxlength="40">
+      <label class="lbl">Seu nome</label>
+      <input type="text" id="inp-nome" class="inp" placeholder="Digite seu nome..." maxlength="40" autocomplete="off">
     </div>
     <div style="margin-bottom:14px">
-      <label class="label-jogo">Série</label>
-      <div class="selecionar-serie">
-        <button class="btn-serie ativo" data-serie="8" onclick="selecionarSerie(this)">8º ANO</button>
-        <button class="btn-serie"        data-serie="9" onclick="selecionarSerie(this)">9º ANO</button>
+      <label class="lbl">Série</label>
+      <div class="sel-row">
+        <button class="sel-btn on" data-serie="8" onclick="selSerie(this)"><span class="ic">🎓</span>8º ANO</button>
+        <button class="sel-btn" data-serie="9" onclick="selSerie(this)"><span class="ic">🏆</span>9º ANO</button>
       </div>
     </div>
     <div style="margin-bottom:20px">
-      <label class="label-jogo">Disciplina</label>
-      <div class="selecionar-disciplina">
-        <button class="btn-disciplina ativo" data-disc="portugues"  onclick="selecionarDisciplina(this)">
-          <span class="icone">📖</span><span>Português</span>
-        </button>
-        <button class="btn-disciplina" data-disc="matematica" onclick="selecionarDisciplina(this)">
-          <span class="icone">📐</span><span>Matemática</span>
-        </button>
-        <button class="btn-disciplina" data-disc="misto"      onclick="selecionarDisciplina(this)">
-          <span class="icone">⚡</span><span>Misto</span>
-        </button>
+      <label class="lbl">Disciplina</label>
+      <div class="sel-row">
+        <button class="sel-btn on-o on" data-disc="portugues" onclick="selDisc(this)"><span class="ic">📖</span>Português</button>
+        <button class="sel-btn on-o" data-disc="matematica" onclick="selDisc(this)"><span class="ic">📐</span>Matemática</button>
+        <button class="sel-btn on-o" data-disc="misto" onclick="selDisc(this)"><span class="ic">⚡</span>Misto</button>
       </div>
     </div>
-    <button class="btn btn-primario" onclick="iniciarJogo(); ripple(event)">⚽ ENTRAR EM CAMPO</button>
+    <button class="btn btn-g" onclick="iniciar()">⚽ ENTRAR EM CAMPO</button>
   </div>
-  <div class="rodape-ita">Copa do Saber v2.0 · ITA Tecnologia · 2026</div>
+  <div class="rodape">Copa do Saber v2.0 · ITA Tecnologia Educacional · 2026</div>
 </div>
 
 <!-- ===== TELA 2: JOGO ===== -->
 <div id="tela-jogo" class="tela">
   <div class="hud">
-    <div class="hud-item hud-pontos">
-      <div class="hud-valor" id="hud-pontos">0</div>
-      <div class="hud-label">pontos</div>
+    <div class="hud-col hud-pts">
+      <div class="hud-n" id="hud-pts">0</div>
+      <div class="hud-l">pontos</div>
     </div>
-    <div class="hud-item hud-combo" id="hud-combo-wrapper">
-      <div class="hud-valor" id="hud-combo">x1 <span class="hud-combo-chama">🔥</span></div>
-      <div class="hud-label">combo</div>
+    <div class="hud-col hud-combo">
+      <div class="hud-n" id="hud-cmb">x1</div>
+      <div class="hud-l">combo</div>
     </div>
-    <div class="timer-ring-wrapper">
-      <svg class="timer-ring-svg" width="50" height="50" viewBox="0 0 50 50">
-        <circle class="timer-ring-bg"   cx="25" cy="25" r="20" fill="none" stroke-width="4"/>
-        <circle class="timer-ring-fill" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-linecap="round" id="timer-ring"/>
+    <div class="ring-wrap" id="ring-wrap">
+      <svg class="ring-svg" width="52" height="52" viewBox="0 0 52 52">
+        <circle class="ring-bg" cx="26" cy="26" r="20" fill="none" stroke-width="5"/>
+        <circle class="ring-fill" id="ring" cx="26" cy="26" r="20" fill="none" stroke-width="5" stroke-linecap="round"/>
       </svg>
-      <div class="timer-ring-text" id="timer-texto">30</div>
+      <div class="ring-txt" id="ring-txt">30</div>
     </div>
-    <div class="hud-item hud-tempo">
-      <div class="hud-valor" id="hud-questao">1/10</div>
-      <div class="hud-label">questão</div>
+    <div class="hud-col">
+      <div class="hud-n" id="hud-q">1/10</div>
+      <div class="hud-l">questão</div>
     </div>
-    <div class="hud-item">
-      <div class="hud-valor" style="color:var(--cor-sucesso)" id="hud-acertos">0</div>
-      <div class="hud-label">acertos</div>
-    </div>
-  </div>
-
-  <div class="barra-progresso-wrapper">
-    <div class="barra-progresso-labels">
-      <span id="barra-label-esq">Questão 1 de 10</span>
-      <span id="barra-label-dir">0%</span>
-    </div>
-    <div class="barra-progresso-track">
-      <div class="barra-progresso-fill" id="barra-fill" style="width:0%"></div>
+    <div class="hud-col">
+      <div class="hud-n" id="hud-ac" style="color:var(--verde)">0</div>
+      <div class="hud-l">acertos</div>
     </div>
   </div>
-
-  <div class="questao-container">
-    <span class="questao-tag" id="questao-tag">Português</span>
-    <div class="questao-enunciado" id="questao-enunciado">Carregando...</div>
-    <div class="opcoes-grid" id="opcoes-grid"></div>
+  <div class="prog-wrap">
+    <div class="prog-info"><span id="prog-txt">Questão 1 de 10</span><span id="prog-pct">0%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="q-box">
+    <span class="q-tag" id="q-tag">📖 Português</span>
+    <div class="q-txt" id="q-txt"></div>
+    <div class="opcoes" id="opcoes"></div>
   </div>
 </div>
 
 <!-- ===== TELA 3: FEEDBACK ===== -->
 <div id="tela-feedback" class="tela">
-  <div class="feedback-icone" id="feedback-icone">✅</div>
-  <div class="feedback-titulo" id="feedback-titulo">CORRETO!</div>
-  <div class="card card-sm" style="margin-top:4px; text-align:center">
-    <div class="pontos-ganhos" id="feedback-pontos">+120 pts</div>
-    <div style="margin:8px 0; font-family:'Rajdhani',sans-serif; font-size:0.8rem; opacity:0.6; letter-spacing:1px; text-transform:uppercase" id="feedback-combo-texto">combo x2</div>
-    <div class="divisor" style="max-width:100%"></div>
-    <div style="margin-top:12px">
-      <div style="font-family:'Rajdhani',sans-serif; font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; opacity:0.5; margin-bottom:6px">RESPOSTA CORRETA:</div>
-      <div style="color:var(--cor-sucesso); font-weight:600; margin-bottom:10px" id="feedback-resposta-correta"></div>
-      <div class="feedback-explicacao" id="feedback-explicacao"></div>
-    </div>
+  <div class="fb-icone" id="fb-ic">⚽</div>
+  <div class="fb-titulo" id="fb-tit">CORRETO!</div>
+  <div class="card" style="max-width:460px;text-align:center">
+    <div class="pts-badge" id="fb-pts">+120 pts</div>
+    <div id="fb-cmb" style="font-family:'Rajdhani',sans-serif;font-size:.8rem;letter-spacing:1px;text-transform:uppercase;opacity:.55;margin:4px 0 10px"></div>
+    <div style="height:1px;background:var(--borda);margin:10px 0"></div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;opacity:.4;margin-bottom:6px">RESPOSTA CORRETA:</div>
+    <div class="fb-resposta" id="fb-resp"></div>
+    <div class="fb-exp" id="fb-exp"></div>
   </div>
-  <button class="btn btn-primario" style="max-width:440px; margin-top:8px" onclick="proximaQuestao(); ripple(event)" id="btn-proxima">PRÓXIMA QUESTÃO ▶</button>
+  <button class="btn btn-g" style="max-width:460px" onclick="proxima()" id="btn-prox">PRÓXIMA ▶</button>
 </div>
 
 <!-- ===== TELA 4: INTERVALO ===== -->
 <div id="tela-intervalo" class="tela">
-  <div class="logo-topo" style="font-size:clamp(1.8rem,6vw,3rem)">Intervalo!</div>
-  <div class="sub-titulo">Primeira metade concluída</div>
-  <div class="placar-intervalo">
-    <div class="placar-item verde">
-      <div class="placar-numero" id="intervalo-acertos">0</div>
-      <div class="placar-legenda">Acertos</div>
-    </div>
-    <div class="placar-item vermelho">
-      <div class="placar-numero" id="intervalo-erros">0</div>
-      <div class="placar-legenda">Erros</div>
-    </div>
-    <div class="placar-item amarelo">
-      <div class="placar-numero" id="intervalo-pontos">0</div>
-      <div class="placar-legenda">Pontos</div>
-    </div>
+  <div class="logo" style="font-size:clamp(2rem,7vw,3.5rem)">🕐 Intervalo!</div>
+  <div class="logo-sub">Primeira metade concluída</div>
+  <div class="placar-row">
+    <div class="pl-item pl-verde"><div class="pl-num" id="iv-ac">0</div><div class="pl-lbl">Acertos</div></div>
+    <div class="pl-item pl-red"><div class="pl-num" id="iv-er">0</div><div class="pl-lbl">Erros</div></div>
+    <div class="pl-item pl-lar"><div class="pl-num" id="iv-pt">0</div><div class="pl-lbl">Pontos</div></div>
   </div>
-  <div class="card card-sm" style="text-align:center">
-    <div style="font-family:'Rajdhani',sans-serif; font-size:1rem; opacity:0.7; margin-bottom:10px">
-      Faltam <strong id="intervalo-restantes" style="color:var(--cor-primaria)">5</strong> questões para o fim!
+  <div class="card" style="max-width:460px;text-align:center">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;opacity:.7;margin-bottom:10px">
+      Faltam <strong id="iv-rest" style="color:var(--verde)">5</strong> questões!
     </div>
-    <div id="intervalo-dica" style="font-size:0.9rem; line-height:1.5; padding:10px; background:var(--cor-acento); border-radius:8px; border-left:3px solid var(--cor-secundaria)">
-      💡 Dica: Leia com atenção o enunciado completo antes de escolher!
-    </div>
+    <div id="iv-dica" style="font-size:.9rem;line-height:1.55;padding:10px 14px;background:rgba(245,166,35,.08);border-radius:10px;border-left:3px solid var(--laranja)">💡 dica</div>
   </div>
-  <button class="btn btn-secundario" style="max-width:440px" onclick="continuarJogo(); ripple(event)">⚽ SEGUNDA METADE</button>
+  <button class="btn btn-o" style="max-width:460px" onclick="continuar()">⚽ SEGUNDA METADE</button>
 </div>
 
 <!-- ===== TELA 5: RESULTADO ===== -->
 <div id="tela-resultado" class="tela">
-  <div class="resultado-trofeu" id="resultado-trofeu">🏆</div>
-  <div class="estrelas-animadas" id="resultado-estrelas">
-    <span class="estrela">⭐</span><span class="estrela">⭐</span><span class="estrela">⭐</span>
+  <div class="trofeu-anim" id="res-trofeu">🏆</div>
+  <div class="estrelas" id="res-estrelas"><span class="est">⭐</span><span class="est">⭐</span><span class="est">⭐</span></div>
+  <div class="medalha m-ouro" id="res-medal">🥇 OURO</div>
+  <div class="pts-grande" id="res-pts">0</div>
+  <div class="res-sub" id="res-sub">pontos conquistados</div>
+  <div class="res-stats">
+    <div class="rs"><div class="rs-v" id="rs-ac" style="color:var(--verde)">0</div><div class="rs-l">Acertos</div></div>
+    <div class="rs"><div class="rs-v" id="rs-er" style="color:var(--vermelho)">0</div><div class="rs-l">Erros</div></div>
+    <div class="rs"><div class="rs-v" id="rs-prec">0%</div><div class="rs-l">Precisão</div></div>
+    <div class="rs"><div class="rs-v" id="rs-cmb" style="color:var(--laranja)">x1</div><div class="rs-l">Max Combo</div></div>
   </div>
-  <div class="medalha-badge medalha-ouro" id="resultado-medalha">🥇 OURO</div>
-  <div class="resultado-pontuacao" id="resultado-pontuacao">0</div>
-  <div class="resultado-subtexto" id="resultado-subtexto">pontos conquistados</div>
-  <div class="resultado-stats">
-    <div class="stat-item">
-      <div class="stat-valor" id="stat-acertos" style="color:var(--cor-sucesso)">0</div>
-      <div class="stat-legenda">Acertos</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-valor" id="stat-erros" style="color:var(--cor-erro)">0</div>
-      <div class="stat-legenda">Erros</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-valor" id="stat-precisao">0%</div>
-      <div class="stat-legenda">Precisão</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-valor" id="stat-combo" style="color:var(--cor-secundaria)">x1</div>
-      <div class="stat-legenda">Max Combo</div>
-    </div>
+  <div class="res-bts">
+    <button class="btn btn-g" onclick="jogarDenovo()">🔄 JOGAR DE NOVO</button>
+    <button class="btn btn-ghost" onclick="voltarInicio()">🏠 INÍCIO</button>
   </div>
-  <div class="resultado-botoes">
-    <button class="btn btn-primario"  onclick="jogarNovamente(); ripple(event)">🔄 JOGAR DE NOVO</button>
-    <button class="btn btn-fantasma"  onclick="voltarInicio(); ripple(event)">🏠 INÍCIO</button>
-  </div>
-  <div class="rodape-ita" style="margin-top:8px">Copa do Saber · ITA Tecnologia · 2026</div>
+  <div class="rodape">Copa do Saber · ITA Tecnologia · 2026</div>
 </div>
 
 <script>
 // ============================================================
-// BANCO DE QUESTÕES — BNCC 8º e 9º ANO
+// CANVAS FUNDO — REDE DE PARTÍCULAS
+// ============================================================
+const cvF = document.getElementById('cv-fundo')
+const ctxF = cvF.getContext('2d')
+let pts = []
+function redimensionar(){
+  cvF.width = cvF.offsetWidth; cvF.height = cvF.offsetHeight
+  document.getElementById('cv-explode').width = cvF.width
+  document.getElementById('cv-explode').height = cvF.height
+}
+window.addEventListener('resize', redimensionar)
+redimensionar()
+for(let i=0;i<55;i++) pts.push({
+  x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+  vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4,
+  r:Math.random()*2+1
+})
+function animFundo(){
+  cvF.width = window.innerWidth; cvF.height = window.innerHeight
+  ctxF.clearRect(0,0,cvF.width,cvF.height)
+  pts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy
+    if(p.x<0||p.x>cvF.width) p.vx*=-1
+    if(p.y<0||p.y>cvF.height) p.vy*=-1
+    ctxF.beginPath()
+    ctxF.arc(p.x,p.y,p.r,0,Math.PI*2)
+    ctxF.fillStyle='rgba(0,200,150,.5)'
+    ctxF.fill()
+  })
+  pts.forEach((a,i)=>{
+    pts.slice(i+1).forEach(b=>{
+      const d=Math.hypot(a.x-b.x,a.y-b.y)
+      if(d<110){
+        ctxF.beginPath()
+        ctxF.moveTo(a.x,a.y); ctxF.lineTo(b.x,b.y)
+        ctxF.strokeStyle=`rgba(0,200,150,${(.3*(1-d/110)).toFixed(2)})`
+        ctxF.lineWidth=.8; ctxF.stroke()
+      }
+    })
+  })
+  requestAnimationFrame(animFundo)
+}
+animFundo()
+
+// ============================================================
+// CANVAS EXPLOSÃO — PARTÍCULAS FÍSICAS
+// ============================================================
+const cvE = document.getElementById('cv-explode')
+const ctxE = cvE.getContext('2d')
+let particulas = []
+
+function explodir(x, y, tipo) {
+  // tipo: 'certo' | 'errado'
+  const cores = tipo==='certo'
+    ? ['#00c896','#2ed573','#f5a623','#ffe066','#ffffff','#00ff88']
+    : ['#ff4757','#ff6b6b','#a855f7','#ff8c00','#ff1744','#ffffff']
+  const n = tipo==='certo' ? 80 : 50
+  for(let i=0;i<n;i++){
+    const ang = Math.random()*Math.PI*2
+    const spd = Math.random()*12+4
+    const shape = Math.random() < .3 ? 'bola' : Math.random() < .5 ? 'estrela' : 'rect'
+    particulas.push({
+      x, y,
+      vx: Math.cos(ang)*spd,
+      vy: Math.sin(ang)*spd - (tipo==='certo'? Math.random()*4 : 0),
+      cor: cores[Math.floor(Math.random()*cores.length)],
+      vida: 1, decaimento: Math.random()*.025+.012,
+      shape, size: Math.random()*(tipo==='certo'?10:8)+4,
+      rot: Math.random()*Math.PI*2,
+      vrot: (Math.random()-.5)*.3,
+      gravity: .25
+    })
+  }
+  // Ring de onda
+  ondasExplosao.push({x,y,r:0,maxR:200,vida:1,cor:tipo==='certo'?'#00c896':'#ff4757'})
+}
+
+let ondasExplosao = []
+
+function animExplode(){
+  cvE.width = window.innerWidth; cvE.height = window.innerHeight
+  ctxE.clearRect(0,0,cvE.width,cvE.height)
+
+  // Ondas
+  ondasExplosao = ondasExplosao.filter(o=>o.vida>0)
+  ondasExplosao.forEach(o=>{
+    o.r += (o.maxR - o.r) * .12
+    o.vida -= .04
+    ctxE.beginPath()
+    ctxE.arc(o.x,o.y,o.r,0,Math.PI*2)
+    ctxE.strokeStyle = o.cor
+    ctxE.lineWidth = 3*o.vida
+    ctxE.globalAlpha = o.vida*.7
+    ctxE.stroke()
+    ctxE.globalAlpha = 1
+  })
+
+  // Partículas
+  particulas = particulas.filter(p=>p.vida>0)
+  particulas.forEach(p=>{
+    p.x += p.vx; p.y += p.vy
+    p.vy += p.gravity
+    p.vx *= .97
+    p.vida -= p.decaimento
+    p.rot += p.vrot
+    ctxE.save()
+    ctxE.translate(p.x, p.y)
+    ctxE.rotate(p.rot)
+    ctxE.globalAlpha = Math.max(0, p.vida)
+    ctxE.fillStyle = p.cor
+    ctxE.shadowBlur = 8
+    ctxE.shadowColor = p.cor
+    if(p.shape==='bola'){
+      ctxE.beginPath()
+      ctxE.arc(0,0,p.size/2,0,Math.PI*2)
+      ctxE.fill()
+      // miolo da bola
+      ctxE.fillStyle='rgba(0,0,0,.3)'
+      ctxE.beginPath(); ctxE.arc(0,0,p.size/4,0,Math.PI*2); ctxE.fill()
+    } else if(p.shape==='estrela'){
+      ctxE.beginPath()
+      for(let k=0;k<5;k++){
+        const a=k*Math.PI*2/5-Math.PI/2
+        const a2=a+Math.PI/5
+        ctxE.lineTo(Math.cos(a)*p.size, Math.sin(a)*p.size)
+        ctxE.lineTo(Math.cos(a2)*p.size*.4, Math.sin(a2)*p.size*.4)
+      }
+      ctxE.closePath(); ctxE.fill()
+    } else {
+      ctxE.fillRect(-p.size/2,-p.size/4,p.size,p.size/2)
+    }
+    ctxE.restore()
+    ctxE.globalAlpha = 1; ctxE.shadowBlur = 0
+  })
+  requestAnimationFrame(animExplode)
+}
+animExplode()
+
+// ============================================================
+// WEB AUDIO
+// ============================================================
+let aCtx = null
+function getACtx(){ if(!aCtx) aCtx=new(window.AudioContext||window.webkitAudioContext)(); return aCtx }
+function som(tipo){
+  try{
+    const c=getACtx(), o=c.createOscillator(), g=c.createGain()
+    o.connect(g); g.connect(c.destination)
+    if(tipo==='certo'){
+      o.frequency.setValueAtTime(523,c.currentTime)
+      o.frequency.setValueAtTime(659,c.currentTime+.1)
+      o.frequency.setValueAtTime(784,c.currentTime+.2)
+      g.gain.setValueAtTime(.3,c.currentTime)
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6)
+      o.start(); o.stop(c.currentTime+.6)
+    } else if(tipo==='errado'){
+      o.type='sawtooth'
+      o.frequency.setValueAtTime(220,c.currentTime)
+      o.frequency.setValueAtTime(140,c.currentTime+.18)
+      g.gain.setValueAtTime(.28,c.currentTime)
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35)
+      o.start(); o.stop(c.currentTime+.35)
+    } else if(tipo==='tick'){
+      o.type='square'; o.frequency.value=1000
+      g.gain.setValueAtTime(.06,c.currentTime)
+      g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.06)
+      o.start(); o.stop(c.currentTime+.06)
+    } else if(tipo==='vitoria'){
+      [523,659,784,1046].forEach((f,i)=>{
+        const oo=c.createOscillator(),gg=c.createGain()
+        oo.connect(gg); gg.connect(c.destination)
+        oo.frequency.value=f
+        gg.gain.setValueAtTime(.28,c.currentTime+i*.14)
+        gg.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.14+.45)
+        oo.start(c.currentTime+i*.14); oo.stop(c.currentTime+i*.14+.45)
+      })
+    }
+  }catch(e){}
+}
+
+// ============================================================
+// MASCOTE
+// ============================================================
+const mascote = document.getElementById('mascote')
+const balao = document.getElementById('balao')
+let balaoTimer = null
+
+const FALAS_CERTO = ['⚽ GOOOL!','🔥 Isso aí!','🎯 Perfeito!','💪 Arrasou!','🌟 Demais!','🏆 Show!']
+const FALAS_ERRADO = ['😅 Quase!','📚 Estuda mais!','😬 Ops!','💡 Revisa aí!','🤔 Pensa bem!']
+const FALAS_COMBO = ['🔥 Combo!','🔥🔥 Em chamas!','⚡ Imparável!','💥 Devastando!']
+
+function mascoteReage(tipo) {
+  mascote.className = ''
+  void mascote.offsetWidth
+  mascote.className = tipo
+
+  // Olhos e boca
+  const boca = document.getElementById('boca')
+  const sob_e = document.getElementById('sobrancelha-e')
+  const sob_d = document.getElementById('sobrancelha-d')
+  if(tipo==='acertou'){
+    boca.setAttribute('d','M52 80 Q65 92 78 80')
+    sob_e.setAttribute('d','M43 53 Q52 45 58 50')
+    sob_d.setAttribute('d','M72 50 Q78 45 87 53')
+  } else if(tipo==='errou'){
+    boca.setAttribute('d','M55 85 Q65 79 75 85')
+    sob_e.setAttribute('d','M43 55 Q52 61 58 56')
+    sob_d.setAttribute('d','M72 56 Q78 61 87 55')
+  } else {
+    boca.setAttribute('d','M55 80 Q65 88 75 80')
+    sob_e.setAttribute('d','M43 53 Q52 48 58 52')
+    sob_d.setAttribute('d','M72 52 Q78 48 87 53')
+  }
+
+  const falas = tipo==='acertou' ? FALAS_CERTO : tipo==='errou' ? FALAS_ERRADO : ['😄 Vamos lá!']
+  fala(falas[Math.floor(Math.random()*falas.length)])
+
+  setTimeout(()=>{ mascote.className='idle'; boca.setAttribute('d','M55 80 Q65 88 75 80') }, 2000)
+}
+
+function fala(txt){
+  clearTimeout(balaoTimer)
+  balao.textContent = txt
+  balao.classList.add('vis')
+  balaoTimer = setTimeout(()=>balao.classList.remove('vis'), 2200)
+}
+
+function mascoteDanca(){ mascote.className='danca' }
+
+// ============================================================
+// BANCO DE QUESTÕES
 // ============================================================
 const BANCO = {
-  portugues: {
-    8: [
-      { enunciado: 'Qual figura de linguagem está em: "Meu coração é uma pedra"?', opcoes: ['Comparação', 'Metáfora', 'Hipérbole', 'Personificação'], correta: 1, explicacao: 'Metáfora: identidade direta entre dois termos sem "como". Coração É pedra — não apenas parece.' },
-      { enunciado: 'Em "Embora estivesse cansado, ele continuou estudando", a subordinada indica:', opcoes: ['Causa', 'Condição', 'Concessão', 'Finalidade'], correta: 2, explicacao: '"Embora" introduz oração concessiva — apresenta obstáculo que não impede a ação principal.' },
-      { enunciado: 'Qual é o sujeito de "Caíram folhas secas no chão"?', opcoes: ['Caíram', 'folhas secas', 'no chão', 'Sujeito oculto'], correta: 1, explicacao: '"Folhas secas" é o sujeito simples. O verbo "caíram" concorda com ele no plural.' },
-      { enunciado: 'A palavra "saudade" pertence a qual classe gramatical?', opcoes: ['Adjetivo', 'Verbo', 'Substantivo', 'Advérbio'], correta: 2, explicacao: '"Saudade" é substantivo abstrato — nomeia um sentimento sem forma física.' },
-      { enunciado: 'Identifique o tipo de linguagem: "A coisa vai pegar, hein?"', opcoes: ['Linguagem formal', 'Linguagem culta escrita', 'Linguagem informal coloquial', 'Linguagem técnica'], correta: 2, explicacao: 'Linguagem informal coloquial usa expressões do cotidiano e construções relaxadas.' },
-      { enunciado: 'Em qual alternativa a pontuação está correta?', opcoes: ['"João, venha aqui."', '"João venha; aqui."', '"João: venha aqui"', '"João venha aqui."'], correta: 0, explicacao: 'Usa-se vírgula para isolar vocativo ("João"). A frase termina com ponto por ser ordem.' },
-      { enunciado: 'Qual é o prefixo que indica negação em "infeliz"?', opcoes: ['in-', '-feliz', 'infe-', '-liz'], correta: 0, explicacao: 'O prefixo "in-" (latino) indica negação: infeliz, incapaz, inútil.' },
-      { enunciado: 'O narrador onisciente de um conto:', opcoes: ['Participa dos eventos como personagem', 'Conhece os pensamentos de todos os personagens', 'Apenas descreve o que vê externamente', 'Representa o autor real'], correta: 1, explicacao: 'Narrador onisciente tem acesso à mente de todos os personagens — recurso literário.' },
-      { enunciado: '"Ele foi ao mercado E comprou frutas." O "E" é conjunção:', opcoes: ['Adversativa', 'Concessiva', 'Aditiva', 'Alternativa'], correta: 2, explicacao: '"E" é coordenativa aditiva — soma ideias/ações sem oposição.' },
-      { enunciado: 'Qual recurso está em "O silêncio gritava na sala vazia"?', opcoes: ['Eufemismo', 'Personificação', 'Antítese', 'Anáfora'], correta: 1, explicacao: 'Personificação (prosopopeia): atribui ação humana a ser inanimado — "silêncio gritava".' },
-      { enunciado: 'Em qual alternativa a crase está correta?', opcoes: ['Fui à escola ontem.', 'Vou à comprar pão.', 'Ela gosta à dançar.', 'Falei à ele.'], correta: 0, explicacao: 'Crase = preposição "a" + artigo "a" (feminino). "Escola" é feminino → à escola.' },
-      { enunciado: 'O texto dissertativo-argumentativo tem como objetivo:', opcoes: ['Narrar eventos cronologicamente', 'Descrever paisagens e personagens', 'Defender um ponto de vista com argumentos', 'Expressar sentimentos'], correta: 2, explicacao: 'Texto dissertativo-argumentativo: tese + argumentos + conclusão → persuadir o leitor.' },
+  portugues:{
+    8:[
+      {e:'Qual figura de linguagem está em: "Meu coração é uma pedra"?',o:['Comparação','Metáfora','Hipérbole','Personificação'],c:1,x:'Metáfora: identidade direta entre dois termos sem "como". Coração É pedra — não apenas parece.'},
+      {e:'Em "Embora estivesse cansado, ele continuou estudando", a subordinada indica:',o:['Causa','Condição','Concessão','Finalidade'],c:2,x:'"Embora" introduz oração concessiva — apresenta obstáculo que não impede a ação principal.'},
+      {e:'Qual é o sujeito de "Caíram folhas secas no chão"?',o:['Caíram','Folhas secas','No chão','Sujeito oculto'],c:1,x:'"Folhas secas" é o sujeito simples. O verbo "caíram" concorda com ele no plural.'},
+      {e:'A palavra "saudade" pertence a qual classe gramatical?',o:['Adjetivo','Verbo','Substantivo','Advérbio'],c:2,x:'"Saudade" é substantivo abstrato — nomeia um sentimento sem forma física.'},
+      {e:'Identifique o tipo de linguagem: "A coisa vai pegar, hein?"',o:['Linguagem formal','Linguagem culta escrita','Linguagem informal coloquial','Linguagem técnica'],c:2,x:'Linguagem informal coloquial usa expressões do cotidiano e construções relaxadas.'},
+      {e:'Em qual alternativa a pontuação está correta?',o:['"João, venha aqui."','"João venha; aqui."','"João: venha aqui"','"João venha aqui."'],c:0,x:'Usa-se vírgula para isolar vocativo ("João"). A frase termina com ponto por ser ordem.'},
+      {e:'Qual é o prefixo que indica negação em "infeliz"?',o:['in-','-feliz','infe-','-liz'],c:0,x:'O prefixo "in-" (latino) indica negação: infeliz, incapaz, inútil.'},
+      {e:'O narrador onisciente de um conto:',o:['Participa dos eventos como personagem','Conhece os pensamentos de todos os personagens','Apenas descreve o que vê externamente','Representa o autor real'],c:1,x:'Narrador onisciente tem acesso à mente de todos os personagens — recurso literário.'},
+      {e:'"Ele foi ao mercado E comprou frutas." O "E" é conjunção:',o:['Adversativa','Concessiva','Aditiva','Alternativa'],c:2,x:'"E" é coordenativa aditiva — soma ideias/ações sem oposição.'},
+      {e:'Qual recurso está em "O silêncio gritava na sala vazia"?',o:['Eufemismo','Personificação','Antítese','Anáfora'],c:1,x:'Personificação (prosopopeia): atribui ação humana a ser inanimado.'},
+      {e:'Em qual alternativa a crase está correta?',o:['Fui à escola ontem.','Vou à comprar pão.','Ela gosta à dançar.','Falei à ele.'],c:0,x:'Crase = preposição "a" + artigo "a" (feminino). "Escola" é feminino → à escola.'},
+      {e:'O texto dissertativo-argumentativo tem como objetivo:',o:['Narrar eventos cronologicamente','Descrever paisagens','Defender um ponto de vista com argumentos','Expressar sentimentos'],c:2,x:'Texto dissertativo-argumentativo: tese + argumentos + conclusão → persuadir o leitor.'},
     ],
-    9: [
-      { enunciado: '"Os alunos que estudaram passaram na prova." A oração "que estudaram" é:', opcoes: ['Adverbial causal', 'Adjetiva restritiva', 'Substantiva subjetiva', 'Adverbial concessiva'], correta: 1, explicacao: 'Oração subordinada adjetiva restritiva — restringe quais alunos passaram (só os que estudaram).' },
-      { enunciado: 'Em "Quanto mais estudo, mais aprendo", a relação é de:', opcoes: ['Concessão', 'Proporcionalidade', 'Causa e efeito', 'Condição'], correta: 1, explicacao: '"Quanto mais... mais..." indica proporcionalidade entre as orações.' },
-      { enunciado: 'Qual figura está em "Ela chegou, viu, venceu"?', opcoes: ['Anacoluto', 'Pleonasmo', 'Assíndeto', 'Polissíndeto'], correta: 2, explicacao: 'Assíndeto: omissão de conectivos entre orações, criando ritmo acelerado.' },
-      { enunciado: 'O que é um texto multimodal?', opcoes: ['Escrito em vários idiomas', 'Usa apenas imagens', 'Combina linguagens (verbal, visual, sonora)', 'Tem muitos parágrafos'], correta: 2, explicacao: 'Texto multimodal integra múltiplas linguagens. Infográficos e vídeos são exemplos.' },
-      { enunciado: 'Qual é a função de "rapidamente" em "Ela correu rapidamente"?', opcoes: ['Adjunto adnominal', 'Predicativo do sujeito', 'Adjunto adverbial de modo', 'Complemento verbal'], correta: 2, explicacao: 'Advérbio de modo modifica o verbo indicando como a ação acontece.' },
-      { enunciado: 'O estilo de Guimarães Rosa se caracteriza por:', opcoes: ['Linguagem simples e direta', 'Regionalismo + experimentação linguística', 'Narração linear e cronológica', 'Rejeição de elementos do sertão'], correta: 1, explicacao: 'Guimarães Rosa mistura sertão de MG com neologismos, arcaísmos e invenções linguísticas.' },
-      { enunciado: 'Em qual gênero predomina a sequência injuntiva?', opcoes: ['Romance', 'Receita culinária', 'Crônica jornalística', 'Soneto'], correta: 1, explicacao: 'Sequência injuntiva instrui/orienta. Receitas e manuais são exemplos clássicos.' },
-      { enunciado: '"Ele passou desta para melhor" usa qual recurso?', opcoes: ['Hipérbole', 'Ironia', 'Eufemismo', 'Litotes'], correta: 2, explicacao: 'Eufemismo: substitui expressão desagradável por outra mais suave.' },
-      { enunciado: 'Qual uso de "mal/mau" está correto?', opcoes: ['Ele foi um mau aluno. (adjetivo)', 'Ele mau chegou. (advérbio)', 'Ele é mau correr. (adjunto)', 'Ele agiu mal-humorado. (errado)'], correta: 0, explicacao: '"Mau" é adjetivo (antônimo de "bom"). "Mau aluno" usa o adjetivo corretamente.' },
-      { enunciado: 'A charge é um gênero que:', opcoes: ['Relata fatos históricos fielmente', 'Critica com humor fatos atuais', 'Narra aventuras fictícias', 'Instrui sobre processos técnicos'], correta: 1, explicacao: 'A charge usa humor e caricatura para criticar fatos políticos e sociais do momento.' },
-      { enunciado: 'Qual é a classe de "durante" em "Ficou quieto durante a aula"?', opcoes: ['Conjunção', 'Preposição', 'Advérbio', 'Pronome relativo'], correta: 1, explicacao: '"Durante" é preposição que introduz adjunto adverbial de tempo.' },
-      { enunciado: 'O que diferencia narrador em 1ª pessoa do narrador onisciente?', opcoes: ['O narrador em 1ª pessoa conhece mais personagens', 'O narrador em 1ª pessoa só narra sua perspectiva', 'O onisciente é sempre o protagonista', 'Não há diferença prática'], correta: 1, explicacao: 'Narrador em 1ª pessoa narra do seu ponto de vista, com limitações. O onisciente sabe tudo.' },
+    9:[
+      {e:'"Os alunos que estudaram passaram na prova." A oração "que estudaram" é:',o:['Adverbial causal','Adjetiva restritiva','Substantiva subjetiva','Adverbial concessiva'],c:1,x:'Oração subordinada adjetiva restritiva — restringe quais alunos passaram (só os que estudaram).'},
+      {e:'Em "Quanto mais estudo, mais aprendo", a relação é de:',o:['Concessão','Proporcionalidade','Causa e efeito','Condição'],c:1,x:'"Quanto mais... mais..." indica proporcionalidade entre as orações.'},
+      {e:'Qual figura está em "Ela chegou, viu, venceu"?',o:['Anacoluto','Pleonasmo','Assíndeto','Polissíndeto'],c:2,x:'Assíndeto: omissão de conectivos entre orações, criando ritmo acelerado.'},
+      {e:'O que é um texto multimodal?',o:['Escrito em vários idiomas','Usa apenas imagens','Combina linguagens (verbal, visual, sonora)','Tem muitos parágrafos'],c:2,x:'Texto multimodal integra múltiplas linguagens. Infográficos e vídeos são exemplos.'},
+      {e:'Qual é a função de "rapidamente" em "Ela correu rapidamente"?',o:['Adjunto adnominal','Predicativo do sujeito','Adjunto adverbial de modo','Complemento verbal'],c:2,x:'Advérbio de modo modifica o verbo indicando como a ação acontece.'},
+      {e:'O estilo de Guimarães Rosa se caracteriza por:',o:['Linguagem simples e direta','Regionalismo + experimentação linguística','Narração linear e cronológica','Rejeição de elementos do sertão'],c:1,x:'Guimarães Rosa mistura sertão de MG com neologismos, arcaísmos e invenções linguísticas.'},
+      {e:'Em qual gênero predomina a sequência injuntiva?',o:['Romance','Receita culinária','Crônica jornalística','Soneto'],c:1,x:'Sequência injuntiva instrui/orienta. Receitas e manuais são exemplos clássicos.'},
+      {e:'"Ele passou desta para melhor" usa qual recurso?',o:['Hipérbole','Ironia','Eufemismo','Litotes'],c:2,x:'Eufemismo: substitui expressão desagradável por outra mais suave.'},
+      {e:'Qual uso de "mal/mau" está correto?',o:['Ele foi um mau aluno. (adjetivo)','Ele mau chegou. (advérbio)','Ele é mau correr.','Ele agiu mal-humorado. (errado)'],c:0,x:'"Mau" é adjetivo (antônimo de "bom"). "Mau aluno" usa o adjetivo corretamente.'},
+      {e:'A charge é um gênero que:',o:['Relata fatos históricos','Critica com humor fatos atuais','Narra aventuras fictícias','Instrui sobre processos técnicos'],c:1,x:'A charge usa humor e caricatura para criticar fatos políticos e sociais do momento.'},
+      {e:'Qual é a classe de "durante" em "Ficou quieto durante a aula"?',o:['Conjunção','Preposição','Advérbio','Pronome relativo'],c:1,x:'"Durante" é preposição que introduz adjunto adverbial de tempo.'},
+      {e:'O que diferencia narrador em 1ª pessoa do onisciente?',o:['1ª pessoa conhece mais personagens','1ª pessoa narra só sua perspectiva','O onisciente é sempre o protagonista','Não há diferença'],c:1,x:'Narrador em 1ª pessoa tem limitações de perspectiva. O onisciente sabe tudo.'},
     ]
   },
-  matematica: {
-    8: [
-      { enunciado: 'Qual é o valor de x: 3x + 7 = 22?', opcoes: ['x = 3', 'x = 5', 'x = 7', 'x = 4'], correta: 1, explicacao: '3x + 7 = 22 → 3x = 15 → x = 5.' },
-      { enunciado: 'Um triângulo tem 60° e 80°. Qual é o terceiro ângulo?', opcoes: ['30°', '40°', '50°', '60°'], correta: 1, explicacao: 'Soma dos ângulos internos = 180°. 180 - 60 - 80 = 40°.' },
-      { enunciado: 'Calcule: (-3)² + √16 =', opcoes: ['7', '13', '5', '10'], correta: 1, explicacao: '(-3)² = 9 e √16 = 4. Total = 13.' },
-      { enunciado: 'Área de um quadrado com lado 7 cm:', opcoes: ['28 cm²', '49 cm²', '14 cm²', '42 cm²'], correta: 1, explicacao: 'Área = lado² = 7² = 49 cm².' },
-      { enunciado: 'Se x=3 e y=-2, quanto vale 2x² - y?', opcoes: ['20', '16', '10', '22'], correta: 0, explicacao: '2(9) - (-2) = 18 + 2 = 20.' },
-      { enunciado: 'Produto de R$80 com 15% de desconto:', opcoes: ['R$68,00', 'R$72,00', 'R$65,00', 'R$74,00'], correta: 0, explicacao: 'Desconto = 80 × 0,15 = 12. Novo preço = 80 - 12 = R$68,00.' },
-      { enunciado: 'Qual é o MMC de 12 e 18?', opcoes: ['6', '24', '36', '72'], correta: 2, explicacao: '12=2²×3, 18=2×3². MMC = 2²×3² = 36.' },
-      { enunciado: 'Se 3/x = 6/14, qual é x?', opcoes: ['5', '7', '9', '4'], correta: 1, explicacao: 'Produto dos meios = extremos: 6x = 42 → x = 7.' },
-      { enunciado: 'Urna com 4 bolas vermelhas e 6 azuis. P(azul) =', opcoes: ['2/5', '3/5', '1/2', '4/10'], correta: 1, explicacao: 'P(azul) = 6/10 = 3/5 = 60%.' },
-      { enunciado: 'Valor de 5a²b com a=2 e b=-1:', opcoes: ['-20', '20', '-10', '10'], correta: 0, explicacao: '5 × 4 × (-1) = -20.' },
-      { enunciado: 'Perímetro de retângulo = 36 cm, largura = 6 cm. Comprimento:', opcoes: ['10 cm', '12 cm', '15 cm', '8 cm'], correta: 1, explicacao: 'P = 2(c+l): 36 = 2(c+6) → c = 12 cm.' },
-      { enunciado: '(x²+5x+6) ÷ (x+2) =', opcoes: ['x+3', 'x+2', 'x+1', 'x+4'], correta: 0, explicacao: 'Fatorando: (x+2)(x+3). Dividindo por (x+2) → x+3.' },
+  matematica:{
+    8:[
+      {e:'Qual é o valor de x: 3x + 7 = 22?',o:['x = 3','x = 5','x = 7','x = 4'],c:1,x:'3x + 7 = 22 → 3x = 15 → x = 5.'},
+      {e:'Um triângulo tem 60° e 80°. Qual é o terceiro ângulo?',o:['30°','40°','50°','60°'],c:1,x:'Soma dos ângulos internos = 180°. 180 - 60 - 80 = 40°.'},
+      {e:'Calcule: (-3)² + √16 =',o:['7','13','5','10'],c:1,x:'(-3)² = 9 e √16 = 4. Total = 13.'},
+      {e:'Área de um quadrado com lado 7 cm:',o:['28 cm²','49 cm²','14 cm²','42 cm²'],c:1,x:'Área = lado² = 7² = 49 cm².'},
+      {e:'Se x=3 e y=-2, quanto vale 2x² - y?',o:['20','16','10','22'],c:0,x:'2(9) - (-2) = 18 + 2 = 20.'},
+      {e:'Produto de R$80 com 15% de desconto:',o:['R$68,00','R$72,00','R$65,00','R$74,00'],c:0,x:'Desconto = 80 × 0,15 = 12. Novo preço = 80 - 12 = R$68,00.'},
+      {e:'Qual é o MMC de 12 e 18?',o:['6','24','36','72'],c:2,x:'12=2²×3, 18=2×3². MMC = 2²×3² = 36.'},
+      {e:'Se 3/x = 6/14, qual é x?',o:['5','7','9','4'],c:1,x:'Produto dos meios = extremos: 6x = 42 → x = 7.'},
+      {e:'Urna com 4 bolas vermelhas e 6 azuis. P(azul) =',o:['2/5','3/5','1/2','4/10'],c:1,x:'P(azul) = 6/10 = 3/5 = 60%.'},
+      {e:'Valor de 5a²b com a=2 e b=-1:',o:['-20','20','-10','10'],c:0,x:'5 × 4 × (-1) = -20.'},
+      {e:'Perímetro de retângulo = 36 cm, largura = 6 cm. Comprimento:',o:['10 cm','12 cm','15 cm','8 cm'],c:1,x:'P = 2(c+l): 36 = 2(c+6) → c = 12 cm.'},
+      {e:'(x²+5x+6) ÷ (x+2) =',o:['x+3','x+2','x+1','x+4'],c:0,x:'Fatorando: (x+2)(x+3). Dividindo por (x+2) → x+3.'},
     ],
-    9: [
-      { enunciado: 'Sistema: x+y=10 e x-y=4. Solução:', opcoes: ['x=5, y=5', 'x=7, y=3', 'x=6, y=4', 'x=8, y=2'], correta: 1, explicacao: 'Somando: 2x=14 → x=7. Substituindo: y=3.' },
-      { enunciado: 'Volume de cilindro reto:', opcoes: ['V = πr²h', 'V = 4πr³/3', 'V = πrh', 'V = 2πr²'], correta: 0, explicacao: 'V = área da base × altura = πr² × h.' },
-      { enunciado: 'f(x) = 2x - 3. Qual é f(5)?', opcoes: ['5', '7', '10', '13'], correta: 1, explicacao: 'f(5) = 2(5) - 3 = 7.' },
-      { enunciado: 'Produto notável: (a+b)² =', opcoes: ['a²+b²', 'a²+2ab+b²', 'a²-2ab+b²', 'a²+ab+b²'], correta: 1, explicacao: '(a+b)² = a²+2ab+b² — o dobro do produto dos termos está no meio.' },
-      { enunciado: 'Catetos 3 e 4. Hipotenusa pelo Teorema de Pitágoras:', opcoes: ['6', '5', '7', '√7'], correta: 1, explicacao: 'h² = 9+16 = 25 → h = 5. Triângulo pitagórico 3-4-5!' },
-      { enunciado: 'log₁₀(1000) =', opcoes: ['2', '3', '4', '10'], correta: 1, explicacao: 'log₁₀(10³) = 3. 10³ = 1000.' },
-      { enunciado: 'Fatore: x² - 9 =', opcoes: ['(x-3)²', '(x+3)(x-3)', '(x-9)(x+1)', 'x(x-9)'], correta: 1, explicacao: 'Diferença de quadrados: a²-b² = (a+b)(a-b). x²-9 = (x+3)(x-3).' },
-      { enunciado: 'se sen(30°)=1/2, então sen(150°) =', opcoes: ['-1/2', '√3/2', '1/2', '-√3/2'], correta: 2, explicacao: 'sen(180°-θ) = sen(θ). sen(150°) = sen(30°) = 1/2.' },
-      { enunciado: 'Equação da reta por (0,3) com inclinação 2:', opcoes: ['y=3x+2', 'y=2x+3', 'y=2x-3', 'y=3x-2'], correta: 1, explicacao: 'y = ax+b. a=2, b=3 (ponto (0,3)). → y=2x+3.' },
-      { enunciado: 'Raízes de x²-5x+6=0:', opcoes: ['x=1 e x=6', 'x=2 e x=3', 'x=-2 e x=-3', 'x=1 e x=5'], correta: 1, explicacao: 'Fatorando: (x-2)(x-3)=0 → x=2 ou x=3.' },
-      { enunciado: 'Juros simples: R$500 a 10%a.a. por 3 anos. Juros =', opcoes: ['R$50', 'R$150', 'R$200', 'R$665'], correta: 1, explicacao: 'J = C×i×t = 500×0,10×3 = R$150.' },
-      { enunciado: 'Volume de esfera de raio 3 (π≈3):', opcoes: ['27 cm³', '36 cm³', '108 cm³', '81 cm³'], correta: 2, explicacao: 'V = (4/3)πr³ = (4/3)×3×27 = 108 cm³.' },
+    9:[
+      {e:'Sistema: x+y=10 e x-y=4. Solução:',o:['x=5, y=5','x=7, y=3','x=6, y=4','x=8, y=2'],c:1,x:'Somando: 2x=14 → x=7. Substituindo: y=3.'},
+      {e:'Volume de cilindro reto:',o:['V = πr²h','V = 4πr³/3','V = πrh','V = 2πr²'],c:0,x:'V = área da base × altura = πr² × h.'},
+      {e:'f(x) = 2x - 3. Qual é f(5)?',o:['5','7','10','13'],c:1,x:'f(5) = 2(5) - 3 = 7.'},
+      {e:'Produto notável: (a+b)² =',o:['a²+b²','a²+2ab+b²','a²-2ab+b²','a²+ab+b²'],c:1,x:'(a+b)² = a²+2ab+b² — o dobro do produto dos termos está no meio.'},
+      {e:'Catetos 3 e 4. Hipotenusa pelo Teorema de Pitágoras:',o:['6','5','7','√7'],c:1,x:'h² = 9+16 = 25 → h = 5. Triângulo pitagórico 3-4-5!'},
+      {e:'log₁₀(1000) =',o:['2','3','4','10'],c:1,x:'log₁₀(10³) = 3. 10³ = 1000.'},
+      {e:'Fatore: x² - 9 =',o:['(x-3)²','(x+3)(x-3)','(x-9)(x+1)','x(x-9)'],c:1,x:'Diferença de quadrados: a²-b² = (a+b)(a-b). x²-9 = (x+3)(x-3).'},
+      {e:'sen(30°)=1/2. Então sen(150°) =',o:['-1/2','√3/2','1/2','-√3/2'],c:2,x:'sen(180°-θ)=sen(θ). sen(150°)=sen(30°)=1/2.'},
+      {e:'Equação da reta por (0,3) com inclinação 2:',o:['y=3x+2','y=2x+3','y=2x-3','y=3x-2'],c:1,x:'y=ax+b. a=2, b=3 (ponto (0,3)). → y=2x+3.'},
+      {e:'Raízes de x²-5x+6=0:',o:['x=1 e x=6','x=2 e x=3','x=-2 e x=-3','x=1 e x=5'],c:1,x:'Fatorando: (x-2)(x-3)=0 → x=2 ou x=3.'},
+      {e:'Juros simples: R$500 a 10%a.a. por 3 anos. Juros =',o:['R$50','R$150','R$200','R$665'],c:1,x:'J = C×i×t = 500×0,10×3 = R$150.'},
+      {e:'Volume de esfera de raio 3 (π≈3):',o:['27 cm³','36 cm³','108 cm³','81 cm³'],c:2,x:'V=(4/3)πr³=(4/3)×3×27=108 cm³.'},
     ]
   }
 }
 
-const DICAS = [
-  '💡 Em questões de interpretação, volte ao texto para confirmar!',
-  '⚡ Em cálculos, verifique a unidade pedida antes de responder.',
-  '🧠 Em Português, elimine alternativas claramente erradas primeiro.',
-  '📐 Escreva os dados do problema antes de calcular!',
-  '🎯 Leia TODAS as alternativas antes de marcar.',
-  '⏱ Se travar, tente eliminar 2 alternativas e escolha entre as restantes.',
-  '🔢 Em equações, isole a incógnita passo a passo.',
-  '📖 Metáfora = comparação SEM "como". Comparação = com "como".',
-]
-
-// ============================================================
-// WEB AUDIO API
-// ============================================================
-let audioCtx = null
-function getAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-  return audioCtx
-}
-function tocarSom(tipo) {
-  try {
-    const ctx = getAudio()
-    const osc = ctx.createOscillator(), gain = ctx.createGain()
-    osc.connect(gain); gain.connect(ctx.destination)
-    if (tipo === 'correto') {
-      osc.frequency.setValueAtTime(523, ctx.currentTime)
-      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1)
-      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2)
-      gain.gain.setValueAtTime(0.3, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5)
-    } else if (tipo === 'errado') {
-      osc.type = 'sawtooth'
-      osc.frequency.setValueAtTime(220, ctx.currentTime)
-      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15)
-      gain.gain.setValueAtTime(0.25, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3)
-    } else if (tipo === 'tick') {
-      osc.type = 'square'
-      osc.frequency.setValueAtTime(880, ctx.currentTime)
-      gain.gain.setValueAtTime(0.05, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.05)
-    } else if (tipo === 'vitoria') {
-      ;[523, 659, 784, 1046].forEach((f, i) => {
-        const o = ctx.createOscillator(), g = ctx.createGain()
-        o.connect(g); g.connect(ctx.destination)
-        o.frequency.value = f
-        g.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.12)
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4)
-        o.start(ctx.currentTime + i * 0.12); o.stop(ctx.currentTime + i * 0.12 + 0.4)
-      })
-    }
-  } catch(e) {}
-}
+const DICAS=['💡 Em interpretação, volte ao texto para confirmar!','⚡ Em cálculos, verifique a unidade pedida.','🧠 Elimine alternativas claramente erradas primeiro.','📐 Escreva os dados antes de calcular!','🎯 Leia TODAS as alternativas antes de marcar.','⏱ Tente eliminar 2 alternativas e escolha entre as restantes.','🔢 Em equações, isole a incógnita passo a passo.','📖 Metáfora = comparação SEM "como".']
 
 // ============================================================
 // ESTADO
 // ============================================================
-let E = {
-  nome:'', serie:'8', disciplina:'portugues',
-  questoes:[], indice:0,
-  pontos:0, acertos:0, erros:0,
-  combo:1, maxCombo:1,
-  timer:null, tempoRestante:30,
-  respondido:false, total:10
-}
+let G={nome:'',serie:'8',disc:'portugues',qs:[],idx:0,pts:0,ac:0,er:0,combo:1,maxCombo:1,timer:null,t:30,respondido:false,total:10}
 
-// ============================================================
-// INICIALIZAÇÃO — PARÂMETROS DE URL
-// ============================================================
-;(function lerUrlParams() {
-  const p = new URLSearchParams(window.location.search)
-  if (p.get('nome')) document.getElementById('input-nome').value = decodeURIComponent(p.get('nome'))
-  if (p.get('turma')) {
-    const t = p.get('turma').toUpperCase()
-    const serie = t.startsWith('9') ? '9' : '8'
-    document.querySelectorAll('.btn-serie').forEach(b => b.classList.toggle('ativo', b.dataset.serie === serie))
-    E.serie = serie
+// URL params
+;(()=>{
+  const p=new URLSearchParams(location.search)
+  if(p.get('nome')) document.getElementById('inp-nome').value=decodeURIComponent(p.get('nome'))
+  if(p.get('turma')){
+    const v=p.get('turma').startsWith('9')?'9':'8'
+    document.querySelectorAll('[data-serie]').forEach(b=>b.classList.toggle('on',b.dataset.serie===v))
+    G.serie=v
   }
 })()
 
-function selecionarSerie(el) {
-  document.querySelectorAll('.btn-serie').forEach(b => b.classList.remove('ativo'))
-  el.classList.add('ativo')
-  E.serie = el.dataset.serie
+function selSerie(el){
+  document.querySelectorAll('[data-serie]').forEach(b=>b.classList.remove('on'))
+  el.classList.add('on'); G.serie=el.dataset.serie
+}
+function selDisc(el){
+  document.querySelectorAll('[data-disc]').forEach(b=>b.classList.remove('on'))
+  el.classList.add('on'); G.disc=el.dataset.disc
 }
 
-function selecionarDisciplina(el) {
-  document.querySelectorAll('.btn-disciplina').forEach(b => b.classList.remove('ativo'))
-  el.classList.add('ativo')
-  E.disciplina = el.dataset.disc
-}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]};return r}
 
-// ============================================================
-// EMBARALHAR
-// ============================================================
-function shuffle(arr) {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
-function montarQuestoes() {
+function montarQs(){
   let pool
-  if (E.disciplina === 'misto') {
-    const p = shuffle(BANCO.portugues[E.serie]).map(q => ({...q, disc:'portugues'}))
-    const m = shuffle(BANCO.matematica[E.serie]).map(q => ({...q, disc:'matematica'}))
-    pool = []
-    const n = Math.min(p.length, m.length, 5)
-    for (let i = 0; i < n; i++) { pool.push(p[i]); pool.push(m[i]) }
+  if(G.disc==='misto'){
+    const p=shuffle(BANCO.portugues[G.serie]).map(q=>({...q,d:'pt'}))
+    const m=shuffle(BANCO.matematica[G.serie]).map(q=>({...q,d:'mt'}))
+    pool=[]; const n=Math.min(p.length,m.length,5)
+    for(let i=0;i<n;i++){pool.push(p[i]);pool.push(m[i])}
   } else {
-    pool = shuffle(BANCO[E.disciplina][E.serie]).map(q => ({...q, disc: E.disciplina}))
+    pool=shuffle(BANCO[G.disc][G.serie]).map(q=>({...q,d:G.disc==='portugues'?'pt':'mt'}))
   }
-  return shuffle(pool).slice(0, 10).map(q => {
-    const mapeado = q.opcoes.map((txt, i) => ({txt, orig: i}))
-    const emb = shuffle(mapeado)
-    return {...q, opcoes: emb.map(o => o.txt), correta: emb.findIndex(o => o.orig === q.correta)}
+  return shuffle(pool).slice(0,10).map(q=>{
+    const mp=q.o.map((t,i)=>({t,i}))
+    const em=shuffle(mp)
+    return{...q,o:em.map(x=>x.t),c:em.findIndex(x=>x.i===q.c)}
   })
 }
 
 // ============================================================
-// INICIAR JOGO
+// INICIAR
 // ============================================================
-function iniciarJogo() {
-  const nome = document.getElementById('input-nome').value.trim()
-  if (!nome) {
-    const el = document.getElementById('input-nome')
-    el.focus(); el.style.borderColor = 'var(--cor-erro)'
-    setTimeout(() => el.style.borderColor = '', 1500)
+function iniciar(){
+  const nome=document.getElementById('inp-nome').value.trim()
+  if(!nome){
+    const el=document.getElementById('inp-nome')
+    el.focus(); el.style.borderColor='var(--vermelho)'
+    setTimeout(()=>el.style.borderColor='',1500)
     return
   }
-  Object.assign(E, {
-    nome, questoes: montarQuestoes(), indice:0,
-    pontos:0, acertos:0, erros:0, combo:1, maxCombo:1, total:10
-  })
-  mudarTela('tela-jogo')
-  carregarQuestao()
+  Object.assign(G,{nome,qs:montarQs(),idx:0,pts:0,ac:0,er:0,combo:1,maxCombo:1,total:10})
+  mudar('tela-jogo')
+  carregarQ()
 }
 
 // ============================================================
-// QUESTÃO — com efeito typewriter no enunciado
+// QUESTÃO com typewriter
 // ============================================================
-let _twTimer = null // timer do typewriter
-
-function carregarQuestao() {
-  const q = E.questoes[E.indice]
-  if (!q) { finalizarJogo(); return }
-  E.respondido = false
+let twTimer=null
+function carregarQ(){
+  const q=G.qs[G.idx]
+  if(!q){finalizar();return}
+  G.respondido=false
   atualizarHUD()
 
-  // Tag de disciplina
-  const tag = document.getElementById('questao-tag')
-  if (q.disc === 'portugues') { tag.textContent = '📖 Português'; tag.className = 'questao-tag tag-portugues' }
-  else                         { tag.textContent = '📐 Matemática'; tag.className = 'questao-tag tag-matematica' }
+  const tag=document.getElementById('q-tag')
+  tag.textContent=q.d==='pt'?'📖 Português':'📐 Matemática'
+  tag.className='q-tag '+(q.d==='pt'?'tag-pt':'tag-mt')
 
-  // Enunciado com efeito typewriter
-  const enunciadoEl = document.getElementById('questao-enunciado')
-  const grid = document.getElementById('opcoes-grid')
-  grid.innerHTML = '' // limpa botões enquanto digita
-  enunciadoEl.textContent = ''
-  enunciadoEl.classList.add('typewriter-cursor')
-  if (_twTimer) clearInterval(_twTimer)
-  let idx = 0
-  const texto = q.enunciado
-  _twTimer = setInterval(() => {
-    enunciadoEl.textContent = texto.slice(0, ++idx)
-    if (idx >= texto.length) {
-      clearInterval(_twTimer)
-      enunciadoEl.classList.remove('typewriter-cursor')
-      // Renderiza botões após typewriter concluir
-      renderizarOpcoes(q)
+  // Typewriter
+  const txtEl=document.getElementById('q-txt')
+  const opEl=document.getElementById('opcoes')
+  opEl.innerHTML=''
+  txtEl.innerHTML=''
+  clearInterval(twTimer)
+  let i=0
+  const txt=q.e
+  const cursor=document.createElement('span'); cursor.className='cursor-blink'
+  txtEl.appendChild(cursor)
+  twTimer=setInterval(()=>{
+    if(i<txt.length){
+      txtEl.insertBefore(document.createTextNode(txt[i]),cursor)
+      i++
+    } else {
+      clearInterval(twTimer)
+      cursor.remove()
+      // Mostrar opções com delay
+      q.o.forEach((op,k)=>{
+        setTimeout(()=>{
+          const b=document.createElement('button')
+          b.className='op'; b.textContent=op
+          b.onclick=()=>responder(k,b)
+          opEl.appendChild(b)
+        },k*80)
+      })
+      iniciarTimer()
     }
-  }, 22) // 22ms por caractere
-
-  iniciarTimer()
-}
-
-function renderizarOpcoes(q) {
-  const grid = document.getElementById('opcoes-grid')
-  grid.innerHTML = ''
-  q.opcoes.forEach((txt, i) => {
-    const btn = document.createElement('button')
-    btn.className = 'opcao-btn'
-    btn.textContent = txt
-    btn.style.animation = `slideUp 0.3s ease ${i * 0.07}s both`
-    btn.onclick = (ev) => responder(i, ev)
-    grid.appendChild(btn)
-  })
+  },18)
 }
 
 // ============================================================
 // TIMER
 // ============================================================
-function iniciarTimer() {
-  clearInterval(E.timer)
-  E.tempoRestante = 30
-  atualizarTimer()
-  E.timer = setInterval(() => {
-    E.tempoRestante--
-    atualizarTimer()
-    if (E.tempoRestante <= 5) tocarSom('tick')
-    if (E.tempoRestante <= 0) { clearInterval(E.timer); if (!E.respondido) responder(-1, null) }
-  }, 1000)
+function iniciarTimer(){
+  clearInterval(G.timer); G.t=30; atualizarTimer()
+  G.timer=setInterval(()=>{
+    G.t--; atualizarTimer()
+    if(G.t<=5) som('tick')
+    if(G.t<=0){clearInterval(G.timer);if(!G.respondido) responder(-1,null)}
+  },1000)
 }
-
-function atualizarTimer() {
-  const t = E.tempoRestante
-  document.getElementById('timer-texto').textContent = t
-  const ring = document.getElementById('timer-ring')
-  ring.style.strokeDashoffset = 126 * (1 - t/30)
-  ring.style.stroke = t <= 10 ? 'var(--cor-erro)' : t <= 15 ? 'var(--cor-secundaria)' : 'var(--cor-primaria)'
-  const hudTempo = document.querySelector('.hud-tempo')
-  if (hudTempo) hudTempo.classList.toggle('urgente', t <= 10)
+function atualizarTimer(){
+  const t=G.t
+  document.getElementById('ring-txt').textContent=t
+  document.getElementById('ring').style.strokeDashoffset=126*(1-t/30)
+  document.getElementById('ring').style.stroke=t<=10?'var(--vermelho)':t<=15?'var(--laranja)':'var(--verde)'
+  document.getElementById('ring-wrap').classList.toggle('urgente',t<=10)
 }
 
 // ============================================================
-// RESPONDER
+// RESPONDER + EXPLOSÃO
 // ============================================================
-function responder(escolha, ev) {
-  if (E.respondido) return
-  E.respondido = true
-  clearInterval(E.timer)
-  if (_twTimer) { clearInterval(_twTimer) }
-  const enunciadoEl = document.getElementById('questao-enunciado')
-  enunciadoEl.classList.remove('typewriter-cursor')
-  // Garante que o enunciado completo aparece
-  const q = E.questoes[E.indice]
-  enunciadoEl.textContent = q.enunciado
+function responder(idx, btn){
+  if(G.respondido) return
+  G.respondido=true; clearInterval(G.timer)
+  const q=G.qs[G.idx]
+  const bts=document.querySelectorAll('.op')
+  bts.forEach(b=>b.disabled=true)
 
-  const bts = document.querySelectorAll('.opcao-btn')
-  bts.forEach(b => b.disabled = true)
-  if (escolha >= 0) bts[escolha].classList.add(escolha === q.correta ? 'correta' : 'errada')
-  bts[q.correta].classList.add('correta')
+  const acertou=idx===q.c
+  if(idx>=0) bts[idx].classList.add(acertou?'certa':'errada')
+  bts[q.c].classList.add('certa')
 
-  const acertou = escolha === q.correta
-  const ptsTempo = Math.floor((E.tempoRestante / 30) * 50)
-  const ptsCombo = acertou ? (E.combo - 1) * 20 : 0
-  const ptsTotal = acertou ? 100 + ptsTempo + ptsCombo : 0
-
-  if (acertou) {
-    E.acertos++; E.combo++
-    if (E.combo > E.maxCombo) E.maxCombo = E.combo
-    E.pontos += ptsTotal
-    tocarSom('correto')
-    // Explosão verde/dourada com estrelas no botão clicado
-    if (ev && escolha >= 0) explosaoParticulas(bts[escolha], true)
-    animarMascote('celebra')
-  } else {
-    E.erros++; E.combo = 1
-    tocarSom('errado')
-    // Explosão vermelha/roxa no botão clicado
-    if (ev && escolha >= 0) explosaoParticulas(bts[escolha], false)
-    // Shake leve na tela
-    const telaJogo = document.getElementById('tela-jogo')
-    telaJogo.classList.remove('shake')
-    void telaJogo.offsetWidth // reflow para reiniciar animação
-    telaJogo.classList.add('shake')
-    setTimeout(() => telaJogo.classList.remove('shake'), 500)
-    animarMascote('triste')
+  // EXPLOSÃO no botão clicado
+  if(btn){
+    const r=btn.getBoundingClientRect()
+    const cx=r.left+r.width/2, cy=r.top+r.height/2
+    explodir(cx,cy,acertou?'certo':'errado')
   }
 
-  setTimeout(() => mostrarFeedback(acertou, q, ptsTotal), 700)
+  // Flash de tela
+  const fl=document.getElementById('flash')
+  fl.className=acertou?'verde':'vermelho'
+  setTimeout(()=>fl.className='',600)
+
+  // Mascote
+  mascoteReage(acertou?'acertou':'errou')
+
+  // Pontos
+  const ptsTempo=Math.floor((G.t/30)*50)
+  const ptsCombo=acertou?(G.combo-1)*20:0
+  const total=acertou?100+ptsTempo+ptsCombo:0
+
+  if(acertou){
+    G.ac++; G.combo++
+    if(G.combo>G.maxCombo) G.maxCombo=G.combo
+    G.pts+=total; som('certo')
+    // Bump pontos
+    const el=document.getElementById('hud-pts')
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump')
+    setTimeout(()=>el.classList.remove('bump'),300)
+    // Fala combo
+    if(G.combo>3) fala(FALAS_COMBO[Math.min(G.combo-4,FALAS_COMBO.length-1)])
+  } else {
+    G.er++; G.combo=1; som('errado')
+    // Shake
+    document.getElementById('tela-jogo').classList.add('shake')
+    setTimeout(()=>document.getElementById('tela-jogo').classList.remove('shake'),400)
+  }
+
+  setTimeout(()=>mostrarFeedback(acertou,q,total),900)
 }
 
 // ============================================================
 // FEEDBACK
 // ============================================================
-function mostrarFeedback(acertou, q, pts) {
-  document.getElementById('feedback-icone').textContent = acertou ? '⚽' : '😬'
-  const titulo = document.getElementById('feedback-titulo')
-  titulo.textContent = acertou
-    ? ['GOOOL!','EXCELENTE!','PERFEITO!','CORRETO!'][Math.floor(Math.random()*4)]
-    : ['ERROU!','OPS!','QUASE!','NÃO ERA ESSA!'][Math.floor(Math.random()*4)]
-  titulo.className = 'feedback-titulo ' + (acertou ? 'correto' : 'errado')
-  document.getElementById('feedback-pontos').textContent = acertou ? `+${pts} pts` : '0 pts'
-  document.getElementById('feedback-combo-texto').textContent = acertou && E.combo > 2
-    ? `🔥 combo x${E.combo-1}!` : acertou ? '👍 boa resposta' : '💪 continue tentando'
-  document.getElementById('feedback-resposta-correta').textContent = q.opcoes[q.correta]
-  document.getElementById('feedback-explicacao').textContent = q.explicacao
-  document.getElementById('btn-proxima').textContent = E.indice + 1 >= E.total ? 'VER RESULTADO 🏆' : 'PRÓXIMA QUESTÃO ▶'
-  mudarTela('tela-feedback')
+function mostrarFeedback(acertou,q,pts){
+  document.getElementById('fb-ic').textContent=acertou?'⚽':'😬'
+  const t=document.getElementById('fb-tit')
+  t.textContent=acertou?['GOOOL!','EXCELENTE!','PERFEITO!','ARRASOU!'][Math.floor(Math.random()*4)]:['ERROU!','OPS!','QUASE!','NÃO ERA ESSA!'][Math.floor(Math.random()*4)]
+  t.className='fb-titulo '+(acertou?'fb-certo':'fb-errado')
+  document.getElementById('fb-pts').textContent=acertou?`+${pts} pts`:'0 pts'
+  document.getElementById('fb-cmb').textContent=acertou&&G.combo>2?`🔥 combo x${G.combo-1}!`:acertou?'👍 boa resposta':'💪 continue tentando'
+  document.getElementById('fb-resp').textContent=q.o[q.c]
+  document.getElementById('fb-exp').textContent=q.x
+  document.getElementById('btn-prox').textContent=G.idx+1>=G.total?'VER RESULTADO 🏆':'PRÓXIMA QUESTÃO ▶'
+  mudar('tela-feedback')
 }
+
+function proxima(){
+  G.idx++
+  if(G.idx>=G.total){finalizar();return}
+  if(G.idx===Math.floor(G.total/2)){mostrarIntervalo();return}
+  mudar('tela-jogo'); carregarQ()
+}
+
+function mostrarIntervalo(){
+  document.getElementById('iv-ac').textContent=G.ac
+  document.getElementById('iv-er').textContent=G.er
+  document.getElementById('iv-pt').textContent=G.pts
+  document.getElementById('iv-rest').textContent=G.total-G.idx
+  document.getElementById('iv-dica').textContent=DICAS[Math.floor(Math.random()*DICAS.length)]
+  mudar('tela-intervalo')
+}
+function continuar(){mudar('tela-jogo');carregarQ()}
 
 // ============================================================
-// PRÓXIMA / INTERVALO / RESULTADO
+// RESULTADO
 // ============================================================
-function proximaQuestao() {
-  E.indice++
-  if (E.indice >= E.total) { finalizarJogo(); return }
-  if (E.indice === Math.floor(E.total / 2)) { mostrarIntervalo(); return }
-  mudarTela('tela-jogo')
-  carregarQuestao()
-}
+function finalizar(){
+  const pct=Math.round((G.ac/G.total)*100)
+  let medal,trofeu,est
+  if(pct>=90){medal='m-ouro';trofeu='🏆';est=[1,1,1]}
+  else if(pct>=70){medal='m-prata';trofeu='🥈';est=[1,1,0]}
+  else if(pct>=50){medal='m-bronze';trofeu='🥉';est=[1,0,0]}
+  else{medal='m-part';trofeu='⚽';est=[0,0,0]}
 
-function mostrarIntervalo() {
-  document.getElementById('intervalo-acertos').textContent = E.acertos
-  document.getElementById('intervalo-erros').textContent = E.erros
-  document.getElementById('intervalo-pontos').textContent = E.pontos
-  document.getElementById('intervalo-restantes').textContent = E.total - E.indice
-  document.getElementById('intervalo-dica').textContent = DICAS[Math.floor(Math.random() * DICAS.length)]
-  mudarTela('tela-intervalo')
-}
-
-function continuarJogo() { mudarTela('tela-jogo'); carregarQuestao() }
-
-function finalizarJogo() {
-  const pct = Math.round((E.acertos / E.total) * 100)
-  let medal, trofeu, estrelas
-  if (pct >= 90)      { medal='medalha-ouro';       trofeu='🏆'; estrelas=[1,1,1] }
-  else if (pct >= 70) { medal='medalha-prata';      trofeu='🥈'; estrelas=[1,1,0] }
-  else if (pct >= 50) { medal='medalha-bronze';     trofeu='🥉'; estrelas=[1,0,0] }
-  else                { medal='medalha-participou'; trofeu='⚽'; estrelas=[0,0,0] }
-
-  document.getElementById('resultado-trofeu').textContent = trofeu
-  document.getElementById('resultado-pontuacao').textContent = E.pontos
-  const m = document.getElementById('resultado-medalha')
-  m.className = `medalha-badge ${medal}`
-  m.textContent = {
-    'medalha-ouro':'🥇 OURO','medalha-prata':'🥈 PRATA',
-    'medalha-bronze':'🥉 BRONZE','medalha-participou':'⚽ PARTICIPANTE'
+  document.getElementById('res-trofeu').textContent=trofeu
+  document.getElementById('res-pts').textContent=G.pts
+  const m=document.getElementById('res-medal')
+  m.className='medalha '+medal
+  m.textContent={
+    'm-ouro':'🥇 OURO','m-prata':'🥈 PRATA',
+    'm-bronze':'🥉 BRONZE','m-part':'⚽ PARTICIPANTE'
   }[medal]
-  document.getElementById('resultado-estrelas').innerHTML = estrelas.map((v,i) =>
-    `<span class="estrela ${v?'':'vazia'}" style="animation-delay:${i*0.15}s">${v?'⭐':'☆'}</span>`).join('')
-  document.getElementById('stat-acertos').textContent  = E.acertos
-  document.getElementById('stat-erros').textContent    = E.erros
-  document.getElementById('stat-precisao').textContent = pct + '%'
-  document.getElementById('stat-combo').textContent    = 'x' + E.maxCombo
-  document.getElementById('resultado-subtexto').textContent =
-    `${E.nome} · ${E.serie}º Ano · ${{portugues:'Português',matematica:'Matemática',misto:'Misto'}[E.disciplina]}`
+  document.getElementById('res-estrelas').innerHTML=est.map((v,i)=>
+    `<span class="est ${v?'':'off'}" style="animation-delay:${i*.15}s">${v?'⭐':'☆'}</span>`).join('')
+  document.getElementById('rs-ac').textContent=G.ac
+  document.getElementById('rs-er').textContent=G.er
+  document.getElementById('rs-prec').textContent=pct+'%'
+  document.getElementById('rs-cmb').textContent='x'+G.maxCombo
+  document.getElementById('res-sub').textContent=`${G.nome} · ${G.serie}º Ano · ${{portugues:'Português',matematica:'Matemática',misto:'Misto'}[G.disc]}`
 
-  // Salvar histórico
-  try {
-    const h = JSON.parse(localStorage.getItem('copaSaber_hist') || '[]')
-    h.unshift({nome:E.nome, serie:E.serie, disc:E.disciplina, pontos:E.pontos, acertos:E.acertos, total:E.total, data:new Date().toISOString()})
-    localStorage.setItem('copaSaber_hist', JSON.stringify(h.slice(0,20)))
-  } catch(e){}
+  // Coroa no mascote se ouro
+  if(pct>=90) document.getElementById('coroa').style.display='block'
+  mascoteDanca()
+  fala(pct>=90?'🏆 Campeão!':pct>=70?'🥈 Muito bom!':pct>=50?'🥉 Bom jogo!':'💪 Treine mais!')
 
-  mudarTela('tela-resultado')
-  tocarSom('vitoria')
-  if (pct >= 70) dispararConfetti()
+  // Salvar
+  try{const h=JSON.parse(localStorage.getItem('cds_h')||'[]');h.unshift({nome:G.nome,serie:G.serie,disc:G.disc,pts:G.pts,ac:G.ac,t:G.total,d:new Date().toISOString()});localStorage.setItem('cds_h',JSON.stringify(h.slice(0,20)))}catch(e){}
 
-  // Mascote dança no resultado e aparece coroa se >= 90%
-  animarMascote('danca')
-  const coroa = document.getElementById('coroa-mascote')
-  if (coroa) coroa.style.display = pct >= 90 ? 'block' : 'none'
+  mudar('tela-resultado')
+  som('vitoria')
+  if(pct>=70) confetti()
+
+  // Explosão grande no centro
+  setTimeout(()=>{
+    explodir(window.innerWidth/2, window.innerHeight/2, 'certo')
+    setTimeout(()=>explodir(window.innerWidth*.3, window.innerHeight*.4, 'certo'),300)
+    setTimeout(()=>explodir(window.innerWidth*.7, window.innerHeight*.4, 'certo'),500)
+  },400)
 }
 
 // ============================================================
-// UTILITÁRIOS — HUD, TELAS
+// UTILS
 // ============================================================
-function atualizarHUD() {
-  const i = E.indice + 1, t = E.total
-  document.getElementById('hud-pontos').textContent  = E.pontos
-  document.getElementById('hud-combo').innerHTML = 'x' + E.combo + ' <span class="hud-combo-chama">🔥</span>'
-  document.getElementById('hud-questao').textContent = `${i}/${t}`
-  document.getElementById('hud-acertos').textContent = E.acertos
-
-  // Chamas no combo
-  const comboWrapper = document.getElementById('hud-combo-wrapper')
-  if (comboWrapper) comboWrapper.classList.toggle('em-chamas', E.combo > 3)
-
-  const pct = Math.round(((i-1)/t)*100)
-  document.getElementById('barra-fill').style.width = pct + '%'
-  document.getElementById('barra-label-esq').textContent = `Questão ${i} de ${t}`
-  document.getElementById('barra-label-dir').textContent = pct + '%'
+function atualizarHUD(){
+  const i=G.idx+1, t=G.total
+  document.getElementById('hud-pts').textContent=G.pts
+  const cmb=document.getElementById('hud-cmb')
+  cmb.innerHTML=G.combo>3?`x${G.combo} <span class="chama">🔥</span>`:`x${G.combo}`
+  document.getElementById('hud-q').textContent=`${i}/${t}`
+  document.getElementById('hud-ac').textContent=G.ac
+  const pct=Math.round(((i-1)/t)*100)
+  document.getElementById('prog-fill').style.width=pct+'%'
+  document.getElementById('prog-txt').textContent=`Questão ${i} de ${t}`
+  document.getElementById('prog-pct').textContent=pct+'%'
 }
 
-function mudarTela(id) {
-  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'))
-  const alvo = document.getElementById(id)
-  alvo.classList.add('ativa')
-  window.scrollTo(0, 0)
+function mudar(id){
+  document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa'))
+  clearInterval(twTimer); clearInterval(G.timer)
+  document.getElementById(id).classList.add('ativa')
+  window.scrollTo(0,0)
+
+  // Mostrar/esconder mascote
+  const show=['tela-jogo','tela-feedback','tela-resultado'].includes(id)
+  document.getElementById('mascote').style.display=show?'block':'none'
+  document.getElementById('balao').style.display=show?'block':'none'
+  if(id==='tela-resultado') setTimeout(mascoteDanca,600)
+  else if(id==='tela-jogo'||id==='tela-feedback'){
+    document.getElementById('mascote').className='idle'
+    document.getElementById('coroa').style.display='none'
+  }
 }
 
-// ============================================================
-// CONFETTI
-// ============================================================
-function dispararConfetti() {
-  const c = document.getElementById('confetti'); c.innerHTML = ''
-  const cores = ['#00c896','#f5a623','#ff4757','#2ed573','#ffffff','#1a91ff','#ffdd00']
-  for (let i = 0; i < 100; i++) {
-    const p = document.createElement('div'); p.className = 'confetti-piece'
-    p.style.left   = Math.random()*100+'vw'
-    p.style.background = cores[Math.floor(Math.random()*cores.length)]
-    p.style.width  = (Math.random()*10+6)+'px'
-    p.style.height = (Math.random()*10+6)+'px'
-    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px'
-    p.style.setProperty('--tx', (Math.random()*200-100)+'px')
-    p.style.setProperty('--rot', (Math.random()*720)+'deg')
-    p.style.animationDuration  = (Math.random()*2+2)+'s'
-    p.style.animationDelay     = (Math.random()*1)+'s'
+function confetti(){
+  const c=document.getElementById('confetti'); c.innerHTML=''
+  const cores=['#00c896','#f5a623','#ff4757','#2ed573','#ffffff','#1a91ff','#a855f7']
+  for(let i=0;i<100;i++){
+    const p=document.createElement('div'); p.className='cp'
+    p.style.left=Math.random()*100+'vw'
+    p.style.background=cores[Math.floor(Math.random()*cores.length)]
+    p.style.width=(Math.random()*8+5)+'px'; p.style.height=(Math.random()*8+5)+'px'
+    p.style.setProperty('--tx',(Math.random()*200-100)+'px')
+    p.style.setProperty('--rot',(Math.random()*720)+'deg')
+    p.style.animationDuration=(Math.random()*2+2)+'s'
+    p.style.animationDelay=(Math.random()*1.2)+'s'
     c.appendChild(p)
   }
-  setTimeout(() => c.innerHTML = '', 5000)
+  setTimeout(()=>c.innerHTML='',5000)
 }
 
-// ============================================================
-// EXPLOSÃO DE PARTÍCULAS NOS BOTÕES
-// ============================================================
-function explosaoParticulas(btn, acertou) {
-  const container = document.getElementById('explosao-container')
-  const rect = btn.getBoundingClientRect()
-  const cx = rect.left + rect.width / 2
-  const cy = rect.top  + rect.height / 2
-
-  // Cores baseadas em acerto/erro
-  const coresAcerto = ['#2ed573','#00c896','#f5a623','#ffdd00','#ffffff','#ffe080']
-  const coresErro   = ['#ff4757','#c0392b','#8b00ff','#d4642a','#888','#ff9ff3']
-  const cores = acertou ? coresAcerto : coresErro
-
-  // Tipos de partículas
-  const QTDE = 28
-  for (let i = 0; i < QTDE; i++) {
-    const p = document.createElement('div')
-    p.className = 'particula'
-
-    // Posição inicial
-    p.style.left = cx + 'px'
-    p.style.top  = cy + 'px'
-
-    // Cor
-    const cor = cores[Math.floor(Math.random() * cores.length)]
-    p.style.background = cor
-    p.style.boxShadow  = `0 0 6px ${cor}`
-
-    // Tamanho variado
-    const tam = Math.random() * 12 + 5
-    p.style.width  = tam + 'px'
-    p.style.height = tam + 'px'
-
-    // Forma variada
-    const formas = ['50%', '0%', '30%', '50%']
-    p.style.borderRadius = formas[Math.floor(Math.random() * formas.length)]
-
-    // Vetor de movimento polar → cartesiano
-    const ang  = (i / QTDE) * Math.PI * 2 + (Math.random() - 0.5) * 0.8
-    const dist = Math.random() * 180 + 80
-    const px   = Math.cos(ang) * dist
-    const py   = Math.sin(ang) * dist - Math.random() * 60 // leve impulso pra cima
-    p.style.setProperty('--px', px + 'px')
-    p.style.setProperty('--py', py + 'px')
-    p.style.setProperty('--pr', (Math.random() * 720 - 360) + 'deg')
-
-    // Duração aleatória
-    const dur = Math.random() * 0.4 + 0.5
-    p.style.animationDuration = dur + 's'
-    p.style.animationDelay    = (Math.random() * 0.1) + 's'
-
-    container.appendChild(p)
-    setTimeout(() => p.remove(), (dur + 0.2) * 1000)
-  }
-
-  // Estrelas extras ao acertar
-  if (acertou) {
-    const estrelas = ['★','✦','✸','⭐']
-    for (let i = 0; i < 8; i++) {
-      const s = document.createElement('div')
-      s.className = 'particula'
-      s.style.left       = cx + 'px'
-      s.style.top        = cy + 'px'
-      s.style.background = 'transparent'
-      s.style.fontSize   = (Math.random() * 14 + 10) + 'px'
-      s.style.color      = '#ffdd00'
-      s.style.borderRadius = '0'
-      s.style.width  = 'auto'
-      s.style.height = 'auto'
-      s.style.lineHeight = '1'
-      s.style.textShadow = '0 0 8px #ffdd00'
-      s.textContent = estrelas[Math.floor(Math.random() * estrelas.length)]
-
-      const ang  = (i / 8) * Math.PI * 2
-      const dist = Math.random() * 120 + 60
-      s.style.setProperty('--px', (Math.cos(ang) * dist) + 'px')
-      s.style.setProperty('--py', (Math.sin(ang) * dist - 40) + 'px')
-      s.style.setProperty('--pr', '0deg')
-      s.style.animationDuration = '0.8s'
-      s.style.animationDelay    = (Math.random() * 0.15) + 's'
-
-      container.appendChild(s)
-      setTimeout(() => s.remove(), 1200)
-    }
-  }
+function jogarDenovo(){
+  G.qs=montarQs(); G.idx=0; G.pts=0; G.ac=0; G.er=0; G.combo=1; G.maxCombo=1
+  mudar('tela-jogo'); carregarQ()
 }
+function voltarInicio(){ mudar('tela-entrada') }
 
-// ============================================================
-// RIPPLE NOS BOTÕES
-// ============================================================
-function ripple(ev) {
-  const btn = ev.currentTarget
-  const rect = btn.getBoundingClientRect()
-  btn.style.setProperty('--rx', (ev.clientX - rect.left) + 'px')
-  btn.style.setProperty('--ry', (ev.clientY - rect.top)  + 'px')
-  btn.classList.remove('ripple-ativo')
-  void btn.offsetWidth
-  btn.classList.add('ripple-ativo')
-  setTimeout(() => btn.classList.remove('ripple-ativo'), 500)
-}
-// Adiciona ripple a todos os .btn no carregamento e sempre que novo botão surgir
-document.addEventListener('click', ev => {
-  const btn = ev.target.closest('.btn')
-  if (btn) ripple({currentTarget: btn, clientX: ev.clientX, clientY: ev.clientY})
-})
-
-// ============================================================
-// MASCOTE — animações e reações
-// ============================================================
-let _mascoteTimer = null
-function animarMascote(estado) {
-  const m = document.getElementById('mascote')
-  if (!m) return
-  if (_mascoteTimer) clearTimeout(_mascoteTimer)
-
-  // Remove todas as classes de animação
-  m.classList.remove('idle','celebra','triste','danca')
-  void m.offsetWidth // reflow
-
-  // Atualiza expressão facial no SVG
-  const boca     = document.getElementById('boca-leao')
-  const sobEsq   = document.getElementById('sobrancelha-esq')
-  const sobDir   = document.getElementById('sobrancelha-dir')
-  const estOlhos = document.getElementById('estrelas-olhos')
-  const coroa    = document.getElementById('coroa-mascote')
-
-  if (estado === 'celebra') {
-    // Sorriso grande + olhos brilhantes (estrelas)
-    if (boca)     boca.setAttribute('d', 'M47,70 Q55,80 63,70')
-    if (sobEsq)   sobEsq.setAttribute('d', 'M36,43 Q43,38 50,42')
-    if (sobDir)   sobDir.setAttribute('d', 'M60,42 Q67,38 74,43')
-    if (estOlhos) estOlhos.style.display = 'block'
-    m.classList.add('celebra')
-    _mascoteTimer = setTimeout(() => animarMascote('idle'), 900)
-
-  } else if (estado === 'triste') {
-    // Boca curvada para baixo + sobrancelhas arqueadas tristes
-    if (boca)     boca.setAttribute('d', 'M49,75 Q55,70 61,75')
-    if (sobEsq)   sobEsq.setAttribute('d', 'M36,50 Q43,46 50,49')
-    if (sobDir)   sobDir.setAttribute('d', 'M60,49 Q67,46 74,50')
-    if (estOlhos) estOlhos.style.display = 'none'
-    m.classList.add('triste')
-    _mascoteTimer = setTimeout(() => animarMascote('idle'), 1500)
-
-  } else if (estado === 'danca') {
-    // Sorriso + coroa visível
-    if (boca)     boca.setAttribute('d', 'M47,70 Q55,80 63,70')
-    if (sobEsq)   sobEsq.setAttribute('d', 'M36,43 Q43,38 50,42')
-    if (sobDir)   sobDir.setAttribute('d', 'M60,42 Q67,38 74,43')
-    if (estOlhos) estOlhos.style.display = 'block'
-    m.classList.add('danca')
-    // Não reseta — continua dançando na tela de resultado
-
-  } else {
-    // Idle — expressão neutra
-    if (boca)     boca.setAttribute('d', 'M49,70 Q55,76 61,70')
-    if (sobEsq)   sobEsq.setAttribute('d', 'M36,46 Q43,42 50,45')
-    if (sobDir)   sobDir.setAttribute('d', 'M60,45 Q67,42 74,46')
-    if (estOlhos) estOlhos.style.display = 'none'
-    m.classList.add('idle')
-  }
-}
-
-// ============================================================
-// CANVAS DE PARTÍCULAS DE FUNDO (tela entrada)
-// ============================================================
-;(function initCanvasFundo() {
-  const canvas = document.getElementById('canvas-fundo')
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  let W, H, pts = []
-
-  function resize() {
-    W = canvas.width  = window.innerWidth
-    H = canvas.height = window.innerHeight
-  }
-  window.addEventListener('resize', resize)
-  resize()
-
-  // Cria pontos flutuantes
-  for (let i = 0; i < 60; i++) {
-    pts.push({
-      x: Math.random() * (W || 800),
-      y: Math.random() * (H || 600),
-      r: Math.random() * 2.5 + 0.5,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      a: Math.random(),
-    })
-  }
-
-  function draw() {
-    W = canvas.width; H = canvas.height
-    ctx.clearRect(0, 0, W, H)
-    pts.forEach(p => {
-      p.x += p.vx; p.y += p.vy
-      p.a += 0.008
-      if (p.x < 0) p.x = W
-      if (p.x > W) p.x = 0
-      if (p.y < 0) p.y = H
-      if (p.y > H) p.y = 0
-      const alpha = (Math.sin(p.a) * 0.4 + 0.6) * 0.6
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(0,200,150,${alpha})`
-      ctx.fill()
-    })
-    // Linhas suaves conectando pontos próximos
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i+1; j < pts.length; j++) {
-        const dx = pts[i].x - pts[j].x
-        const dy = pts[i].y - pts[j].y
-        const dist = Math.sqrt(dx*dx + dy*dy)
-        if (dist < 100) {
-          ctx.beginPath()
-          ctx.moveTo(pts[i].x, pts[i].y)
-          ctx.lineTo(pts[j].x, pts[j].y)
-          ctx.strokeStyle = `rgba(0,200,150,${0.12 * (1 - dist/100)})`
-          ctx.lineWidth = 0.8
-          ctx.stroke()
-        }
-      }
-    }
-    requestAnimationFrame(draw)
-  }
-  draw()
-})()
-
-// ============================================================
-// REINICIAR / VOLTAR
-// ============================================================
-function jogarNovamente() {
-  E.questoes = montarQuestoes(); E.indice = 0
-  E.pontos = 0; E.acertos = 0; E.erros = 0; E.combo = 1; E.maxCombo = 1
-  // Limpa coroa e estado do mascote
-  const coroa = document.getElementById('coroa-mascote')
-  if (coroa) coroa.style.display = 'none'
-  mudarTela('tela-jogo')
-  carregarQuestao()
-}
-
-function voltarInicio() {
-  const coroa = document.getElementById('coroa-mascote')
-  if (coroa) coroa.style.display = 'none'
-  animarMascote('idle')
-  mudarTela('tela-entrada')
-}
-
-// Inicializa o mascote em idle ao carregar
-animarMascote('idle')
+// Mascote oculto no início
+document.getElementById('mascote').style.display='none'
+document.getElementById('balao').style.display='none'
 </script>
 </body>
 </html>
