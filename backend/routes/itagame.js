@@ -52,65 +52,34 @@ function calcularNivel(xp) {
   return { nivel: 1, nome: 'Construtor ⚙️', proximo: 200, xp_proximo: 200 - xp };
 }
 
-// Busca ranking do PythonAnywhere mesclado com fotos/turmas do CEITEC
+// Ranking usa banco local (Neon DB) como fonte de verdade — XP gerenciado pelo sistema ITA
 router.get('/ranking', async (req, res) => {
-  console.log('[ranking] chamado escola_id:', req.usuario?.escola_id);
   try {
     const { turma_id } = req.query;
     const eid = req.usuario.escola_id;
 
-    // Alunos locais para fotos e turma_id
+    // Busca alunos com seus pontos locais (já zerados no reset de 18/05/2025)
     const alunosLocais = await db.all(
-      'SELECT a.id, a.nome, a.codigo, a.foto_path, a.turma_id, t.nome as turma_nome FROM alunos a LEFT JOIN turmas t ON a.turma_id = t.id WHERE a.ativo = 1 AND a.escola_id = ?',
+      `SELECT a.id, a.nome, a.codigo, a.foto_path, a.turma_id, t.nome as turma_nome,
+              COALESCE(ip.xp_total, 0) as xp_total, COALESCE(ip.nivel, 1) as nivel
+       FROM alunos a
+       LEFT JOIN turmas t ON a.turma_id = t.id
+       LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
+       WHERE a.ativo = 1 AND a.escola_id = ?`,
       [eid]
     );
-    const mapLocal = {};
-    alunosLocais.forEach(a => { mapLocal[a.codigo.toUpperCase()] = a; });
 
-    // Começa com todos os alunos do CEITEC (XP = 0)
     let ranking = alunosLocais.map(a => ({
       id: a.id,
       codigo: a.codigo,
       nome: a.nome,
-      xp_total: 0,
-      nivel: 1,
-      nivel_info: calcularNivel(0),
+      xp_total: a.xp_total,
+      nivel: a.nivel,
+      nivel_info: calcularNivel(a.xp_total),
       turma_nome: a.turma_nome || '',
       turma_id: a.turma_id || null,
       foto_path: a.foto_path || null,
     }));
-
-    // Tenta sobrepor XP real do PythonAnywhere
-    try {
-      const pyRes = await fetch(`${ITAGAME_PY}/api/ranking/?chave=${CHAVE}`, { signal: AbortSignal.timeout(8000) });
-      if (pyRes.ok) {
-        const { ranking: pyRanking } = await pyRes.json();
-        console.log('[itagame] PY ranking recebido:', pyRanking.length, 'alunos, chaves:', pyRanking.slice(0,3).map(a=>a.codigo));
-        console.log('[itagame] CEITEC códigos (3 primeiros):', ranking.slice(0,3).map(a=>a.codigo));
-        const mapPY = {};
-        pyRanking.forEach(a => { if (a.codigo) mapPY[a.codigo.toUpperCase()] = a; });
-        ranking = ranking.map(a => {
-          const py = mapPY[a.codigo.toUpperCase()];
-          if (py && py.xp > 0) {
-            return { ...a, xp_total: py.xp, nivel: py.nivel || 1, nivel_info: calcularNivel(py.xp) };
-          }
-          return a;
-        });
-      }
-    } catch (err) {
-      console.error('[itagame] Erro ao buscar PY ranking:', err.message);
-      // Se PythonAnywhere falhar, mantém XP local
-      const localXP = await db.all(
-        `SELECT aluno_id, xp_total, nivel FROM itagame_pontos WHERE xp_total > 0`
-      );
-      const mapLocalXP = {};
-      localXP.forEach(r => { mapLocalXP[r.aluno_id] = r; });
-      ranking = ranking.map(a => {
-        const lxp = mapLocalXP[a.id];
-        if (lxp) return { ...a, xp_total: lxp.xp_total, nivel: lxp.nivel, nivel_info: calcularNivel(lxp.xp_total) };
-        return a;
-      });
-    }
 
     // Filtrar por turma
     if (turma_id) {
@@ -168,13 +137,13 @@ router.post('/atribuir', async (req, res) => {
       }
     } catch (_) {}
 
-    // Atualizar local também
+    // Atualiza banco local — fonte de verdade do XP (ignora total do PythonAnywhere)
     let registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     if (!registro) {
       await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno_id, aluno.turma_id]);
       registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     }
-    const novoXP = xpPY !== null ? xpPY : (registro.xp_total + Number(xp));
+    const novoXP = registro.xp_total + Number(xp);
     const novoNivel = calcularNivel(novoXP).nivel;
     await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno_id]);
     await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
