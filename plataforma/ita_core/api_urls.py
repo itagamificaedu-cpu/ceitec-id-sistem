@@ -22,4 +22,7 @@ urlpatterns = [
 
     # Repositório
     path('repositorio/', api_views.lista_ferramentas, name='api_repositorio'),
+
+    # Reset do Corretor — apaga todos os resultados (chave secreta)
+    path('reset-corretor/', api_views.reset_resultados_corretor, name='api_reset_corretor'),
 ]

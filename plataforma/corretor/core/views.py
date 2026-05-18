@@ -1298,3 +1298,23 @@ def api_sync_alunos(request):
         return JsonResponse({'ok': True, 'sincronizados': criados})
     except Exception as e:
         return JsonResponse({'erro': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_reset_resultados(request):
+    """Apaga todos os resultados do corretor. Protegido por chave secreta."""
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Metodo nao permitido'}, status=405)
+    try:
+        data = json.loads(request.body)
+        if data.get('chave') != 'gamificaedu_secreto_2026':
+            return JsonResponse({'erro': 'Chave invalida'}, status=403)
+        from .models import Resultado, Estatisticas, Tentativa, TokenQR
+        total = Resultado.objects.count()
+        Resultado.objects.all().delete()
+        Estatisticas.objects.all().delete()
+        Tentativa.objects.all().delete()
+        TokenQR.objects.all().delete()
+        return JsonResponse({'ok': True, 'resultados_apagados': total})
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=500)

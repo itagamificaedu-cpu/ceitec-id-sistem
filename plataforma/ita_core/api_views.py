@@ -213,3 +213,23 @@ def lista_ferramentas(request):
     qs = Ferramenta.objects.filter(ativo=True).order_by('-criado_em')
     data = [{'id': f.id, 'titulo': f.titulo, 'descricao': f.descricao, 'categoria': f.categoria} for f in qs]
     return Response({'ferramentas': data})
+
+
+@csrf_exempt
+def reset_resultados_corretor(request):
+    """Apaga todos os resultados/correcoes do Corretor. Protegido por chave secreta."""
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Metodo nao permitido'}, status=405)
+    try:
+        data = json.loads(request.body)
+        if data.get('chave') != 'gamificaedu_secreto_2026':
+            return JsonResponse({'erro': 'Chave invalida'}, status=403)
+        from corretor.core.models import Resultado, Estatisticas, Tentativa, TokenQR
+        total = Resultado.objects.count()
+        Resultado.objects.all().delete()
+        Estatisticas.objects.all().delete()
+        Tentativa.objects.all().delete()
+        TokenQR.objects.all().delete()
+        return JsonResponse({'ok': True, 'resultados_apagados': total})
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=500)
