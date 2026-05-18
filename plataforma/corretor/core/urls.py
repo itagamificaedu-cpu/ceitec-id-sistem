@@ -47,6 +47,9 @@ urlpatterns = [
     path('resultados/<uuid:pk>/editar/', views.editar_resultado, name='editar_resultado'),
     path('resultados/<uuid:pk>/excluir/', views.excluir_resultado, name='excluir_resultado'),
 
+    # Reset de resultados — chave secreta obrigatória
+    path('api/reset-resultados/', views.api_reset_resultados, name='api_reset_resultados'),
+
     # API JSON para Dashboard CEITEC
     path('api/resultados-json/', views.api_resultados_json, name='api_resultados_json'),
 
