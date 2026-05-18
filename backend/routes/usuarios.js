@@ -25,11 +25,14 @@ router.post('/', async (req, res) => {
     const existe = await db.get('SELECT id FROM usuarios WHERE email = ?', [email]);
     if (existe) return res.status(400).json({ erro: 'Email já cadastrado' });
     const senha_hash = bcrypt.hashSync(senha, 10);
+    // Professores e secretaria devem trocar a senha no primeiro acesso
+    const perfil_final = perfil || 'secretaria';
+    const trocar_senha = (perfil_final === 'professor' || perfil_final === 'secretaria') ? 1 : 0;
     const result = await db.run(
-      'INSERT INTO usuarios (nome, email, senha_hash, perfil, escola_id) VALUES (?, ?, ?, ?, ?)',
-      [nome, email, senha_hash, perfil || 'secretaria', req.usuario.escola_id]
+      'INSERT INTO usuarios (nome, email, senha_hash, perfil, escola_id, trocar_senha) VALUES (?, ?, ?, ?, ?, ?)',
+      [nome, email, senha_hash, perfil_final, req.usuario.escola_id, trocar_senha]
     );
-    res.status(201).json({ id: result.lastInsertRowid, nome, email, perfil: perfil || 'secretaria' });
+    res.status(201).json({ id: result.lastInsertRowid, nome, email, perfil: perfil_final });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
@@ -55,6 +58,54 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ erro: err.message });
   }
 });
+
+// Gera senhas individuais para todos os usuários e retorna lista para PDF
+// Usuário troca a própria senha no primeiro acesso
+router.post('/trocar-senha', async (req, res) => {
+  try {
+    const { senha_nova } = req.body;
+    if (!senha_nova || senha_nova.length < 6)
+      return res.status(400).json({ erro: 'A nova senha deve ter pelo menos 6 caracteres.' });
+    const hash = bcrypt.hashSync(senha_nova, 10);
+    await db.run(
+      'UPDATE usuarios SET senha_hash = ?, trocar_senha = 0 WHERE id = ?',
+      [hash, req.usuario.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+router.post('/gerar-senhas', async (req, res) => {
+  try {
+    const usuarios = await db.all(
+      'SELECT id, nome, email, perfil FROM usuarios WHERE escola_id = ? ORDER BY nome',
+      [req.usuario.escola_id]
+    );
+
+    const lista = [];
+    for (const u of usuarios) {
+      const senha = gerarSenha();
+      const hash = bcrypt.hashSync(senha, 10);
+      await db.run(
+        'UPDATE usuarios SET senha_hash = ?, trocar_senha = 1 WHERE id = ?',
+        [hash, u.id]
+      );
+      lista.push({ id: u.id, nome: u.nome, email: u.email, perfil: u.perfil, senha });
+    }
+    res.json({ ok: true, usuarios: lista });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+function gerarSenha() {
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let s = '';
+  for (let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 router.delete('/:id', async (req, res) => {
   try {

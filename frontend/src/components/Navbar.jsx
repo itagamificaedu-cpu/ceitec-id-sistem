@@ -156,6 +156,7 @@ export default function Navbar() {
   }
 
   const isProfessor = usuario.perfil === 'professor'
+  const isItaAdmin  = usuario.perfil === 'ita_admin'
 
   const secoes = isProfessor
     ? [
@@ -194,12 +195,19 @@ export default function Navbar() {
         }
       ]
     : [
-        ...SECOES_ESTATICAS,
+        // Para coordenadores de escolas: filtra itens exclusivos do dono da plataforma ITA
+        ...SECOES_ESTATICAS.map(secao => ({
+          ...secao,
+          itens: secao.itens.filter(item =>
+            // Curso de Férias só aparece para o dono da plataforma (ita_admin)
+            item.path !== '/curso-ferias' || isItaAdmin
+          )
+        })),
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
-            { path: '/itagame',                        label: 'ItagGame — Painel',  icon: '🎮' },
-            { onClick: abrirCorretor,                  label: 'Corretor de Provas', icon: '📋' },
+            { path: '/itagame',       label: 'ItagGame — Painel',  icon: '🎮' },
+            { onClick: abrirCorretor, label: 'Corretor de Provas', icon: '📋' },
           ]
         },
       ]
