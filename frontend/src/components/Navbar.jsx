@@ -4,23 +4,24 @@ import api from '../api'
 
 const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.pythonanywhere.com'
 
+// itaAdmin: true  →  item visível APENAS para o dono da plataforma (perfil ita_admin)
 const SECOES_ESTATICAS = [
   {
     titulo: 'ESCOLA',
     itens: [
-      { path: '/dashboard', label: 'Dashboard Geral', icon: '🏠' },
-      { path: '/scanner', label: 'Scanner de Presença', icon: '📷' },
-      { path: '/almoco/scanner', label: 'Scanner de Almoço', icon: '🍽️' },
-      { path: '/almoco/relatorio', label: 'Relatório de Almoço', icon: '📋' },
-      { path: '/usuarios', label: 'Gerenciar Usuários', icon: '🔑' },
-      { path: '/atividade-usuarios', label: 'Atividade dos Usuários', icon: '📡' },
+      { path: '/dashboard',          label: 'Dashboard Geral',        icon: '🏠' },
+      { path: '/scanner',            label: 'Scanner de Presença',    icon: '📷' },
+      { path: '/almoco/scanner',     label: 'Scanner de Almoço',      icon: '🍽️' },
+      { path: '/almoco/relatorio',   label: 'Relatório de Almoço',    icon: '📋' },
+      { path: '/usuarios',           label: 'Gerenciar Usuários',     icon: '🔑' },
+      { path: '/atividade-usuarios', label: 'Atividade dos Usuários', icon: '📡', itaAdmin: true },
     ]
   },
   {
     titulo: 'ALUNOS',
     itens: [
-      { path: '/turmas', label: 'Turmas e Alunos', icon: '👥' },
-      { path: '/alunos/novo', label: 'Cadastrar Aluno', icon: '➕' },
+      { path: '/turmas',       label: 'Turmas e Alunos',  icon: '👥' },
+      { path: '/alunos/novo',  label: 'Cadastrar Aluno',  icon: '➕' },
       { path: '/justificativas', label: 'Justificativas', icon: '📋' },
     ]
   },
@@ -33,29 +34,29 @@ const SECOES_ESTATICAS = [
   {
     titulo: 'PEDAGÓGICO',
     itens: [
-      { path: '/corretor-resultados', label: 'Resultados Corretor de Provas', icon: '📋' },
-      { path: '/avaliacoes', label: 'Avaliações da Plataforma', icon: '📝' },
-      { path: '/quiz',       label: 'Quiz Interativo',          icon: '🎯' },
-      { href: '/quiz-copa/', label: 'Copa do Saber',           icon: '⚽' },
-      { path: '/desempenho', label: 'Desempenho Acadêmico', icon: '📊' },
-      { path: '/diagnostico', label: 'Diagnóstico por Disciplina', icon: '🔬' },
-      { path: '/ocorrencias', label: 'Ocorrências', icon: '⚠️' },
+      { path: '/corretor-resultados', label: 'Resultados Corretor de Provas',   icon: '📋' },
+      { path: '/avaliacoes',          label: 'Avaliações da Plataforma',        icon: '📝' },
+      { path: '/quiz',                label: 'Quiz Interativo',                 icon: '🎯' },
+      { href: '/quiz-copa/',          label: 'Copa do Saber',                   icon: '⚽' },
+      { path: '/desempenho',          label: 'Desempenho Acadêmico',            icon: '📊' },
+      { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',      icon: '🔬' },
+      { path: '/ocorrencias',         label: 'Ocorrências',                     icon: '⚠️' },
     ]
   },
   {
     titulo: 'MÓDULOS EXTRAS',
     itens: [
-      { path: '/sala-maker', label: 'Sala Maker', icon: '🔧' },
-      { path: '/curso-ferias', label: 'Curso de Férias Maker', icon: '🚀' },
-      { path: '/mobile-tracker', label: 'Mobile Tracker GPS', icon: '📍' },
+      { path: '/sala-maker',    label: 'Sala Maker',           icon: '🔧' },
+      { path: '/curso-ferias',  label: 'Curso de Férias Maker', icon: '🚀', itaAdmin: true },
+      { path: '/mobile-tracker', label: 'Mobile Tracker GPS',  icon: '📍' },
     ]
   },
   {
     titulo: 'RELATÓRIOS',
     itens: [
-      { path: '/relatorios', label: 'Relatórios Gerais', icon: '📈' },
-      { path: '/planos', label: 'Planos de Assinatura', icon: '💳' },
-      { path: '/minha-licenca', label: 'Minha Licença', icon: '🔐' },
+      { path: '/relatorios',    label: 'Relatórios Gerais',     icon: '📈' },
+      { path: '/planos',        label: 'Planos de Assinatura',  icon: '💳' },
+      { path: '/minha-licenca', label: 'Minha Licença',         icon: '🔐' },
     ]
   },
 ]
@@ -195,13 +196,10 @@ export default function Navbar() {
         }
       ]
     : [
-        // Para coordenadores de escolas: filtra itens exclusivos do dono da plataforma ITA
+        // Filtra itens marcados com itaAdmin:true — só o dono da plataforma vê
         ...SECOES_ESTATICAS.map(secao => ({
           ...secao,
-          itens: secao.itens.filter(item =>
-            // Curso de Férias só aparece para o dono da plataforma (ita_admin)
-            item.path !== '/curso-ferias' || isItaAdmin
-          )
+          itens: secao.itens.filter(item => !item.itaAdmin || isItaAdmin)
         })),
         {
           titulo: 'FERRAMENTAS ITA',
