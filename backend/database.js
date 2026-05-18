@@ -28,8 +28,10 @@ async function initDatabase() {
     `ALTER TABLE quiz_resultados   ADD COLUMN IF NOT EXISTS aluno_codigo TEXT`,
     `ALTER TABLE almoco_registros  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS trocar_senha INTEGER DEFAULT 0`,
+    // Perfil especial do dono da plataforma ITA (acesso global — não é escola contratante)
+    `UPDATE usuarios SET perfil = 'ita_admin' WHERE email = 'itagamificaedu@gmail.com'`,
     // Cada admin tem escola_id = próprio id
-    `UPDATE usuarios SET escola_id = id WHERE perfil = 'admin' AND escola_id IS NULL`,
+    `UPDATE usuarios SET escola_id = id WHERE perfil IN ('admin','ita_admin') AND escola_id IS NULL`,
     // Demais usuários herdaram escola do admin ITA (dados demo)
     `UPDATE usuarios SET escola_id = (SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1) WHERE escola_id IS NULL`,
     // Todos os dados já existentes pertencem ao ITA demo

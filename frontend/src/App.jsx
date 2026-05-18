@@ -60,6 +60,15 @@ function Admin({ children }) {
   return children
 }
 
+// Guard exclusivo para o dono da plataforma ITA — bloqueia coordenadores de outras escolas
+function ItaAdmin({ children }) {
+  const token = localStorage.getItem('token')
+  if (!token) return <Navigate to="/login" replace />
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  if (usuario.perfil !== 'ita_admin') return <Navigate to="/dashboard" replace />
+  return children
+}
+
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -135,8 +144,8 @@ export default function App() {
         {/* Sala Maker — acessível a todos os usuários autenticados */}
         <Route path="/sala-maker" element={<P><SalaMaker /></P>} />
 
-        {/* Curso de Férias — landing page e gerenciamento (só admin) */}
-        <Route path="/curso-ferias" element={<Admin><CursoFerias /></Admin>} />
+        {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
+        <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />
 
         {/* Mobile Tracker — GPS de alunos */}
         <Route path="/mobile-tracker" element={<Admin><MobileTracker /></Admin>} />
