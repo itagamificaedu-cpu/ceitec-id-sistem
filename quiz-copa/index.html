@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa do Saber — ITA Tecnologia Educacional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== VARIÁVEIS DE COR ===== */
+:root {
+  --cor-fundo: #0a0f1e;
+  --cor-primaria: #00c896;
+  --cor-secundaria: #f5a623;
+  --cor-acento: #1a2744;
+  --cor-texto: #e8eaf0;
+  --cor-erro: #ff4757;
+  --cor-sucesso: #2ed573;
+  --cor-card: #111827;
+  --cor-borda: #1f2d47;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== TELAS ===== */
+.tela {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.4s ease;
+}
+.tela.ativa { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* ===== CAMPO SVG ANIMADO ===== */
+.campo-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 20px;
+}
+.campo-svg { width: 100%; border-radius: 12px; }
+.campo-pulse {
+  animation: campoPulse 3s ease-in-out infinite;
+}
+@keyframes campoPulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(0,200,150,0.3)); }
+  50% { filter: drop-shadow(0 0 20px rgba(0,200,150,0.7)); }
+}
+.bola-animada {
+  animation: bolaRola 4s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes bolaRola {
+  0% { transform: translateX(-60px) rotate(0deg); }
+  50% { transform: translateX(60px) rotate(360deg); }
+  100% { transform: translateX(-60px) rotate(720deg); }
+}
+
+/* ===== LOGO / TÍTULO ===== */
+.logo-topo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+.sub-titulo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.9rem, 3vw, 1.2rem);
+  color: rgba(232,234,240,0.7);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.badge-ita {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--cor-acento), #0d1b36);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cor-primaria);
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 600px;
+}
+.card-sm { max-width: 440px; }
+
+/* ===== BOTÕES ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  width: 100%;
+}
+.btn-primario {
+  background: linear-gradient(135deg, var(--cor-primaria), #00a878);
+  color: #0a0f1e;
+}
+.btn-primario:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,200,150,0.4); }
+.btn-secundario {
+  background: linear-gradient(135deg, var(--cor-secundaria), #d4891d);
+  color: #0a0f1e;
+}
+.btn-secundario:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,166,35,0.4); }
+.btn-fantasma {
+  background: transparent;
+  border: 2px solid var(--cor-borda);
+  color: var(--cor-texto);
+}
+.btn-fantasma:hover { border-color: var(--cor-primaria); color: var(--cor-primaria); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ===== INPUT ===== */
+.input-jogo {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--cor-acento);
+  border: 2px solid var(--cor-borda);
+  border-radius: 10px;
+  color: var(--cor-texto);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-jogo:focus { border-color: var(--cor-primaria); }
+.input-jogo::placeholder { color: rgba(232,234,240,0.4); }
+label.label-jogo {
+  display: block;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(232,234,240,0.6);
+  margin-bottom: 6px;
+}
+
+/* ===== TELA ENTRADA ===== */
+#tela-entrada { gap: 16px; }
+.selecionar-serie {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+}
+.btn-serie {
+  flex: 1;
+  padding: 16px;
+  background: var(--cor-acento);
+  border: 2px solid var(--cor-borda);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--cor-texto);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.btn-serie.ativo, .btn-serie:hover {
+  border-color: var(--cor-primaria);
+  background: rgba(0,200,150,0.1);
+  color: var(--cor-primaria);
+}
+.selecionar-disciplina {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+}
+.btn-disciplina {
+  flex: 1;
+  padding: 14px;
+  background: var(--cor-acento);
+  border: 2px solid var(--cor-borda);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--cor-texto);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.btn-disciplina .icone { font-size: 1.6rem; }
+.btn-disciplina.ativo, .btn-disciplina:hover {
+  border-color: var(--cor-secundaria);
+  background: rgba(245,166,35,0.1);
+  color: var(--cor-secundaria);
+}
+
+/* ===== HUD DE JOGO ===== */
+#tela-jogo {
+  justify-content: flex-start;
+  padding-top: 16px;
+  gap: 0;
+}
+.hud {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Rajdhani', sans-serif;
+}
+.hud-valor {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.hud-label {
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.hud-pontos .hud-valor { color: var(--cor-primaria); }
+.hud-combo .hud-valor { color: var(--cor-secundaria); }
+.hud-tempo.urgente .hud-valor { color: var(--cor-erro); animation: pisca 0.5s infinite; }
+@keyframes pisca { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Barra de progresso */
+.barra-progresso-wrapper {
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 12px;
+}
+.barra-progresso-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+.barra-progresso-track {
+  height: 6px;
+  background: var(--cor-acento);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.barra-progresso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cor-primaria), var(--cor-secundaria));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Timer ring */
+.timer-ring-wrapper {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+.timer-ring-svg { transform: rotate(-90deg); }
+.timer-ring-bg { stroke: var(--cor-acento); }
+.timer-ring-fill {
+  stroke: var(--cor-primaria);
+  stroke-dasharray: 126;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
+}
+.timer-ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: var(--cor-texto);
+}
+
+/* Bloco da questão */
+.questao-container {
+  width: 100%;
+  max-width: 700px;
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 12px;
+}
+.questao-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.tag-portugues { background: rgba(0,200,150,0.15); color: var(--cor-primaria); border: 1px solid rgba(0,200,150,0.3); }
+.tag-matematica { background: rgba(245,166,35,0.15); color: var(--cor-secundaria); border: 1px solid rgba(245,166,35,0.3); }
+.questao-enunciado {
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.opcoes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 480px) { .opcoes-grid { grid-template-columns: 1fr; } }
+.opcao-btn {
+  padding: 12px 16px;
+  background: var(--cor-acento);
+  border: 2px solid var(--cor-borda);
+  border-radius: 12px;
+  color: var(--cor-texto);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: left;
+  line-height: 1.4;
+}
+.opcao-btn:hover:not(:disabled) {
+  border-color: var(--cor-primaria);
+  background: rgba(0,200,150,0.08);
+}
+.opcao-btn.correta {
+  border-color: var(--cor-sucesso);
+  background: rgba(46,213,115,0.15);
+  color: var(--cor-sucesso);
+}
+.opcao-btn.errada {
+  border-color: var(--cor-erro);
+  background: rgba(255,71,87,0.15);
+  color: var(--cor-erro);
+}
+.opcao-btn:disabled { cursor: default; }
+
+/* ===== TELA FEEDBACK ===== */
+#tela-feedback { gap: 16px; }
+.feedback-icone {
+  font-size: 5rem;
+  line-height: 1;
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.feedback-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  text-align: center;
+}
+.feedback-titulo.correto { color: var(--cor-sucesso); }
+.feedback-titulo.errado { color: var(--cor-erro); }
+.feedback-explicacao {
+  font-size: 0.93rem;
+  line-height: 1.6;
+  opacity: 0.85;
+  text-align: center;
+  max-width: 480px;
+}
+.pontos-ganhos {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--cor-secundaria);
+  animation: slideUp 0.4s ease 0.2s both;
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== TELA INTERVALO ===== */
+#tela-intervalo { gap: 20px; }
+.placar-intervalo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+}
+.placar-item {
+  text-align: center;
+  background: var(--cor-acento);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 14px 8px;
+}
+.placar-numero {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+.placar-legenda {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+.placar-item.verde .placar-numero { color: var(--cor-sucesso); }
+.placar-item.vermelho .placar-numero { color: var(--cor-erro); }
+.placar-item.amarelo .placar-numero { color: var(--cor-secundaria); }
+
+/* ===== TELA RESULTADO ===== */
+#tela-resultado { gap: 20px; }
+.resultado-trofeu {
+  font-size: clamp(4rem, 15vw, 8rem);
+  line-height: 1;
+  animation: trofeuEntrada 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes trofeuEntrada {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+.resultado-pontuacao {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 12vw, 6rem);
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.resultado-subtexto {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  text-align: center;
+}
+.resultado-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
+}
+.stat-item {
+  background: var(--cor-acento);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+.stat-valor {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--cor-primaria);
+}
+.stat-legenda {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+.resultado-botoes {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+  flex-wrap: wrap;
+}
+.resultado-botoes .btn { flex: 1; min-width: 140px; }
+.medalha-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  animation: glow 2s ease-in-out infinite;
+}
+.medalha-ouro { background: linear-gradient(135deg, #f5a623, #d4891d); color: #0a0f1e; }
+.medalha-prata { background: linear-gradient(135deg, #9ba3b0, #6b7280); color: #0a0f1e; }
+.medalha-bronze { background: linear-gradient(135deg, #cd7f32, #a0632a); color: #0a0f1e; }
+.medalha-participou { background: var(--cor-acento); border: 1px solid var(--cor-borda); color: var(--cor-texto); }
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(245,166,35,0.3); }
+  50% { box-shadow: 0 0 25px rgba(245,166,35,0.7); }
+}
+
+/* ===== ESTRELAS ===== */
+.estrelas-animadas { display: flex; gap: 8px; font-size: 2rem; }
+.estrela { animation: estrelaEntrada 0.3s ease both; }
+.estrela:nth-child(2) { animation-delay: 0.15s; }
+.estrela:nth-child(3) { animation-delay: 0.3s; }
+@keyframes estrelaEntrada { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+.estrela.vazia { opacity: 0.25; }
+
+/* ===== CONFETTI ===== */
+.confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
+.confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confettiCair linear both; }
+@keyframes confettiCair {
+  0% { top: -10px; transform: translateX(0) rotate(0deg); opacity: 1; }
+  100% { top: 110vh; transform: translateX(var(--tx)) rotate(var(--rot)); opacity: 0.3; }
+}
+
+/* ===== RODAPÉ ===== */
+.rodape-ita { margin-top: 12px; font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.35; text-align: center; }
+.divisor { width: 100%; max-width: 440px; height: 1px; background: var(--cor-borda); margin: 4px 0; }
+
+@media (max-width: 640px) {
+  .hud { padding: 8px 12px; gap: 8px; }
+  .questao-container { padding: 16px; }
+  .card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="confetti-container" id="confetti"></div>
+
+<!-- ===== TELA 1: ENTRADA ===== -->
+<div id="tela-entrada" class="tela ativa">
+  <div class="campo-wrapper" style="max-width:320px">
+    <svg viewBox="0 0 320 200" class="campo-svg campo-pulse" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gramado" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d3d1a"/>
+          <stop offset="100%" stop-color="#0a2e14"/>
+        </linearGradient>
+        <linearGradient id="gradLinha" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="rgba(0,200,150,0)"/>
+          <stop offset="50%" stop-color="rgba(0,200,150,0.8)"/>
+          <stop offset="100%" stop-color="rgba(0,200,150,0)"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="200" rx="8" fill="url(#gramado)"/>
+      <rect x="0" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <rect x="80" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <rect x="160" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <rect x="240" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <rect x="10" y="10" width="300" height="180" rx="4" fill="none" stroke="rgba(0,200,150,0.5)" stroke-width="2"/>
+      <line x1="160" y1="10" x2="160" y2="190" stroke="rgba(0,200,150,0.5)" stroke-width="1.5"/>
+      <circle cx="160" cy="100" r="35" fill="none" stroke="rgba(0,200,150,0.5)" stroke-width="1.5"/>
+      <circle cx="160" cy="100" r="3" fill="rgba(0,200,150,0.8)"/>
+      <rect x="10" y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
+      <rect x="10" y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
+      <rect x="260" y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
+      <rect x="288" y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
+      <line x1="0" y1="100" x2="320" y2="100" stroke="url(#gradLinha)" stroke-width="2" opacity="0.5"/>
+      <g class="bola-animada">
+        <circle cx="160" cy="100" r="9" fill="white"/>
+        <circle cx="157" cy="97" r="2.5" fill="rgba(0,0,0,0.35)"/>
+        <circle cx="163" cy="97" r="2" fill="rgba(0,0,0,0.35)"/>
+        <circle cx="160" cy="103" r="2" fill="rgba(0,0,0,0.35)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="logo-topo">Copa do Saber</div>
+  <div class="sub-titulo">Campeonato do Conhecimento</div>
+  <div class="badge-ita">ITA Tecnologia Educacional</div>
+
+  <div class="card card-sm" style="margin-top:16px">
+    <div style="margin-bottom:14px">
+      <label class="label-jogo">Seu nome</label>
+      <input type="text" id="input-nome" class="input-jogo" placeholder="Digite seu nome..." maxlength="40">
+    </div>
+    <div style="margin-bottom:14px">
+      <label class="label-jogo">Série</label>
+      <div class="selecionar-serie">
+        <button class="btn-serie ativo" data-serie="8" onclick="selecionarSerie(this)">8º ANO</button>
+        <button class="btn-serie" data-serie="9" onclick="selecionarSerie(this)">9º ANO</button>
+      </div>
+    </div>
+    <div style="margin-bottom:20px">
+      <label class="label-jogo">Disciplina</label>
+      <div class="selecionar-disciplina">
+        <button class="btn-disciplina ativo" data-disc="portugues" onclick="selecionarDisciplina(this)">
+          <span class="icone">📖</span><span>Português</span>
+        </button>
+        <button class="btn-disciplina" data-disc="matematica" onclick="selecionarDisciplina(this)">
+          <span class="icone">📐</span><span>Matemática</span>
+        </button>
+        <button class="btn-disciplina" data-disc="misto" onclick="selecionarDisciplina(this)">
+          <span class="icone">⚡</span><span>Misto</span>
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primario" onclick="iniciarJogo()">⚽ ENTRAR EM CAMPO</button>
+  </div>
+  <div class="rodape-ita">Copa do Saber v1.0 · ITA Tecnologia · 2026</div>
+</div>
+
+<!-- ===== TELA 2: JOGO ===== -->
+<div id="tela-jogo" class="tela">
+  <div class="hud">
+    <div class="hud-item hud-pontos">
+      <div class="hud-valor" id="hud-pontos">0</div>
+      <div class="hud-label">pontos</div>
+    </div>
+    <div class="hud-item hud-combo">
+      <div class="hud-valor" id="hud-combo">x1</div>
+      <div class="hud-label">combo</div>
+    </div>
+    <div class="timer-ring-wrapper">
+      <svg class="timer-ring-svg" width="50" height="50" viewBox="0 0 50 50">
+        <circle class="timer-ring-bg" cx="25" cy="25" r="20" fill="none" stroke-width="4"/>
+        <circle class="timer-ring-fill" id="timer-ring" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="timer-ring-text" id="timer-texto">30</div>
+    </div>
+    <div class="hud-item hud-tempo">
+      <div class="hud-valor" id="hud-questao">1/10</div>
+      <div class="hud-label">questão</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-valor" style="color:var(--cor-sucesso)" id="hud-acertos">0</div>
+      <div class="hud-label">acertos</div>
+    </div>
+  </div>
+
+  <div class="barra-progresso-wrapper">
+    <div class="barra-progresso-labels">
+      <span id="barra-label-esq">Questão 1 de 10</span>
+      <span id="barra-label-dir">0%</span>
+    </div>
+    <div class="barra-progresso-track">
+      <div class="barra-progresso-fill" id="barra-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="questao-container">
+    <span class="questao-tag" id="questao-tag">Português</span>
+    <div class="questao-enunciado" id="questao-enunciado">Carregando...</div>
+    <div class="opcoes-grid" id="opcoes-grid"></div>
+  </div>
+</div>
+
+<!-- ===== TELA 3: FEEDBACK ===== -->
+<div id="tela-feedback" class="tela">
+  <div class="feedback-icone" id="feedback-icone">✅</div>
+  <div class="feedback-titulo" id="feedback-titulo">CORRETO!</div>
+  <div class="card card-sm" style="margin-top:4px; text-align:center">
+    <div class="pontos-ganhos" id="feedback-pontos">+120 pts</div>
+    <div style="margin:8px 0; font-family:'Rajdhani',sans-serif; font-size:0.8rem; opacity:0.6; letter-spacing:1px; text-transform:uppercase" id="feedback-combo-texto">combo x2</div>
+    <div class="divisor" style="max-width:100%"></div>
+    <div style="margin-top:12px">
+      <div style="font-family:'Rajdhani',sans-serif; font-size:0.75rem; letter-spacing:1px; text-transform:uppercase; opacity:0.5; margin-bottom:6px">RESPOSTA CORRETA:</div>
+      <div style="color:var(--cor-sucesso); font-weight:600; margin-bottom:10px" id="feedback-resposta-correta"></div>
+      <div class="feedback-explicacao" id="feedback-explicacao"></div>
+    </div>
+  </div>
+  <button class="btn btn-primario" style="max-width:440px; margin-top:8px" onclick="proximaQuestao()" id="btn-proxima">PRÓXIMA QUESTÃO ▶</button>
+</div>
+
+<!-- ===== TELA 4: INTERVALO ===== -->
+<div id="tela-intervalo" class="tela">
+  <div class="logo-topo" style="font-size:clamp(1.8rem,6vw,3rem)">Intervalo!</div>
+  <div class="sub-titulo">Primeira metade concluída</div>
+  <div class="placar-intervalo">
+    <div class="placar-item verde">
+      <div class="placar-numero" id="intervalo-acertos">0</div>
+      <div class="placar-legenda">Acertos</div>
+    </div>
+    <div class="placar-item vermelho">
+      <div class="placar-numero" id="intervalo-erros">0</div>
+      <div class="placar-legenda">Erros</div>
+    </div>
+    <div class="placar-item amarelo">
+      <div class="placar-numero" id="intervalo-pontos">0</div>
+      <div class="placar-legenda">Pontos</div>
+    </div>
+  </div>
+  <div class="card card-sm" style="text-align:center">
+    <div style="font-family:'Rajdhani',sans-serif; font-size:1rem; opacity:0.7; margin-bottom:10px">
+      Faltam <strong id="intervalo-restantes" style="color:var(--cor-primaria)">5</strong> questões para o fim!
+    </div>
+    <div id="intervalo-dica" style="font-size:0.9rem; line-height:1.5; padding:10px; background:var(--cor-acento); border-radius:8px; border-left:3px solid var(--cor-secundaria)">
+      💡 Dica: Leia com atenção o enunciado completo antes de escolher!
+    </div>
+  </div>
+  <button class="btn btn-secundario" style="max-width:440px" onclick="continuarJogo()">⚽ SEGUNDA METADE</button>
+</div>
+
+<!-- ===== TELA 5: RESULTADO ===== -->
+<div id="tela-resultado" class="tela">
+  <div class="resultado-trofeu" id="resultado-trofeu">🏆</div>
+  <div class="estrelas-animadas" id="resultado-estrelas">
+    <span class="estrela">⭐</span><span class="estrela">⭐</span><span class="estrela">⭐</span>
+  </div>
+  <div class="medalha-badge medalha-ouro" id="resultado-medalha">🥇 OURO</div>
+  <div class="resultado-pontuacao" id="resultado-pontuacao">0</div>
+  <div class="resultado-subtexto" id="resultado-subtexto">pontos conquistados</div>
+  <div class="resultado-stats">
+    <div class="stat-item">
+      <div class="stat-valor" id="stat-acertos" style="color:var(--cor-sucesso)">0</div>
+      <div class="stat-legenda">Acertos</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-valor" id="stat-erros" style="color:var(--cor-erro)">0</div>
+      <div class="stat-legenda">Erros</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-valor" id="stat-precisao">0%</div>
+      <div class="stat-legenda">Precisão</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-valor" id="stat-combo" style="color:var(--cor-secundaria)">x1</div>
+      <div class="stat-legenda">Max Combo</div>
+    </div>
+  </div>
+  <div class="resultado-botoes">
+    <button class="btn btn-primario" onclick="jogarNovamente()">🔄 JOGAR DE NOVO</button>
+    <button class="btn btn-fantasma" onclick="voltarInicio()">🏠 INÍCIO</button>
+  </div>
+  <div class="rodape-ita" style="margin-top:8px">Copa do Saber · ITA Tecnologia · 2026</div>
+</div>
+
+<script>
+// ============================================================
+// BANCO DE QUESTÕES — BNCC 8º e 9º ANO
+// ============================================================
+const BANCO = {
+  portugues: {
+    8: [
+      { enunciado: 'Qual figura de linguagem está em: "Meu coração é uma pedra"?', opcoes: ['Comparação', 'Metáfora', 'Hipérbole', 'Personificação'], correta: 1, explicacao: 'Metáfora: identidade direta entre dois termos sem "como". Coração É pedra — não apenas parece.' },
+      { enunciado: 'Em "Embora estivesse cansado, ele continuou estudando", a subordinada indica:', opcoes: ['Causa', 'Condição', 'Concessão', 'Finalidade'], correta: 2, explicacao: '"Embora" introduz oração concessiva — apresenta obstáculo que não impede a ação principal.' },
+      { enunciado: 'Qual é o sujeito de "Caíram folhas secas no chão"?', opcoes: ['Caíram', 'folhas secas', 'no chão', 'Sujeito oculto'], correta: 1, explicacao: '"Folhas secas" é o sujeito simples. O verbo "caíram" concorda com ele no plural.' },
+      { enunciado: 'A palavra "saudade" pertence a qual classe gramatical?', opcoes: ['Adjetivo', 'Verbo', 'Substantivo', 'Advérbio'], correta: 2, explicacao: '"Saudade" é substantivo abstrato — nomeia um sentimento sem forma física.' },
+      { enunciado: 'Identifique o tipo de linguagem: "A coisa vai pegar, hein?"', opcoes: ['Linguagem formal', 'Linguagem culta escrita', 'Linguagem informal coloquial', 'Linguagem técnica'], correta: 2, explicacao: 'Linguagem informal coloquial usa expressões do cotidiano e construções relaxadas.' },
+      { enunciado: 'Em qual alternativa a pontuação está correta?', opcoes: ['"João, venha aqui."', '"João venha; aqui."', '"João: venha aqui"', '"João venha aqui."'], correta: 0, explicacao: 'Usa-se vírgula para isolar vocativo ("João"). A frase termina com ponto por ser ordem.' },
+      { enunciado: 'Qual é o prefixo que indica negação em "infeliz"?', opcoes: ['in-', '-feliz', 'infe-', '-liz'], correta: 0, explicacao: 'O prefixo "in-" (latino) indica negação: infeliz, incapaz, inútil.' },
+      { enunciado: 'O narrador onisciente de um conto:', opcoes: ['Participa dos eventos como personagem', 'Conhece os pensamentos de todos os personagens', 'Apenas descreve o que vê externamente', 'Representa o autor real'], correta: 1, explicacao: 'Narrador onisciente tem acesso à mente de todos os personagens — recurso literário.' },
+      { enunciado: '"Ele foi ao mercado E comprou frutas." O "E" é conjunção:', opcoes: ['Adversativa', 'Concessiva', 'Aditiva', 'Alternativa'], correta: 2, explicacao: '"E" é coordenativa aditiva — soma ideias/ações sem oposição.' },
+      { enunciado: 'Qual recurso está em "O silêncio gritava na sala vazia"?', opcoes: ['Eufemismo', 'Personificação', 'Antítese', 'Anáfora'], correta: 1, explicacao: 'Personificação (prosopopeia): atribui ação humana a ser inanimado — "silêncio gritava".' },
+      { enunciado: 'Em qual alternativa a crase está correta?', opcoes: ['Fui à escola ontem.', 'Vou à comprar pão.', 'Ela gosta à dançar.', 'Falei à ele.'], correta: 0, explicacao: 'Crase = preposição "a" + artigo "a" (feminino). "Escola" é feminino → à escola.' },
+      { enunciado: 'O texto dissertativo-argumentativo tem como objetivo:', opcoes: ['Narrar eventos cronologicamente', 'Descrever paisagens e personagens', 'Defender um ponto de vista com argumentos', 'Expressar sentimentos'], correta: 2, explicacao: 'Texto dissertativo-argumentativo: tese + argumentos + conclusão → persuadir o leitor.' },
+    ],
+    9: [
+      { enunciado: '"Os alunos que estudaram passaram na prova." A oração "que estudaram" é:', opcoes: ['Adverbial causal', 'Adjetiva restritiva', 'Substantiva subjetiva', 'Adverbial concessiva'], correta: 1, explicacao: 'Oração subordinada adjetiva restritiva — restringe quais alunos passaram (só os que estudaram).' },
+      { enunciado: 'Em "Quanto mais estudo, mais aprendo", a relação é de:', opcoes: ['Concessão', 'Proporcionalidade', 'Causa e efeito', 'Condição'], correta: 1, explicacao: '"Quanto mais... mais..." indica proporcionalidade entre as orações.' },
+      { enunciado: 'Qual figura está em "Ela chegou, viu, venceu"?', opcoes: ['Anacoluto', 'Pleonasmo', 'Assíndeto', 'Polissíndeto'], correta: 2, explicacao: 'Assíndeto: omissão de conectivos entre orações, criando ritmo acelerado.' },
+      { enunciado: 'O que é um texto multimodal?', opcoes: ['Escrito em vários idiomas', 'Usa apenas imagens', 'Combina linguagens (verbal, visual, sonora)', 'Tem muitos parágrafos'], correta: 2, explicacao: 'Texto multimodal integra múltiplas linguagens. Infográficos e vídeos são exemplos.' },
+      { enunciado: 'Qual é a função de "rapidamente" em "Ela correu rapidamente"?', opcoes: ['Adjunto adnominal', 'Predicativo do sujeito', 'Adjunto adverbial de modo', 'Complemento verbal'], correta: 2, explicacao: 'Advérbio de modo modifica o verbo indicando como a ação acontece.' },
+      { enunciado: 'O estilo de Guimarães Rosa se caracteriza por:', opcoes: ['Linguagem simples e direta', 'Regionalismo + experimentação linguística', 'Narração linear e cronológica', 'Rejeição de elementos do sertão'], correta: 1, explicacao: 'Guimarães Rosa mistura sertão de MG com neologismos, arcaísmos e invenções linguísticas.' },
+      { enunciado: 'Em qual gênero predomina a sequência injuntiva?', opcoes: ['Romance', 'Receita culinária', 'Crônica jornalística', 'Soneto'], correta: 1, explicacao: 'Sequência injuntiva instrui/orienta. Receitas e manuais são exemplos clássicos.' },
+      { enunciado: '"Ele passou desta para melhor" usa qual recurso?', opcoes: ['Hipérbole', 'Ironia', 'Eufemismo', 'Litotes'], correta: 2, explicacao: 'Eufemismo: substitui expressão desagradável por outra mais suave.' },
+      { enunciado: 'Qual uso de "mal/mau" está correto?', opcoes: ['Ele foi um mau aluno. (adjetivo)', 'Ele mau chegou. (advérbio)', 'Ele é mau correr. (adjunto)', 'Ele agiu mal-humorado. (errado)'], correta: 0, explicacao: '"Mau" é adjetivo (antônimo de "bom"). "Mau aluno" usa o adjetivo corretamente.' },
+      { enunciado: 'A charge é um gênero que:', opcoes: ['Relata fatos históricos fielmente', 'Critica com humor fatos atuais', 'Narra aventuras fictícias', 'Instrui sobre processos técnicos'], correta: 1, explicacao: 'A charge usa humor e caricatura para criticar fatos políticos e sociais do momento.' },
+      { enunciado: 'Qual é a classe de "durante" em "Ficou quieto durante a aula"?', opcoes: ['Conjunção', 'Preposição', 'Advérbio', 'Pronome relativo'], correta: 1, explicacao: '"Durante" é preposição que introduz adjunto adverbial de tempo.' },
+      { enunciado: 'O que diferencia narrador em 1ª pessoa do narrador onisciente?', opcoes: ['O narrador em 1ª pessoa conhece mais personagens', 'O narrador em 1ª pessoa só narra sua perspectiva', 'O onisciente é sempre o protagonista', 'Não há diferença prática'], correta: 1, explicacao: 'Narrador em 1ª pessoa narra do seu ponto de vista, com limitações. O onisciente sabe tudo.' },
+    ]
+  },
+  matematica: {
+    8: [
+      { enunciado: 'Qual é o valor de x: 3x + 7 = 22?', opcoes: ['x = 3', 'x = 5', 'x = 7', 'x = 4'], correta: 1, explicacao: '3x + 7 = 22 → 3x = 15 → x = 5.' },
+      { enunciado: 'Um triângulo tem 60° e 80°. Qual é o terceiro ângulo?', opcoes: ['30°', '40°', '50°', '60°'], correta: 1, explicacao: 'Soma dos ângulos internos = 180°. 180 - 60 - 80 = 40°.' },
+      { enunciado: 'Calcule: (-3)² + √16 =', opcoes: ['7', '13', '5', '10'], correta: 1, explicacao: '(-3)² = 9 e √16 = 4. Total = 13.' },
+      { enunciado: 'Área de um quadrado com lado 7 cm:', opcoes: ['28 cm²', '49 cm²', '14 cm²', '42 cm²'], correta: 1, explicacao: 'Área = lado² = 7² = 49 cm².' },
+      { enunciado: 'Se x=3 e y=-2, quanto vale 2x² - y?', opcoes: ['20', '16', '10', '22'], correta: 0, explicacao: '2(9) - (-2) = 18 + 2 = 20.' },
+      { enunciado: 'Produto de R$80 com 15% de desconto:', opcoes: ['R$68,00', 'R$72,00', 'R$65,00', 'R$74,00'], correta: 0, explicacao: 'Desconto = 80 × 0,15 = 12. Novo preço = 80 - 12 = R$68,00.' },
+      { enunciado: 'Qual é o MMC de 12 e 18?', opcoes: ['6', '24', '36', '72'], correta: 2, explicacao: '12=2²×3, 18=2×3². MMC = 2²×3² = 36.' },
+      { enunciado: 'Se 3/x = 6/14, qual é x?', opcoes: ['5', '7', '9', '4'], correta: 1, explicacao: 'Produto dos meios = extremos: 6x = 42 → x = 7.' },
+      { enunciado: 'Urna com 4 bolas vermelhas e 6 azuis. P(azul) =', opcoes: ['2/5', '3/5', '1/2', '4/10'], correta: 1, explicacao: 'P(azul) = 6/10 = 3/5 = 60%.' },
+      { enunciado: 'Valor de 5a²b com a=2 e b=-1:', opcoes: ['-20', '20', '-10', '10'], correta: 0, explicacao: '5 × 4 × (-1) = -20.' },
+      { enunciado: 'Perímetro de retângulo = 36 cm, largura = 6 cm. Comprimento:', opcoes: ['10 cm', '12 cm', '15 cm', '8 cm'], correta: 1, explicacao: 'P = 2(c+l): 36 = 2(c+6) → c = 12 cm.' },
+      { enunciado: '(x²+5x+6) ÷ (x+2) =', opcoes: ['x+3', 'x+2', 'x+1', 'x+4'], correta: 0, explicacao: 'Fatorando: (x+2)(x+3). Dividindo por (x+2) → x+3.' },
+    ],
+    9: [
+      { enunciado: 'Sistema: x+y=10 e x-y=4. Solução:', opcoes: ['x=5, y=5', 'x=7, y=3', 'x=6, y=4', 'x=8, y=2'], correta: 1, explicacao: 'Somando: 2x=14 → x=7. Substituindo: y=3.' },
+      { enunciado: 'Volume de cilindro reto:', opcoes: ['V = πr²h', 'V = 4πr³/3', 'V = πrh', 'V = 2πr²'], correta: 0, explicacao: 'V = área da base × altura = πr² × h.' },
+      { enunciado: 'f(x) = 2x - 3. Qual é f(5)?', opcoes: ['5', '7', '10', '13'], correta: 1, explicacao: 'f(5) = 2(5) - 3 = 7.' },
+      { enunciado: 'Produto notável: (a+b)² =', opcoes: ['a²+b²', 'a²+2ab+b²', 'a²-2ab+b²', 'a²+ab+b²'], correta: 1, explicacao: '(a+b)² = a²+2ab+b² — o dobro do produto dos termos está no meio.' },
+      { enunciado: 'Catetos 3 e 4. Hipotenusa pelo Teorema de Pitágoras:', opcoes: ['6', '5', '7', '√7'], correta: 1, explicacao: 'h² = 9+16 = 25 → h = 5. Triângulo pitagórico 3-4-5!' },
+      { enunciado: 'log₁₀(1000) =', opcoes: ['2', '3', '4', '10'], correta: 1, explicacao: 'log₁₀(10³) = 3. 10³ = 1000.' },
+      { enunciado: 'Fatore: x² - 9 =', opcoes: ['(x-3)²', '(x+3)(x-3)', '(x-9)(x+1)', 'x(x-9)'], correta: 1, explicacao: 'Diferença de quadrados: a²-b² = (a+b)(a-b). x²-9 = (x+3)(x-3).' },
+      { enunciado: 'se sen(30°)=1/2, então sen(150°) =', opcoes: ['-1/2', '√3/2', '1/2', '-√3/2'], correta: 2, explicacao: 'sen(180°-θ) = sen(θ). sen(150°) = sen(30°) = 1/2.' },
+      { enunciado: 'Equação da reta por (0,3) com inclinação 2:', opcoes: ['y=3x+2', 'y=2x+3', 'y=2x-3', 'y=3x-2'], correta: 1, explicacao: 'y = ax+b. a=2, b=3 (ponto (0,3)). → y=2x+3.' },
+      { enunciado: 'Raízes de x²-5x+6=0:', opcoes: ['x=1 e x=6', 'x=2 e x=3', 'x=-2 e x=-3', 'x=1 e x=5'], correta: 1, explicacao: 'Fatorando: (x-2)(x-3)=0 → x=2 ou x=3.' },
+      { enunciado: 'Juros simples: R$500 a 10%a.a. por 3 anos. Juros =', opcoes: ['R$50', 'R$150', 'R$200', 'R$665'], correta: 1, explicacao: 'J = C×i×t = 500×0,10×3 = R$150.' },
+      { enunciado: 'Volume de esfera de raio 3 (π≈3):', opcoes: ['27 cm³', '36 cm³', '108 cm³', '81 cm³'], correta: 2, explicacao: 'V = (4/3)πr³ = (4/3)×3×27 = 108 cm³.' },
+    ]
+  }
+}
+
+const DICAS = [
+  '💡 Em questões de interpretação, volte ao texto para confirmar!',
+  '⚡ Em cálculos, verifique a unidade pedida antes de responder.',
+  '🧠 Em Português, elimine alternativas claramente erradas primeiro.',
+  '📐 Escreva os dados do problema antes de calcular!',
+  '🎯 Leia TODAS as alternativas antes de marcar.',
+  '⏱ Se travar, tente eliminar 2 alternativas e escolha entre as restantes.',
+  '🔢 Em equações, isole a incógnita passo a passo.',
+  '📖 Metáfora = comparação SEM "como". Comparação = com "como".',
+]
+
+// ============================================================
+// WEB AUDIO API
+// ============================================================
+let audioCtx = null
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+  return audioCtx
+}
+function tocarSom(tipo) {
+  try {
+    const ctx = getAudio()
+    const osc = ctx.createOscillator(), gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    if (tipo === 'correto') {
+      osc.frequency.setValueAtTime(523, ctx.currentTime)
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1)
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2)
+      gain.gain.setValueAtTime(0.3, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5)
+    } else if (tipo === 'errado') {
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(220, ctx.currentTime)
+      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.15)
+      gain.gain.setValueAtTime(0.25, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3)
+    } else if (tipo === 'tick') {
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      gain.gain.setValueAtTime(0.05, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.05)
+    } else if (tipo === 'vitoria') {
+      [523, 659, 784, 1046].forEach((f, i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain()
+        o.connect(g); g.connect(ctx.destination)
+        o.frequency.value = f
+        g.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.12)
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4)
+        o.start(ctx.currentTime + i * 0.12); o.stop(ctx.currentTime + i * 0.12 + 0.4)
+      })
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// ESTADO
+// ============================================================
+let E = {
+  nome:'', serie:'8', disciplina:'portugues',
+  questoes:[], indice:0,
+  pontos:0, acertos:0, erros:0,
+  combo:1, maxCombo:1,
+  timer:null, tempoRestante:30,
+  respondido:false, total:10
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+;(function lerUrlParams() {
+  const p = new URLSearchParams(window.location.search)
+  if (p.get('nome')) document.getElementById('input-nome').value = decodeURIComponent(p.get('nome'))
+  if (p.get('turma')) {
+    const t = p.get('turma').toUpperCase()
+    const serie = t.startsWith('9') ? '9' : '8'
+    document.querySelectorAll('.btn-serie').forEach(b => b.classList.toggle('ativo', b.dataset.serie === serie))
+    E.serie = serie
+  }
+})()
+
+function selecionarSerie(el) {
+  document.querySelectorAll('.btn-serie').forEach(b => b.classList.remove('ativo'))
+  el.classList.add('ativo')
+  E.serie = el.dataset.serie
+}
+
+function selecionarDisciplina(el) {
+  document.querySelectorAll('.btn-disciplina').forEach(b => b.classList.remove('ativo'))
+  el.classList.add('ativo')
+  E.disciplina = el.dataset.disc
+}
+
+// ============================================================
+// EMBARALHAR
+// ============================================================
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function montarQuestoes() {
+  let pool
+  if (E.disciplina === 'misto') {
+    const p = shuffle(BANCO.portugues[E.serie]).map(q => ({...q, disc:'portugues'}))
+    const m = shuffle(BANCO.matematica[E.serie]).map(q => ({...q, disc:'matematica'}))
+    pool = []
+    const n = Math.min(p.length, m.length, 5)
+    for (let i = 0; i < n; i++) { pool.push(p[i]); pool.push(m[i]) }
+  } else {
+    pool = shuffle(BANCO[E.disciplina][E.serie]).map(q => ({...q, disc: E.disciplina}))
+  }
+  return shuffle(pool).slice(0, 10).map(q => {
+    const mapeado = q.opcoes.map((txt, i) => ({txt, orig: i}))
+    const emb = shuffle(mapeado)
+    return {...q, opcoes: emb.map(o => o.txt), correta: emb.findIndex(o => o.orig === q.correta)}
+  })
+}
+
+// ============================================================
+// INICIAR JOGO
+// ============================================================
+function iniciarJogo() {
+  const nome = document.getElementById('input-nome').value.trim()
+  if (!nome) {
+    const el = document.getElementById('input-nome')
+    el.focus(); el.style.borderColor = 'var(--cor-erro)'
+    setTimeout(() => el.style.borderColor = '', 1500)
+    return
+  }
+  Object.assign(E, {
+    nome, questoes: montarQuestoes(), indice:0,
+    pontos:0, acertos:0, erros:0, combo:1, maxCombo:1, total:10
+  })
+  mudarTela('tela-jogo')
+  carregarQuestao()
+}
+
+// ============================================================
+// QUESTÃO
+// ============================================================
+function carregarQuestao() {
+  const q = E.questoes[E.indice]
+  if (!q) { finalizarJogo(); return }
+  E.respondido = false
+  atualizarHUD()
+  const tag = document.getElementById('questao-tag')
+  if (q.disc === 'portugues') { tag.textContent = '📖 Português'; tag.className = 'questao-tag tag-portugues' }
+  else { tag.textContent = '📐 Matemática'; tag.className = 'questao-tag tag-matematica' }
+  document.getElementById('questao-enunciado').textContent = q.enunciado
+  const grid = document.getElementById('opcoes-grid')
+  grid.innerHTML = ''
+  q.opcoes.forEach((txt, i) => {
+    const btn = document.createElement('button')
+    btn.className = 'opcao-btn'; btn.textContent = txt
+    btn.onclick = () => responder(i)
+    grid.appendChild(btn)
+  })
+  iniciarTimer()
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function iniciarTimer() {
+  clearInterval(E.timer)
+  E.tempoRestante = 30
+  atualizarTimer()
+  E.timer = setInterval(() => {
+    E.tempoRestante--
+    atualizarTimer()
+    if (E.tempoRestante <= 5) tocarSom('tick')
+    if (E.tempoRestante <= 0) { clearInterval(E.timer); if (!E.respondido) responder(-1) }
+  }, 1000)
+}
+
+function atualizarTimer() {
+  const t = E.tempoRestante
+  document.getElementById('timer-texto').textContent = t
+  const ring = document.getElementById('timer-ring')
+  ring.style.strokeDashoffset = 126 * (1 - t/30)
+  ring.style.stroke = t <= 10 ? 'var(--cor-erro)' : t <= 15 ? 'var(--cor-secundaria)' : 'var(--cor-primaria)'
+  const hudTempo = document.querySelector('.hud-tempo')
+  if (hudTempo) hudTempo.classList.toggle('urgente', t <= 10)
+}
+
+// ============================================================
+// RESPONDER
+// ============================================================
+function responder(escolha) {
+  if (E.respondido) return
+  E.respondido = true
+  clearInterval(E.timer)
+  const q = E.questoes[E.indice]
+  const bts = document.querySelectorAll('.opcao-btn')
+  bts.forEach(b => b.disabled = true)
+  if (escolha >= 0) bts[escolha].classList.add(escolha === q.correta ? 'correta' : 'errada')
+  bts[q.correta].classList.add('correta')
+  const acertou = escolha === q.correta
+  const ptsTempo = Math.floor((E.tempoRestante / 30) * 50)
+  const ptsCombo = acertou ? (E.combo - 1) * 20 : 0
+  const ptsTotal = acertou ? 100 + ptsTempo + ptsCombo : 0
+  if (acertou) { E.acertos++; E.combo++; if (E.combo > E.maxCombo) E.maxCombo = E.combo; E.pontos += ptsTotal; tocarSom('correto') }
+  else { E.erros++; E.combo = 1; tocarSom('errado') }
+  setTimeout(() => mostrarFeedback(acertou, q, ptsTotal), 700)
+}
+
+// ============================================================
+// FEEDBACK
+// ============================================================
+function mostrarFeedback(acertou, q, pts) {
+  document.getElementById('feedback-icone').textContent = acertou ? '⚽' : '😬'
+  const titulo = document.getElementById('feedback-titulo')
+  titulo.textContent = acertou
+    ? ['GOOOL!','EXCELENTE!','PERFEITO!','CORRETO!'][Math.floor(Math.random()*4)]
+    : ['ERROU!','OPS!','QUASE!','NÃO ERA ESSA!'][Math.floor(Math.random()*4)]
+  titulo.className = 'feedback-titulo ' + (acertou ? 'correto' : 'errado')
+  document.getElementById('feedback-pontos').textContent = acertou ? `+${pts} pts` : '0 pts'
+  document.getElementById('feedback-combo-texto').textContent = acertou && E.combo > 2
+    ? `🔥 combo x${E.combo-1}!` : acertou ? '👍 boa resposta' : '💪 continue tentando'
+  document.getElementById('feedback-resposta-correta').textContent = q.opcoes[q.correta]
+  document.getElementById('feedback-explicacao').textContent = q.explicacao
+  document.getElementById('btn-proxima').textContent = E.indice + 1 >= E.total ? 'VER RESULTADO 🏆' : 'PRÓXIMA QUESTÃO ▶'
+  mudarTela('tela-feedback')
+}
+
+// ============================================================
+// PRÓXIMA / INTERVALO / RESULTADO
+// ============================================================
+function proximaQuestao() {
+  E.indice++
+  if (E.indice >= E.total) { finalizarJogo(); return }
+  if (E.indice === Math.floor(E.total / 2)) { mostrarIntervalo(); return }
+  mudarTela('tela-jogo')
+  carregarQuestao()
+}
+
+function mostrarIntervalo() {
+  document.getElementById('intervalo-acertos').textContent = E.acertos
+  document.getElementById('intervalo-erros').textContent = E.erros
+  document.getElementById('intervalo-pontos').textContent = E.pontos
+  document.getElementById('intervalo-restantes').textContent = E.total - E.indice
+  document.getElementById('intervalo-dica').textContent = DICAS[Math.floor(Math.random() * DICAS.length)]
+  mudarTela('tela-intervalo')
+}
+
+function continuarJogo() { mudarTela('tela-jogo'); carregarQuestao() }
+
+function finalizarJogo() {
+  const pct = Math.round((E.acertos / E.total) * 100)
+  let medal, trofeu, estrelas
+  if (pct >= 90) { medal='medalha-ouro'; trofeu='🏆'; estrelas=[1,1,1] }
+  else if (pct >= 70) { medal='medalha-prata'; trofeu='🥈'; estrelas=[1,1,0] }
+  else if (pct >= 50) { medal='medalha-bronze'; trofeu='🥉'; estrelas=[1,0,0] }
+  else { medal='medalha-participou'; trofeu='⚽'; estrelas=[0,0,0] }
+  document.getElementById('resultado-trofeu').textContent = trofeu
+  document.getElementById('resultado-pontuacao').textContent = E.pontos
+  const m = document.getElementById('resultado-medalha')
+  m.className = `medalha-badge ${medal}`
+  m.textContent = {
+    'medalha-ouro':'🥇 OURO','medalha-prata':'🥈 PRATA',
+    'medalha-bronze':'🥉 BRONZE','medalha-participou':'⚽ PARTICIPANTE'
+  }[medal]
+  document.getElementById('resultado-estrelas').innerHTML = estrelas.map((v,i) =>
+    `<span class="estrela ${v?'':'vazia'}" style="animation-delay:${i*0.15}s">${v?'⭐':'☆'}</span>`).join('')
+  document.getElementById('stat-acertos').textContent = E.acertos
+  document.getElementById('stat-erros').textContent = E.erros
+  document.getElementById('stat-precisao').textContent = pct + '%'
+  document.getElementById('stat-combo').textContent = 'x' + E.maxCombo
+  document.getElementById('resultado-subtexto').textContent =
+    `${E.nome} · ${E.serie}º Ano · ${{portugues:'Português',matematica:'Matemática',misto:'Misto'}[E.disciplina]}`
+  try {
+    const h = JSON.parse(localStorage.getItem('copaSaber_hist') || '[]')
+    h.unshift({nome:E.nome, serie:E.serie, disc:E.disciplina, pontos:E.pontos, acertos:E.acertos, total:E.total, data:new Date().toISOString()})
+    localStorage.setItem('copaSaber_hist', JSON.stringify(h.slice(0,20)))
+  } catch(e){}
+  mudarTela('tela-resultado')
+  tocarSom('vitoria')
+  if (pct >= 70) dispararConfetti()
+}
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+function atualizarHUD() {
+  const i = E.indice + 1, t = E.total
+  document.getElementById('hud-pontos').textContent = E.pontos
+  document.getElementById('hud-combo').textContent = 'x' + E.combo
+  document.getElementById('hud-questao').textContent = `${i}/${t}`
+  document.getElementById('hud-acertos').textContent = E.acertos
+  const pct = Math.round(((i-1)/t)*100)
+  document.getElementById('barra-fill').style.width = pct + '%'
+  document.getElementById('barra-label-esq').textContent = `Questão ${i} de ${t}`
+  document.getElementById('barra-label-dir').textContent = pct + '%'
+}
+
+function mudarTela(id) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'))
+  document.getElementById(id).classList.add('ativa')
+  window.scrollTo(0, 0)
+}
+
+function dispararConfetti() {
+  const c = document.getElementById('confetti'); c.innerHTML = ''
+  const cores = ['#00c896','#f5a623','#ff4757','#2ed573','#ffffff','#1a91ff']
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div'); p.className = 'confetti-piece'
+    p.style.left = Math.random()*100+'vw'
+    p.style.background = cores[Math.floor(Math.random()*cores.length)]
+    p.style.width = (Math.random()*8+6)+'px'; p.style.height = (Math.random()*8+6)+'px'
+    p.style.setProperty('--tx', (Math.random()*200-100)+'px')
+    p.style.setProperty('--rot', (Math.random()*720)+'deg')
+    p.style.animationDuration = (Math.random()*2+2)+'s'
+    p.style.animationDelay = (Math.random()*1)+'s'
+    c.appendChild(p)
+  }
+  setTimeout(() => c.innerHTML = '', 4000)
+}
+
+function jogarNovamente() {
+  E.questoes = montarQuestoes(); E.indice = 0
+  E.pontos = 0; E.acertos = 0; E.erros = 0; E.combo = 1; E.maxCombo = 1
+  mudarTela('tela-jogo'); carregarQuestao()
+}
+
+function voltarInicio() { mudarTela('tela-entrada') }
+</script>
+</body>
+</html>
