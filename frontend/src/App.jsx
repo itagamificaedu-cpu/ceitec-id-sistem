@@ -150,9 +150,10 @@ export default function App() {
         {/* Mobile Tracker — GPS de alunos */}
         <Route path="/mobile-tracker" element={<Admin><MobileTracker /></Admin>} />
 
-        {/* Usuários */}
+        {/* Usuários — gerenciar usuários da própria escola (admin da escola) */}
         <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />
-        <Route path="/atividade-usuarios" element={<Admin><AtividadeUsuarios /></Admin>} />
+        {/* Atividade de Usuários — exclusivo do dono da plataforma ITA */}
+        <Route path="/atividade-usuarios" element={<ItaAdmin><AtividadeUsuarios /></ItaAdmin>} />
         <Route path="/trocar-senha" element={<P><TrocarSenha /></P>} />
       </Routes>
     </BrowserRouter>
