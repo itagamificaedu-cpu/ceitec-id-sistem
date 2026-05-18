@@ -40,34 +40,77 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.4s ease;
+  position: relative;
 }
 .tela.ativa { display: flex; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
-/* ===== CAMPO SVG ANIMADO ===== */
+/* Efeito de entrada: gol — tela cai de cima como uma rede */
+.tela.ativa { animation: telaEntradaGol 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes telaEntradaGol {
+  0%  { opacity: 0; transform: translateY(-60px) scaleY(0.92); }
+  60% { opacity: 1; transform: translateY(6px) scaleY(1.02); }
+  100%{ opacity: 1; transform: none; }
+}
+
+/* Shake de tela ao errar */
+@keyframes telaShake {
+  0%,100%{ transform: translateX(0); }
+  15%    { transform: translateX(-8px); }
+  30%    { transform: translateX(8px); }
+  45%    { transform: translateX(-6px); }
+  60%    { transform: translateX(6px); }
+  75%    { transform: translateX(-3px); }
+  90%    { transform: translateX(3px); }
+}
+.shake { animation: telaShake 0.5s ease both !important; }
+
+/* ===== FUNDO PARTÍCULAS NA ENTRADA ===== */
+#canvas-fundo {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+.tela > * { position: relative; z-index: 1; }
+
+/* ===== GRAMADO ANIMADO NA TELA ENTRADA ===== */
 .campo-wrapper {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 340px;
   margin: 0 auto 20px;
+  border-radius: 14px;
+  overflow: hidden;
 }
-.campo-svg { width: 100%; border-radius: 12px; }
-.campo-pulse {
-  animation: campoPulse 3s ease-in-out infinite;
+.campo-svg { width: 100%; border-radius: 12px; display: block; }
+/* Ondas de cor sobre o campo */
+.campo-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg,
+    rgba(0,200,150,0) 0%,
+    rgba(0,200,150,0.12) 50%,
+    rgba(0,200,150,0) 100%
+  );
+  background-size: 200% 200%;
+  animation: gramadoOnda 3s ease-in-out infinite;
 }
-@keyframes campoPulse {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(0,200,150,0.3)); }
-  50% { filter: drop-shadow(0 0 20px rgba(0,200,150,0.7)); }
+@keyframes gramadoOnda {
+  0%,100%{ background-position: 0% 0%; filter: drop-shadow(0 0 10px rgba(0,200,150,0.3)); }
+  50%    { background-position: 100% 100%; filter: drop-shadow(0 0 24px rgba(0,200,150,0.7)); }
 }
 .bola-animada {
   animation: bolaRola 4s linear infinite;
   transform-origin: 50% 50%;
 }
 @keyframes bolaRola {
-  0% { transform: translateX(-60px) rotate(0deg); }
-  50% { transform: translateX(60px) rotate(360deg); }
-  100% { transform: translateX(-60px) rotate(720deg); }
+  0%  { transform: translateX(-60px) rotate(0deg); }
+  50% { transform: translateX(60px)  rotate(360deg); }
+  100%{ transform: translateX(-60px) rotate(720deg); }
 }
 
 /* ===== LOGO / TÍTULO ===== */
@@ -117,7 +160,7 @@ body {
 }
 .card-sm { max-width: 440px; }
 
-/* ===== BOTÕES ===== */
+/* ===== BOTÕES COM RIPPLE ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -134,6 +177,27 @@ body {
   transition: all 0.2s;
   text-transform: uppercase;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+/* Ripple ao clicar */
+.btn::after {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.5s, height 0.5s, opacity 0.5s;
+  opacity: 0;
+  pointer-events: none;
+  top: var(--ry, 50%);
+  left: var(--rx, 50%);
+}
+.btn.ripple-ativo::after {
+  width: 300px; height: 300px;
+  opacity: 0;
+  transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
 }
 .btn-primario {
   background: linear-gradient(135deg, var(--cor-primaria), #00a878);
@@ -207,6 +271,7 @@ label.label-jogo {
   border-color: var(--cor-primaria);
   background: rgba(0,200,150,0.1);
   color: var(--cor-primaria);
+  box-shadow: 0 0 18px rgba(0,200,150,0.25);
 }
 .selecionar-disciplina {
   display: flex;
@@ -237,6 +302,7 @@ label.label-jogo {
   border-color: var(--cor-secundaria);
   background: rgba(245,166,35,0.1);
   color: var(--cor-secundaria);
+  box-shadow: 0 0 18px rgba(245,166,35,0.2);
 }
 
 /* ===== HUD DE JOGO ===== */
@@ -277,9 +343,29 @@ label.label-jogo {
   opacity: 0.6;
 }
 .hud-pontos .hud-valor { color: var(--cor-primaria); }
-.hud-combo .hud-valor { color: var(--cor-secundaria); }
-.hud-tempo.urgente .hud-valor { color: var(--cor-erro); animation: pisca 0.5s infinite; }
-@keyframes pisca { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.hud-combo .hud-valor  { color: var(--cor-secundaria); }
+
+/* Chamas no combo > 3 */
+.hud-combo-chama {
+  display: none;
+  font-size: 1rem;
+  animation: chamaFlicker 0.4s ease-in-out infinite alternate;
+}
+.hud-combo.em-chamas .hud-combo-chama { display: inline; }
+@keyframes chamaFlicker {
+  0%  { filter: drop-shadow(0 0 4px #ff6b00) brightness(1); transform: scaleY(1) rotate(-3deg); }
+  100%{ filter: drop-shadow(0 0 10px #ffdd00) brightness(1.3); transform: scaleY(1.1) rotate(3deg); }
+}
+.hud-tempo.urgente .hud-valor {
+  color: var(--cor-erro);
+  animation: pisca 0.5s infinite, timerShake 0.3s ease-in-out infinite;
+}
+@keyframes pisca { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+@keyframes timerShake {
+  0%,100%{ transform: translateX(0); }
+  25%    { transform: translateX(-3px); }
+  75%    { transform: translateX(3px); }
+}
 
 /* Barra de progresso */
 .barra-progresso-wrapper {
@@ -316,7 +402,7 @@ label.label-jogo {
   flex-shrink: 0;
 }
 .timer-ring-svg { transform: rotate(-90deg); }
-.timer-ring-bg { stroke: var(--cor-acento); }
+.timer-ring-bg   { stroke: var(--cor-acento); }
 .timer-ring-fill {
   stroke: var(--cor-primaria);
   stroke-dasharray: 126;
@@ -353,19 +439,31 @@ label.label-jogo {
   text-transform: uppercase;
   margin-bottom: 12px;
 }
-.tag-portugues { background: rgba(0,200,150,0.15); color: var(--cor-primaria); border: 1px solid rgba(0,200,150,0.3); }
+.tag-portugues  { background: rgba(0,200,150,0.15);  color: var(--cor-primaria);   border: 1px solid rgba(0,200,150,0.3); }
 .tag-matematica { background: rgba(245,166,35,0.15); color: var(--cor-secundaria); border: 1px solid rgba(245,166,35,0.3); }
+
+/* Efeito typewriter no enunciado */
 .questao-enunciado {
   font-size: clamp(0.95rem, 2.5vw, 1.1rem);
   line-height: 1.6;
   margin-bottom: 20px;
+  min-height: 60px;
 }
+/* Cursor piscante durante typewriter */
+.typewriter-cursor::after {
+  content: '|';
+  color: var(--cor-primaria);
+  animation: cursorPisca 0.7s step-end infinite;
+}
+@keyframes cursorPisca { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
 .opcoes-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 @media (max-width: 480px) { .opcoes-grid { grid-template-columns: 1fr; } }
+
 .opcao-btn {
   padding: 12px 16px;
   background: var(--cor-acento);
@@ -378,15 +476,25 @@ label.label-jogo {
   transition: all 0.18s;
   text-align: left;
   line-height: 1.4;
+  position: relative;
+  overflow: hidden;
 }
 .opcao-btn:hover:not(:disabled) {
   border-color: var(--cor-primaria);
   background: rgba(0,200,150,0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,200,150,0.15);
 }
 .opcao-btn.correta {
   border-color: var(--cor-sucesso);
   background: rgba(46,213,115,0.15);
   color: var(--cor-sucesso);
+  animation: btnCorretaExplode 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes btnCorretaExplode {
+  0%  { transform: scale(1); }
+  40% { transform: scale(1.07); box-shadow: 0 0 30px rgba(46,213,115,0.6); }
+  100%{ transform: scale(1); }
 }
 .opcao-btn.errada {
   border-color: var(--cor-erro);
@@ -394,6 +502,80 @@ label.label-jogo {
   color: var(--cor-erro);
 }
 .opcao-btn:disabled { cursor: default; }
+
+/* ===== MASCOTE LEÃO CSS ===== */
+.mascote-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 110px;
+  height: 140px;
+  z-index: 200;
+  pointer-events: none;
+  display: none;
+  transform-origin: bottom center;
+}
+/* Exibe o mascote apenas nas telas relevantes */
+#tela-jogo.ativa .mascote-wrapper,
+#tela-feedback.ativa .mascote-wrapper,
+#tela-resultado.ativa .mascote-wrapper { display: block; }
+
+/* Animações do mascote */
+@keyframes mascoteIdle {
+  0%,100%{ transform: translateY(0) rotate(0deg); }
+  50%    { transform: translateY(-6px) rotate(1deg); }
+}
+@keyframes mascotePula {
+  0%  { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-30px) scale(1.08) rotate(-5deg); }
+  55% { transform: translateY(-20px) scale(1.05) rotate(5deg); }
+  80% { transform: translateY(-8px) scale(1.02); }
+  100%{ transform: translateY(0) scale(1); }
+}
+@keyframes mascoteTrist {
+  0%,100%{ transform: translateY(0) rotate(0deg); }
+  50%    { transform: translateY(4px) rotate(-8deg); }
+}
+@keyframes mascoteDanca {
+  0%  { transform: translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateX(-10px) rotate(-10deg) scale(1.05); }
+  40% { transform: translateX(10px)  rotate(10deg)  scale(1.05); }
+  60% { transform: translateX(-8px)  rotate(-7deg)  scale(1.03); }
+  80% { transform: translateX(8px)   rotate(7deg)   scale(1.03); }
+  100%{ transform: translateX(0) rotate(0deg) scale(1); }
+}
+@keyframes mascoteAbana {
+  0%,100%{ transform: rotate(0deg); }
+  20%    { transform: rotate(-15deg); }
+  40%    { transform: rotate(10deg); }
+  60%    { transform: rotate(-10deg); }
+  80%    { transform: rotate(5deg); }
+}
+@keyframes olhoBrilha {
+  0%,85%,100%{ opacity:1; transform:scale(1); }
+  90%         { opacity:0.3; transform:scale(0.5); }
+}
+
+.mascote-wrapper.idle     { animation: mascoteIdle 2.5s ease-in-out infinite; }
+.mascote-wrapper.celebra  { animation: mascotePula 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+.mascote-wrapper.triste   { animation: mascoteTrist 1s ease-in-out infinite; }
+.mascote-wrapper.danca    { animation: mascoteDanca 0.8s ease-in-out infinite; }
+
+/* ===== SVG LEÃO INLINE ===== */
+/* (gerado via CSS shapes + SVG inline) */
+
+/* ===== PARTÍCULAS DE EXPLOSÃO ===== */
+.particula {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9990;
+  border-radius: 50%;
+  animation: particulaVoa linear both;
+}
+@keyframes particulaVoa {
+  0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(var(--px), var(--py)) rotate(var(--pr)) scale(0); opacity: 0; }
+}
 
 /* ===== TELA FEEDBACK ===== */
 #tela-feedback { gap: 16px; }
@@ -403,16 +585,17 @@ label.label-jogo {
   animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 @keyframes pop {
-  from { transform: scale(0.4); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from{ transform: scale(0.4); opacity: 0; }
+  to  { transform: scale(1); opacity: 1; }
 }
 .feedback-titulo {
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(1.8rem, 6vw, 3rem);
   text-align: center;
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s both;
 }
-.feedback-titulo.correto { color: var(--cor-sucesso); }
-.feedback-titulo.errado { color: var(--cor-erro); }
+.feedback-titulo.correto { color: var(--cor-sucesso); text-shadow: 0 0 20px rgba(46,213,115,0.6); }
+.feedback-titulo.errado  { color: var(--cor-erro);    text-shadow: 0 0 20px rgba(255,71,87,0.6); }
 .feedback-explicacao {
   font-size: 0.93rem;
   line-height: 1.6;
@@ -427,8 +610,8 @@ label.label-jogo {
   animation: slideUp 0.4s ease 0.2s both;
 }
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from{ transform: translateY(20px); opacity: 0; }
+  to  { transform: translateY(0); opacity: 1; }
 }
 
 /* ===== TELA INTERVALO ===== */
@@ -459,8 +642,8 @@ label.label-jogo {
   text-transform: uppercase;
   opacity: 0.6;
 }
-.placar-item.verde .placar-numero { color: var(--cor-sucesso); }
-.placar-item.vermelho .placar-numero { color: var(--cor-erro); }
+.placar-item.verde   .placar-numero { color: var(--cor-sucesso); }
+.placar-item.vermelho.placar-numero { color: var(--cor-erro); }
 .placar-item.amarelo .placar-numero { color: var(--cor-secundaria); }
 
 /* ===== TELA RESULTADO ===== */
@@ -471,8 +654,8 @@ label.label-jogo {
   animation: trofeuEntrada 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 @keyframes trofeuEntrada {
-  from { transform: scale(0) rotate(-20deg); opacity: 0; }
-  to { transform: scale(1) rotate(0); opacity: 1; }
+  from{ transform: scale(0) rotate(-20deg); opacity: 0; }
+  to  { transform: scale(1) rotate(0); opacity: 1; }
 }
 .resultado-pontuacao {
   font-family: 'Bebas Neue', sans-serif;
@@ -536,13 +719,13 @@ label.label-jogo {
   letter-spacing: 2px;
   animation: glow 2s ease-in-out infinite;
 }
-.medalha-ouro { background: linear-gradient(135deg, #f5a623, #d4891d); color: #0a0f1e; }
-.medalha-prata { background: linear-gradient(135deg, #9ba3b0, #6b7280); color: #0a0f1e; }
-.medalha-bronze { background: linear-gradient(135deg, #cd7f32, #a0632a); color: #0a0f1e; }
+.medalha-ouro     { background: linear-gradient(135deg, #f5a623, #d4891d); color: #0a0f1e; }
+.medalha-prata    { background: linear-gradient(135deg, #9ba3b0, #6b7280); color: #0a0f1e; }
+.medalha-bronze   { background: linear-gradient(135deg, #cd7f32, #a0632a); color: #0a0f1e; }
 .medalha-participou { background: var(--cor-acento); border: 1px solid var(--cor-borda); color: var(--cor-texto); }
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(245,166,35,0.3); }
-  50% { box-shadow: 0 0 25px rgba(245,166,35,0.7); }
+  0%,100%{ box-shadow: 0 0 10px rgba(245,166,35,0.3); }
+  50%    { box-shadow: 0 0 25px rgba(245,166,35,0.7); }
 }
 
 /* ===== ESTRELAS ===== */
@@ -550,66 +733,216 @@ label.label-jogo {
 .estrela { animation: estrelaEntrada 0.3s ease both; }
 .estrela:nth-child(2) { animation-delay: 0.15s; }
 .estrela:nth-child(3) { animation-delay: 0.3s; }
-@keyframes estrelaEntrada { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
+@keyframes estrelaEntrada { from{ transform: scale(0) rotate(-30deg); } to{ transform: scale(1) rotate(0); } }
 .estrela.vazia { opacity: 0.25; }
 
 /* ===== CONFETTI ===== */
-.confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
-.confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confettiCair linear both; }
+.confetti-container { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; overflow:hidden; }
+.confetti-piece {
+  position: absolute;
+  border-radius: 2px;
+  animation: confettiCair linear both;
+}
 @keyframes confettiCair {
-  0% { top: -10px; transform: translateX(0) rotate(0deg); opacity: 1; }
-  100% { top: 110vh; transform: translateX(var(--tx)) rotate(var(--rot)); opacity: 0.3; }
+  0%  { top: -10px; transform: translateX(0) rotate(0deg); opacity: 1; }
+  100%{ top: 110vh; transform: translateX(var(--tx)) rotate(var(--rot)); opacity: 0.3; }
 }
 
 /* ===== RODAPÉ ===== */
-.rodape-ita { margin-top: 12px; font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.35; text-align: center; }
-.divisor { width: 100%; max-width: 440px; height: 1px; background: var(--cor-borda); margin: 4px 0; }
+.rodape-ita { margin-top:12px; font-family:'Rajdhani',sans-serif; font-size:0.72rem; letter-spacing:1px; text-transform:uppercase; opacity:0.35; text-align:center; }
+.divisor { width:100%; max-width:440px; height:1px; background:var(--cor-borda); margin:4px 0; }
 
 @media (max-width: 640px) {
   .hud { padding: 8px 12px; gap: 8px; }
   .questao-container { padding: 16px; }
   .card { padding: 16px; }
+  .mascote-wrapper { width: 80px; height: 100px; bottom: 10px; right: 10px; }
 }
 </style>
 </head>
 <body>
 
+<!-- Canvas de partículas de fundo -->
+<canvas id="canvas-fundo"></canvas>
+
+<!-- Container de confetti -->
 <div class="confetti-container" id="confetti"></div>
+
+<!-- Container de partículas de explosão (botões) -->
+<div id="explosao-container" style="position:fixed;inset:0;pointer-events:none;z-index:9980;overflow:hidden;"></div>
+
+<!-- ===== MASCOTE LEÃO (SVG inline, posicionado fixed) ===== -->
+<div class="mascote-wrapper idle" id="mascote">
+  <svg viewBox="0 0 110 140" xmlns="http://www.w3.org/2000/svg" width="110" height="140">
+    <defs>
+      <!-- Gradiente do corpo -->
+      <radialGradient id="gradCorpo" cx="50%" cy="40%" r="55%">
+        <stop offset="0%"   stop-color="#e8a030"/>
+        <stop offset="60%"  stop-color="#c07820"/>
+        <stop offset="100%" stop-color="#8b5010"/>
+      </radialGradient>
+      <!-- Gradiente da juba -->
+      <radialGradient id="gradJuba" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#a05010"/>
+        <stop offset="50%"  stop-color="#7a3a08"/>
+        <stop offset="100%" stop-color="#4a2005"/>
+      </radialGradient>
+      <!-- Gradiente da barriga -->
+      <radialGradient id="gradBarriga" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#f5c87a"/>
+        <stop offset="100%" stop-color="#d4962a"/>
+      </radialGradient>
+      <!-- Brilho dos olhos -->
+      <radialGradient id="gradOlho" cx="35%" cy="35%" r="60%">
+        <stop offset="0%"   stop-color="#ffe080"/>
+        <stop offset="40%"  stop-color="#f5a020"/>
+        <stop offset="100%" stop-color="#8b4000"/>
+      </radialGradient>
+      <!-- Filtro brilho -->
+      <filter id="brilho">
+        <feGaussianBlur stdDeviation="2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <!-- CORPO -->
+    <ellipse cx="55" cy="105" rx="30" ry="32" fill="url(#gradCorpo)"/>
+    <!-- Barriga clara -->
+    <ellipse cx="55" cy="110" rx="18" ry="20" fill="url(#gradBarriga)" opacity="0.7"/>
+
+    <!-- PERNAS -->
+    <ellipse cx="40" cy="132" rx="10" ry="8" fill="#b06820"/>
+    <ellipse cx="70" cy="132" rx="10" ry="8" fill="#b06820"/>
+    <!-- Patas -->
+    <ellipse cx="40" cy="137" rx="11" ry="5" fill="#c07820"/>
+    <ellipse cx="70" cy="137" rx="11" ry="5" fill="#c07820"/>
+    <!-- Dedos pata esquerda -->
+    <circle cx="33" cy="139" r="3.5" fill="#a06010"/>
+    <circle cx="40" cy="140" r="3.5" fill="#a06010"/>
+    <circle cx="47" cy="139" r="3.5" fill="#a06010"/>
+    <!-- Dedos pata direita -->
+    <circle cx="63" cy="139" r="3.5" fill="#a06010"/>
+    <circle cx="70" cy="140" r="3.5" fill="#a06010"/>
+    <circle cx="77" cy="139" r="3.5" fill="#a06010"/>
+
+    <!-- BRAÇOS -->
+    <ellipse cx="27" cy="108" rx="9" ry="14" fill="#c07820" transform="rotate(-15,27,108)"/>
+    <ellipse cx="83" cy="108" rx="9" ry="14" fill="#c07820" transform="rotate(15,83,108)"/>
+
+    <!-- JUBA (atrás da cabeça) -->
+    <!-- Pétalas da juba -->
+    <ellipse cx="55" cy="42" rx="28" ry="30" fill="url(#gradJuba)" opacity="0.9"/>
+    <!-- Pontas da juba -->
+    <ellipse cx="30" cy="48" rx="10" ry="16" fill="#6a2e06" transform="rotate(-30,30,48)"/>
+    <ellipse cx="80" cy="48" rx="10" ry="16" fill="#6a2e06" transform="rotate(30,80,48)"/>
+    <ellipse cx="25" cy="62" rx="8"  ry="14" fill="#7a3a08" transform="rotate(-50,25,62)"/>
+    <ellipse cx="85" cy="62" rx="8"  ry="14" fill="#7a3a08" transform="rotate(50,85,62)"/>
+    <ellipse cx="55" cy="18" rx="10" ry="14" fill="#8a4010"/>
+    <ellipse cx="38" cy="24" rx="8"  ry="12" fill="#7a3808" transform="rotate(-15,38,24)"/>
+    <ellipse cx="72" cy="24" rx="8"  ry="12" fill="#7a3808" transform="rotate(15,72,24)"/>
+
+    <!-- CABEÇA -->
+    <ellipse cx="55" cy="58" rx="26" ry="25" fill="url(#gradCorpo)"/>
+
+    <!-- ORELHAS -->
+    <ellipse cx="34" cy="38" rx="9" ry="11" fill="#c07820" transform="rotate(-20,34,38)"/>
+    <ellipse cx="34" cy="38" rx="5" ry="7"  fill="#d4642a" transform="rotate(-20,34,38)" opacity="0.7"/>
+    <ellipse cx="76" cy="38" rx="9" ry="11" fill="#c07820" transform="rotate(20,76,38)"/>
+    <ellipse cx="76" cy="38" rx="5" ry="7"  fill="#d4642a" transform="rotate(20,76,38)" opacity="0.7"/>
+
+    <!-- OLHOS -->
+    <!-- Olho esquerdo -->
+    <ellipse cx="43" cy="55" rx="9" ry="9" fill="url(#gradOlho)" filter="url(#brilho)"/>
+    <ellipse cx="43" cy="55" rx="6" ry="6" fill="#3a1800"/>
+    <circle  cx="43" cy="55" r="3.5" fill="#1a0800"/>
+    <!-- Brilho do olho esquerdo -->
+    <circle  cx="40.5" cy="52.5" r="2" fill="white" opacity="0.9" class="olho-brilho"/>
+    <circle  cx="45.5" cy="56.5" r="1" fill="white" opacity="0.5" class="olho-brilho"/>
+
+    <!-- Olho direito -->
+    <ellipse cx="67" cy="55" rx="9" ry="9" fill="url(#gradOlho)" filter="url(#brilho)"/>
+    <ellipse cx="67" cy="55" rx="6" ry="6" fill="#3a1800"/>
+    <circle  cx="67" cy="55" r="3.5" fill="#1a0800"/>
+    <!-- Brilho do olho direito -->
+    <circle  cx="64.5" cy="52.5" r="2" fill="white" opacity="0.9" class="olho-brilho"/>
+    <circle  cx="69.5" cy="56.5" r="1" fill="white" opacity="0.5" class="olho-brilho"/>
+
+    <!-- Sobrancelhas (estado neutro) -->
+    <path id="sobrancelha-esq" d="M36,46 Q43,42 50,45" stroke="#5a2a00" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path id="sobrancelha-dir" d="M60,45 Q67,42 74,46" stroke="#5a2a00" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- FOCINHO -->
+    <ellipse cx="55" cy="67" rx="13" ry="9" fill="#d4962a" opacity="0.8"/>
+    <ellipse cx="55" cy="67" rx="11" ry="7" fill="#f0c060" opacity="0.6"/>
+
+    <!-- Nariz -->
+    <path d="M50,63 Q55,60 60,63 Q57,67 55,67 Q53,67 50,63Z" fill="#3a1800"/>
+    <!-- Narinas -->
+    <ellipse cx="52" cy="63" rx="2" ry="1.5" fill="#2a0e00" opacity="0.7"/>
+    <ellipse cx="58" cy="63" rx="2" ry="1.5" fill="#2a0e00" opacity="0.7"/>
+
+    <!-- Boca (sorriso) -->
+    <path id="boca-leao" d="M49,70 Q55,76 61,70" stroke="#3a1800" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Bigodes -->
+    <line x1="25" y1="65" x2="44" y2="67" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
+    <line x1="25" y1="70" x2="44" y2="69" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
+    <line x1="66" y1="67" x2="85" y2="65" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
+    <line x1="66" y1="69" x2="85" y2="70" stroke="#5a2a00" stroke-width="1.5" opacity="0.7"/>
+
+    <!-- COROA do mascote no resultado -->
+    <g id="coroa-mascote" style="display:none">
+      <polygon points="55,8 49,18 43,12 47,22 55,20 63,22 67,12 61,18" fill="#f5a623" filter="url(#brilho)"/>
+      <circle cx="55" cy="10" r="3" fill="#ff4757"/>
+      <circle cx="46" cy="15" r="2" fill="#2ed573"/>
+      <circle cx="64" cy="15" r="2" fill="#1a91ff"/>
+    </g>
+
+    <!-- Estrelas nos olhos (celebração) -->
+    <g id="estrelas-olhos" style="display:none">
+      <text x="35" y="62" font-size="12" fill="#ffdd00">★</text>
+      <text x="59" y="62" font-size="12" fill="#ffdd00">★</text>
+    </g>
+  </svg>
+</div>
 
 <!-- ===== TELA 1: ENTRADA ===== -->
 <div id="tela-entrada" class="tela ativa">
   <div class="campo-wrapper" style="max-width:320px">
-    <svg viewBox="0 0 320 200" class="campo-svg campo-pulse" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 320 200" class="campo-svg" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="gramado" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#0d3d1a"/>
+          <stop offset="0%"   stop-color="#0d3d1a"/>
           <stop offset="100%" stop-color="#0a2e14"/>
         </linearGradient>
         <linearGradient id="gradLinha" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="rgba(0,200,150,0)"/>
-          <stop offset="50%" stop-color="rgba(0,200,150,0.8)"/>
+          <stop offset="0%"   stop-color="rgba(0,200,150,0)"/>
+          <stop offset="50%"  stop-color="rgba(0,200,150,0.8)"/>
           <stop offset="100%" stop-color="rgba(0,200,150,0)"/>
         </linearGradient>
       </defs>
       <rect width="320" height="200" rx="8" fill="url(#gramado)"/>
-      <rect x="0" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
-      <rect x="80" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <!-- Listras do gramado -->
+      <rect x="0"   y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <rect x="80"  y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
       <rect x="160" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
       <rect x="240" y="0" width="40" height="200" fill="rgba(0,0,0,0.08)"/>
+      <!-- Linhas do campo -->
       <rect x="10" y="10" width="300" height="180" rx="4" fill="none" stroke="rgba(0,200,150,0.5)" stroke-width="2"/>
       <line x1="160" y1="10" x2="160" y2="190" stroke="rgba(0,200,150,0.5)" stroke-width="1.5"/>
       <circle cx="160" cy="100" r="35" fill="none" stroke="rgba(0,200,150,0.5)" stroke-width="1.5"/>
-      <circle cx="160" cy="100" r="3" fill="rgba(0,200,150,0.8)"/>
-      <rect x="10" y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
-      <rect x="10" y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
+      <circle cx="160" cy="100" r="3"  fill="rgba(0,200,150,0.8)"/>
+      <rect x="10"  y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
+      <rect x="10"  y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
       <rect x="260" y="60" width="50" height="80" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
       <rect x="288" y="78" width="22" height="44" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.2"/>
       <line x1="0" y1="100" x2="320" y2="100" stroke="url(#gradLinha)" stroke-width="2" opacity="0.5"/>
+      <!-- Bola animada -->
       <g class="bola-animada">
         <circle cx="160" cy="100" r="9" fill="white"/>
-        <circle cx="157" cy="97" r="2.5" fill="rgba(0,0,0,0.35)"/>
-        <circle cx="163" cy="97" r="2" fill="rgba(0,0,0,0.35)"/>
-        <circle cx="160" cy="103" r="2" fill="rgba(0,0,0,0.35)"/>
+        <circle cx="157" cy="97"  r="2.5" fill="rgba(0,0,0,0.35)"/>
+        <circle cx="163" cy="97"  r="2"   fill="rgba(0,0,0,0.35)"/>
+        <circle cx="160" cy="103" r="2"   fill="rgba(0,0,0,0.35)"/>
       </g>
     </svg>
   </div>
@@ -627,26 +960,26 @@ label.label-jogo {
       <label class="label-jogo">Série</label>
       <div class="selecionar-serie">
         <button class="btn-serie ativo" data-serie="8" onclick="selecionarSerie(this)">8º ANO</button>
-        <button class="btn-serie" data-serie="9" onclick="selecionarSerie(this)">9º ANO</button>
+        <button class="btn-serie"        data-serie="9" onclick="selecionarSerie(this)">9º ANO</button>
       </div>
     </div>
     <div style="margin-bottom:20px">
       <label class="label-jogo">Disciplina</label>
       <div class="selecionar-disciplina">
-        <button class="btn-disciplina ativo" data-disc="portugues" onclick="selecionarDisciplina(this)">
+        <button class="btn-disciplina ativo" data-disc="portugues"  onclick="selecionarDisciplina(this)">
           <span class="icone">📖</span><span>Português</span>
         </button>
         <button class="btn-disciplina" data-disc="matematica" onclick="selecionarDisciplina(this)">
           <span class="icone">📐</span><span>Matemática</span>
         </button>
-        <button class="btn-disciplina" data-disc="misto" onclick="selecionarDisciplina(this)">
+        <button class="btn-disciplina" data-disc="misto"      onclick="selecionarDisciplina(this)">
           <span class="icone">⚡</span><span>Misto</span>
         </button>
       </div>
     </div>
-    <button class="btn btn-primario" onclick="iniciarJogo()">⚽ ENTRAR EM CAMPO</button>
+    <button class="btn btn-primario" onclick="iniciarJogo(); ripple(event)">⚽ ENTRAR EM CAMPO</button>
   </div>
-  <div class="rodape-ita">Copa do Saber v1.0 · ITA Tecnologia · 2026</div>
+  <div class="rodape-ita">Copa do Saber v2.0 · ITA Tecnologia · 2026</div>
 </div>
 
 <!-- ===== TELA 2: JOGO ===== -->
@@ -656,14 +989,14 @@ label.label-jogo {
       <div class="hud-valor" id="hud-pontos">0</div>
       <div class="hud-label">pontos</div>
     </div>
-    <div class="hud-item hud-combo">
-      <div class="hud-valor" id="hud-combo">x1</div>
+    <div class="hud-item hud-combo" id="hud-combo-wrapper">
+      <div class="hud-valor" id="hud-combo">x1 <span class="hud-combo-chama">🔥</span></div>
       <div class="hud-label">combo</div>
     </div>
     <div class="timer-ring-wrapper">
       <svg class="timer-ring-svg" width="50" height="50" viewBox="0 0 50 50">
-        <circle class="timer-ring-bg" cx="25" cy="25" r="20" fill="none" stroke-width="4"/>
-        <circle class="timer-ring-fill" id="timer-ring" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-linecap="round"/>
+        <circle class="timer-ring-bg"   cx="25" cy="25" r="20" fill="none" stroke-width="4"/>
+        <circle class="timer-ring-fill" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-linecap="round" id="timer-ring"/>
       </svg>
       <div class="timer-ring-text" id="timer-texto">30</div>
     </div>
@@ -708,7 +1041,7 @@ label.label-jogo {
       <div class="feedback-explicacao" id="feedback-explicacao"></div>
     </div>
   </div>
-  <button class="btn btn-primario" style="max-width:440px; margin-top:8px" onclick="proximaQuestao()" id="btn-proxima">PRÓXIMA QUESTÃO ▶</button>
+  <button class="btn btn-primario" style="max-width:440px; margin-top:8px" onclick="proximaQuestao(); ripple(event)" id="btn-proxima">PRÓXIMA QUESTÃO ▶</button>
 </div>
 
 <!-- ===== TELA 4: INTERVALO ===== -->
@@ -737,7 +1070,7 @@ label.label-jogo {
       💡 Dica: Leia com atenção o enunciado completo antes de escolher!
     </div>
   </div>
-  <button class="btn btn-secundario" style="max-width:440px" onclick="continuarJogo()">⚽ SEGUNDA METADE</button>
+  <button class="btn btn-secundario" style="max-width:440px" onclick="continuarJogo(); ripple(event)">⚽ SEGUNDA METADE</button>
 </div>
 
 <!-- ===== TELA 5: RESULTADO ===== -->
@@ -768,8 +1101,8 @@ label.label-jogo {
     </div>
   </div>
   <div class="resultado-botoes">
-    <button class="btn btn-primario" onclick="jogarNovamente()">🔄 JOGAR DE NOVO</button>
-    <button class="btn btn-fantasma" onclick="voltarInicio()">🏠 INÍCIO</button>
+    <button class="btn btn-primario"  onclick="jogarNovamente(); ripple(event)">🔄 JOGAR DE NOVO</button>
+    <button class="btn btn-fantasma"  onclick="voltarInicio(); ripple(event)">🏠 INÍCIO</button>
   </div>
   <div class="rodape-ita" style="margin-top:8px">Copa do Saber · ITA Tecnologia · 2026</div>
 </div>
@@ -886,7 +1219,7 @@ function tocarSom(tipo) {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
       osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.05)
     } else if (tipo === 'vitoria') {
-      [523, 659, 784, 1046].forEach((f, i) => {
+      ;[523, 659, 784, 1046].forEach((f, i) => {
         const o = ctx.createOscillator(), g = ctx.createGain()
         o.connect(g); g.connect(ctx.destination)
         o.frequency.value = f
@@ -911,7 +1244,7 @@ let E = {
 }
 
 // ============================================================
-// INICIALIZAÇÃO
+// INICIALIZAÇÃO — PARÂMETROS DE URL
 // ============================================================
 ;(function lerUrlParams() {
   const p = new URLSearchParams(window.location.search)
@@ -986,26 +1319,54 @@ function iniciarJogo() {
 }
 
 // ============================================================
-// QUESTÃO
+// QUESTÃO — com efeito typewriter no enunciado
 // ============================================================
+let _twTimer = null // timer do typewriter
+
 function carregarQuestao() {
   const q = E.questoes[E.indice]
   if (!q) { finalizarJogo(); return }
   E.respondido = false
   atualizarHUD()
+
+  // Tag de disciplina
   const tag = document.getElementById('questao-tag')
   if (q.disc === 'portugues') { tag.textContent = '📖 Português'; tag.className = 'questao-tag tag-portugues' }
-  else { tag.textContent = '📐 Matemática'; tag.className = 'questao-tag tag-matematica' }
-  document.getElementById('questao-enunciado').textContent = q.enunciado
+  else                         { tag.textContent = '📐 Matemática'; tag.className = 'questao-tag tag-matematica' }
+
+  // Enunciado com efeito typewriter
+  const enunciadoEl = document.getElementById('questao-enunciado')
+  const grid = document.getElementById('opcoes-grid')
+  grid.innerHTML = '' // limpa botões enquanto digita
+  enunciadoEl.textContent = ''
+  enunciadoEl.classList.add('typewriter-cursor')
+  if (_twTimer) clearInterval(_twTimer)
+  let idx = 0
+  const texto = q.enunciado
+  _twTimer = setInterval(() => {
+    enunciadoEl.textContent = texto.slice(0, ++idx)
+    if (idx >= texto.length) {
+      clearInterval(_twTimer)
+      enunciadoEl.classList.remove('typewriter-cursor')
+      // Renderiza botões após typewriter concluir
+      renderizarOpcoes(q)
+    }
+  }, 22) // 22ms por caractere
+
+  iniciarTimer()
+}
+
+function renderizarOpcoes(q) {
   const grid = document.getElementById('opcoes-grid')
   grid.innerHTML = ''
   q.opcoes.forEach((txt, i) => {
     const btn = document.createElement('button')
-    btn.className = 'opcao-btn'; btn.textContent = txt
-    btn.onclick = () => responder(i)
+    btn.className = 'opcao-btn'
+    btn.textContent = txt
+    btn.style.animation = `slideUp 0.3s ease ${i * 0.07}s both`
+    btn.onclick = (ev) => responder(i, ev)
     grid.appendChild(btn)
   })
-  iniciarTimer()
 }
 
 // ============================================================
@@ -1019,7 +1380,7 @@ function iniciarTimer() {
     E.tempoRestante--
     atualizarTimer()
     if (E.tempoRestante <= 5) tocarSom('tick')
-    if (E.tempoRestante <= 0) { clearInterval(E.timer); if (!E.respondido) responder(-1) }
+    if (E.tempoRestante <= 0) { clearInterval(E.timer); if (!E.respondido) responder(-1, null) }
   }, 1000)
 }
 
@@ -1036,21 +1397,49 @@ function atualizarTimer() {
 // ============================================================
 // RESPONDER
 // ============================================================
-function responder(escolha) {
+function responder(escolha, ev) {
   if (E.respondido) return
   E.respondido = true
   clearInterval(E.timer)
+  if (_twTimer) { clearInterval(_twTimer) }
+  const enunciadoEl = document.getElementById('questao-enunciado')
+  enunciadoEl.classList.remove('typewriter-cursor')
+  // Garante que o enunciado completo aparece
   const q = E.questoes[E.indice]
+  enunciadoEl.textContent = q.enunciado
+
   const bts = document.querySelectorAll('.opcao-btn')
   bts.forEach(b => b.disabled = true)
   if (escolha >= 0) bts[escolha].classList.add(escolha === q.correta ? 'correta' : 'errada')
   bts[q.correta].classList.add('correta')
+
   const acertou = escolha === q.correta
   const ptsTempo = Math.floor((E.tempoRestante / 30) * 50)
   const ptsCombo = acertou ? (E.combo - 1) * 20 : 0
   const ptsTotal = acertou ? 100 + ptsTempo + ptsCombo : 0
-  if (acertou) { E.acertos++; E.combo++; if (E.combo > E.maxCombo) E.maxCombo = E.combo; E.pontos += ptsTotal; tocarSom('correto') }
-  else { E.erros++; E.combo = 1; tocarSom('errado') }
+
+  if (acertou) {
+    E.acertos++; E.combo++
+    if (E.combo > E.maxCombo) E.maxCombo = E.combo
+    E.pontos += ptsTotal
+    tocarSom('correto')
+    // Explosão verde/dourada com estrelas no botão clicado
+    if (ev && escolha >= 0) explosaoParticulas(bts[escolha], true)
+    animarMascote('celebra')
+  } else {
+    E.erros++; E.combo = 1
+    tocarSom('errado')
+    // Explosão vermelha/roxa no botão clicado
+    if (ev && escolha >= 0) explosaoParticulas(bts[escolha], false)
+    // Shake leve na tela
+    const telaJogo = document.getElementById('tela-jogo')
+    telaJogo.classList.remove('shake')
+    void telaJogo.offsetWidth // reflow para reiniciar animação
+    telaJogo.classList.add('shake')
+    setTimeout(() => telaJogo.classList.remove('shake'), 500)
+    animarMascote('triste')
+  }
+
   setTimeout(() => mostrarFeedback(acertou, q, ptsTotal), 700)
 }
 
@@ -1098,10 +1487,11 @@ function continuarJogo() { mudarTela('tela-jogo'); carregarQuestao() }
 function finalizarJogo() {
   const pct = Math.round((E.acertos / E.total) * 100)
   let medal, trofeu, estrelas
-  if (pct >= 90) { medal='medalha-ouro'; trofeu='🏆'; estrelas=[1,1,1] }
-  else if (pct >= 70) { medal='medalha-prata'; trofeu='🥈'; estrelas=[1,1,0] }
-  else if (pct >= 50) { medal='medalha-bronze'; trofeu='🥉'; estrelas=[1,0,0] }
-  else { medal='medalha-participou'; trofeu='⚽'; estrelas=[0,0,0] }
+  if (pct >= 90)      { medal='medalha-ouro';       trofeu='🏆'; estrelas=[1,1,1] }
+  else if (pct >= 70) { medal='medalha-prata';      trofeu='🥈'; estrelas=[1,1,0] }
+  else if (pct >= 50) { medal='medalha-bronze';     trofeu='🥉'; estrelas=[1,0,0] }
+  else                { medal='medalha-participou'; trofeu='⚽'; estrelas=[0,0,0] }
+
   document.getElementById('resultado-trofeu').textContent = trofeu
   document.getElementById('resultado-pontuacao').textContent = E.pontos
   const m = document.getElementById('resultado-medalha')
@@ -1112,31 +1502,44 @@ function finalizarJogo() {
   }[medal]
   document.getElementById('resultado-estrelas').innerHTML = estrelas.map((v,i) =>
     `<span class="estrela ${v?'':'vazia'}" style="animation-delay:${i*0.15}s">${v?'⭐':'☆'}</span>`).join('')
-  document.getElementById('stat-acertos').textContent = E.acertos
-  document.getElementById('stat-erros').textContent = E.erros
+  document.getElementById('stat-acertos').textContent  = E.acertos
+  document.getElementById('stat-erros').textContent    = E.erros
   document.getElementById('stat-precisao').textContent = pct + '%'
-  document.getElementById('stat-combo').textContent = 'x' + E.maxCombo
+  document.getElementById('stat-combo').textContent    = 'x' + E.maxCombo
   document.getElementById('resultado-subtexto').textContent =
     `${E.nome} · ${E.serie}º Ano · ${{portugues:'Português',matematica:'Matemática',misto:'Misto'}[E.disciplina]}`
+
+  // Salvar histórico
   try {
     const h = JSON.parse(localStorage.getItem('copaSaber_hist') || '[]')
     h.unshift({nome:E.nome, serie:E.serie, disc:E.disciplina, pontos:E.pontos, acertos:E.acertos, total:E.total, data:new Date().toISOString()})
     localStorage.setItem('copaSaber_hist', JSON.stringify(h.slice(0,20)))
   } catch(e){}
+
   mudarTela('tela-resultado')
   tocarSom('vitoria')
   if (pct >= 70) dispararConfetti()
+
+  // Mascote dança no resultado e aparece coroa se >= 90%
+  animarMascote('danca')
+  const coroa = document.getElementById('coroa-mascote')
+  if (coroa) coroa.style.display = pct >= 90 ? 'block' : 'none'
 }
 
 // ============================================================
-// UTILITÁRIOS
+// UTILITÁRIOS — HUD, TELAS
 // ============================================================
 function atualizarHUD() {
   const i = E.indice + 1, t = E.total
-  document.getElementById('hud-pontos').textContent = E.pontos
-  document.getElementById('hud-combo').textContent = 'x' + E.combo
+  document.getElementById('hud-pontos').textContent  = E.pontos
+  document.getElementById('hud-combo').innerHTML = 'x' + E.combo + ' <span class="hud-combo-chama">🔥</span>'
   document.getElementById('hud-questao').textContent = `${i}/${t}`
   document.getElementById('hud-acertos').textContent = E.acertos
+
+  // Chamas no combo
+  const comboWrapper = document.getElementById('hud-combo-wrapper')
+  if (comboWrapper) comboWrapper.classList.toggle('em-chamas', E.combo > 3)
+
   const pct = Math.round(((i-1)/t)*100)
   document.getElementById('barra-fill').style.width = pct + '%'
   document.getElementById('barra-label-esq').textContent = `Questão ${i} de ${t}`
@@ -1145,34 +1548,284 @@ function atualizarHUD() {
 
 function mudarTela(id) {
   document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'))
-  document.getElementById(id).classList.add('ativa')
+  const alvo = document.getElementById(id)
+  alvo.classList.add('ativa')
   window.scrollTo(0, 0)
 }
 
+// ============================================================
+// CONFETTI
+// ============================================================
 function dispararConfetti() {
   const c = document.getElementById('confetti'); c.innerHTML = ''
-  const cores = ['#00c896','#f5a623','#ff4757','#2ed573','#ffffff','#1a91ff']
-  for (let i = 0; i < 80; i++) {
+  const cores = ['#00c896','#f5a623','#ff4757','#2ed573','#ffffff','#1a91ff','#ffdd00']
+  for (let i = 0; i < 100; i++) {
     const p = document.createElement('div'); p.className = 'confetti-piece'
-    p.style.left = Math.random()*100+'vw'
+    p.style.left   = Math.random()*100+'vw'
     p.style.background = cores[Math.floor(Math.random()*cores.length)]
-    p.style.width = (Math.random()*8+6)+'px'; p.style.height = (Math.random()*8+6)+'px'
+    p.style.width  = (Math.random()*10+6)+'px'
+    p.style.height = (Math.random()*10+6)+'px'
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px'
     p.style.setProperty('--tx', (Math.random()*200-100)+'px')
     p.style.setProperty('--rot', (Math.random()*720)+'deg')
-    p.style.animationDuration = (Math.random()*2+2)+'s'
-    p.style.animationDelay = (Math.random()*1)+'s'
+    p.style.animationDuration  = (Math.random()*2+2)+'s'
+    p.style.animationDelay     = (Math.random()*1)+'s'
     c.appendChild(p)
   }
-  setTimeout(() => c.innerHTML = '', 4000)
+  setTimeout(() => c.innerHTML = '', 5000)
 }
 
+// ============================================================
+// EXPLOSÃO DE PARTÍCULAS NOS BOTÕES
+// ============================================================
+function explosaoParticulas(btn, acertou) {
+  const container = document.getElementById('explosao-container')
+  const rect = btn.getBoundingClientRect()
+  const cx = rect.left + rect.width / 2
+  const cy = rect.top  + rect.height / 2
+
+  // Cores baseadas em acerto/erro
+  const coresAcerto = ['#2ed573','#00c896','#f5a623','#ffdd00','#ffffff','#ffe080']
+  const coresErro   = ['#ff4757','#c0392b','#8b00ff','#d4642a','#888','#ff9ff3']
+  const cores = acertou ? coresAcerto : coresErro
+
+  // Tipos de partículas
+  const QTDE = 28
+  for (let i = 0; i < QTDE; i++) {
+    const p = document.createElement('div')
+    p.className = 'particula'
+
+    // Posição inicial
+    p.style.left = cx + 'px'
+    p.style.top  = cy + 'px'
+
+    // Cor
+    const cor = cores[Math.floor(Math.random() * cores.length)]
+    p.style.background = cor
+    p.style.boxShadow  = `0 0 6px ${cor}`
+
+    // Tamanho variado
+    const tam = Math.random() * 12 + 5
+    p.style.width  = tam + 'px'
+    p.style.height = tam + 'px'
+
+    // Forma variada
+    const formas = ['50%', '0%', '30%', '50%']
+    p.style.borderRadius = formas[Math.floor(Math.random() * formas.length)]
+
+    // Vetor de movimento polar → cartesiano
+    const ang  = (i / QTDE) * Math.PI * 2 + (Math.random() - 0.5) * 0.8
+    const dist = Math.random() * 180 + 80
+    const px   = Math.cos(ang) * dist
+    const py   = Math.sin(ang) * dist - Math.random() * 60 // leve impulso pra cima
+    p.style.setProperty('--px', px + 'px')
+    p.style.setProperty('--py', py + 'px')
+    p.style.setProperty('--pr', (Math.random() * 720 - 360) + 'deg')
+
+    // Duração aleatória
+    const dur = Math.random() * 0.4 + 0.5
+    p.style.animationDuration = dur + 's'
+    p.style.animationDelay    = (Math.random() * 0.1) + 's'
+
+    container.appendChild(p)
+    setTimeout(() => p.remove(), (dur + 0.2) * 1000)
+  }
+
+  // Estrelas extras ao acertar
+  if (acertou) {
+    const estrelas = ['★','✦','✸','⭐']
+    for (let i = 0; i < 8; i++) {
+      const s = document.createElement('div')
+      s.className = 'particula'
+      s.style.left       = cx + 'px'
+      s.style.top        = cy + 'px'
+      s.style.background = 'transparent'
+      s.style.fontSize   = (Math.random() * 14 + 10) + 'px'
+      s.style.color      = '#ffdd00'
+      s.style.borderRadius = '0'
+      s.style.width  = 'auto'
+      s.style.height = 'auto'
+      s.style.lineHeight = '1'
+      s.style.textShadow = '0 0 8px #ffdd00'
+      s.textContent = estrelas[Math.floor(Math.random() * estrelas.length)]
+
+      const ang  = (i / 8) * Math.PI * 2
+      const dist = Math.random() * 120 + 60
+      s.style.setProperty('--px', (Math.cos(ang) * dist) + 'px')
+      s.style.setProperty('--py', (Math.sin(ang) * dist - 40) + 'px')
+      s.style.setProperty('--pr', '0deg')
+      s.style.animationDuration = '0.8s'
+      s.style.animationDelay    = (Math.random() * 0.15) + 's'
+
+      container.appendChild(s)
+      setTimeout(() => s.remove(), 1200)
+    }
+  }
+}
+
+// ============================================================
+// RIPPLE NOS BOTÕES
+// ============================================================
+function ripple(ev) {
+  const btn = ev.currentTarget
+  const rect = btn.getBoundingClientRect()
+  btn.style.setProperty('--rx', (ev.clientX - rect.left) + 'px')
+  btn.style.setProperty('--ry', (ev.clientY - rect.top)  + 'px')
+  btn.classList.remove('ripple-ativo')
+  void btn.offsetWidth
+  btn.classList.add('ripple-ativo')
+  setTimeout(() => btn.classList.remove('ripple-ativo'), 500)
+}
+// Adiciona ripple a todos os .btn no carregamento e sempre que novo botão surgir
+document.addEventListener('click', ev => {
+  const btn = ev.target.closest('.btn')
+  if (btn) ripple({currentTarget: btn, clientX: ev.clientX, clientY: ev.clientY})
+})
+
+// ============================================================
+// MASCOTE — animações e reações
+// ============================================================
+let _mascoteTimer = null
+function animarMascote(estado) {
+  const m = document.getElementById('mascote')
+  if (!m) return
+  if (_mascoteTimer) clearTimeout(_mascoteTimer)
+
+  // Remove todas as classes de animação
+  m.classList.remove('idle','celebra','triste','danca')
+  void m.offsetWidth // reflow
+
+  // Atualiza expressão facial no SVG
+  const boca     = document.getElementById('boca-leao')
+  const sobEsq   = document.getElementById('sobrancelha-esq')
+  const sobDir   = document.getElementById('sobrancelha-dir')
+  const estOlhos = document.getElementById('estrelas-olhos')
+  const coroa    = document.getElementById('coroa-mascote')
+
+  if (estado === 'celebra') {
+    // Sorriso grande + olhos brilhantes (estrelas)
+    if (boca)     boca.setAttribute('d', 'M47,70 Q55,80 63,70')
+    if (sobEsq)   sobEsq.setAttribute('d', 'M36,43 Q43,38 50,42')
+    if (sobDir)   sobDir.setAttribute('d', 'M60,42 Q67,38 74,43')
+    if (estOlhos) estOlhos.style.display = 'block'
+    m.classList.add('celebra')
+    _mascoteTimer = setTimeout(() => animarMascote('idle'), 900)
+
+  } else if (estado === 'triste') {
+    // Boca curvada para baixo + sobrancelhas arqueadas tristes
+    if (boca)     boca.setAttribute('d', 'M49,75 Q55,70 61,75')
+    if (sobEsq)   sobEsq.setAttribute('d', 'M36,50 Q43,46 50,49')
+    if (sobDir)   sobDir.setAttribute('d', 'M60,49 Q67,46 74,50')
+    if (estOlhos) estOlhos.style.display = 'none'
+    m.classList.add('triste')
+    _mascoteTimer = setTimeout(() => animarMascote('idle'), 1500)
+
+  } else if (estado === 'danca') {
+    // Sorriso + coroa visível
+    if (boca)     boca.setAttribute('d', 'M47,70 Q55,80 63,70')
+    if (sobEsq)   sobEsq.setAttribute('d', 'M36,43 Q43,38 50,42')
+    if (sobDir)   sobDir.setAttribute('d', 'M60,42 Q67,38 74,43')
+    if (estOlhos) estOlhos.style.display = 'block'
+    m.classList.add('danca')
+    // Não reseta — continua dançando na tela de resultado
+
+  } else {
+    // Idle — expressão neutra
+    if (boca)     boca.setAttribute('d', 'M49,70 Q55,76 61,70')
+    if (sobEsq)   sobEsq.setAttribute('d', 'M36,46 Q43,42 50,45')
+    if (sobDir)   sobDir.setAttribute('d', 'M60,45 Q67,42 74,46')
+    if (estOlhos) estOlhos.style.display = 'none'
+    m.classList.add('idle')
+  }
+}
+
+// ============================================================
+// CANVAS DE PARTÍCULAS DE FUNDO (tela entrada)
+// ============================================================
+;(function initCanvasFundo() {
+  const canvas = document.getElementById('canvas-fundo')
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  let W, H, pts = []
+
+  function resize() {
+    W = canvas.width  = window.innerWidth
+    H = canvas.height = window.innerHeight
+  }
+  window.addEventListener('resize', resize)
+  resize()
+
+  // Cria pontos flutuantes
+  for (let i = 0; i < 60; i++) {
+    pts.push({
+      x: Math.random() * (W || 800),
+      y: Math.random() * (H || 600),
+      r: Math.random() * 2.5 + 0.5,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      a: Math.random(),
+    })
+  }
+
+  function draw() {
+    W = canvas.width; H = canvas.height
+    ctx.clearRect(0, 0, W, H)
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy
+      p.a += 0.008
+      if (p.x < 0) p.x = W
+      if (p.x > W) p.x = 0
+      if (p.y < 0) p.y = H
+      if (p.y > H) p.y = 0
+      const alpha = (Math.sin(p.a) * 0.4 + 0.6) * 0.6
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(0,200,150,${alpha})`
+      ctx.fill()
+    })
+    // Linhas suaves conectando pontos próximos
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i+1; j < pts.length; j++) {
+        const dx = pts[i].x - pts[j].x
+        const dy = pts[i].y - pts[j].y
+        const dist = Math.sqrt(dx*dx + dy*dy)
+        if (dist < 100) {
+          ctx.beginPath()
+          ctx.moveTo(pts[i].x, pts[i].y)
+          ctx.lineTo(pts[j].x, pts[j].y)
+          ctx.strokeStyle = `rgba(0,200,150,${0.12 * (1 - dist/100)})`
+          ctx.lineWidth = 0.8
+          ctx.stroke()
+        }
+      }
+    }
+    requestAnimationFrame(draw)
+  }
+  draw()
+})()
+
+// ============================================================
+// REINICIAR / VOLTAR
+// ============================================================
 function jogarNovamente() {
   E.questoes = montarQuestoes(); E.indice = 0
   E.pontos = 0; E.acertos = 0; E.erros = 0; E.combo = 1; E.maxCombo = 1
-  mudarTela('tela-jogo'); carregarQuestao()
+  // Limpa coroa e estado do mascote
+  const coroa = document.getElementById('coroa-mascote')
+  if (coroa) coroa.style.display = 'none'
+  mudarTela('tela-jogo')
+  carregarQuestao()
 }
 
-function voltarInicio() { mudarTela('tela-entrada') }
+function voltarInicio() {
+  const coroa = document.getElementById('coroa-mascote')
+  if (coroa) coroa.style.display = 'none'
+  animarMascote('idle')
+  mudarTela('tela-entrada')
+}
+
+// Inicializa o mascote em idle ao carregar
+animarMascote('idle')
 </script>
 </body>
 </html>
