@@ -96,8 +96,17 @@ export default function ItagameAluno() {
     window.open(`${ITAGAME_URL}/login-magico/?${p}`, '_blank')
   }
 
+  function abrirCopaSaber() {
+    if (!dados) return
+    const p = new URLSearchParams({
+      nome: dados.aluno.nome,
+      turma: dados.aluno.turma || '',
+    })
+    window.location.href = `/quiz-copa/?${p}`
+  }
+
   if (!dados) return <TelaLogin codigo={codigo} setCodigo={setCodigo} erro={erro} carregando={carregando} onSubmit={entrar} />
-  return <Portal dados={dados} aba={aba} setAba={setAba} onSair={sair} onItagame={abrirItagame} />
+  return <Portal dados={dados} aba={aba} setAba={setAba} onSair={sair} onItagame={abrirItagame} onCopaSaber={abrirCopaSaber} />
 }
 
 /* ══════════════════════════════════════════
@@ -183,7 +192,7 @@ function TelaLogin({ codigo, setCodigo, erro, carregando, onSubmit }) {
 /* ══════════════════════════════════════════
    PORTAL PRINCIPAL
 ══════════════════════════════════════════ */
-function Portal({ dados, aba, setAba, onSair, onItagame }) {
+function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
   const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [] } = dados
   const nivel = itagame.nivel
   const presentes = presencas.filter(p => p.status === 'presente').length
@@ -242,7 +251,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame }) {
 
       {/* Conteúdo */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '28px 16px' }}>
-        {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} />}
+        {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} onCopaSaber={onCopaSaber} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
@@ -289,7 +298,7 @@ function Vazio({ emoji, texto }) {
 /* ══════════════════════════════════════════
    INÍCIO
 ══════════════════════════════════════════ */
-function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItagame }) {
+function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItagame, onCopaSaber }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
@@ -386,6 +395,18 @@ function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItaga
         color: '#000', fontWeight: 900, fontSize: 18, cursor: 'pointer',
         boxShadow: `0 0 50px ${N.amarelo}55`, letterSpacing: 1,
       }}>🎮 ABRIR ITAGAME — JOGAR AGORA ↗</button>
+
+      {/* Copa do Saber */}
+      <button onClick={onCopaSaber} style={{
+        background: 'linear-gradient(135deg, #00c896, #00a070)',
+        border: 'none', borderRadius: 18, padding: '20px',
+        color: '#000', fontWeight: 900, fontSize: 18, cursor: 'pointer',
+        boxShadow: '0 0 50px rgba(0,200,150,.5)', letterSpacing: 1,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+      }}>
+        <span style={{ fontSize: 28 }}>⚽</span>
+        <span>COPA DO SABER — QUIZ INTERATIVO</span>
+      </button>
     </div>
   )
 }
