@@ -1,10 +1,12 @@
 // Service Worker — CEITEC Mobile Tracker
 // Permite rastreamento em segundo plano via Background Sync
 
-const CACHE_NAME = 'ceitec-tracker-v1';
+const CACHE_NAME = 'ceitec-tracker-v2';
 const SYNC_TAG = 'tracker-sync';
+// IMPORTANTE: usa /node-api/ (Node.js), não /api/ (Django)
+const API_GPS = '/node-api/mobile-tracker/localizar';
 
-// Instala e faz cache dos arquivos do app
+// Instala e faz cache dos arquivos estáticos do PWA
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
@@ -15,18 +17,34 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(self.clients.claim());
+  // Limpa caches antigos
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
 });
 
-// Serve arquivos do cache quando offline
+// Intercepta apenas GETs de arquivos estáticos do PWA
+// NÃO intercepta POSTs (GPS), chamadas de API ou qualquer coisa fora do /pwa/tracker/
 self.addEventListener('fetch', (e) => {
-  if (e.request.url.includes('/api/mobile-tracker/localizar')) return; // não cacheia envios GPS
+  const url = new URL(e.request.url);
+
+  // Deixa passar: métodos não-GET (POST, PUT, DELETE...)
+  if (e.request.method !== 'GET') return;
+
+  // Deixa passar: chamadas de API (node-api, api)
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/node-api/')) return;
+
+  // Apenas arquivos do PWA em cache
+  if (!url.pathname.startsWith('/pwa/tracker')) return;
+
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
 
-// Background Sync — envia localizações pendentes quando volta a internet
+// Background Sync — envia localizações pendentes quando reconectar
 self.addEventListener('sync', (e) => {
   if (e.tag === SYNC_TAG) {
     e.waitUntil(enviarPendentes());
@@ -41,13 +59,14 @@ async function enviarPendentes() {
 
   for (const item of todos) {
     try {
-      const resp = await fetch('/api/mobile-tracker/localizar', {
+      const resp = await fetch(API_GPS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item),
       });
       if (resp.ok) {
-        await toPromise(tx.objectStore('pendentes').delete(item.id));
+        const del = db.transaction('pendentes', 'readwrite').objectStore('pendentes').delete(item.id);
+        await toPromise(del);
       }
     } catch (_) {
       // Permanece na fila para próxima tentativa
@@ -71,7 +90,7 @@ function toPromise(req) {
   });
 }
 
-// Recebe mensagem da página principal para registrar sync
+// Recebe mensagem da página para registrar sync quando ficar offline
 self.addEventListener('message', (e) => {
   if (e.data?.tipo === 'registrar-sync') {
     self.registration.sync.register(SYNC_TAG).catch(() => {});
