@@ -92,11 +92,22 @@ export default function ListaTurmas() {
     if (!f) return
     const reader = new FileReader()
     reader.onload = ev => {
-      setCsvLinhas(parseCsv(ev.target.result))
+      const buffer = ev.target.result
+
+      // Tenta UTF-8 primeiro
+      let texto = new TextDecoder('utf-8').decode(buffer)
+
+      // Se houver caracteres de substituição (U+FFFD), o arquivo é provavelmente
+      // Windows-1252 / ISO-8859-1 (padrão do Excel no Brasil) — decodifica novamente
+      if (texto.includes('�')) {
+        texto = new TextDecoder('iso-8859-1').decode(buffer)
+      }
+
+      setCsvLinhas(parseCsv(texto))
       setResultImport(null)
     }
-    // tenta UTF-8; se nomes ficarem estranhos, usuário deve salvar como "CSV UTF-8" no Excel
-    reader.readAsText(f, 'UTF-8')
+    // Lê como ArrayBuffer para permitir detecção automática de encoding
+    reader.readAsArrayBuffer(f)
   }
 
   function baixarModelo() {
