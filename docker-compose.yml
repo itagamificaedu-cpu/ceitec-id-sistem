@@ -82,6 +82,7 @@ services:
       - django_static:/var/www/static:ro
       - django_media:/var/www/media:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./quiz-copa:/var/www/quiz-copa:ro
 
 volumes:
   postgres_data:
