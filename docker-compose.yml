@@ -72,7 +72,7 @@ services:
   # Exemplo no VPS: cd /home/genez && git clone https://github.com/itagenezio/mestre_escola_v2.git
   mestre:
     build:
-      context: ../mestre_escola_v2
+      context: ./mestre_escola_v2
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_BASE_PATH: /mestre
