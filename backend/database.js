@@ -281,6 +281,48 @@ async function initDatabase() {
       saiu_escola INTEGER DEFAULT 0,
       horario_saida TIMESTAMP
     )`,
+
+    /* ========== MESTRE DA ESCOLA ========== */
+
+    /* Professores com código de acesso único (ex: PROF-AB12) */
+    `CREATE TABLE IF NOT EXISTS mestre_professores (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      codigo_acesso TEXT UNIQUE NOT NULL,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Grade horária — id UUID para compatibilidade com o frontend */
+    `CREATE TABLE IF NOT EXISTS mestre_horarios (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      professor_nome TEXT NOT NULL,
+      dia_semana TEXT NOT NULL,
+      aula_numero INTEGER NOT NULL,
+      horario_inicio TEXT NOT NULL,
+      horario_fim TEXT NOT NULL,
+      disciplina TEXT NOT NULL,
+      turma TEXT NOT NULL,
+      sala TEXT DEFAULT '',
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Posts: atividades e recados por turma */
+    `CREATE TABLE IF NOT EXISTS mestre_posts (
+      id SERIAL PRIMARY KEY,
+      turma TEXT NOT NULL,
+      type TEXT NOT NULL,
+      content TEXT NOT NULL,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Rastreio de leituras e conclusões dos alunos */
+    `CREATE TABLE IF NOT EXISTS mestre_tracked_actions (
+      id SERIAL PRIMARY KEY,
+      student_name TEXT,
+      action_type TEXT NOT NULL,
+      post_id TEXT,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
   ];
 
   for (const sql of tabelas) {
