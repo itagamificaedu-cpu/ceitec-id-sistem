@@ -150,7 +150,7 @@ export default function SaidaSala() {
         style={{ background: '#111827', borderBottom: '1px solid #1f2937' }}>
 
         {/* Voltar */}
-        <Link to="/dashboard"
+        <Link to="/saida-sala/painel"
           className="text-white/60 hover:text-white flex items-center gap-1 text-sm">
           ← Painel
         </Link>
