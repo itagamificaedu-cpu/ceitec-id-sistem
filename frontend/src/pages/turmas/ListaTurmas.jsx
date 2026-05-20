@@ -17,6 +17,7 @@ export default function ListaTurmas() {
   const [csvLinhas, setCsvLinhas] = useState([])
   const [importando, setImportando] = useState(false)
   const [resultImport, setResultImport] = useState(null)
+  const [modoLimpar, setModoLimpar] = useState(false)
   const fileRef = useRef()
 
   function carregar() {
@@ -124,7 +125,11 @@ export default function ListaTurmas() {
     setImportando(true)
     try {
       const alunosFormatados = csvLinhas.map(a => ({ ...a, curso: a.serie || a.curso || '' }))
-      const { data } = await api.post('/alunos/importar', { alunos: alunosFormatados, turma_id: modalImport.id })
+      const { data } = await api.post('/alunos/importar', {
+        alunos: alunosFormatados,
+        turma_id: modalImport.id,
+        modo: modoLimpar ? 'limpar' : 'upsert'
+      })
       setResultImport(data)
       setCsvLinhas([])
       if (fileRef.current) fileRef.current.value = ''
@@ -137,6 +142,7 @@ export default function ListaTurmas() {
     setModalImport(null)
     setCsvLinhas([])
     setResultImport(null)
+    setModoLimpar(false)
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -293,6 +299,20 @@ export default function ListaTurmas() {
                   </button>
                 </div>
 
+                {/* Opção de substituir turma */}
+                <label className="flex items-center gap-2 cursor-pointer select-none p-3 rounded-lg border border-orange-200 bg-orange-50 mb-4">
+                  <input
+                    type="checkbox"
+                    checked={modoLimpar}
+                    onChange={e => setModoLimpar(e.target.checked)}
+                    className="w-4 h-4 accent-orange-500"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-orange-800">🧹 Substituir turma completamente</p>
+                    <p className="text-xs text-orange-600">Alunos desta turma que <strong>não estiverem no CSV</strong> serão desativados</p>
+                  </div>
+                </label>
+
                 <label className="block w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors mb-4">
                   <div className="text-3xl mb-2">📄</div>
                   <p className="text-sm text-gray-600 font-medium">Clique para selecionar o arquivo CSV</p>
@@ -336,7 +356,7 @@ export default function ListaTurmas() {
                     disabled={!csvLinhas.length || importando}
                     className="flex-1 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {importando ? 'Importando...' : `Importar ${csvLinhas.length} aluno(s)`}
+                    {importando ? 'Importando...' : modoLimpar ? `🧹 Substituir turma (${csvLinhas.length})` : `Importar ${csvLinhas.length} aluno(s)`}
                   </button>
                 </div>
               </>
@@ -350,11 +370,21 @@ export default function ListaTurmas() {
                 ) : (
                   <>
                     <div className="text-4xl mb-3">✅</div>
-                    <p className="text-green-600 font-bold text-lg mb-1">{resultImport.importados} aluno(s) importado(s)</p>
+                    <div className="flex flex-wrap justify-center gap-2 mb-3">
+                      {resultImport.importados > 0 && (
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">➕ {resultImport.importados} novo(s)</span>
+                      )}
+                      {resultImport.atualizados > 0 && (
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">🔄 {resultImport.atualizados} atualizado(s)</span>
+                      )}
+                      {resultImport.removidos > 0 && (
+                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">🗑 {resultImport.removidos} removido(s)</span>
+                      )}
+                    </div>
                     {resultImport.erros?.length > 0 && (
                       <p className="text-orange-500 text-sm mb-2">{resultImport.erros.length} erro(s) ignorados</p>
                     )}
-                    <p className="text-gray-400 text-xs mb-4">Os alunos já estão disponíveis na turma <strong>{modalImport.nome}</strong>.</p>
+                    <p className="text-gray-400 text-xs mb-4">Turma <strong>{modalImport.nome}</strong> atualizada com sucesso.</p>
                   </>
                 )}
                 <button
