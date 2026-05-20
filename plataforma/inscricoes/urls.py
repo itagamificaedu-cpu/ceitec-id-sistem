@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/presencas/registrar/', views.api_registrar_presenca, name='api_registrar_presenca'),
     path('api/presencas/resumo/', views.api_presencas_resumo, name='api_presencas_resumo'),
     path('api/carteirinhas/', views.api_carteirinhas, name='api_carteirinhas'),
+    path('api/presencas/scan/', views.api_scan_presenca, name='api_scan_presenca'),
     path('painel/', views.painel_admin, name='painel'),
     path('painel/exportar-csv/', views.exportar_csv, name='exportar_csv'),
     path('painel/certificado/<uuid:codigo>/emitir/', views.emitir_certificado_admin, name='emitir_cert'),
