@@ -11,6 +11,7 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/dashboard',          label: 'Dashboard Geral',        icon: '🏠' },
       { path: '/scanner',            label: 'Scanner de Presença',    icon: '📷' },
+      { path: '/saida-sala',         label: 'Saída de Sala',          icon: '🚪' },
       { path: '/almoco/scanner',     label: 'Scanner de Almoço',      icon: '🍽️' },
       { path: '/almoco/relatorio',   label: 'Relatório de Almoço',    icon: '📋' },
       { path: '/usuarios',           label: 'Gerenciar Usuários',     icon: '🔑' },
@@ -134,6 +135,24 @@ export default function Navbar() {
     else abrirUrl(url)
   }
 
+  // Abre o Horário do Dia — igual ao padrão do abrirCorretor/abrirItagame
+  async function abrirMestre() {
+    const janela = window.electronAPI?.isElectron ? null : window.open('about:blank', '_blank')
+    let cod = usuario.codigo_mestre
+    if (!cod) {
+      try {
+        const { data } = await api.get('/professores/eu')
+        cod = data?.codigo_mestre
+        if (cod) {
+          localStorage.setItem('usuario', JSON.stringify({ ...usuario, codigo_mestre: cod }))
+        }
+      } catch (_) {}
+    }
+    const url = cod ? `/mestre?code=${cod}` : '/mestre'
+    if (janela) janela.location.href = url
+    else abrirUrl(url)
+  }
+
   async function abrirCorretor() {
     const janela = window.electronAPI?.isElectron ? null : window.open('about:blank', '_blank')
 
@@ -166,6 +185,7 @@ export default function Navbar() {
           itens: [
             { path: '/dashboard',      label: 'Painel do Professor',  icon: '🏫' },
             { path: '/scanner',        label: 'Scanner de Presença',  icon: '📷' },
+            { path: '/saida-sala',     label: 'Saída de Sala',        icon: '🚪' },
             { path: '/justificativas', label: 'Justificativas',       icon: '📋' },
           ]
         },
@@ -190,6 +210,7 @@ export default function Navbar() {
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
+            { onClick: abrirMestre,   label: 'Horário do Dia',               icon: '📅' },
             { path: '/itagame',       label: 'ItagGame — Painel do Professor', icon: '🎮' },
             { onClick: abrirCorretor, label: 'Corretor de Provas',             icon: '✅' },
           ]
@@ -204,6 +225,7 @@ export default function Navbar() {
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
+            { onClick: () => abrirUrl('/mestre?code=ADMIN-MASTER'), label: 'Horário do Dia', icon: '📅' },
             { path: '/itagame',       label: 'ItagGame — Painel',  icon: '🎮' },
             { onClick: abrirCorretor, label: 'Corretor de Provas', icon: '📋' },
           ]

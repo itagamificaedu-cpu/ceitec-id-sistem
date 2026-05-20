@@ -42,10 +42,15 @@ import AtividadeUsuarios from './pages/AtividadeUsuarios'
 import SalaMaker from './pages/salaMaker'
 import CursoFerias from './pages/CursoFerias'
 import MobileTracker from './pages/MobileTracker'
+import SaidaSala from './pages/SaidaSala'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
-  return token ? children : <Navigate to="/login" replace />
+  if (!token) return <Navigate to="/login" replace />
+  // Bloqueia qualquer rota se o professor ainda não trocou a senha
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  if (usuario.trocar_senha) return <Navigate to="/trocar-senha" replace />
+  return children
 }
 
 function P({ children }) {
@@ -84,6 +89,7 @@ export default function App() {
         <Route path="/alunos/:id/carteirinha" element={<P><Carteirinha /></P>} />
         <Route path="/alunos/:id/perfil" element={<P><PerfilAluno /></P>} />
         <Route path="/scanner" element={<P><Scanner /></P>} />
+        <Route path="/saida-sala" element={<P><SaidaSala /></P>} />
         <Route path="/almoco/scanner" element={<Admin><ScannerAlmoco /></Admin>} />
         <Route path="/almoco/relatorio" element={<Admin><RelatorioAlmoco /></Admin>} />
         <Route path="/relatorios" element={<Admin><Relatorios /></Admin>} />
@@ -154,7 +160,7 @@ export default function App() {
         <Route path="/usuarios" element={<Admin><Usuarios /></Admin>} />
         {/* Atividade de Usuários — exclusivo do dono da plataforma ITA */}
         <Route path="/atividade-usuarios" element={<ItaAdmin><AtividadeUsuarios /></ItaAdmin>} />
-        <Route path="/trocar-senha" element={<P><TrocarSenha /></P>} />
+        <Route path="/trocar-senha" element={<TrocarSenha />} />
       </Routes>
     </BrowserRouter>
   )
