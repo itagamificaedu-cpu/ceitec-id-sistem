@@ -50,7 +50,7 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/sala-maker',    label: 'Sala Maker',           icon: '🔧' },
       { path: '/curso-ferias',  label: 'Curso de Férias Maker', icon: '🚀', itaAdmin: true },
-      { path: '/mobile-tracker', label: 'Mobile Tracker GPS',  icon: '📍' },
+      { path: '/mobile-tracker', label: 'Rastreador de Celular', icon: '📍' },
     ]
   },
   {
