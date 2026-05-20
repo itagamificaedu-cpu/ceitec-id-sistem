@@ -72,6 +72,18 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS quiz_questoes (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, enunciado TEXT NOT NULL, alt_a TEXT NOT NULL, alt_b TEXT NOT NULL, alt_c TEXT, alt_d TEXT, resposta_correta INTEGER DEFAULT 0, ordem INTEGER DEFAULT 0)`,
     `CREATE TABLE IF NOT EXISTS quiz_resultados (id SERIAL PRIMARY KEY, quiz_id INTEGER NOT NULL, aluno_nome TEXT DEFAULT 'Participante', acertos INTEGER DEFAULT 0, total INTEGER DEFAULT 0, percentual INTEGER DEFAULT 0, tempo_total INTEGER DEFAULT 0, respondido_em TIMESTAMP DEFAULT NOW())`,
     `CREATE TABLE IF NOT EXISTS almoco_registros (id SERIAL PRIMARY KEY, aluno_id INTEGER NOT NULL, data DATE NOT NULL, hora_registro TEXT, registrado_por TEXT DEFAULT 'scanner', escola_id INTEGER)`,
+    `CREATE TABLE IF NOT EXISTS saida_sala (
+      id SERIAL PRIMARY KEY,
+      aluno_id INTEGER NOT NULL,
+      escola_id INTEGER NOT NULL,
+      professor_id INTEGER,
+      motivo TEXT DEFAULT 'banheiro',
+      hora_saida TIMESTAMP NOT NULL DEFAULT NOW(),
+      hora_retorno TIMESTAMP,
+      duracao_minutos INTEGER,
+      status TEXT DEFAULT 'fora',
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
 
     /* ========== SALA MAKER ========== */
 
