@@ -403,9 +403,9 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-
     <div style="margin-bottom:20px">
       <label class="lbl">Disciplina</label>
       <div class="sel-row">
-        <button class="sel-btn on-o on" data-disc="portugues" onclick="selDisc(this)"><span class="ic">📖</span>Português</button>
-        <button class="sel-btn on-o" data-disc="matematica" onclick="selDisc(this)"><span class="ic">📐</span>Matemática</button>
-        <button class="sel-btn on-o" data-disc="misto" onclick="selDisc(this)"><span class="ic">⚡</span>Misto</button>
+        <button class="sel-btn on-o" data-disc="portugues" onclick="selDisc(this)"><span class="ic">📖</span>Português</button>
+        <button class="sel-btn" data-disc="matematica" onclick="selDisc(this)"><span class="ic">📐</span>Matemática</button>
+        <button class="sel-btn" data-disc="misto" onclick="selDisc(this)"><span class="ic">⚡</span>Misto</button>
       </div>
     </div>
     <button class="btn btn-g" onclick="iniciar()">⚽ ENTRAR EM CAMPO</button>
@@ -823,8 +823,8 @@ function selSerie(el){
   el.classList.add('on'); G.serie=el.dataset.serie
 }
 function selDisc(el){
-  document.querySelectorAll('[data-disc]').forEach(b=>b.classList.remove('on'))
-  el.classList.add('on'); G.disc=el.dataset.disc
+  document.querySelectorAll('[data-disc]').forEach(b=>b.classList.remove('on-o'))
+  el.classList.add('on-o'); G.disc=el.dataset.disc
 }
 
 function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]};return r}
