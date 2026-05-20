@@ -103,7 +103,7 @@ router.post('/:id/foto', upload.single('foto'), async (req, res) => {
 
 router.post('/importar', async (req, res) => {
   try {
-    const { alunos, turma_id } = req.body;
+    const { alunos, turma_id, modo } = req.body;
     if (!Array.isArray(alunos) || alunos.length === 0) return res.status(400).json({ erro: 'Nenhum aluno para importar' });
 
     const eid = req.usuario.escola_id;
@@ -122,20 +122,72 @@ router.post('/importar', async (req, res) => {
       });
     }
 
-    const importados = [], erros = [];
+    const importados = [], atualizados = [], erros = [];
+    // Conjunto de nomes (em minúsculas) que vieram no CSV — usado para "modo limpar"
+    const nomesImportados = new Set();
+
     for (const a of alunos) {
       try {
         if (!a.nome || !a.nome.trim()) { erros.push({ nome: a.nome || '?', erro: 'Nome obrigatório' }); continue; }
-        const codigo = await gerarCodigo(eid);
-        const matricula = a.data_matricula || new Date().toISOString().split('T')[0];
-        const result = await db.run(
-          'INSERT INTO alunos (codigo, nome, turma, turma_id, curso, email_responsavel, telefone_responsavel, data_matricula, escola_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [codigo, a.nome.trim(), a.turma || turma_nome, turma_id || null, a.curso || curso_nome, a.email_responsavel || null, a.telefone_responsavel || null, matricula, eid]
+        const nomeNorm = a.nome.trim();
+        nomesImportados.add(nomeNorm.toLowerCase());
+
+        // Verifica se já existe aluno com mesmo nome na escola (ativo ou inativo)
+        const existente = await db.get(
+          "SELECT * FROM alunos WHERE LOWER(TRIM(nome)) = LOWER(TRIM(?)) AND escola_id = ? ORDER BY ativo DESC LIMIT 1",
+          [nomeNorm, eid]
         );
-        importados.push({ id: result.lastInsertRowid, codigo, nome: a.nome.trim() });
+
+        if (existente) {
+          // Atualiza dados e reativa caso estivesse inativo
+          await db.run(
+            'UPDATE alunos SET turma=?, turma_id=?, curso=?, email_responsavel=?, telefone_responsavel=?, ativo=1 WHERE id=?',
+            [
+              a.turma || turma_nome || existente.turma,
+              turma_id ? parseInt(turma_id) : existente.turma_id,
+              a.curso || curso_nome || existente.curso,
+              a.email_responsavel || existente.email_responsavel,
+              a.telefone_responsavel || existente.telefone_responsavel,
+              existente.id
+            ]
+          );
+          atualizados.push({ id: existente.id, codigo: existente.codigo, nome: nomeNorm });
+        } else {
+          // Insere novo aluno
+          const codigo = await gerarCodigo(eid);
+          const matricula = a.data_matricula || new Date().toISOString().split('T')[0];
+          const result = await db.run(
+            'INSERT INTO alunos (codigo, nome, turma, turma_id, curso, email_responsavel, telefone_responsavel, data_matricula, escola_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [codigo, nomeNorm, a.turma || turma_nome, turma_id || null, a.curso || curso_nome, a.email_responsavel || null, a.telefone_responsavel || null, matricula, eid]
+          );
+          importados.push({ id: result.lastInsertRowid, codigo, nome: nomeNorm });
+        }
       } catch (err) { erros.push({ nome: a.nome, erro: err.message }); }
     }
-    res.json({ importados: importados.length, erros, lista: importados });
+
+    // Se modo === 'limpar' e turma_id definida: desativa alunos da turma que NÃO vieram no CSV
+    let removidos = 0;
+    if (modo === 'limpar' && turma_id) {
+      const alunosTurma = await db.all(
+        'SELECT * FROM alunos WHERE turma_id = ? AND escola_id = ? AND ativo = 1',
+        [turma_id, eid]
+      );
+      for (const al of alunosTurma) {
+        const nomeAl = (al.nome || '').toLowerCase().trim();
+        if (!nomesImportados.has(nomeAl)) {
+          await db.run('UPDATE alunos SET ativo = 0 WHERE id = ?', [al.id]);
+          removidos++;
+        }
+      }
+    }
+
+    res.json({
+      importados: importados.length,
+      atualizados: atualizados.length,
+      removidos,
+      erros,
+      lista: [...importados, ...atualizados]
+    });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
