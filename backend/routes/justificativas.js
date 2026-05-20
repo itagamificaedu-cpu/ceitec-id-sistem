@@ -46,10 +46,36 @@ router.get('/pendentes', async (req, res) => {
       FROM presencas p
       JOIN alunos a ON p.aluno_id = a.id
       LEFT JOIN justificativas j ON j.presenca_id = p.id
-      WHERE p.status = 'ausente' AND j.id IS NULL
+      WHERE p.status = 'ausente' AND j.id IS NULL AND a.escola_id = ?
       ORDER BY p.data DESC
-    `);
+    `, [req.usuario.escola_id]);
     res.json(pendentes);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// Histórico de todas as justificativas da escola — visível para professor e admin
+router.get('/historico', async (req, res) => {
+  try {
+    const { turma_id, data_inicio, data_fim } = req.query;
+    let sql = `
+      SELECT j.*, a.nome, a.turma, a.turma_id, a.foto_path, a.codigo,
+             COALESCE(p.data, j.data_falta) as data_falta_real
+      FROM justificativas j
+      JOIN alunos a ON j.aluno_id = a.id
+      LEFT JOIN presencas p ON j.presenca_id = p.id
+      WHERE a.escola_id = ?
+    `;
+    const params = [req.usuario.escola_id];
+
+    if (turma_id) { sql += ' AND a.turma_id = ?'; params.push(turma_id); }
+    if (data_inicio) { sql += ' AND COALESCE(p.data, j.data_falta) >= ?'; params.push(data_inicio); }
+    if (data_fim)    { sql += ' AND COALESCE(p.data, j.data_falta) <= ?'; params.push(data_fim); }
+
+    sql += ' ORDER BY j.criado_em DESC LIMIT 200';
+    const lista = await db.all(sql, params);
+    res.json(lista);
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
