@@ -282,35 +282,28 @@ router.delete('/recados/:id', async (req, res) => {
 router.post('/sync', async (req, res) => {
   try {
     const eid = req.usuario.escola_id;
-    const [turmas, alunos] = await Promise.all([
-      db.all('SELECT * FROM turmas WHERE escola_id = ?', [eid]),
-      db.all('SELECT * FROM alunos WHERE escola_id = ? AND ativo = 1', [eid]),
-    ]);
+    console.log('[SYNC] Iniciando sync para escola_id:', eid);
 
+    // Busca alunos da escola
+    const alunos = await db.all('SELECT id, nome, codigo, turma_id FROM alunos WHERE escola_id = $1 AND ativo = 1', [eid]);
+    console.log('[SYNC] Alunos encontrados:', alunos.length);
+
+    // 1) Envia alunos para o PythonAnywhere (não-bloqueante)
+    const turmas = await db.all('SELECT id, nome FROM turmas WHERE escola_id = $1', [eid]);
     const turmasComAlunos = turmas.map(t => ({
       nome: t.nome,
-      alunos: alunos
-        .filter(a => a.turma_id === t.id)
-        .map(a => ({ codigo: a.codigo, nome: a.nome })),
+      alunos: alunos.filter(a => a.turma_id === t.id).map(a => ({ codigo: a.codigo, nome: a.nome })),
     }));
+    fetch(`${ITAGAME_PY}/api/sync-turmas/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chave: CHAVE, turmas: turmasComAlunos }),
+      signal: AbortSignal.timeout(15000),
+    }).catch(() => {});
 
-    // 1) Envia alunos para o PythonAnywhere
-    try {
-      await fetch(`${ITAGAME_PY}/api/sync-turmas/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chave: CHAVE,
-          professor_username: req.usuario.email || '',
-          turmas: turmasComAlunos,
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-    } catch (_) { /* ignora se PY não responder */ }
-
-    // 2) Puxa XP real do PythonAnywhere e atualiza itagame_pontos local
-    let xpSincronizados = 0;
+    // 2) Puxa XP real do PythonAnywhere
     let erroSync = null;
+    let xpSincronizados = 0;
 
     const rankRes = await fetch(`${ITAGAME_PY}/api/ranking/?chave=${CHAVE}`, {
       signal: AbortSignal.timeout(15000),
@@ -318,43 +311,57 @@ router.post('/sync', async (req, res) => {
 
     if (!rankRes.ok) {
       erroSync = `PythonAnywhere retornou ${rankRes.status}`;
+      console.log('[SYNC] Erro PythonAnywhere:', erroSync);
     } else {
-      const { alunos: alunosPY } = await rankRes.json();
+      const dados = await rankRes.json();
+      const alunosPY = dados.alunos || [];
+      console.log('[SYNC] Alunos recebidos do PythonAnywhere:', alunosPY.length);
 
-      // Monta mapa codigo → XP/nivel do PythonAnywhere
+      // Mapa codigo → XP/nivel
       const mapaXP = {};
       for (const a of alunosPY) {
         mapaXP[a.codigo] = { xp: a.xp || 0, nivel: a.nivel || 1 };
       }
 
-      // Upsert em itagame_pontos para TODOS os alunos do ITA
-      for (const aluno of alunos) {
-        const pyDado    = mapaXP[aluno.codigo];
-        const xpReal    = pyDado ? pyDado.xp    : 0;
-        const nivelReal = pyDado ? pyDado.nivel  : 1;
+      // Log de alunos com XP > 0 no PythonAnywhere
+      const comXpPY = alunosPY.filter(a => a.xp > 0);
+      console.log('[SYNC] Alunos com XP>0 no PythonAnywhere:', comXpPY.length);
+      comXpPY.forEach(a => console.log(`  PY: ${a.codigo} → ${a.xp} XP`));
 
-        // Upsert com INSERT ... ON CONFLICT (id) → usa aluno_id como PK auxiliar
-        // Tenta UPDATE primeiro; se não existir, INSERT
-        const upd = await db.run(
-          'UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?',
-          [xpReal, nivelReal, aluno.id]
-        );
-
-        // Se não atualizou nenhuma linha (aluno ainda não tem registro), cria
-        const rows = await db.get('SELECT id FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]);
-        if (!rows) {
-          await db.run(
-            "INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, ?, '[]')",
-            [aluno.id, aluno.turma_id, xpReal, nivelReal]
-          );
+      // UPSERT em lote: INSERT ... ON CONFLICT DO UPDATE (1 query só)
+      if (alunos.length > 0) {
+        // Constrói query de upsert em lote
+        const valores = [];
+        const params = [];
+        let idx = 1;
+        for (const aluno of alunos) {
+          const pyDado = mapaXP[aluno.codigo];
+          const xpReal = pyDado ? pyDado.xp : 0;
+          const nivelReal = pyDado ? pyDado.nivel : 1;
+          valores.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, '[]')`);
+          params.push(aluno.id, aluno.turma_id, xpReal, nivelReal);
         }
-        xpSincronizados++;
+
+        const upsertSQL = `
+          INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json)
+          VALUES ${valores.join(', ')}
+          ON CONFLICT (aluno_id) DO UPDATE
+            SET xp_total = EXCLUDED.xp_total,
+                nivel    = EXCLUDED.nivel
+        `;
+        await db.pool.query(upsertSQL, params);
+        xpSincronizados = alunos.length;
+        console.log('[SYNC] Upsert concluído para', xpSincronizados, 'alunos');
+
+        // Verifica ANA BEATRIZ após sync
+        const ana = await db.get('SELECT xp_total FROM itagame_pontos ip JOIN alunos a ON ip.aluno_id = a.id WHERE a.codigo = $1', ['ESC192-0167']);
+        console.log('[SYNC] ANA BEATRIZ após sync:', JSON.stringify(ana));
       }
     }
 
-    const totalAlunos = alunos.length;
-    res.json({ ok: true, sincronizados: totalAlunos, xp_atualizados: xpSincronizados, turmas: turmas.length, erro_sync: erroSync });
+    res.json({ ok: true, sincronizados: alunos.length, xp_atualizados: xpSincronizados, turmas: turmas.length, erro_sync: erroSync });
   } catch (err) {
+    console.error('[SYNC] ERRO:', err.message);
     res.status(500).json({ erro: err.message });
   }
 });
