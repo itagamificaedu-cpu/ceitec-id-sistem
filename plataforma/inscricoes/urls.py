@@ -19,6 +19,12 @@ urlpatterns = [
     path('api/inscricao/<uuid:codigo>/pagar/', views.api_marcar_pago_react, name='api_marcar_pago_react'),
     path('api/inscricao/<uuid:codigo>/editar/', views.api_editar_inscricao, name='api_editar_inscricao'),
     path('api/inscricao/<uuid:codigo>/excluir/', views.api_excluir_inscricao, name='api_excluir_inscricao'),
+    path('api/inscricao/<uuid:codigo>/certificado/', views.api_emitir_certificado_react, name='api_emitir_cert_react'),
+    # ─── Presença ──────────────────────────────────────────────────────────────
+    path('api/presencas/', views.api_presencas_lista, name='api_presencas'),
+    path('api/presencas/registrar/', views.api_registrar_presenca, name='api_registrar_presenca'),
+    path('api/presencas/resumo/', views.api_presencas_resumo, name='api_presencas_resumo'),
+    path('api/carteirinhas/', views.api_carteirinhas, name='api_carteirinhas'),
     path('painel/', views.painel_admin, name='painel'),
     path('painel/exportar-csv/', views.exportar_csv, name='exportar_csv'),
     path('painel/certificado/<uuid:codigo>/emitir/', views.emitir_certificado_admin, name='emitir_cert'),
