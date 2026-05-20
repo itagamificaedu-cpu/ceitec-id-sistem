@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import api from './api'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Alunos from './pages/Alunos'
@@ -48,8 +49,28 @@ import PainelSaidaSala from './pages/PainelSaidaSala'
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
   if (!token) return <Navigate to="/login" replace />
-  // Bloqueia qualquer rota se o professor ainda não trocou a senha
+
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+
+  // Verifica do servidor se admin resetou a senha (localStorage pode estar desatualizado)
+  useEffect(() => {
+    if (!token) return
+    api.get('/auth/me').then(({ data }) => {
+      if (data.trocar_senha) {
+        // Atualiza localStorage e força o redirect no próximo render
+        const u = JSON.parse(localStorage.getItem('usuario') || '{}')
+        localStorage.setItem('usuario', JSON.stringify({ ...u, trocar_senha: true }))
+        window.location.href = '/trocar-senha'
+      } else {
+        // Garante que localStorage está atualizado
+        const u = JSON.parse(localStorage.getItem('usuario') || '{}')
+        if (u.trocar_senha) {
+          localStorage.setItem('usuario', JSON.stringify({ ...u, trocar_senha: false }))
+        }
+      }
+    }).catch(() => {})
+  }, [])
+
   if (usuario.trocar_senha) return <Navigate to="/trocar-senha" replace />
   return children
 }
@@ -107,20 +128,20 @@ export default function App() {
         <Route path="/professores/novo" element={<Admin><CadastroProfessor /></Admin>} />
         <Route path="/professores/:id/editar" element={<Admin><CadastroProfessor /></Admin>} />
 
-        {/* Avaliações */}
+        {/* Avaliações — professor pode criar e editar as suas */}
         <Route path="/avaliacoes" element={<P><ListaAvaliacoes /></P>} />
-        <Route path="/avaliacoes/nova" element={<Admin><CriadorAvaliacao /></Admin>} />
+        <Route path="/avaliacoes/nova" element={<P><CriadorAvaliacao /></P>} />
         <Route path="/avaliacoes/:id" element={<P><ResultadosAvaliacao /></P>} />
-        <Route path="/avaliacoes/:id/editar" element={<Admin><CriadorAvaliacao /></Admin>} />
+        <Route path="/avaliacoes/:id/editar" element={<P><CriadorAvaliacao /></P>} />
 
         {/* Ocorrências */}
         <Route path="/ocorrencias" element={<P><ListaOcorrencias /></P>} />
         <Route path="/ocorrencias/nova" element={<P><NovaOcorrencia /></P>} />
 
-        {/* Quiz */}
+        {/* Quiz — professor pode criar e editar */}
         <Route path="/quiz" element={<P><ListaQuizzes /></P>} />
-        <Route path="/quiz/novo" element={<Admin><CriadorQuiz /></Admin>} />
-        <Route path="/quiz/:id/editar" element={<Admin><CriadorQuiz /></Admin>} />
+        <Route path="/quiz/novo" element={<P><CriadorQuiz /></P>} />
+        <Route path="/quiz/:id/editar" element={<P><CriadorQuiz /></P>} />
         <Route path="/quiz/:id/ranking" element={<P><RankingQuiz /></P>} />
         {/* Rota pública para jogar */}
         <Route path="/q/:codigo" element={<JogarQuiz />} />
@@ -133,12 +154,12 @@ export default function App() {
         {/* Avaliações — portal do aluno sem login */}
         <Route path="/responder/:avaliacao_id/:codigo" element={<ResponderAvaliacao />} />
 
-        {/* IA */}
-        <Route path="/ia/plano-aula" element={<Admin><PlanoDeAula /></Admin>} />
-        <Route path="/ia/questoes" element={<Admin><CriadorQuestoes /></Admin>} />
-        <Route path="/ia/corretor" element={<Admin><CorretorProvas /></Admin>} />
+        {/* IA — professor tem acesso a todas as ferramentas */}
+        <Route path="/ia/plano-aula" element={<P><PlanoDeAula /></P>} />
+        <Route path="/ia/questoes" element={<P><CriadorQuestoes /></P>} />
+        <Route path="/ia/corretor" element={<P><CorretorProvas /></P>} />
         <Route path="/diagnostico" element={<P><DiagnosticoAluno /></P>} />
-        <Route path="/ia/conteudo" element={<Admin><CriadorConteudo /></Admin>} />
+        <Route path="/ia/conteudo" element={<P><CriadorConteudo /></P>} />
 
         {/* Planos de Assinatura — público para novos clientes */}
         <Route path="/planos" element={<Planos />} />

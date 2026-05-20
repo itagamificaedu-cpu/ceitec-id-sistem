@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
+const { autenticar } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -34,11 +35,34 @@ router.post('/login', async (req, res) => {
       [usuario.id, usuario.nome, usuario.email, usuario.perfil, escola_id, ip, ua]
     ).catch(() => {});
 
+    // Se for professor, busca o código do Mestre da Escola para acesso direto
+    let codigo_mestre = null;
+    if (usuario.perfil === 'professor') {
+      try {
+        const prof = await db.get(
+          'SELECT codigo_mestre FROM professores WHERE email = ? AND escola_id = ? AND ativo = 1',
+          [email, escola_id]
+        );
+        codigo_mestre = prof?.codigo_mestre || null;
+      } catch (_) {}
+    }
+
+    const trocar_senha = !!usuario.trocar_senha;
     res.json({
       token,
-      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, escola_id },
-      trocar_senha: !!usuario.trocar_senha,
+      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, escola_id, codigo_mestre, trocar_senha },
+      trocar_senha,
     });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// Verifica estado atual do usuário no banco (trocar_senha pode ter sido atualizado pelo admin)
+router.get('/me', autenticar, async (req, res) => {
+  try {
+    const u = await db.get('SELECT trocar_senha FROM usuarios WHERE id = ?', [req.usuario.id]);
+    res.json({ trocar_senha: !!u?.trocar_senha });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
