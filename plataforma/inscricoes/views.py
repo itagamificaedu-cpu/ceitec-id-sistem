@@ -515,6 +515,87 @@ def api_presencas_resumo(request):
 
 
 @csrf_exempt
+def api_scan_presenca(request):
+    """Registra presença via QR Code escaneado na entrada do curso."""
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'método inválido'}, status=405)
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    try:
+        dados = json.loads(request.body or b'{}')
+    except Exception:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+
+    codigo = dados.get('codigo', '').strip()
+    dia = dados.get('dia')
+
+    if not codigo or not dia:
+        return JsonResponse({'tipo': 'erro', 'erro': 'codigo e dia obrigatórios'}, status=400)
+
+    # Tenta localizar a inscrição pelo UUID completo
+    try:
+        inscricao = Inscricao.objects.get(codigo_inscricao=codigo)
+    except (Inscricao.DoesNotExist, Exception):
+        # Fallback: tenta pelo código curto (8 chars)
+        todas = Inscricao.objects.all()
+        inscricao = next(
+            (i for i in todas if str(i.codigo_inscricao).upper().startswith(codigo.upper())),
+            None
+        )
+        if not inscricao:
+            return JsonResponse({
+                'tipo': 'erro',
+                'mensagem': '❌ QR Code inválido — aluno não encontrado',
+            }, status=404)
+
+    # Verifica se pagamento foi confirmado
+    if inscricao.status not in ('pago', 'certificado_emitido'):
+        return JsonResponse({
+            'tipo': 'nao_confirmado',
+            'nome': inscricao.nome_completo,
+            'mensagem': f'⚠️ Inscrição não confirmada ({inscricao.get_status_display()})',
+        }, status=400)
+
+    # Registra ou verifica presença no dia
+    presenca, criado = PresencaCursoFerias.objects.get_or_create(
+        inscricao=inscricao,
+        dia=dia,
+        defaults={'presente': True, 'registrado_por': 'scanner-qr'},
+    )
+
+    if not criado and presenca.presente:
+        # Aluno já entrou hoje
+        return JsonResponse({
+            'tipo': 'ja_presente',
+            'nome': inscricao.nome_completo,
+            'escola': inscricao.escola,
+            'serie': inscricao.serie,
+            'turno': inscricao.get_turno_display(),
+            'codigo': inscricao.codigo_curto(),
+            'mensagem': '🔄 Aluno já registrado hoje!',
+        })
+
+    # Marca como presente (caso existia mas estava ausente)
+    if not criado:
+        presenca.presente = True
+        presenca.registrado_por = 'scanner-qr'
+        presenca.save()
+
+    return JsonResponse({
+        'tipo': 'presente',
+        'nome': inscricao.nome_completo,
+        'escola': inscricao.escola,
+        'serie': inscricao.serie,
+        'turno': inscricao.get_turno_display(),
+        'turno_val': inscricao.turno,
+        'codigo': inscricao.codigo_curto(),
+        'mensagem': f'✅ Presente! Bem-vindo, {inscricao.nome_completo.split()[0]}!',
+    })
+
+
+@csrf_exempt
 def api_carteirinhas(request):
     """Retorna dados para geração das carteirinhas (alunos confirmados)."""
     chave = request.GET.get('chave') or request.headers.get('X-Chave', '')

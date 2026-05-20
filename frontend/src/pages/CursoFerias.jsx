@@ -135,7 +135,7 @@ function Carteirinha({ aluno, onFechar }) {
                 </div>
               </div>
 
-              {/* Código */}
+              {/* Código + QR Code */}
               <div style={{
                 background: '#0A0E1A', borderRadius: '8px', padding: '10px 14px',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -145,12 +145,14 @@ function Carteirinha({ aluno, onFechar }) {
                   <p style={{ fontFamily: 'monospace', fontSize: '18px', fontWeight: 800, color: '#F5A623', letterSpacing: '3px' }}>
                     {aluno.codigo}
                   </p>
+                  <p style={{ fontSize: '8px', color: '#8A95B550', marginTop: '3px' }}>Escaneie para registrar presença</p>
                 </div>
-                <div style={{
-                  width: '40px', height: '40px', background: '#F5A62320',
-                  borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '22px',
-                }}>🎫</div>
+                {/* QR Code gerado a partir do UUID completo */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=72x72&data=${aluno.id}&bgcolor=0A0E1A&color=F5A623&margin=4`}
+                  alt={`QR Code ${aluno.codigo}`}
+                  style={{ width: '72px', height: '72px', borderRadius: '6px', border: '1px solid rgba(245,166,35,0.3)' }}
+                />
               </div>
             </div>
 

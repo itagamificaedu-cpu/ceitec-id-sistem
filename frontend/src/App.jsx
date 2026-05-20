@@ -42,6 +42,7 @@ import TrocarSenha from './pages/TrocarSenha'
 import AtividadeUsuarios from './pages/AtividadeUsuarios'
 import SalaMaker from './pages/salaMaker'
 import CursoFerias from './pages/CursoFerias'
+import ScannerCursoFerias from './pages/ScannerCursoFerias'
 import MobileTracker from './pages/MobileTracker'
 import SaidaSala from './pages/SaidaSala'
 import PainelSaidaSala from './pages/PainelSaidaSala'
@@ -175,6 +176,7 @@ export default function App() {
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />
+        <Route path="/curso-ferias/scanner" element={<ItaAdmin><ScannerCursoFerias /></ItaAdmin>} />
 
         {/* Mobile Tracker — GPS de alunos */}
         <Route path="/mobile-tracker" element={<Admin><MobileTracker /></Admin>} />
