@@ -11,7 +11,8 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/dashboard',          label: 'Dashboard Geral',        icon: '🏠' },
       { path: '/scanner',            label: 'Scanner de Presença',    icon: '📷' },
-      { path: '/saida-sala',         label: 'Saída de Sala',          icon: '🚪' },
+      { path: '/saida-sala',         label: 'Saída de Sala (Scanner)', icon: '🚪' },
+      { path: '/saida-sala/painel', label: 'Saída de Sala (Painel)',  icon: '📊' },
       { path: '/almoco/scanner',     label: 'Scanner de Almoço',      icon: '🍽️' },
       { path: '/almoco/relatorio',   label: 'Relatório de Almoço',    icon: '📋' },
       { path: '/usuarios',           label: 'Gerenciar Usuários',     icon: '🔑' },
@@ -185,7 +186,8 @@ export default function Navbar() {
           itens: [
             { path: '/dashboard',      label: 'Painel do Professor',  icon: '🏫' },
             { path: '/scanner',        label: 'Scanner de Presença',  icon: '📷' },
-            { path: '/saida-sala',     label: 'Saída de Sala',        icon: '🚪' },
+            { path: '/saida-sala',         label: 'Saída de Sala (Scanner)', icon: '🚪' },
+            { path: '/saida-sala/painel', label: 'Saída de Sala (Painel)',  icon: '📊' },
             { path: '/justificativas', label: 'Justificativas',       icon: '📋' },
           ]
         },

@@ -43,6 +43,7 @@ import SalaMaker from './pages/salaMaker'
 import CursoFerias from './pages/CursoFerias'
 import MobileTracker from './pages/MobileTracker'
 import SaidaSala from './pages/SaidaSala'
+import PainelSaidaSala from './pages/PainelSaidaSala'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -90,6 +91,7 @@ export default function App() {
         <Route path="/alunos/:id/perfil" element={<P><PerfilAluno /></P>} />
         <Route path="/scanner" element={<P><Scanner /></P>} />
         <Route path="/saida-sala" element={<P><SaidaSala /></P>} />
+        <Route path="/saida-sala/painel" element={<P><PainelSaidaSala /></P>} />
         <Route path="/almoco/scanner" element={<Admin><ScannerAlmoco /></Admin>} />
         <Route path="/almoco/relatorio" element={<Admin><RelatorioAlmoco /></Admin>} />
         <Route path="/relatorios" element={<Admin><Relatorios /></Admin>} />
