@@ -42,6 +42,7 @@ export default function Alunos() {
   const [importando, setImportando] = useState(false)
   const [resultadoImport, setResultadoImport] = useState(null)
   const [avisoEncoding, setAvisoEncoding] = useState(false)
+  const [modoLimpar, setModoLimpar] = useState(false)
   const fileRef = useRef()
 
   async function carregar() {
@@ -98,7 +99,8 @@ export default function Alunos() {
     try {
       const { data } = await api.post('/alunos/importar', {
         alunos: preview,
-        turma_id: turmaSel || null
+        turma_id: turmaSel || null,
+        modo: modoLimpar ? 'limpar' : 'upsert'
       })
       setResultadoImport(data)
       if (data.importados > 0) carregar()
@@ -127,7 +129,7 @@ export default function Alunos() {
             </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => exportarCSV(filtrados)} className="btn-secondary text-sm">📥 Exportar CSV</button>
-              <button onClick={() => { setModalImport(true); setPreview([]); setResultadoImport(null); setAvisoEncoding(false) }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">📤 Importar CSV</button>
+              <button onClick={() => { setModalImport(true); setPreview([]); setResultadoImport(null); setAvisoEncoding(false); setModoLimpar(false) }} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">📤 Importar CSV</button>
               <Link to="/alunos/novo" className="btn-primary text-sm">+ Cadastrar</Link>
             </div>
           </div>
@@ -166,6 +168,22 @@ export default function Alunos() {
                   {turmas.map(t => <option key={t.id} value={t.id}>{t.nome} — {t.curso}</option>)}
                 </select>
               </div>
+
+              {/* Opção de limpeza da turma */}
+              {turmaSel && (
+                <label className="flex items-center gap-2 cursor-pointer select-none p-3 rounded-lg border border-orange-200 bg-orange-50">
+                  <input
+                    type="checkbox"
+                    checked={modoLimpar}
+                    onChange={e => setModoLimpar(e.target.checked)}
+                    className="w-4 h-4 accent-orange-500"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-orange-800">🧹 Substituir turma completamente</p>
+                    <p className="text-xs text-orange-600">Alunos desta turma que <strong>não estiverem no CSV</strong> serão desativados</p>
+                  </div>
+                </label>
+              )}
 
               {/* Template e Upload */}
               <div className="flex gap-3 items-center flex-wrap">
@@ -217,8 +235,21 @@ export default function Alunos() {
 
               {/* Resultado */}
               {resultadoImport && (
-                <div className={`rounded-lg p-4 ${resultadoImport.importados > 0 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                  <p className="font-semibold text-sm mb-1">{resultadoImport.importados > 0 ? '✅' : '❌'} {resultadoImport.importados} aluno(s) importado(s)</p>
+                <div className={`rounded-lg p-4 ${(resultadoImport.importados + resultadoImport.atualizados) > 0 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  <p className="font-semibold text-sm mb-2">
+                    {(resultadoImport.importados + resultadoImport.atualizados) > 0 ? '✅' : '❌'} Importação concluída
+                  </p>
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    {resultadoImport.importados > 0 && (
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">➕ {resultadoImport.importados} novo(s)</span>
+                    )}
+                    {resultadoImport.atualizados > 0 && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">🔄 {resultadoImport.atualizados} atualizado(s)</span>
+                    )}
+                    {resultadoImport.removidos > 0 && (
+                      <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full font-medium">🗑 {resultadoImport.removidos} removido(s) da turma</span>
+                    )}
+                  </div>
                   {resultadoImport.erros?.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {resultadoImport.erros.map((e, i) => <p key={i} className="text-xs text-danger">{e.nome ? `${e.nome}: ` : ''}{e.erro}</p>)}
@@ -231,7 +262,7 @@ export default function Alunos() {
             <div className="p-4 border-t flex gap-2 justify-end">
               {!resultadoImport && preview.length > 0 && !avisoEncoding && (
                 <button onClick={importar} disabled={importando} className="btn-primary">
-                  {importando ? '⏳ Importando...' : `✅ Importar ${preview.length} aluno(s)`}
+                  {importando ? '⏳ Importando...' : modoLimpar ? `🧹 Substituir turma (${preview.length} aluno(s))` : `✅ Importar ${preview.length} aluno(s)`}
                 </button>
               )}
               <button onClick={() => setModalImport(false)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
