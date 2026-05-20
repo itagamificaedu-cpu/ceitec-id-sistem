@@ -42,6 +42,7 @@ export default function ItagameDashboard() {
   const [salvando, setSalvando] = useState(false)
   const [sincStatus, setSincStatus] = useState(null) // null | 'ok' | 'erro'
   const [sincMsg, setSincMsg] = useState('')
+  const [zerandoRank, setZerandoRank] = useState(false)
 
   // Missões
   const [missoes, setMissoes] = useState([])
@@ -86,13 +87,38 @@ export default function ItagameDashboard() {
     sincronizar(true)
   }, [])
 
+  async function zerarRanking() {
+    if (!window.confirm('⚠️ Tem certeza? Isso vai ZERAR o XP de TODOS os alunos no ItagGame. Essa ação não pode ser desfeita!')) return
+    setZerandoRank(true)
+    try {
+      await api.post('/itagame/reset')
+      setSincStatus('ok')
+      setSincMsg('✅ Ranking zerado com sucesso! XP de todos os alunos foi resetado.')
+      // Recarrega ranking
+      const { data } = await api.get(turmaSel ? `/itagame/ranking?turma_id=${turmaSel}` : '/itagame/ranking')
+      setRanking(data)
+      setTimeout(() => setSincStatus(null), 5000)
+    } catch {
+      setSincStatus('erro')
+      setSincMsg('❌ Erro ao zerar ranking')
+      setTimeout(() => setSincStatus(null), 4000)
+    } finally {
+      setZerandoRank(false)
+    }
+  }
+
   async function sincronizar(silencioso = false) {
     try {
       const { data } = await api.post('/itagame/sync')
+      // Recarrega ranking com XP atualizado do ItagGame
+      const url = turmaSel ? `/itagame/ranking?turma_id=${turmaSel}` : '/itagame/ranking'
+      const { data: novoRanking } = await api.get(url)
+      setRanking(novoRanking)
       if (!silencioso) {
+        const comXp = novoRanking.filter(a => a.xp_total > 0).length
         setSincStatus('ok')
-        setSincMsg(`✅ ${data.sincronizados} alunos sincronizados com o ItagGame`)
-        setTimeout(() => setSincStatus(null), 4000)
+        setSincMsg(`✅ Sincronizado! ${data.xp_atualizados || 0} alunos atualizados — ${comXp} com XP`)
+        setTimeout(() => setSincStatus(null), 5000)
       }
     } catch {
       if (!silencioso) {
@@ -326,6 +352,10 @@ export default function ItagameDashboard() {
               <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div className="flex gap-2 items-center flex-wrap">
                   <button onClick={() => sincronizar(false)} className="btn-secondary text-sm">🔄 Sincronizar ItagGame</button>
+                  <button onClick={zerarRanking} disabled={zerandoRank}
+                    className="text-sm px-4 py-2 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all">
+                    {zerandoRank ? '⏳ Zerando...' : '🗑️ Zerar Ranking'}
+                  </button>
                   <button onClick={() => {
                     const header = ['#', 'Nome', 'Turma', 'XP', 'Nível']
                     const rows = ranking.map((a, i) => [i + 1, a.nome, a.turma_nome || '', a.xp_total, `${a.nivel} - ${NIVEIS[a.nivel]}`])

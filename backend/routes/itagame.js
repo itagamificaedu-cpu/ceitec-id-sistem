@@ -278,7 +278,7 @@ router.delete('/recados/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ erro: err.message }); }
 });
 
-// SYNC — envia alunos do ITA para o ItagGame PythonAnywhere
+// SYNC — sincroniza bidirecional: envia alunos e puxa XP real do ItagGame
 router.post('/sync', async (req, res) => {
   try {
     const eid = req.usuario.escola_id;
@@ -294,23 +294,91 @@ router.post('/sync', async (req, res) => {
         .map(a => ({ codigo: a.codigo, nome: a.nome })),
     }));
 
-    const pyRes = await fetch(`${ITAGAME_PY}/api/sync-turmas/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chave: CHAVE,
-        professor_username: req.usuario.email || '',
-        turmas: turmasComAlunos,
-      }),
+    // 1) Envia alunos para o PythonAnywhere
+    try {
+      await fetch(`${ITAGAME_PY}/api/sync-turmas/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chave: CHAVE,
+          professor_username: req.usuario.email || '',
+          turmas: turmasComAlunos,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (_) { /* ignora se PY não responder */ }
+
+    // 2) Puxa XP real do PythonAnywhere e atualiza itagame_pontos local
+    let xpSincronizados = 0;
+    let erroSync = null;
+
+    const rankRes = await fetch(`${ITAGAME_PY}/api/ranking/?chave=${CHAVE}`, {
       signal: AbortSignal.timeout(15000),
     });
 
-    const totalAlunos = turmasComAlunos.reduce((s, t) => s + t.alunos.length, 0);
-    if (!pyRes.ok) {
-      return res.json({ ok: false, mensagem: 'ItagGame não respondeu', sincronizados: 0 });
+    if (!rankRes.ok) {
+      erroSync = `PythonAnywhere retornou ${rankRes.status}`;
+    } else {
+      const { alunos: alunosPY } = await rankRes.json();
+
+      // Monta mapa codigo → XP/nivel do PythonAnywhere
+      const mapaXP = {};
+      for (const a of alunosPY) {
+        mapaXP[a.codigo] = { xp: a.xp || 0, nivel: a.nivel || 1 };
+      }
+
+      // Upsert em itagame_pontos para TODOS os alunos do ITA
+      for (const aluno of alunos) {
+        const pyDado    = mapaXP[aluno.codigo];
+        const xpReal    = pyDado ? pyDado.xp    : 0;
+        const nivelReal = pyDado ? pyDado.nivel  : 1;
+
+        // Upsert com INSERT ... ON CONFLICT (id) → usa aluno_id como PK auxiliar
+        // Tenta UPDATE primeiro; se não existir, INSERT
+        const upd = await db.run(
+          'UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?',
+          [xpReal, nivelReal, aluno.id]
+        );
+
+        // Se não atualizou nenhuma linha (aluno ainda não tem registro), cria
+        const rows = await db.get('SELECT id FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]);
+        if (!rows) {
+          await db.run(
+            "INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, ?, '[]')",
+            [aluno.id, aluno.turma_id, xpReal, nivelReal]
+          );
+        }
+        xpSincronizados++;
+      }
     }
-    const pyData = await pyRes.json().catch(() => ({}));
-    res.json({ ok: true, sincronizados: totalAlunos, turmas: turmas.length, ...pyData });
+
+    const totalAlunos = alunos.length;
+    res.json({ ok: true, sincronizados: totalAlunos, xp_atualizados: xpSincronizados, turmas: turmas.length, erro_sync: erroSync });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// ZERAR RANKING — reseta XP no PythonAnywhere e no banco local
+router.post('/reset', async (req, res) => {
+  try {
+    // 1) Zera PythonAnywhere
+    try {
+      await fetch(`${ITAGAME_PY}/api/reset-xp/?chave=${CHAVE}`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch (_) { /* ignora se PY não responder */ }
+
+    // 2) Zera itagame_pontos local (todos os alunos da escola)
+    const eid = req.usuario.escola_id;
+    await db.run(
+      `UPDATE itagame_pontos SET xp_total = 0, nivel = 1
+       WHERE aluno_id IN (SELECT id FROM alunos WHERE escola_id = ? AND ativo = 1)`,
+      [eid]
+    );
+
+    res.json({ ok: true, mensagem: 'Ranking zerado com sucesso!' });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
