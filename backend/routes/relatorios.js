@@ -19,8 +19,11 @@ router.get('/dashboard', async (req, res) => {
       "SELECT COUNT(*) as total FROM presencas p JOIN alunos a ON p.aluno_id = a.id WHERE p.data = ? AND p.status = 'ausente' AND a.escola_id = ?",
       [hoje, eid]
     );
-    const alunosSemRegistro = totalAlunos.total - presentesHoje.total - ausentesHoje.total;
-    const frequencia = totalAlunos.total > 0 ? Math.round((presentesHoje.total / totalAlunos.total) * 100) : 0;
+    const total    = parseInt(totalAlunos.total)    || 0;
+    const pres     = parseInt(presentesHoje.total)  || 0;
+    const ausExp   = parseInt(ausentesHoje.total)   || 0;
+    const alunosSemRegistro = total - pres - ausExp;
+    const frequencia = total > 0 ? Math.round((pres / total) * 100) : 0;
 
     const ultimos5 = await db.all(`
       SELECT p.*, a.nome, a.turma, a.foto_path, a.codigo
@@ -40,7 +43,7 @@ router.get('/dashboard', async (req, res) => {
       return { turma, total: alunosTurma.total, presentes: presentesTurma.total, percentual: pct };
     }));
 
-    res.json({ totalAlunos: totalAlunos.total, presentesHoje: presentesHoje.total, ausentesHoje: ausentesHoje.total + alunosSemRegistro, frequencia, ultimos5, freqPorTurma });
+    res.json({ totalAlunos: total, presentesHoje: pres, ausentesHoje: ausExp + alunosSemRegistro, frequencia, ultimos5, freqPorTurma });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
