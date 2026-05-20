@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 
-from .models import Inscricao
+from .models import Inscricao, PresencaCursoFerias
 from .forms import InscricaoForm
 from .utils.pagamento import criar_pedido_pagseguro, webhook_pagseguro_handler
 from .utils.certificado import gerar_certificado_pdf, gerar_certificado_svg
@@ -390,6 +390,195 @@ def api_marcar_pago_react(request, codigo):
         except Exception:
             pass
     return JsonResponse({'status': 'ok', 'nome': inscricao.nome_completo})
+
+
+# ─── APIs de Presença ─────────────────────────────────────────────────────────
+
+@csrf_exempt
+def api_presencas_lista(request):
+    """Lista alunos confirmados com status de presença para o dia solicitado."""
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    dia = int(request.GET.get('dia', 1))
+    turno = request.GET.get('turno', '')  # 'manha' ou 'tarde' (opcional)
+
+    inscricoes = Inscricao.objects.filter(status__in=['pago', 'certificado_emitido'])
+    if turno:
+        inscricoes = inscricoes.filter(turno=turno)
+    inscricoes = inscricoes.order_by('nome_completo')
+
+    # Mapeia presenças já registradas para o dia
+    presencas = {p.inscricao_id: p for p in PresencaCursoFerias.objects.filter(dia=dia)}
+
+    dados = []
+    for i in inscricoes:
+        p = presencas.get(i.id)
+        dados.append({
+            'id': str(i.codigo_inscricao),
+            'codigo': i.codigo_curto(),
+            'nome': i.nome_completo,
+            'escola': i.escola,
+            'serie': i.serie,
+            'turno': i.get_turno_display(),
+            'turno_val': i.turno,
+            'presente': p.presente if p else None,  # None = ainda não registrado
+            'hora_chegada': str(p.hora_chegada) if p and p.hora_chegada else None,
+            'observacao': p.observacao if p else '',
+            'registrado': p is not None,
+        })
+
+    presentes = sum(1 for d in dados if d['presente'] is True)
+    ausentes = sum(1 for d in dados if d['presente'] is False)
+
+    return JsonResponse({
+        'dia': dia,
+        'alunos': dados,
+        'resumo': {
+            'total': len(dados),
+            'presentes': presentes,
+            'ausentes': ausentes,
+            'nao_registrados': len(dados) - presentes - ausentes,
+        }
+    })
+
+
+@csrf_exempt
+def api_registrar_presenca(request):
+    """Registra ou atualiza a presença de um aluno em um dia."""
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'método inválido'}, status=405)
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    try:
+        dados = json.loads(request.body or b'{}')
+    except Exception:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+
+    codigo = dados.get('codigo_inscricao')
+    dia = dados.get('dia')
+    presente = dados.get('presente')
+    observacao = dados.get('observacao', '')
+    hora_chegada = dados.get('hora_chegada') or None
+    registrado_por = dados.get('registrado_por', 'painel')
+
+    if not codigo or dia not in range(1, 6) or presente is None:
+        return JsonResponse(
+            {'erro': 'campos obrigatórios: codigo_inscricao, dia (1-5), presente'},
+            status=400
+        )
+
+    try:
+        inscricao = Inscricao.objects.get(codigo_inscricao=codigo)
+    except Inscricao.DoesNotExist:
+        return JsonResponse({'erro': 'inscrição não encontrada'}, status=404)
+
+    presenca, _ = PresencaCursoFerias.objects.update_or_create(
+        inscricao=inscricao,
+        dia=dia,
+        defaults={
+            'presente': presente,
+            'observacao': observacao,
+            'hora_chegada': hora_chegada,
+            'registrado_por': registrado_por,
+        }
+    )
+
+    return JsonResponse({'status': 'ok', 'presente': presenca.presente})
+
+
+@csrf_exempt
+def api_presencas_resumo(request):
+    """Resumo de presença por dia (todos os 5 dias)."""
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    total = Inscricao.objects.filter(status__in=['pago', 'certificado_emitido']).count()
+    resumo = []
+    for dia in range(1, 6):
+        presentes = PresencaCursoFerias.objects.filter(dia=dia, presente=True).count()
+        ausentes = PresencaCursoFerias.objects.filter(dia=dia, presente=False).count()
+        resumo.append({
+            'dia': dia,
+            'presentes': presentes,
+            'ausentes': ausentes,
+            'nao_registrados': total - presentes - ausentes,
+            'total': total,
+            'pct': round(presentes / total * 100) if total > 0 else 0,
+        })
+
+    return JsonResponse({'resumo': resumo, 'total_alunos': total})
+
+
+@csrf_exempt
+def api_carteirinhas(request):
+    """Retorna dados para geração das carteirinhas (alunos confirmados)."""
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    inscricoes = Inscricao.objects.filter(
+        status__in=['pago', 'certificado_emitido']
+    ).order_by('nome_completo')
+
+    dados = []
+    for i in inscricoes:
+        # Calcula total de presenças registradas
+        total_presencas = PresencaCursoFerias.objects.filter(
+            inscricao=i, presente=True
+        ).count()
+        dados.append({
+            'id': str(i.codigo_inscricao),
+            'codigo': i.codigo_curto(),
+            'nome': i.nome_completo,
+            'escola': i.escola,
+            'serie': i.serie,
+            'turno': i.get_turno_display(),
+            'turno_val': i.turno,
+            'nivel': i.get_nivel_experiencia_display(),
+            'responsavel': i.nome_responsavel,
+            'status': i.status,
+            'certificado_gerado': i.certificado_gerado,
+            'total_presencas': total_presencas,
+        })
+
+    return JsonResponse({'alunos': dados, 'total': len(dados)})
+
+
+@csrf_exempt
+@require_POST
+def api_emitir_certificado_react(request, codigo):
+    """Emite certificado e retorna URL para download — via painel React."""
+    chave = request.GET.get('chave') or request.headers.get('X-Chave', '')
+    if chave != CHAVE_API_INTERNA:
+        return JsonResponse({'erro': 'não autorizado'}, status=403)
+
+    inscricao = get_object_or_404(Inscricao, codigo_inscricao=codigo)
+
+    if inscricao.status not in ('pago', 'certificado_emitido'):
+        return JsonResponse({'erro': 'Inscrição não está paga.'}, status=400)
+
+    if not inscricao.certificado_gerado:
+        inscricao.certificado_gerado = True
+        inscricao.status = 'certificado_emitido'
+        inscricao.data_certificado = timezone.now()
+        inscricao.save()
+        try:
+            pdf_bytes = gerar_certificado_pdf(inscricao)
+            enviar_certificado_email(inscricao, pdf_bytes)
+        except Exception:
+            pass  # Não falha se e-mail não enviar
+
+    url_download = f'/inscricao/certificado/{codigo}/'
+    return JsonResponse({
+        'status': 'ok',
+        'certificado_gerado': True,
+        'url_download': url_download,
+    })
 
 
 @staff_member_required

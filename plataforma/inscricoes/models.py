@@ -82,3 +82,30 @@ class Inscricao(models.Model):
         if len(t) == 10:
             return f'({t[:2]}) {t[2:6]}-{t[6:]}'
         return self.telefone
+
+
+class PresencaCursoFerias(models.Model):
+    """Registro de presença diária de cada aluno no Curso de Férias Maker."""
+
+    DIA_CHOICES = [(i, f'Dia {i}') for i in range(1, 6)]
+
+    inscricao = models.ForeignKey(
+        Inscricao, on_delete=models.CASCADE,
+        related_name='presencas', verbose_name='Inscrição'
+    )
+    dia = models.IntegerField('Dia do curso', choices=DIA_CHOICES)
+    presente = models.BooleanField('Presente', default=False)
+    hora_chegada = models.TimeField('Hora de chegada', null=True, blank=True)
+    observacao = models.CharField('Observação', max_length=300, blank=True)
+    registrado_em = models.DateTimeField('Registrado em', auto_now_add=True)
+    registrado_por = models.CharField('Registrado por', max_length=100, blank=True)
+
+    class Meta:
+        unique_together = ('inscricao', 'dia')
+        ordering = ['dia', 'inscricao__nome_completo']
+        verbose_name = 'Presença — Curso de Férias'
+        verbose_name_plural = 'Presenças — Curso de Férias'
+
+    def __str__(self):
+        status = 'Presente' if self.presente else 'Ausente'
+        return f'{self.inscricao.nome_completo} — Dia {self.dia} — {status}'
