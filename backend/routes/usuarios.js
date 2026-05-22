@@ -38,28 +38,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
-  try {
-    const { nome, email, senha, perfil } = req.body;
-    if (senha) {
-      const senha_hash = bcrypt.hashSync(senha, 10);
-      await db.run(
-        'UPDATE usuarios SET nome=?, email=?, senha_hash=?, perfil=? WHERE id=? AND escola_id=?',
-        [nome, email, senha_hash, perfil, req.params.id, req.usuario.escola_id]
-      );
-    } else {
-      await db.run(
-        'UPDATE usuarios SET nome=?, email=?, perfil=? WHERE id=? AND escola_id=?',
-        [nome, email, perfil, req.params.id, req.usuario.escola_id]
-      );
-    }
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ erro: err.message });
-  }
-});
-
 // Redefine senha de um usuário pelo e-mail (admin redefine a senha do professor)
+// IMPORTANTE: esta rota deve ficar ANTES de PUT /:id para não ser capturada como parâmetro
 router.put('/redefinir-por-email', async (req, res) => {
   try {
     const { email, senha_nova } = req.body;
@@ -77,6 +57,27 @@ router.put('/redefinir-por-email', async (req, res) => {
       'UPDATE usuarios SET senha_hash = ?, trocar_senha = 0 WHERE id = ? AND escola_id = ?',
       [senha_hash, usuario.id, req.usuario.escola_id]
     );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const { nome, email, senha, perfil } = req.body;
+    if (senha) {
+      const senha_hash = bcrypt.hashSync(senha, 10);
+      await db.run(
+        'UPDATE usuarios SET nome=?, email=?, senha_hash=?, perfil=? WHERE id=? AND escola_id=?',
+        [nome, email, senha_hash, perfil, req.params.id, req.usuario.escola_id]
+      );
+    } else {
+      await db.run(
+        'UPDATE usuarios SET nome=?, email=?, perfil=? WHERE id=? AND escola_id=?',
+        [nome, email, perfil, req.params.id, req.usuario.escola_id]
+      );
+    }
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ erro: err.message });
