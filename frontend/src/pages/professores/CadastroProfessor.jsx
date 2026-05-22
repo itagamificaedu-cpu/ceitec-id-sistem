@@ -24,6 +24,8 @@ export default function CadastroProfessor() {
   // Acesso ao sistema
   const [criarAcesso, setCriarAcesso] = useState(false)
   const [senhaAcesso, setSenhaAcesso] = useState('')
+  const [redefinirSenha, setRedefinirSenha] = useState(false)
+  const [novaSenha, setNovaSenha] = useState('')
 
   useEffect(() => {
     api.get('/turmas').then(({ data }) => setTurmasDb(data)).catch(() => {})
@@ -63,6 +65,8 @@ export default function CadastroProfessor() {
     setErro('')
     if (!form.nome || !form.email) return setErro('Nome e e-mail são obrigatórios')
     if (criarAcesso && !senhaAcesso) return setErro('Informe a senha para criar o acesso')
+    if (redefinirSenha && !novaSenha) return setErro('Informe a nova senha para redefinir o acesso')
+    if (redefinirSenha && novaSenha.length < 6) return setErro('A nova senha deve ter pelo menos 6 caracteres')
     if (turmasSel.some(t => !t.disciplina)) return setErro('Informe a disciplina para cada turma selecionada')
     setSalvando(true)
     try {
@@ -77,16 +81,27 @@ export default function CadastroProfessor() {
         await api.post('/professores', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       }
 
+      // Criar novo acesso (professor ainda não tem login)
       if (criarAcesso && senhaAcesso) {
         try {
           await api.post('/usuarios', { nome: form.nome, email: form.email, senha: senhaAcesso, perfil: 'professor' })
         } catch (errAcesso) {
           const msg = errAcesso.response?.data?.erro || ''
-          if (!msg.toLowerCase().includes('já existe') && !msg.toLowerCase().includes('unique') && !msg.toLowerCase().includes('duplicate')) {
-            setErro(`Professor salvo, mas erro ao criar acesso: ${msg}`)
-            setSalvando(false)
-            return
-          }
+          setErro(`Professor salvo, mas erro ao criar acesso: ${msg}`)
+          setSalvando(false)
+          return
+        }
+      }
+
+      // Redefinir senha (professor já tem login e precisa trocar a senha)
+      if (redefinirSenha && novaSenha) {
+        try {
+          await api.put('/usuarios/redefinir-por-email', { email: form.email, senha_nova: novaSenha })
+        } catch (errSenha) {
+          const msg = errSenha.response?.data?.erro || ''
+          setErro(`Professor salvo, mas erro ao redefinir senha: ${msg}`)
+          setSalvando(false)
+          return
         }
       }
 
@@ -205,32 +220,70 @@ export default function CadastroProfessor() {
             </div>
 
             {/* Acesso ao sistema */}
-            <div className="bg-white rounded-xl shadow-md p-5">
-              <div className="flex items-center gap-3 mb-1">
-                <input
-                  id="criar-acesso"
-                  type="checkbox"
-                  checked={criarAcesso}
-                  onChange={e => setCriarAcesso(e.target.checked)}
-                  className="w-4 h-4 accent-primary cursor-pointer"
-                />
-                <label htmlFor="criar-acesso" className="font-semibold text-textMain cursor-pointer select-none">
-                  🔑 {editando ? 'Criar/redefinir acesso ao sistema' : 'Criar acesso ao sistema para este professor'}
-                </label>
-              </div>
-              <p className="text-xs text-gray-400 mb-3 ml-7">O professor poderá fazer login no CEITEC com o e-mail acima.</p>
-              {criarAcesso && (
-                <div className="ml-7 mt-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Senha de acesso *</label>
+            <div className="bg-white rounded-xl shadow-md p-5 space-y-4">
+              <h3 className="font-semibold text-textMain">🔑 Acesso ao sistema</h3>
+
+              {/* Opção 1 — Criar novo acesso (sempre visível; no modo edição é para quem ainda não tem login) */}
+              <div className={`border rounded-xl p-4 transition-colors ${criarAcesso ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+                <div className="flex items-center gap-3 mb-1">
                   <input
-                    type="password"
-                    className="input-field max-w-xs"
-                    placeholder="Mínimo 6 caracteres"
-                    value={senhaAcesso}
-                    onChange={e => setSenhaAcesso(e.target.value)}
-                    minLength={6}
+                    id="criar-acesso"
+                    type="checkbox"
+                    checked={criarAcesso}
+                    onChange={e => { setCriarAcesso(e.target.checked); if (!e.target.checked) setSenhaAcesso('') }}
+                    className="w-4 h-4 accent-primary cursor-pointer"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Login: <strong>{form.email || 'e-mail acima'}</strong></p>
+                  <label htmlFor="criar-acesso" className="font-semibold text-textMain cursor-pointer select-none">
+                    ✨ Criar novo acesso
+                  </label>
+                </div>
+                <p className="text-xs text-gray-400 ml-7 mb-2">Use quando o professor <strong>ainda não tem login</strong> no sistema.</p>
+                {criarAcesso && (
+                  <div className="ml-7 mt-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Senha inicial *</label>
+                    <input
+                      type="password"
+                      className="input-field max-w-xs"
+                      placeholder="Mínimo 6 caracteres"
+                      value={senhaAcesso}
+                      onChange={e => setSenhaAcesso(e.target.value)}
+                      minLength={6}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Login: <strong>{form.email || 'e-mail acima'}</strong></p>
+                  </div>
+                )}
+              </div>
+
+              {/* Opção 2 — Redefinir senha (apenas no modo edição) */}
+              {editando && (
+                <div className={`border rounded-xl p-4 transition-colors ${redefinirSenha ? 'border-orange-400 bg-orange-50' : 'border-gray-200'}`}>
+                  <div className="flex items-center gap-3 mb-1">
+                    <input
+                      id="redefinir-senha"
+                      type="checkbox"
+                      checked={redefinirSenha}
+                      onChange={e => { setRedefinirSenha(e.target.checked); if (!e.target.checked) setNovaSenha('') }}
+                      className="w-4 h-4 accent-orange-500 cursor-pointer"
+                    />
+                    <label htmlFor="redefinir-senha" className="font-semibold text-textMain cursor-pointer select-none">
+                      🔄 Redefinir senha
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-400 ml-7 mb-2">Use quando o professor <strong>já tem login</strong> e precisa trocar a senha.</p>
+                  {redefinirSenha && (
+                    <div className="ml-7 mt-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nova senha *</label>
+                      <input
+                        type="password"
+                        className="input-field max-w-xs"
+                        placeholder="Mínimo 6 caracteres"
+                        value={novaSenha}
+                        onChange={e => setNovaSenha(e.target.value)}
+                        minLength={6}
+                      />
+                      <p className="text-xs text-gray-400 mt-1">A senha atual será substituída. Login: <strong>{form.email || 'e-mail acima'}</strong></p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
