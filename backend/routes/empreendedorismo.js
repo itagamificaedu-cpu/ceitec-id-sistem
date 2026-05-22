@@ -40,32 +40,52 @@ const upload = multer({
 // Todas as rotas exigem autenticação
 router.use(autenticar);
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-// Filtra apenas alunos do 9º ano da escola autenticada.
-// Critério: nome da turma contém "9" (ex: "9A", "Robotica 9A", "9 ANO", etc.)
-async function buscarAlunos9Ano(escola_id) {
-  return db.all(
-    `SELECT a.id, a.codigo, a.nome, a.turma, a.turma_id, t.nome AS turma_nome
-     FROM alunos a
-     LEFT JOIN turmas t ON t.id = a.turma_id AND t.escola_id = ?
-     WHERE a.escola_id = ? AND a.ativo = 1
-       AND (
-         a.turma ILIKE '%9%ano%'
-         OR a.turma ILIKE '%9 %'
-         OR a.turma ~ '\\m9[A-Z]'
-         OR t.nome ILIKE '%9%'
-       )
-     ORDER BY a.nome`,
-    [escola_id, escola_id]
-  );
-}
-
-// ─── GET /alunos-9ano — lista alunos elegíveis ─────────────────────────────
-router.get('/alunos-9ano', async (req, res) => {
+// ─── GET /alunos — lista todos os alunos ativos da escola ────────────────────
+// Retorna todos os alunos, não apenas 9º ano.
+// O frontend controla quem já está em equipe (não duplicar).
+router.get('/alunos', async (req, res) => {
   try {
-    const alunos = await buscarAlunos9Ano(req.usuario.escola_id);
+    const alunos = await db.all(
+      `SELECT a.id, a.codigo, a.nome, a.turma, a.turma_id
+       FROM alunos a
+       WHERE a.escola_id = ? AND a.ativo = 1
+       ORDER BY a.turma, a.nome`,
+      [req.usuario.escola_id]
+    );
     res.json(alunos);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// ─── GET /aluno/:id/equipe — equipe de um aluno específico (para carteirinha) ─
+router.get('/aluno/:id/equipe', async (req, res) => {
+  try {
+    // Busca a escola_id do aluno (sem exigir auth — carteirinha é pública)
+    const aluno = await db.get('SELECT escola_id FROM alunos WHERE id = ?', [req.params.id]);
+    if (!aluno) return res.json(null);
+
+    // Procura em todas as equipes da escola se o aluno é membro ou líder
+    const equipes = await db.all(
+      'SELECT * FROM emp_equipes WHERE escola_id = ?',
+      [aluno.escola_id]
+    );
+
+    for (const eq of equipes) {
+      const membros = JSON.parse(eq.membros_json || '[]');
+      const eMembro = membros.some(m => Number(m.id) === Number(req.params.id));
+      const eLider  = Number(eq.lider_id) === Number(req.params.id);
+      if (eMembro || eLider) {
+        return res.json({
+          nome_startup:   eq.nome_startup,
+          atividade_nome: eq.atividade_nome,
+          lider_nome:     eq.lider_nome,
+          lider_id:       eq.lider_id,
+          e_lider:        eLider,
+        });
+      }
+    }
+    res.json(null); // aluno não está em nenhuma equipe
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
