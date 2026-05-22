@@ -85,7 +85,7 @@ export default function EmpreendedorismoDigital() {
   const [filtroArea, setFiltroArea]     = useState('Todas')
 
   // Dados do backend
-  const [alunos9, setAlunos9]           = useState([])   // alunos elegíveis (9º ano)
+  const [alunos9, setAlunos9]           = useState([])   // todos os alunos da escola
   const [equipes, setEquipes]           = useState([])   // equipes cadastradas
   const [carregando, setCarregando]     = useState(true)
 
@@ -113,7 +113,7 @@ export default function EmpreendedorismoDigital() {
     setCarregando(true)
     try {
       const [rAlunos, rEquipes] = await Promise.all([
-        api.get('/empreendedorismo/alunos-9ano'),
+        api.get('/empreendedorismo/alunos'),
         api.get('/empreendedorismo/equipes'),
       ])
       setAlunos9(rAlunos.data)
@@ -242,10 +242,31 @@ export default function EmpreendedorismoDigital() {
     }
   }
 
-  // ── Alunos filtrados para popup de membros ────────────────────────────
-  const alunosFiltrados = alunos9.filter(a =>
-    a.nome.toLowerCase().includes(buscaMembro.toLowerCase())
+  // ── IDs de alunos já ocupados em outras equipes (não pode duplicar) ─────
+  // Considera membros e líderes de todas as equipes, exceto a que está sendo editada.
+  const idsOcupados = new Set(
+    equipes
+      .filter(eq => eq.id !== editando)   // ignora a equipe em edição
+      .flatMap(eq => [
+        ...(eq.membros || []).map(m => Number(m.id)),
+        eq.lider_id ? Number(eq.lider_id) : null,
+      ])
+      .filter(Boolean)
   )
+
+  // ── Alunos filtrados para popup de membros (busca por nome ou turma) ──
+  const alunosFiltrados = alunos9.filter(a =>
+    a.nome.toLowerCase().includes(buscaMembro.toLowerCase()) ||
+    (a.turma || '').toLowerCase().includes(buscaMembro.toLowerCase())
+  )
+
+  // Agrupa alunos por turma para exibição no popup
+  const alunosPorTurma = alunosFiltrados.reduce((acc, a) => {
+    const t = a.turma || 'Sem turma'
+    if (!acc[t]) acc[t] = []
+    acc[t].push(a)
+    return acc
+  }, {})
 
   const areas = ['Todas', ...Array.from(new Set(ATIVIDADES.map(a => a.area)))]
   const atividadesFiltradas = filtroArea === 'Todas' ? ATIVIDADES : ATIVIDADES.filter(a => a.area === filtroArea)
@@ -647,13 +668,23 @@ export default function EmpreendedorismoDigital() {
                     }
                   }}>
                   <option value="">— Selecione o líder —</option>
-                  {alunos9.length > 0 && (
-                    <optgroup label="Alunos do 9º Ano">
-                      {alunos9.map(a => (
-                        <option key={a.id} value={a.id}>{a.nome} — {a.turma}</option>
+                  {/* Agrupa por turma no dropdown do líder */}
+                  {Object.entries(
+                    alunos9.reduce((acc, a) => {
+                      const t = a.turma || 'Sem turma'
+                      if (!acc[t]) acc[t] = []
+                      acc[t].push(a)
+                      return acc
+                    }, {})
+                  ).map(([turma, lista]) => (
+                    <optgroup key={turma} label={turma}>
+                      {lista.map(a => (
+                        <option key={a.id} value={a.id} disabled={idsOcupados.has(a.id)}>
+                          {idsOcupados.has(a.id) ? '🔒 ' : ''}{a.nome}{idsOcupados.has(a.id) ? ' (já em outra equipe)' : ''}
+                        </option>
                       ))}
                     </optgroup>
-                  )}
+                  ))}
                   <optgroup label="Outro">
                     <option value="outro">✏️ Outro (Professor ou digitar nome)</option>
                   </optgroup>
@@ -765,40 +796,59 @@ export default function EmpreendedorismoDigital() {
               </p>
             </div>
 
-            {/* Lista de alunos */}
+            {/* Lista de alunos agrupados por turma */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
               {alunos9.length === 0 ? (
                 <div className="text-center py-10 text-gray-400">
                   <p className="text-3xl mb-2">📚</p>
-                  <p className="text-sm">Nenhum aluno do 9º ano encontrado</p>
-                  <p className="text-xs mt-1">Cadastre turmas com "9" no nome para liberar os alunos</p>
+                  <p className="text-sm">Nenhum aluno cadastrado</p>
                 </div>
               ) : alunosFiltrados.length === 0 ? (
                 <p className="text-center text-sm text-gray-400 py-6">Nenhum resultado para "{buscaMembro}"</p>
               ) : (
-                <div className="space-y-1.5">
-                  {alunosFiltrados.map(aluno => {
-                    const selecionado = form.membros.some(m => m.id === aluno.id)
-                    return (
-                      <button key={aluno.id}
-                        onClick={() => toggleMembro(aluno)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all border ${
-                          selecionado
-                            ? 'bg-blue-50 border-blue-200 text-blue-700'
-                            : 'bg-gray-50 border-transparent hover:border-gray-200 text-textMain'
-                        }`}>
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                          selecionado ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-                        }`}>
-                          {selecionado ? '✓' : ''}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">{aluno.nome}</p>
-                          <p className="text-xs opacity-70">{aluno.turma}</p>
-                        </div>
-                      </button>
-                    )
-                  })}
+                <div className="space-y-4">
+                  {Object.entries(alunosPorTurma).map(([turma, lista]) => (
+                    <div key={turma}>
+                      {/* Cabeçalho da turma */}
+                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">
+                        📚 {turma}
+                      </p>
+                      <div className="space-y-1">
+                        {lista.map(aluno => {
+                          const selecionado = form.membros.some(m => m.id === aluno.id)
+                          const ocupado     = idsOcupados.has(aluno.id)
+                          return (
+                            <button key={aluno.id}
+                              onClick={() => !ocupado && toggleMembro(aluno)}
+                              disabled={ocupado && !selecionado}
+                              className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all border ${
+                                selecionado
+                                  ? 'bg-blue-50 border-blue-300 text-blue-700'
+                                  : ocupado
+                                    ? 'bg-gray-50 border-transparent text-gray-400 cursor-not-allowed opacity-60'
+                                    : 'bg-gray-50 border-transparent hover:border-gray-300 text-textMain'
+                              }`}>
+                              {/* Ícone de status */}
+                              <span className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+                                selecionado ? 'bg-blue-500 text-white'
+                                : ocupado   ? 'bg-gray-300 text-gray-500'
+                                :             'bg-gray-200 text-gray-500'
+                              }`}>
+                                {selecionado ? '✓' : ocupado ? '🔒' : ''}
+                              </span>
+
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold truncate">{aluno.nome}</p>
+                                {ocupado && (
+                                  <p className="text-xs text-red-400 font-medium">Já está em outra equipe</p>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

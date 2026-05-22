@@ -14,7 +14,7 @@ function parseTurma(turma) {
   return { ano: turma, secao: '' }
 }
 
-function CardCarteirinha({ aluno, qrcode }) {
+function CardCarteirinha({ aluno, qrcode, equipe }) {
   const { ano, secao } = parseTurma(aluno.turma)
   return (
     <div style={{
@@ -89,6 +89,30 @@ function CardCarteirinha({ aluno, qrcode }) {
         </div>
       </div>
 
+      {/* Empreendedorismo — startup do aluno (se tiver equipe) */}
+      {equipe && (
+        <div style={{
+          background: 'rgba(100,60,200,0.18)',
+          border: '1px solid rgba(150,100,255,0.35)',
+          borderRadius: '7px',
+          padding: '4px 7px',
+          marginBottom: '4px',
+        }}>
+          <div style={{ color: '#c084fc', fontSize: '7px', fontWeight: '900', letterSpacing: '0.8px', marginBottom: '1px' }}>
+            💼 STARTUP
+          </div>
+          <div style={{ color: '#ffffff', fontSize: '8px', fontWeight: '800', lineHeight: 1.3, marginBottom: '1px' }}>
+            {equipe.nome_startup}
+          </div>
+          {equipe.e_lider && (
+            <div style={{ color: '#f5a623', fontSize: '6.5px', fontWeight: '700' }}>👑 Líder da Equipe</div>
+          )}
+          {!equipe.e_lider && (
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '6px' }}>Membro</div>
+          )}
+        </div>
+      )}
+
       {/* ItagGame — link direto com código do aluno */}
       <div style={{
         background: 'rgba(245,166,35,0.13)',
@@ -126,8 +150,10 @@ export default function Carteirinha() {
   const [aluno, setAluno] = useState(null)
   const [qrcode, setQrcode] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [equipe, setEquipe] = useState(null)        // startup do aluno
   const [turmaAlunos, setTurmaAlunos] = useState([])
   const [turmaQrcodes, setTurmaQrcodes] = useState({})
+  const [turmaEquipes, setTurmaEquipes] = useState({}) // equipe de cada aluno da turma
   const [carregandoTurma, setCarregandoTurma] = useState(false)
   const carteirinhaRef = useRef()
 
@@ -141,19 +167,37 @@ export default function Carteirinha() {
         setAluno(alunoRes.data)
         setQrcode(qrRes.data.qrcode)
 
+        // Busca startup do aluno (empreendedorismo) — silencioso se não tiver
+        api.get(`/empreendedorismo/aluno/${id}/equipe`)
+          .then(r => setEquipe(r.data))
+          .catch(() => setEquipe(null))
+
         // Carrega todos os alunos da turma para impressão
         setCarregandoTurma(true)
         const todosRes = await api.get('/alunos')
         const colegas = todosRes.data.filter(a => a.turma === alunoRes.data.turma && a.ativo !== 0)
         setTurmaAlunos(colegas)
 
-        // Busca QR code de cada aluno da turma em paralelo
-        const qrResults = await Promise.all(
-          colegas.map(a => api.get(`/alunos/${a.id}/qrcode`).then(r => ({ id: a.id, qr: r.data.qrcode })).catch(() => ({ id: a.id, qr: '' })))
-        )
+        // Busca QR code e equipe de cada aluno da turma em paralelo
+        const [qrResults, eqResults] = await Promise.all([
+          Promise.all(
+            colegas.map(a => api.get(`/alunos/${a.id}/qrcode`)
+              .then(r => ({ id: a.id, qr: r.data.qrcode }))
+              .catch(() => ({ id: a.id, qr: '' })))
+          ),
+          Promise.all(
+            colegas.map(a => api.get(`/empreendedorismo/aluno/${a.id}/equipe`)
+              .then(r => ({ id: a.id, eq: r.data }))
+              .catch(() => ({ id: a.id, eq: null })))
+          ),
+        ])
         const qrMap = {}
         qrResults.forEach(({ id: aid, qr }) => { qrMap[aid] = qr })
         setTurmaQrcodes(qrMap)
+
+        const eqMap = {}
+        eqResults.forEach(({ id: aid, eq }) => { eqMap[aid] = eq })
+        setTurmaEquipes(eqMap)
       } catch (err) {
         console.error(err)
       } finally {
@@ -219,7 +263,7 @@ export default function Carteirinha() {
             {/* Preview */}
             <div className="flex justify-center mb-6">
               <div ref={carteirinhaRef}>
-                <CardCarteirinha aluno={aluno} qrcode={qrcode} />
+                <CardCarteirinha aluno={aluno} qrcode={qrcode} equipe={equipe} />
               </div>
             </div>
 
@@ -258,7 +302,7 @@ export default function Carteirinha() {
       <div className="print-grid">
         {turmaAlunos.map(a => (
           <div key={a.id} className="print-card-slot">
-            <CardCarteirinha aluno={a} qrcode={turmaQrcodes[a.id] || ''} />
+            <CardCarteirinha aluno={a} qrcode={turmaQrcodes[a.id] || ''} equipe={turmaEquipes[a.id] || null} />
           </div>
         ))}
       </div>
