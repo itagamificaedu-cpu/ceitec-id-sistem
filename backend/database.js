@@ -237,6 +237,43 @@ async function initDatabase() {
       criado_em TIMESTAMP DEFAULT NOW()
     )`,
 
+    /* ========== EMPREENDEDORISMO DIGITAL ========== */
+
+    /* Equipes das startups — vinculadas à escola e a alunos do 9º ano */
+    `CREATE TABLE IF NOT EXISTS emp_equipes (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      nome_startup TEXT NOT NULL,
+      lider_id INTEGER,
+      lider_nome TEXT DEFAULT '',
+      atividade_id INTEGER,
+      atividade_nome TEXT DEFAULT '',
+      membros_json TEXT DEFAULT '[]',
+      problema TEXT DEFAULT '',
+      solucao TEXT DEFAULT '',
+      publico_alvo TEXT DEFAULT '',
+      tecnologias TEXT DEFAULT '',
+      modelo_negocio TEXT DEFAULT '',
+      diferencial TEXT DEFAULT '',
+      prototipo TEXT DEFAULT '',
+      criado_em TIMESTAMP DEFAULT NOW(),
+      atualizado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Arquivos enviados por membros das equipes (PDF, fotos) */
+    `CREATE TABLE IF NOT EXISTS emp_arquivos (
+      id SERIAL PRIMARY KEY,
+      equipe_id INTEGER NOT NULL,
+      escola_id INTEGER NOT NULL,
+      nome_arquivo TEXT NOT NULL,
+      tipo_arquivo TEXT NOT NULL,
+      caminho TEXT NOT NULL,
+      tamanho INTEGER DEFAULT 0,
+      membro_id INTEGER,
+      membro_nome TEXT DEFAULT '',
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
     /* ========== MOBILE TRACKER ========== */
 
     /* Perfil estendido do aluno para rastreamento GPS */
