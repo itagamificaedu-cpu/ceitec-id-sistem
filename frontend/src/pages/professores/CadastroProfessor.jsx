@@ -26,6 +26,7 @@ export default function CadastroProfessor() {
   const [senhaAcesso, setSenhaAcesso] = useState('')
   const [redefinirSenha, setRedefinirSenha] = useState(false)
   const [novaSenha, setNovaSenha] = useState('')
+  const [temLogin, setTemLogin] = useState(null) // null=verificando, true=tem, false=não tem
 
   useEffect(() => {
     api.get('/turmas').then(({ data }) => setTurmasDb(data)).catch(() => {})
@@ -34,11 +35,19 @@ export default function CadastroProfessor() {
   useEffect(() => {
     if (editando) {
       api.get(`/professores/${id}`).then(({ data }) => {
-        setForm({ nome: data.nome || '', email: data.email || '', telefone: data.telefone || '', especialidade: data.especialidade || '', formacao: data.formacao || '', disciplinas: data.disciplinas || [] })
+        const email = data.email || ''
+        setForm({ nome: data.nome || '', email, telefone: data.telefone || '', especialidade: data.especialidade || '', formacao: data.formacao || '', disciplinas: data.disciplinas || [] })
         if (data.foto_path) setPreview(data.foto_path)
         // Carrega turmas vinculadas
         if (data.turmas?.length) {
           setTurmasSel(data.turmas.map(t => ({ turma_id: t.turma_id, disciplina: t.disciplina || '' })))
+        }
+        // Verifica se o professor já tem conta de login
+        if (email) {
+          api.get('/usuarios').then(({ data: usuarios }) => {
+            const existe = usuarios.some(u => u.email === email)
+            setTemLogin(existe)
+          }).catch(() => setTemLogin(false))
         }
       })
     }
@@ -221,9 +230,21 @@ export default function CadastroProfessor() {
 
             {/* Acesso ao sistema */}
             <div className="bg-white rounded-xl shadow-md p-5 space-y-4">
-              <h3 className="font-semibold text-textMain">🔑 Acesso ao sistema</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-textMain">🔑 Acesso ao sistema</h3>
+                {/* Badge de status — só aparece no modo edição */}
+                {editando && temLogin !== null && (
+                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${temLogin ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {temLogin ? '✅ Já tem login' : '⚠️ Sem login'}
+                  </span>
+                )}
+                {editando && temLogin === null && (
+                  <span className="text-xs text-gray-400">verificando...</span>
+                )}
+              </div>
 
-              {/* Opção 1 — Criar novo acesso (sempre visível; no modo edição é para quem ainda não tem login) */}
+              {/* Opção 1 — Criar novo acesso: aparece quando NÃO tem login (ou cadastro novo) */}
+              {(!editando || temLogin === false) && (
               <div className={`border rounded-xl p-4 transition-colors ${criarAcesso ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-3 mb-1">
                   <input
@@ -234,10 +255,10 @@ export default function CadastroProfessor() {
                     className="w-4 h-4 accent-primary cursor-pointer"
                   />
                   <label htmlFor="criar-acesso" className="font-semibold text-textMain cursor-pointer select-none">
-                    ✨ Criar novo acesso
+                    ✨ Criar acesso ao sistema
                   </label>
                 </div>
-                <p className="text-xs text-gray-400 ml-7 mb-2">Use quando o professor <strong>ainda não tem login</strong> no sistema.</p>
+                <p className="text-xs text-gray-400 ml-7 mb-2">O professor ainda não tem login — crie uma senha inicial.</p>
                 {criarAcesso && (
                   <div className="ml-7 mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Senha inicial *</label>
@@ -253,9 +274,10 @@ export default function CadastroProfessor() {
                   </div>
                 )}
               </div>
+              )}
 
-              {/* Opção 2 — Redefinir senha (apenas no modo edição) */}
-              {editando && (
+              {/* Opção 2 — Redefinir senha: aparece quando JÁ tem login */}
+              {editando && temLogin === true && (
                 <div className={`border rounded-xl p-4 transition-colors ${redefinirSenha ? 'border-orange-400 bg-orange-50' : 'border-gray-200'}`}>
                   <div className="flex items-center gap-3 mb-1">
                     <input
@@ -269,7 +291,7 @@ export default function CadastroProfessor() {
                       🔄 Redefinir senha
                     </label>
                   </div>
-                  <p className="text-xs text-gray-400 ml-7 mb-2">Use quando o professor <strong>já tem login</strong> e precisa trocar a senha.</p>
+                  <p className="text-xs text-gray-400 ml-7 mb-2">Professor já tem login — troca a senha atual por uma nova.</p>
                   {redefinirSenha && (
                     <div className="ml-7 mt-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Nova senha *</label>
@@ -287,6 +309,7 @@ export default function CadastroProfessor() {
                 </div>
               )}
             </div>
+
 
             {erro && <p className="text-danger text-sm text-center bg-red-50 rounded-lg py-2 px-4">{erro}</p>}
 
