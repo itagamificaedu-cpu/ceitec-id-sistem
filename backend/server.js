@@ -44,7 +44,8 @@ app.use('/api/usuarios',     verificarLicenca, require('./routes/usuarios'));
 app.use('/api/corretor',     verificarLicenca, require('./routes/corretor'));
 app.use('/api/almoco',       verificarLicenca, require('./routes/almoco'));
 app.use('/api/saida-sala',   verificarLicenca, require('./routes/saida-sala'));
-app.use('/api/sala-maker',   verificarLicenca, require('./routes/salaMaker')); // Módulo Sala Maker
+app.use('/api/sala-maker',         verificarLicenca, require('./routes/salaMaker')); // Módulo Sala Maker
+app.use('/api/empreendedorismo',   verificarLicenca, require('./routes/empreendedorismo')); // Empreendedorismo Digital
 app.use('/api/portal',       require('./routes/portal')); // portal do aluno — sem check de licença
 app.use('/api/quiz',         require('./routes/quiz'));    // quiz público — sem check de licença
 app.use('/api/mobile-tracker', require('./routes/mobile-tracker')); // tracker GPS (POST /localizar é público)
