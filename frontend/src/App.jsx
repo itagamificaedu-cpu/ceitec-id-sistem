@@ -46,6 +46,7 @@ import ScannerCursoFerias from './pages/ScannerCursoFerias'
 import MobileTracker from './pages/MobileTracker'
 import SaidaSala from './pages/SaidaSala'
 import PainelSaidaSala from './pages/PainelSaidaSala'
+import EmpreendedorismoDigital from './pages/EmpreendedorismoDigital'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -173,6 +174,9 @@ export default function App() {
 
         {/* Sala Maker — acessível a todos os usuários autenticados */}
         <Route path="/sala-maker" element={<P><SalaMaker /></P>} />
+
+        {/* Empreendedorismo Digital — professor, coordenador e ita_admin */}
+        <Route path="/empreendedorismo-digital" element={<P><EmpreendedorismoDigital /></P>} />
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />
