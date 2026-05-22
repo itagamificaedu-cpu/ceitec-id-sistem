@@ -59,6 +59,30 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Redefine senha de um usuário pelo e-mail (admin redefine a senha do professor)
+router.put('/redefinir-por-email', async (req, res) => {
+  try {
+    const { email, senha_nova } = req.body;
+    if (!email || !senha_nova) return res.status(400).json({ erro: 'E-mail e senha nova são obrigatórios' });
+    if (senha_nova.length < 6) return res.status(400).json({ erro: 'A nova senha deve ter pelo menos 6 caracteres' });
+
+    const usuario = await db.get(
+      'SELECT id FROM usuarios WHERE email = ? AND escola_id = ?',
+      [email, req.usuario.escola_id]
+    );
+    if (!usuario) return res.status(404).json({ erro: 'Nenhum usuário encontrado com este e-mail' });
+
+    const senha_hash = bcrypt.hashSync(senha_nova, 10);
+    await db.run(
+      'UPDATE usuarios SET senha_hash = ?, trocar_senha = 0 WHERE id = ? AND escola_id = ?',
+      [senha_hash, usuario.id, req.usuario.escola_id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 // Gera senhas individuais para todos os usuários e retorna lista para PDF
 // Usuário troca a própria senha no primeiro acesso
 router.post('/trocar-senha', async (req, res) => {
