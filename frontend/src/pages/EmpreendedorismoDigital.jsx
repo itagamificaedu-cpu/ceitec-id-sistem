@@ -135,9 +135,13 @@ export default function EmpreendedorismoDigital() {
   // ── Abre modal para editar ─────────────────────────────────────────────
   function abrirEditar(equipe) {
     setEditando(equipe.id)
+    // Se tem nome mas não tem lider_id, restaura como "outro" (lider_id = -1)
+    const lider_id = equipe.lider_id
+      ? equipe.lider_id
+      : (equipe.lider_nome ? -1 : null)
     setForm({
       nome_startup:   equipe.nome_startup   || '',
-      lider_id:       equipe.lider_id       || null,
+      lider_id,
       lider_nome:     equipe.lider_nome     || '',
       atividade_id:   equipe.atividade_id   || null,
       atividade_nome: equipe.atividade_nome || '',
@@ -161,10 +165,15 @@ export default function EmpreendedorismoDigital() {
     }
     setSalvando(true)
     try {
+      // lider_id = -1 é sinal interno de "outro" — envia null para o banco
+      const payload = {
+        ...form,
+        lider_id: form.lider_id === -1 ? null : form.lider_id,
+      }
       if (editando) {
-        await api.put(`/empreendedorismo/equipes/${editando}`, form)
+        await api.put(`/empreendedorismo/equipes/${editando}`, payload)
       } else {
-        await api.post('/empreendedorismo/equipes', form)
+        await api.post('/empreendedorismo/equipes', payload)
       }
       setModalAberto(false)
       await carregarDados()
@@ -622,26 +631,51 @@ export default function EmpreendedorismoDigital() {
               {/* Líder da equipe */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">👑 Líder da Equipe</label>
-                {form.lider_nome ? (
-                  <div className="flex items-center gap-2 p-2 bg-secondary/10 border border-secondary/20 rounded-lg">
-                    <span className="text-sm font-bold text-secondary flex-1">{form.lider_nome}</span>
-                    <button className="text-xs text-gray-500 hover:text-red-500"
-                      onClick={() => setForm(f => ({ ...f, lider_id: null, lider_nome: '' }))}>
-                      Trocar
-                    </button>
-                  </div>
-                ) : (
-                  <select className="input-field w-full"
-                    onChange={e => {
+
+                {/* Dropdown: alunos do 9º ano + opção "Outro" */}
+                <select className="input-field w-full"
+                  value={form.lider_id === -1 ? 'outro' : (form.lider_id || '')}
+                  onChange={e => {
+                    if (e.target.value === 'outro') {
+                      // Modo livre: lider_id = -1 sinaliza "outro"
+                      setForm(f => ({ ...f, lider_id: -1, lider_nome: '' }))
+                    } else if (e.target.value === '') {
+                      setForm(f => ({ ...f, lider_id: null, lider_nome: '' }))
+                    } else {
                       const aluno = alunos9.find(a => a.id === Number(e.target.value))
-                      if (aluno) escolherLider(aluno)
-                    }}
-                    value="">
-                    <option value="">Selecione o líder (9º ano)...</option>
-                    {alunos9.map(a => (
-                      <option key={a.id} value={a.id}>{a.nome} — {a.turma}</option>
-                    ))}
-                  </select>
+                      if (aluno) setForm(f => ({ ...f, lider_id: aluno.id, lider_nome: aluno.nome }))
+                    }
+                  }}>
+                  <option value="">— Selecione o líder —</option>
+                  {alunos9.length > 0 && (
+                    <optgroup label="Alunos do 9º Ano">
+                      {alunos9.map(a => (
+                        <option key={a.id} value={a.id}>{a.nome} — {a.turma}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  <optgroup label="Outro">
+                    <option value="outro">✏️ Outro (Professor ou digitar nome)</option>
+                  </optgroup>
+                </select>
+
+                {/* Campo livre — aparece quando "Outro" está selecionado */}
+                {form.lider_id === -1 && (
+                  <input
+                    type="text"
+                    placeholder="Digite o nome do líder (ex: Prof. Carlos)"
+                    className="input-field w-full mt-2"
+                    value={form.lider_nome}
+                    onChange={e => setForm(f => ({ ...f, lider_nome: e.target.value }))}
+                    autoFocus
+                  />
+                )}
+
+                {/* Exibe o líder selecionado (aluno do 9º ano) */}
+                {form.lider_id && form.lider_id !== -1 && (
+                  <div className="mt-1.5 flex items-center gap-2 px-3 py-1.5 bg-secondary/10 border border-secondary/20 rounded-lg">
+                    <span className="text-sm font-bold text-secondary flex-1">👑 {form.lider_nome}</span>
+                  </div>
                 )}
               </div>
 
