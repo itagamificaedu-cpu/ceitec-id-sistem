@@ -313,19 +313,32 @@ export default function Carteirinha() {
         }
 
         @media print {
-          @page { size: A4 portrait; margin: 8mm; }
+          @page { size: A4 portrait; margin: 10mm; }
 
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
+
+          /* Esconde TUDO — inclusive elementos position:fixed do Navbar */
+          body * { visibility: hidden; }
+
+          /* Mostra apenas a grade de carteirinhas */
+          .print-grid,
+          .print-grid * { visibility: visible !important; }
 
           .tela-normal { display: none !important; }
 
           .print-grid {
             display: grid !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             grid-template-columns: repeat(3, auto);
             gap: 5mm;
             justify-content: center;
             align-content: start;
+            padding: 8mm;
+            box-sizing: border-box;
           }
 
           .print-card-slot {
