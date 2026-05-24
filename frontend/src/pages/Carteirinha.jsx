@@ -19,7 +19,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
   return (
     <div style={{
       width: '204px',
-      height: '322px',
+      minHeight: '322px',
       background: 'linear-gradient(170deg, #1e3a5f 0%, #0f2040 55%, #1a1040 100%)',
       borderRadius: '12px',
       padding: '11px 12px',
@@ -332,6 +332,7 @@ export default function Carteirinha() {
             break-inside: avoid;
             page-break-inside: avoid;
             display: block !important;
+            overflow: visible !important;
           }
 
           .print-card-slot * {
