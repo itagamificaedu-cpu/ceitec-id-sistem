@@ -10,6 +10,12 @@ import { io } from 'socket.io-client'
 
 const CORES  = ['#e21b3c', '#1368ce', '#d89e00', '#26890c']
 const FORMAS = ['▲', '◆', '⬤', '■']
+
+const AVATARS = [
+  '🦊','🐼','🐯','🦁','🐸','🦄','🐧','🦋','🐺','🦝',
+  '🐭','🐰','🐻','🐨','🐮','🐷','🐙','🦑','🦀','🐬',
+  '🦈','🦜','🦚','🦩','🐓','🦉','🦎','🐢','🦘','🦔',
+]
 const BG     = '#0f0c29'
 const CARD   = '#1a1a3e'
 const BORDA  = '#3a3a6a'
@@ -34,9 +40,10 @@ export default function JogarQuiz() {
   const nomeParam  = searchParams.get('nome')  || ''
 
   /* estados do jogo */
-  const [etapa,       setEtapa]       = useState('setup')
-  const [nome,        setNome]        = useState(nomeParam)
-  const [erro,        setErro]        = useState('')
+  const [etapa,          setEtapa]          = useState('setup')
+  const [nome,           setNome]           = useState(nomeParam)
+  const [avatarEscolhido,setAvatarEscolhido]= useState(null)
+  const [erro,           setErro]           = useState('')
   const [playerInfo,  setPlayerInfo]  = useState(null)   // {nome,avatar,quizTitulo,totalQuestoes}
   const [questao,     setQuestao]     = useState(null)   // {enunciado,alts,timeLimit,index,total}
   const [tempo,       setTempo]       = useState(30)
@@ -59,9 +66,10 @@ export default function JogarQuiz() {
 
     socket.on('connect', () => {
       socket.emit('quiz:join', {
-        codigo:    (codigo || '').toUpperCase(),
-        alunoCode: alunoCode || undefined,
-        alunoNome: nomeFinal,
+        codigo:         (codigo || '').toUpperCase(),
+        alunoCode:      alunoCode || undefined,
+        alunoNome:      nomeFinal,
+        avatarEscolhido: avatarEscolhido || undefined,
       })
     })
 
@@ -192,6 +200,40 @@ export default function JogarQuiz() {
           maxLength={30}
           autoFocus
         />
+
+        {/* Seletor de avatar */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ color: '#a0a0c0', fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+            Escolha seu avatar
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
+            {AVATARS.map(av => (
+              <button
+                key={av}
+                type="button"
+                onClick={() => setAvatarEscolhido(av === avatarEscolhido ? null : av)}
+                style={{
+                  fontSize: 24,
+                  background: av === avatarEscolhido ? '#7c3aed55' : '#ffffff10',
+                  border: `2px solid ${av === avatarEscolhido ? '#7c3aed' : 'transparent'}`,
+                  borderRadius: 10,
+                  padding: '5px 0',
+                  cursor: 'pointer',
+                  transition: 'all .15s',
+                  transform: av === avatarEscolhido ? 'scale(1.15)' : 'scale(1)',
+                  boxShadow: av === avatarEscolhido ? '0 0 10px #7c3aed88' : 'none',
+                }}
+              >
+                {av}
+              </button>
+            ))}
+          </div>
+          {avatarEscolhido && (
+            <div style={{ color: '#7c3aed', fontSize: 11, fontWeight: 600, marginTop: 6, textAlign: 'center' }}>
+              Avatar escolhido: {avatarEscolhido}
+            </div>
+          )}
+        </div>
 
         {alunoCode && (
           <p style={{ color: '#00FF88', fontSize: 12, marginBottom: 16, fontWeight: 600 }}>
