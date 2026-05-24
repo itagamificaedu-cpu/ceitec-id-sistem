@@ -390,7 +390,7 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
       try {
         await db.run(
           `INSERT INTO itagame_historico (aluno_id, escola_id, tipo, descricao, xp_ganho, criado_em)
-           VALUES (?, ?, 'prova_corretor', ?, 0, datetime('now'))`,
+           VALUES (?, ?, 'prova_corretor', ?, 0, NOW())`,
           [aluno.id, aluno.escola_id, `Prova: ${uuid.substring(0, 8)}… — Nota ${result.nota?.toFixed(1).replace('.', ',')}`]
         );
       } catch (_) {}
