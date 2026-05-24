@@ -265,9 +265,13 @@ router.get('/corretor-prova/:uuid', async (req, res) => {
     const primeiroBloco = html.match(/data-q="1"([\s\S]*?)data-q="2"/)?.[1] || html.match(/data-q="1"([\s\S]*?)<\/div>/)?.[1] || '';
     const alternativas = [...primeiroBloco.matchAll(/data-ans="([A-E])"/g)].map(m => m[1]);
 
+    // Extrai turma da página pública (ex: "Turma 9  ano A")
+    const turmaMatch = html.match(/Turma\s+([^\n<&]+)/);
+    const turma = turmaMatch ? turmaMatch[1].trim() : '';
+
     if (numQuestoes === 0) return res.status(404).json({ erro: 'Prova não encontrada ou sem questões.' });
 
-    res.json({ uuid, titulo, pdfUrl, pdfMobileUrl, numQuestoes, alternativas });
+    res.json({ uuid, titulo, pdfUrl, pdfMobileUrl, numQuestoes, alternativas, turma });
   } catch (err) {
     res.status(500).json({ erro: 'Não foi possível carregar a prova.' });
   }
@@ -300,9 +304,14 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
     // 1ª tentativa direta
     let result = await tentarEnviar();
 
-    // Se aluno não está na lista, importá-lo automaticamente e tentar de novo
+    // Se aluno não está na lista, importá-lo automaticamente na turma correta e tentar de novo
     if (!result.sucesso && result.erro && result.erro.includes('não foi encontrado')) {
       try {
+        // Descobre a turma da prova (necessária para o Corretor validar o aluno)
+        const provaHtml = await fetch(`${CORRETOR}/publica/prova/${uuid}/`).then(r => r.text()).catch(() => '');
+        const turmaMatch = provaHtml.match(/Turma\s+([^\n<&]+)/);
+        const provaTurma = turmaMatch ? turmaMatch[1].trim() : 'PORTAL';
+
         // Obtém sessão admin no Corretor Online (pega sessionid + csrftoken)
         const loginResp = await fetch(
           `${CORRETOR}/login-magico/?email=itagamificaedu%40gmail.com&nome=ITA+Admin&chave=gamificaedu_secreto_2026`,
@@ -327,8 +336,8 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
           if (csrfMatch) {
             const csrf = csrfMatch[1];
 
-            // Importa o aluno via CSV (associado à conta admin, que é a dona das provas do portal)
-            const csvContent = `Nome,Turma\n${alunoNome},PORTAL`;
+            // Importa o aluno com a turma exata da prova (o Corretor valida por professor+turma)
+            const csvContent = `Nome,Turma\n${alunoNome},${provaTurma}`;
             const formData = new FormData();
             formData.append('arquivo', new Blob([csvContent], { type: 'text/csv' }), 'alunos.csv');
             formData.append('csrfmiddlewaretoken', csrf);
