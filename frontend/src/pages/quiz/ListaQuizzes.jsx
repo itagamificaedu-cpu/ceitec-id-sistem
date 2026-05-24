@@ -160,14 +160,12 @@ function QuizCard({ quiz, cor, copiado, onCopiar, onEditar, onRanking, onExcluir
 
         {/* Ações */}
         <div className="flex gap-2">
-          <a
-            href={linkJogar}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90 transition-opacity"
+          <button
+            onClick={() => window.open(`/quiz/${quiz.id}/host`, '_blank')}
+            className="flex-1 text-center py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90 transition-opacity cursor-pointer border-0"
           >
-            ▶ Jogar
-          </a>
+            🎮 Jogar ao Vivo
+          </button>
           <button
             onClick={onRanking}
             className="px-3 py-2 rounded-xl text-sm border border-gray-200 hover:bg-gray-50 transition-colors"

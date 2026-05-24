@@ -25,6 +25,7 @@ import NovaOcorrencia from './pages/ocorrencias/NovaOcorrencia'
 import ListaQuizzes from './pages/quiz/ListaQuizzes'
 import CriadorQuiz from './pages/quiz/CriadorQuiz'
 import JogarQuiz from './pages/quiz/JogarQuiz'
+import HostQuiz from './pages/quiz/HostQuiz'
 import RankingQuiz from './pages/quiz/RankingQuiz'
 import ItagameDashboard from './pages/itagame/ItagameDashboard'
 import ItagameAluno from './pages/itagame/ItagameAluno'
@@ -146,8 +147,10 @@ export default function App() {
         <Route path="/quiz/novo" element={<P><CriadorQuiz /></P>} />
         <Route path="/quiz/:id/editar" element={<P><CriadorQuiz /></P>} />
         <Route path="/quiz/:id/ranking" element={<P><RankingQuiz /></P>} />
-        {/* Rota pública para jogar */}
+        {/* Rota pública para jogar (aluno) */}
         <Route path="/q/:codigo" element={<JogarQuiz />} />
+        {/* Painel do professor (host) — abre em nova aba */}
+        <Route path="/quiz/:id/host" element={<P><HostQuiz /></P>} />
 
         {/* ItagGame */}
         <Route path="/itagame" element={<P><ItagameDashboard /></P>} />

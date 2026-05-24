@@ -74,6 +74,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 app.set('io', io);
+require('./routes/quizLive')(io);
 
 initDatabase().catch(console.error);
 
