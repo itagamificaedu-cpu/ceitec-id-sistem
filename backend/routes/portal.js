@@ -209,6 +209,30 @@ router.get('/:codigo', async (req, res) => {
       }
     } catch (_) { /* corretor indisponível, ignora */ }
 
+    // Marca provas do Corretor que o aluno já fez, com a nota real do histórico
+    if (provasCorretor.length > 0) {
+      try {
+        const corretorFeitas = await db.all(
+          "SELECT descricao FROM itagame_historico WHERE aluno_id = ? AND tipo = 'prova_corretor'",
+          [aluno.id]
+        );
+        // Monta mapa: primeiros 8 chars do UUID → nota
+        const notasMap = {};
+        for (const h of corretorFeitas) {
+          const m = (h.descricao || '').match(/Prova:\s+([\w]+).*Nota\s+([\d,]+)/);
+          if (m) notasMap[m[1]] = parseFloat(m[2].replace(',', '.'));
+        }
+        provasCorretor = provasCorretor.map(p => {
+          const uuid   = p.id.replace('corretor_', '');
+          const prefix = uuid.substring(0, 8);
+          if (notasMap[prefix] !== undefined) {
+            return { ...p, ja_fez: true, nota_aluno: notasMap[prefix] };
+          }
+          return p;
+        });
+      } catch (_) {}
+    }
+
     // Combina provas do ItagGame + Corretor Online
     const todasProvas = [...provas, ...provasCorretor];
 
