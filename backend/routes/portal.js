@@ -52,7 +52,7 @@ router.get('/:codigo', async (req, res) => {
 
     const eid = aluno.escola_id;
 
-    const [xp, historico_xp, notas, presencas, ocorrencias, missoes, entregas, recados, repositorio, provas, loja, resgates, avaliacoes_turma, quizzes_escola] = await Promise.all([
+    const [xp, historico_xp, notas, presencas, ocorrencias, missoes, entregas, recados, repositorio, provas, loja, resgates, avaliacoes_turma, quizzes_escola, startup_equipe] = await Promise.all([
       db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]),
       db.all('SELECT * FROM itagame_historico WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 30', [aluno.id]),
       db.all(`SELECT n.*, av.titulo AS avaliacao_titulo, av.tipo AS avaliacao_tipo, av.disciplina, av.data_aplicacao FROM notas n JOIN avaliacoes av ON n.avaliacao_id = av.id WHERE n.aluno_id = ? ORDER BY av.data_aplicacao DESC`, [aluno.id]),
@@ -86,6 +86,39 @@ router.get('/:codigo', async (req, res) => {
          FROM quizzes WHERE escola_id = ? AND ativo = 1 ORDER BY criado_em DESC`,
         [aluno.codigo, eid]
       ),
+      // Busca a startup/equipe do aluno no empreendedorismo digital
+      (async () => {
+        // Verifica se o aluno é líder de alguma equipe
+        const equipe_lider = await db.get(
+          'SELECT * FROM emp_equipes WHERE lider_id = ? AND escola_id = ?',
+          [aluno.id, eid]
+        );
+        if (equipe_lider) {
+          const membros = JSON.parse(equipe_lider.membros_json || '[]');
+          const arquivos = await db.all(
+            'SELECT id, nome_arquivo, tipo_arquivo, caminho, membro_nome, criado_em FROM emp_arquivos WHERE equipe_id = ?',
+            [equipe_lider.id]
+          );
+          return { ...equipe_lider, e_lider: true, membros, arquivos };
+        }
+        // Verifica se o aluno é membro de alguma equipe
+        const todas_equipes = await db.all(
+          'SELECT * FROM emp_equipes WHERE escola_id = ?',
+          [eid]
+        );
+        for (const eq of todas_equipes) {
+          const membros = JSON.parse(eq.membros_json || '[]');
+          const isMembro = membros.some(m => Number(m.id) === Number(aluno.id));
+          if (isMembro) {
+            const arquivos = await db.all(
+              'SELECT id, nome_arquivo, tipo_arquivo, caminho, membro_nome, criado_em FROM emp_arquivos WHERE equipe_id = ?',
+              [eq.id]
+            );
+            return { ...eq, e_lider: false, membros, arquivos };
+          }
+        }
+        return null; // aluno não está em nenhuma equipe
+      })(),
     ]);
 
     const xpTotal = xp?.xp_total || 0;
@@ -112,6 +145,7 @@ router.get('/:codigo', async (req, res) => {
       repositorio,
       avaliacoes: avaliacoes_turma.map(av => ({ ...av, ja_respondeu: parseInt(av.ja_respondeu) > 0 })),
       quizzes: quizzes_escola.map(q => ({ ...q, total_questoes: parseInt(q.total_questoes) || 0, ja_jogou: parseInt(q.ja_jogou) > 0 })),
+      startup: startup_equipe, // equipe do empreendedorismo digital (null se não cadastrado)
     });
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -273,6 +307,65 @@ router.post('/responder-avaliacao', async (req, res) => {
     res.json({ ok: true, acertos, total: respostas.length, percentual, nota_final, xp_ganho });
   } catch (err) {
     res.status(500).json({ erro: err.message });
+  }
+});
+
+/* ── GET /api/portal/corretor/:codigo — resultados do Corretor de Provas para o aluno ──
+   Rota pública (sem JWT). Busca resultados do sistema Django pelo nome do aluno.
+   Retorna lista de avaliações corrigidas com nota, acertos e erros.                     */
+router.get('/corretor/:codigo', async (req, res) => {
+  try {
+    const codigo = req.params.codigo.toUpperCase().trim();
+    const aluno = await db.get('SELECT nome, codigo FROM alunos WHERE codigo = ? AND ativo = 1', [codigo]);
+    if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
+
+    const CORRETOR_BASE = 'https://correcaoonlineita.pythonanywhere.com';
+    const CHAVE = 'gamificaedu_secreto_2026';
+    const SISTEMA_EMAIL = 'itagamificaedu@gmail.com'; // conta sistema para buscar resultados
+    const SISTEMA_NOME  = 'ITA Admin';
+
+    // Faz login mágico no corretor com a conta do sistema
+    const loginUrl = `${CORRETOR_BASE}/login-magico/?email=${encodeURIComponent(SISTEMA_EMAIL)}&nome=${encodeURIComponent(SISTEMA_NOME)}&chave=${CHAVE}&next=/resultados/`;
+    const loginRes = await fetch(loginUrl, { redirect: 'manual' });
+    const setCookie = loginRes.headers.get('set-cookie') || '';
+    const sessionMatch = setCookie.match(/sessionid=([^;]+)/);
+    if (!sessionMatch) return res.json({ resultados: [], aviso: 'Corretor temporariamente indisponível.' });
+
+    const cookie = `sessionid=${sessionMatch[1]}`;
+    const pageRes = await fetch(`${CORRETOR_BASE}/resultados/`, {
+      headers: { Cookie: cookie, 'User-Agent': 'ITA-Portal-Aluno/1.0' }
+    });
+    const html = await pageRes.text();
+
+    // Extrai tabela de resultados
+    const tableMatch = html.match(/<table[\s\S]*?<\/table>/);
+    if (!tableMatch) return res.json({ resultados: [] });
+
+    const rows = tableMatch[0].match(/<tr>([\s\S]*?)<\/tr>/g) || [];
+    const resultados = [];
+    const nomeAluno = aluno.nome.toLowerCase();
+
+    for (const row of rows) {
+      const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) || [])
+        .map(c => c.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+      if (cells.length >= 8 && cells[0]) {
+        // Filtra apenas resultados deste aluno (comparação por nome parcial)
+        if (cells[0].toLowerCase().includes(nomeAluno.split(' ')[0].toLowerCase())) {
+          resultados.push({
+            avaliacao:  cells[2] || '',
+            disciplina: cells[3] || '',
+            nota:       parseFloat((cells[4] || '0').replace(',', '.')) || 0,
+            acertos:    parseInt(cells[6]) || 0,
+            erros:      parseInt(cells[7]) || 0,
+            data:       cells[8] || '',
+          });
+        }
+      }
+    }
+
+    res.json({ resultados });
+  } catch (err) {
+    res.json({ resultados: [], aviso: 'Não foi possível carregar os resultados agora.' });
   }
 });
 

@@ -11,6 +11,8 @@ const TABS = [
   { id: 'missoes',     label: 'MISSÕES',     emoji: '🎯' },
   { id: 'loja',        label: 'LOJA',        emoji: '💰' },
   { id: 'avaliacoes',  label: 'AVALIAÇÕES',  emoji: '🧪' },
+  { id: 'corretor',    label: 'CORRETOR',    emoji: '📋' },
+  { id: 'startup',     label: 'STARTUP',     emoji: '💼' },
   { id: 'notas',       label: 'NOTAS',       emoji: '📝' },
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
   { id: 'ocorrencias', label: 'OCORRÊNCIAS', emoji: '⚠️' },
@@ -193,7 +195,7 @@ function TelaLogin({ codigo, setCodigo, erro, carregando, onSubmit }) {
    PORTAL PRINCIPAL
 ══════════════════════════════════════════ */
 function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
-  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [] } = dados
+  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [], startup = null } = dados
   const nivel = itagame.nivel
   const presentes = presencas.filter(p => p.status === 'presente').length
   const pctPresenca = presencas.length > 0 ? Math.round((presentes / presencas.length) * 100) : null
@@ -251,10 +253,12 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
 
       {/* Conteúdo */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '28px 16px' }}>
-        {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} onCopaSaber={onCopaSaber} />}
+        {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} onCopaSaber={onCopaSaber} onIrCorretor={() => setAba('corretor')} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
+        {aba === 'corretor'    && <AbaCorretor codigoAluno={aluno.codigo} nomeAluno={aluno.nome} />}
+        {aba === 'startup'     && <AbaStartup startup={startup} aluno={aluno} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
@@ -298,7 +302,7 @@ function Vazio({ emoji, texto }) {
 /* ══════════════════════════════════════════
    INÍCIO
 ══════════════════════════════════════════ */
-function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItagame, onCopaSaber }) {
+function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItagame, onCopaSaber, onIrCorretor }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
@@ -406,6 +410,19 @@ function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItaga
       }}>
         <span style={{ fontSize: 28 }}>⚽</span>
         <span>COPA DO SABER — QUIZ INTERATIVO</span>
+      </button>
+
+      {/* Acesso rápido: Corretor de Provas */}
+      <button onClick={onIrCorretor} style={{
+        background: 'linear-gradient(135deg, #1a237e, #283593)',
+        border: `1px solid #3949ab`,
+        borderRadius: 18, padding: '20px',
+        color: N.branco, fontWeight: 900, fontSize: 18, cursor: 'pointer',
+        boxShadow: '0 0 40px rgba(57,73,171,.5)', letterSpacing: 1,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+      }}>
+        <span style={{ fontSize: 28 }}>📋</span>
+        <span>CORRETOR DE PROVAS — VER RESULTADOS</span>
       </button>
     </div>
   )
@@ -983,6 +1000,198 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
             </a>
           ))}
         </>
+      )}
+
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   CORRETOR DE PROVAS — resultados do aluno
+══════════════════════════════════════════ */
+function AbaCorretor({ codigoAluno, nomeAluno }) {
+  const [resultados, setResultados] = React.useState(null)
+  const [carregando, setCarregando] = React.useState(true)
+  const [aviso, setAviso] = React.useState('')
+
+  React.useEffect(() => {
+    async function buscar() {
+      try {
+        const { data } = await api.get(`/portal/corretor/${codigoAluno}`)
+        setResultados(data.resultados || [])
+        if (data.aviso) setAviso(data.aviso)
+      } catch {
+        setResultados([])
+        setAviso('Não foi possível carregar os resultados agora.')
+      } finally {
+        setCarregando(false)
+      }
+    }
+    buscar()
+  }, [codigoAluno])
+
+  if (carregando) return (
+    <div style={{ textAlign: 'center', paddingTop: 60, color: N.cinza }}>
+      <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
+      <div style={{ fontWeight: 700 }}>Buscando seus resultados...</div>
+    </div>
+  )
+
+  if (aviso && (!resultados || resultados.length === 0)) return (
+    <div style={{ textAlign: 'center', paddingTop: 60 }}>
+      <div style={{ fontSize: 50, marginBottom: 16 }}>📋</div>
+      <div style={{ color: N.branco, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Corretor de Provas</div>
+      <div style={{ color: N.cinza, fontSize: 14, marginBottom: 24 }}>{aviso}</div>
+    </div>
+  )
+
+  if (!resultados || resultados.length === 0) return (
+    <Vazio emoji="📋" texto="Nenhuma prova corrigida ainda. Quando seu professor corrigir uma prova, aparece aqui!" />
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>
+        Provas Corrigidas — {resultados.length} resultado{resultados.length !== 1 ? 's' : ''}
+      </div>
+      {resultados.map((r, i) => {
+        const aprovado = r.nota >= 6
+        const cor = aprovado ? N.verde : r.nota >= 4 ? N.amarelo : N.rosa
+        const pct = r.acertos + r.erros > 0 ? Math.round((r.acertos / (r.acertos + r.erros)) * 100) : 0
+        return (
+          <NeonCard key={i} cor={cor}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 900, fontSize: 16, color: N.branco, marginBottom: 6 }}>
+                  {aprovado ? '✅' : '⚠️'} {r.avaliacao || 'Avaliação'}
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {r.disciplina && <Tag label={r.disciplina} cor={N.azul} />}
+                  <Tag label={`${r.acertos} acertos`} cor={N.verde} />
+                  <Tag label={`${r.erros} erros`} cor={N.rosa} />
+                  {r.data && <Tag label={r.data} cor={N.cinza} />}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: cor, lineHeight: 1, textShadow: `0 0 14px ${cor}` }}>
+                  {r.nota.toFixed(1)}
+                </div>
+                <div style={{ color: N.cinza, fontSize: 11, fontWeight: 700 }}>nota</div>
+                <div style={{ color: cor, fontSize: 12, fontWeight: 900, marginTop: 4 }}>{pct}%</div>
+              </div>
+            </div>
+          </NeonCard>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   STARTUP — empreendedorismo digital do aluno
+══════════════════════════════════════════ */
+function AbaStartup({ startup, aluno }) {
+  // Aluno não está em nenhuma equipe ainda
+  if (!startup) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, paddingTop: 40 }}>
+      <div style={{ fontSize: 60 }}>💼</div>
+      <div style={{ color: N.branco, fontWeight: 900, fontSize: 20, textAlign: 'center' }}>Você ainda não tem startup</div>
+      <div style={{ color: N.cinza, fontSize: 14, textAlign: 'center', maxWidth: 340, lineHeight: 1.6 }}>
+        Seu professor vai te adicionar a uma equipe de empreendedorismo digital. Quando estiver cadastrado, aparece aqui!
+      </div>
+    </div>
+  )
+
+  const funcao = startup.e_lider ? '👑 Líder da Equipe' : '👥 Membro da Equipe'
+  const corFuncao = startup.e_lider ? N.amarelo : N.azul
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Card principal da startup */}
+      <NeonCard cor={N.roxo}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ fontSize: 52 }}>🚀</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase' }}>Sua Startup</div>
+            <div style={{ color: N.branco, fontWeight: 900, fontSize: 22, marginTop: 4, lineHeight: 1.2 }}>{startup.nome_startup}</div>
+            <div style={{ marginTop: 8 }}>
+              <span style={{ background: `${corFuncao}22`, border: `1px solid ${corFuncao}66`, color: corFuncao, fontSize: 12, fontWeight: 900, padding: '4px 12px', borderRadius: 20 }}>{funcao}</span>
+            </div>
+          </div>
+        </div>
+        {startup.atividade_nome && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${N.borda}` }}>
+            <span style={{ color: N.cinza, fontSize: 11 }}>🎯 Atividade: </span>
+            <span style={{ color: N.branco, fontSize: 13, fontWeight: 700 }}>{startup.atividade_nome}</span>
+          </div>
+        )}
+      </NeonCard>
+
+      {/* Equipe */}
+      {(startup.membros?.length > 0 || startup.lider_nome) && (
+        <NeonCard cor={N.azul}>
+          <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 }}>Membros da Equipe</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {startup.lider_nome && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: `${N.amarelo}11`, border: `1px solid ${N.amarelo}33`, borderRadius: 12 }}>
+                <span style={{ fontSize: 18 }}>👑</span>
+                <div>
+                  <div style={{ color: N.amarelo, fontWeight: 900, fontSize: 13 }}>{startup.lider_nome}</div>
+                  <div style={{ color: N.cinza, fontSize: 11 }}>Líder</div>
+                </div>
+              </div>
+            )}
+            {startup.membros.map((m, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: `${N.azul}11`, border: `1px solid ${N.azul}22`, borderRadius: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${N.azul}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, color: N.azul, flexShrink: 0 }}>
+                  {(m.nome || '?').charAt(0)}
+                </div>
+                <div>
+                  <div style={{ color: N.branco, fontWeight: 700, fontSize: 13 }}>{m.nome}</div>
+                  {m.turma && <div style={{ color: N.cinza, fontSize: 11 }}>{m.turma}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </NeonCard>
+      )}
+
+      {/* Ficha da startup */}
+      {[
+        { key: 'problema',       label: '🔍 Problema Identificado',  cor: N.rosa },
+        { key: 'solucao',        label: '💡 Solução Criada',          cor: N.verde },
+        { key: 'publico_alvo',   label: '🎯 Público-alvo',            cor: N.azul },
+        { key: 'tecnologias',    label: '🔧 Tecnologias Usadas',       cor: N.roxo },
+        { key: 'modelo_negocio', label: '💰 Modelo de Negócio',       cor: N.amarelo },
+        { key: 'diferencial',    label: '⭐ Diferencial',              cor: N.laranja },
+        { key: 'prototipo',      label: '🏗 Protótipo / MVP',          cor: N.verde },
+      ].filter(f => startup[f.key]).map(f => (
+        <NeonCard key={f.key} cor={f.cor}>
+          <div style={{ color: f.cor, fontSize: 11, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>{f.label}</div>
+          <div style={{ color: '#CCCCDD', fontSize: 14, lineHeight: 1.6 }}>{startup[f.key]}</div>
+        </NeonCard>
+      ))}
+
+      {/* Arquivos enviados */}
+      {startup.arquivos?.length > 0 && (
+        <NeonCard cor={N.cinza}>
+          <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 }}>📎 Arquivos da Equipe</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {startup.arquivos.map(arq => (
+              <a key={arq.id} href={arq.caminho} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: `${N.azul}11`, border: `1px solid ${N.azul}22`, borderRadius: 12 }}>
+                  <span style={{ fontSize: 20 }}>{arq.tipo_arquivo?.includes('pdf') ? '📄' : '🖼️'}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: N.branco, fontWeight: 700, fontSize: 13 }}>{arq.nome_arquivo}</div>
+                    {arq.membro_nome && <div style={{ color: N.cinza, fontSize: 11 }}>por {arq.membro_nome}</div>}
+                  </div>
+                  <span style={{ color: N.azul, fontSize: 13, fontWeight: 900 }}>Ver ↗</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </NeonCard>
       )}
 
     </div>
