@@ -257,7 +257,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
-        {aba === 'corretor'    && <AbaCorretor provas={itagame.provas || []} codigoAluno={aluno.codigo} />}
+        {aba === 'corretor'    && <AbaCorretor provas={(itagame.provas || []).map(p => ({ ...p, _nome_aluno: aluno.nome }))} codigoAluno={aluno.codigo} />}
         {aba === 'startup'     && <AbaStartup startup={startup} aluno={aluno} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
@@ -1012,24 +1012,21 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
    ItagGame. O aluno clica e faz a prova diretamente.
 ══════════════════════════════════════════ */
 function AbaCorretor({ provas = [], codigoAluno }) {
-  const [codigoDigitado, setCodigoDigitado] = React.useState('')
-  const [provaAtiva, setProvaAtiva] = React.useState(null)
 
-  // Abre a prova: se tem codigo_acesso, usa o do sistema; senão pede ao aluno
+  // Abre a prova: faz login mágico no ItagGame e redireciona para a prova pelo ID
   function abrirProva(prova) {
-    const code = prova.codigo_acesso || codigoDigitado.trim()
-    if (!code) {
-      setProvaAtiva(prova)
-      return
-    }
     const ITAGAME_URL = 'https://projetoitagame.pythonanywhere.com'
     const CHAVE = 'gamificaedu_secreto_2026'
+    // next aponta para a prova pelo ID (ex: /prova/5/)
+    // se não tiver ID, vai para a lista de provas
+    const next = prova.id ? `/prova/${prova.id}/` : '/provas/'
     const params = new URLSearchParams({
-      codigo_prova: code,
-      aluno_codigo: codigoAluno,
-      chave: CHAVE,
+      email:  codigoAluno,          // usa o código como identificador
+      nome:   prova._nome_aluno || codigoAluno,
+      chave:  CHAVE,
+      next,
     })
-    window.open(`${ITAGAME_URL}/prova/?${params}`, '_blank')
+    window.open(`${ITAGAME_URL}/login-magico/?${params}`, '_blank')
   }
 
   if (provas.length === 0) return (
@@ -1081,52 +1078,12 @@ function AbaCorretor({ provas = [], codigoAluno }) {
                 boxShadow: `0 0 20px ${N.azul}55`, flexShrink: 0,
                 whiteSpace: 'nowrap',
               }}>
-              Fazer agora →
+              📋 Fazer agora
             </button>
           </div>
         </NeonCard>
       ))}
 
-      {/* Modal: pede código de acesso se a prova não tiver um pré-definido */}
-      {provaAtiva && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-        }}>
-          <div style={{ background: N.card, border: `1px solid ${N.borda}`, borderRadius: 20, padding: 28, maxWidth: 360, width: '100%' }}>
-            <div style={{ fontWeight: 900, fontSize: 18, color: N.branco, marginBottom: 8 }}>🔑 Código de acesso</div>
-            <div style={{ color: N.cinza, fontSize: 13, marginBottom: 16 }}>
-              Peça o código da prova <strong style={{ color: N.branco }}>{provaAtiva.titulo}</strong> para o seu professor.
-            </div>
-            <input
-              type="text"
-              placeholder="Ex: MAT2025"
-              value={codigoDigitado}
-              onChange={e => setCodigoDigitado(e.target.value.toUpperCase())}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                background: '#1E1E2E', border: `1px solid ${N.borda}`,
-                color: N.branco, borderRadius: 12, padding: '12px 16px',
-                fontSize: 16, fontWeight: 700, letterSpacing: 2, textAlign: 'center',
-                outline: 'none', marginBottom: 16,
-              }}
-              autoFocus
-            />
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => { setProvaAtiva(null); setCodigoDigitado('') }}
-                style={{ flex: 1, background: 'transparent', border: `1px solid ${N.borda}`, color: N.cinza, borderRadius: 12, padding: '11px', cursor: 'pointer', fontWeight: 700 }}>
-                Cancelar
-              </button>
-              <button
-                onClick={() => { abrirProva({ ...provaAtiva, codigo_acesso: codigoDigitado.trim() }); setProvaAtiva(null) }}
-                disabled={!codigoDigitado.trim()}
-                style={{ flex: 2, background: N.azul, border: 'none', color: '#000', borderRadius: 12, padding: '11px', cursor: 'pointer', fontWeight: 900, fontSize: 15, opacity: codigoDigitado.trim() ? 1 : 0.4 }}>
-                ✅ Entrar na prova
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
