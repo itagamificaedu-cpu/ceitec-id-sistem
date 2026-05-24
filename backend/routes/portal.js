@@ -186,7 +186,10 @@ router.get('/:codigo', async (req, res) => {
           const uuid = uuidMatch[1];
           // Extrai células de texto
           const tds = [...trHtml.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)]
-            .map(m => m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+            .map(m => m[1]
+              .replace(/<span[^>]*>[\s\S]*?<\/span>/g, '') // remove badges (Online, Publicada...)
+              .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+            )
             .filter(t => t.length > 0);
           const titulo     = tds[0] || 'Avaliação Online';
           const disciplina = tds[2] || '';
