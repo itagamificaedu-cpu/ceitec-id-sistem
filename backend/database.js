@@ -26,6 +26,7 @@ async function initDatabase() {
     `ALTER TABLE itagame_historico ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE justificativas    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE quiz_resultados   ADD COLUMN IF NOT EXISTS aluno_codigo TEXT`,
+    `ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS auto_avancar INTEGER DEFAULT 0`,
     `ALTER TABLE almoco_registros  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS trocar_senha INTEGER DEFAULT 0`,
     // Perfil especial do dono da plataforma ITA (acesso global — não é escola contratante)

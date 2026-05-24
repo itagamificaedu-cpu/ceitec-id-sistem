@@ -43,6 +43,8 @@ export default function HostQuiz() {
   const [finishedData, setFinishedData] = useState(null)
   const [hostResults,  setHostResults]  = useState(null)    // {allAnswers:[{nome,avatar,answers},...]}
   const [tempo,        setTempo]        = useState(0)
+  const [autoAvancar,  setAutoAvancar]  = useState(false)
+  const [contagemReveal, setContagemReveal] = useState(0)   // contagem regressiva no reveal (auto)
   const [erro,         setErro]         = useState('')
 
   const socketRef  = useRef(null)
@@ -75,6 +77,7 @@ export default function HostQuiz() {
       const ps = data.players || []
       playersRef.current = ps
       setPlayers(ps)
+      setAutoAvancar(!!data.quiz?.autoAvancar)
       setEstado(data.state === 'finished' ? 'finished' : 'lobby')
     })
 
@@ -104,6 +107,16 @@ export default function HostQuiz() {
       clearInterval(timerRef.current)
       setRevealData(data)
       setEstado('reveal')
+      // Se auto-avanço, mostra contagem regressiva de 5s
+      if (data.autoAvancar) {
+        setContagemReveal(5)
+        const cd = setInterval(() => {
+          setContagemReveal(t => {
+            if (t <= 1) { clearInterval(cd); return 0 }
+            return t - 1
+          })
+        }, 1000)
+      }
     })
 
     socket.on('quiz:host-results', data => setHostResults(data))
@@ -167,9 +180,16 @@ export default function HostQuiz() {
             <div style={{ color: '#a0a0c0', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}>Sala aberta — Quiz ao Vivo</div>
             <div style={{ fontWeight: 900, fontSize: 20 }}>{roomData?.quiz?.titulo}</div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ color: '#a0a0c0', fontSize: 11 }}>Jogadores</div>
-            <div style={{ color: '#00FF88', fontWeight: 900, fontSize: 24 }}>{players.length}</div>
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+            {autoAvancar && (
+              <div style={{ background: '#7c3aed22', border: '1px solid #7c3aed66', borderRadius: 10, padding: '4px 10px', color: '#c4b5fd', fontSize: 11, fontWeight: 700 }}>
+                ⚡ Auto-avanço
+              </div>
+            )}
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ color: '#a0a0c0', fontSize: 11 }}>Jogadores</div>
+              <div style={{ color: '#00FF88', fontWeight: 900, fontSize: 24 }}>{players.length}</div>
+            </div>
           </div>
         </div>
 
@@ -368,6 +388,14 @@ export default function HostQuiz() {
               </div>
             ))}
           </div>
+
+          {/* Contagem auto-avanço */}
+          {revealData?.autoAvancar && contagemReveal > 0 && (
+            <div style={{ background: '#7c3aed22', border: '1px solid #7c3aed55', borderRadius: 14, padding: '10px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: '#c4b5fd', fontSize: 13, fontWeight: 600 }}>⚡ Próxima questão em...</span>
+              <span style={{ color: '#FFE600', fontWeight: 900, fontSize: 22 }}>{contagemReveal}s</span>
+            </div>
+          )}
 
           {/* Botões */}
           <div style={{ display: 'flex', gap: 12 }}>

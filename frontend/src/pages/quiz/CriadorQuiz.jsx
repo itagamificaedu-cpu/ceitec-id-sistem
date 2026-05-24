@@ -17,7 +17,14 @@ const CORES_BORDA = [
   'border-green-300 focus:border-green-500',
 ]
 
-const TEMPOS = [10, 15, 20, 30, 45, 60, 90, 120]
+const TEMPOS = [
+  { s: 15,  label: '15s' },
+  { s: 30,  label: '30s' },
+  { s: 45,  label: '45s' },
+  { s: 60,  label: '1min' },
+  { s: 90,  label: '1min30' },
+  { s: 120, label: '2min' },
+]
 
 function questaoVazia() {
   return { enunciado: '', alt_a: '', alt_b: '', alt_c: '', alt_d: '', resposta_correta: 0 }
@@ -28,7 +35,7 @@ export default function CriadorQuiz() {
   const navigate = useNavigate()
   const editando = !!id
 
-  const [form, setForm] = useState({ titulo: '', descricao: '', tempo_por_questao: 30 })
+  const [form, setForm] = useState({ titulo: '', descricao: '', tempo_por_questao: 30, auto_avancar: false })
   const [questoes, setQuestoes] = useState([questaoVazia()])
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
@@ -49,6 +56,7 @@ export default function CriadorQuiz() {
           titulo: data.titulo || '',
           descricao: data.descricao || '',
           tempo_por_questao: data.tempo_por_questao || 30,
+          auto_avancar: !!data.auto_avancar,
         })
         if (data.questoes && data.questoes.length > 0) {
           setQuestoes(data.questoes.map(q => ({
@@ -204,15 +212,53 @@ export default function CriadorQuiz() {
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 mb-1 block">⏱️ Tempo por pergunta</label>
-                    <select
-                      className="input-field text-sm"
-                      value={form.tempo_por_questao}
-                      onChange={e => setForm(f => ({ ...f, tempo_por_questao: parseInt(e.target.value) }))}
-                    >
-                      {TEMPOS.map(t => (
-                        <option key={t} value={t}>{t} segundos</option>
+                    <div className="flex flex-wrap gap-1.5">
+                      {TEMPOS.map(({ s, label }) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, tempo_por_questao: s }))}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                            form.tempo_por_questao === s
+                              ? 'bg-primary text-white border-primary shadow-sm'
+                              : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary'
+                          }`}
+                        >
+                          {label}
+                        </button>
                       ))}
-                    </select>
+                    </div>
+                  </div>
+
+                  {/* Toggle auto-avanço */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, auto_avancar: !f.auto_avancar }))}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border-2 transition-all ${
+                        form.auto_avancar
+                          ? 'border-violet-400 bg-violet-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="text-left">
+                        <div className={`text-xs font-bold ${form.auto_avancar ? 'text-violet-700' : 'text-gray-700'}`}>
+                          ⚡ Avançar automático
+                        </div>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {form.auto_avancar
+                            ? 'Questões avançam sozinhas ao acabar o tempo'
+                            : 'Professor controla quando avançar'}
+                        </div>
+                      </div>
+                      <div className={`w-10 h-5 rounded-full transition-all flex items-center px-0.5 ${
+                        form.auto_avancar ? 'bg-violet-500' : 'bg-gray-300'
+                      }`}>
+                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-all ${
+                          form.auto_avancar ? 'translate-x-5' : 'translate-x-0'
+                        }`} />
+                      </div>
+                    </button>
                   </div>
                 </div>
               </div>

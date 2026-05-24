@@ -115,14 +115,14 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { titulo, descricao, tempo_por_questao, questoes } = req.body;
+    const { titulo, descricao, tempo_por_questao, auto_avancar, questoes } = req.body;
     if (!titulo) return res.status(400).json({ erro: 'Título é obrigatório' });
     const eid = req.usuario.escola_id;
     const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
 
     const result = await db.run(
-      'INSERT INTO quizzes (titulo, descricao, tempo_por_questao, escola_id, criado_por, codigo_acesso, ativo) VALUES (?, ?, ?, ?, ?, ?, 1)',
-      [titulo, descricao || '', tempo_por_questao || 30, eid, req.usuario.id, codigo]
+      'INSERT INTO quizzes (titulo, descricao, tempo_por_questao, auto_avancar, escola_id, criado_por, codigo_acesso, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+      [titulo, descricao || '', tempo_por_questao || 30, auto_avancar ? 1 : 0, eid, req.usuario.id, codigo]
     );
     const quizId = result.lastInsertRowid;
 
@@ -144,15 +144,15 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { titulo, descricao, tempo_por_questao, ativo, questoes } = req.body;
+    const { titulo, descricao, tempo_por_questao, auto_avancar, ativo, questoes } = req.body;
     const eid = req.usuario.escola_id;
 
     const quiz = await db.get('SELECT id FROM quizzes WHERE id = ? AND escola_id = ?', [req.params.id, eid]);
     if (!quiz) return res.status(404).json({ erro: 'Quiz não encontrado' });
 
     await db.run(
-      'UPDATE quizzes SET titulo=?, descricao=?, tempo_por_questao=?, ativo=? WHERE id=? AND escola_id=?',
-      [titulo, descricao || '', tempo_por_questao || 30, ativo !== undefined ? (ativo ? 1 : 0) : 1, req.params.id, eid]
+      'UPDATE quizzes SET titulo=?, descricao=?, tempo_por_questao=?, auto_avancar=?, ativo=? WHERE id=? AND escola_id=?',
+      [titulo, descricao || '', tempo_por_questao || 30, auto_avancar ? 1 : 0, ativo !== undefined ? (ativo ? 1 : 0) : 1, req.params.id, eid]
     );
 
     if (questoes !== undefined) {

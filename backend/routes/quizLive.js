@@ -26,10 +26,11 @@ function getLeaderboard(room) {
 
 function sendQuestion(io, room) {
   const q = room.questoes[room.currentQuestion];
+  const timeLimit = room.quiz.tempo_por_questao || 30;
   const payload = {
     enunciado: q.enunciado,
     alts: [q.alt_a, q.alt_b, q.alt_c, q.alt_d].filter(Boolean),
-    timeLimit: room.quiz.tempo_por_questao || 30,
+    timeLimit,
     index: room.currentQuestion,
     total: room.questoes.length,
   };
@@ -38,6 +39,14 @@ function sendQuestion(io, room) {
   // Host recebe a resposta correta também
   const hostSock = io.sockets.sockets.get(room.hostSocketId);
   if (hostSock) hostSock.emit('quiz:question-host', { ...payload, correctAnswer: q.resposta_correta });
+
+  // ── Auto-avançar: servidor revela quando o tempo esgotar ──
+  if (room.quiz.auto_avancar) {
+    clearTimeout(room.autoTimer);
+    room.autoTimer = setTimeout(() => {
+      if (room.state === 'playing') revealQuestion(io, room);
+    }, (timeLimit + 1) * 1000); // +1s de buffer
+  }
 }
 
 function revealQuestion(io, room) {
@@ -91,7 +100,25 @@ function revealQuestion(io, room) {
     leaderboard: leaderboard.slice(0, 10),
     answerStats,
     questionIndex: room.currentQuestion,
+    autoAvancar: !!room.quiz.auto_avancar,
   });
+
+  // ── Auto-avançar: após 5s no reveal, passa para a próxima ──
+  if (room.quiz.auto_avancar) {
+    clearTimeout(room.autoTimer);
+    room.autoTimer = setTimeout(() => {
+      if (room.state !== 'reveal') return;
+      const nextIdx = room.currentQuestion + 1;
+      if (nextIdx >= room.questoes.length) {
+        finishGame(io, room);
+      } else {
+        room.currentQuestion = nextIdx;
+        room.questionAnswers = new Map();
+        room.state = 'playing';
+        sendQuestion(io, room);
+      }
+    }, 5000);
+  }
 }
 
 function finishGame(io, room) {
@@ -202,7 +229,7 @@ module.exports = function setupQuizLive(io) {
 
         const room = rooms.get(quizId);
         socket.emit('quiz:room-ready', {
-          quiz: { id: quiz.id, titulo: quiz.titulo, codigo: quiz.codigo_acesso, tempo: quiz.tempo_por_questao },
+          quiz: { id: quiz.id, titulo: quiz.titulo, codigo: quiz.codigo_acesso, tempo: quiz.tempo_por_questao, autoAvancar: !!quiz.auto_avancar },
           players: [...room.players.values()],
           state: room.state,
           currentQuestion: room.currentQuestion,
@@ -212,7 +239,7 @@ module.exports = function setupQuizLive(io) {
     });
 
     // ── ALUNO: Entra na sala via código de acesso ─────────────────────────
-    socket.on('quiz:join', ({ codigo, alunoCode, alunoNome }) => {
+    socket.on('quiz:join', ({ codigo, alunoCode, alunoNome, avatarEscolhido }) => {
       let targetRoom = null, targetQuizId = null;
       for (const [qid, room] of rooms) {
         if (room.quiz.codigo_acesso === (codigo || '').toUpperCase()) {
@@ -224,7 +251,10 @@ module.exports = function setupQuizLive(io) {
       if (targetRoom.state !== 'lobby') return socket.emit('quiz:error', 'O jogo já começou! Aguarde a próxima rodada.');
 
       const nome = (alunoNome || alunoCode || 'Participante').trim();
-      const avatar = getAvatar(nome + (alunoCode || ''));
+      // Usa avatar escolhido pelo aluno, ou gera pelo hash do nome
+      const avatar = (avatarEscolhido && AVATARS.includes(avatarEscolhido))
+        ? avatarEscolhido
+        : getAvatar(nome + (alunoCode || ''));
 
       // Remove entrada anterior (reconexão)
       for (const [sid, p] of targetRoom.players) {
@@ -276,6 +306,7 @@ module.exports = function setupQuizLive(io) {
     socket.on('quiz:next', ({ quizId }) => {
       const room = rooms.get(quizId);
       if (!room || room.hostSocketId !== socket.id) return;
+      clearTimeout(room.autoTimer); // cancela auto-avançar se host avançar manualmente
       if (room.state === 'playing') {
         revealQuestion(io, room);
       } else if (room.state === 'reveal') {
@@ -295,6 +326,7 @@ module.exports = function setupQuizLive(io) {
     socket.on('quiz:end', ({ quizId }) => {
       const room = rooms.get(quizId);
       if (!room || room.hostSocketId !== socket.id) return;
+      clearTimeout(room.autoTimer);
       finishGame(io, room);
     });
 
