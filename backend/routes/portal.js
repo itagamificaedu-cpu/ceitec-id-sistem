@@ -303,20 +303,23 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
     // Se aluno não está na lista, importá-lo automaticamente e tentar de novo
     if (!result.sucesso && result.erro && result.erro.includes('não foi encontrado')) {
       try {
-        // Obtém sessão admin no Corretor Online
+        // Obtém sessão admin no Corretor Online (pega sessionid + csrftoken)
         const loginResp = await fetch(
           `${CORRETOR}/login-magico/?email=itagamificaedu%40gmail.com&nome=ITA+Admin&chave=gamificaedu_secreto_2026`,
           { redirect: 'manual' }
         );
-        const setCookie = loginResp.headers.get('set-cookie') || '';
-        const sessionMatch = setCookie.match(/sessionid=([^;]+)/);
+        // Node 18+ retorna múltiplos Set-Cookie — concatena todos
+        const allSetCookies = (loginResp.headers.getSetCookie?.() || [loginResp.headers.get('set-cookie') || '']).join('; ');
+        const sessionMatch  = allSetCookies.match(/sessionid=([^;,\s]+)/);
+        const csrfCookMatch = allSetCookies.match(/csrftoken=([^;,\s]+)/);
 
         if (sessionMatch) {
-          const sessionCookie = `sessionid=${sessionMatch[1]}`;
+          // Envia AMBOS os cookies (necessário para o CSRF do Django)
+          const cookieStr = `sessionid=${sessionMatch[1]}` + (csrfCookMatch ? `; csrftoken=${csrfCookMatch[1]}` : '');
 
           // Busca CSRF token na página de importação
           const formPageResp = await fetch(`${CORRETOR}/importar/alunos/`, {
-            headers: { Cookie: sessionCookie }
+            headers: { Cookie: cookieStr }
           });
           const formHtml = await formPageResp.text();
           const csrfMatch = formHtml.match(/name="csrfmiddlewaretoken" value="([^"]+)"/);
@@ -333,7 +336,7 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
             await fetch(`${CORRETOR}/importar/alunos/`, {
               method: 'POST',
               headers: {
-                Cookie: sessionCookie,
+                Cookie: cookieStr,
                 Referer: `${CORRETOR}/importar/alunos/`,
               },
               body: formData,
