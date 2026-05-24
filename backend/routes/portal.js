@@ -62,7 +62,27 @@ router.get('/:codigo', async (req, res) => {
       db.all('SELECT * FROM itagame_missao_entregas WHERE aluno_id = ?', [aluno.id]),
       db.all('SELECT titulo, mensagem, criado_em FROM itagame_recados WHERE escola_id = ? ORDER BY criado_em DESC LIMIT 10', [eid]),
       db.all('SELECT titulo, descricao, link_url, tipo, criado_em FROM itagame_repositorio WHERE escola_id = ? ORDER BY criado_em DESC', [eid]),
-      db.all('SELECT id, titulo, disciplina, descricao, xp_por_acerto, codigo_acesso, criado_em FROM itagame_provas WHERE escola_id = ? AND ativa = 1 ORDER BY criado_em DESC', [eid]),
+      // Busca provas reais do ItagGame Django (IDs corretos para /prova/{id}/)
+      (async () => {
+        try {
+          const turmaParam = aluno.turma ? `&turma=${encodeURIComponent(aluno.turma)}` : '';
+          const resp = await fetch(
+            `https://projetoitagame.pythonanywhere.com/api/provas/?chave=gamificaedu_secreto_2026${turmaParam}`
+          );
+          const json = await resp.json();
+          // Filtra provas com questões e mapeia para o formato esperado pelo frontend
+          return (json.provas || [])
+            .filter(p => p.total_questoes > 0)
+            .map(p => ({
+              id:          p.id,
+              titulo:      p.titulo,
+              descricao:   p.descricao || '',
+              disciplina:  '', // ItagGame não tem campo disciplina na prova
+              xp_por_acerto: p.xp_recompensa || 0,
+              total_questoes: p.total_questoes,
+            }));
+        } catch (_) { return []; }
+      })(),
       db.all('SELECT * FROM itagame_loja WHERE escola_id = ? AND ativo = 1 ORDER BY custo_xp ASC', [eid]),
       db.all('SELECT * FROM itagame_resgates WHERE aluno_id = ?', [aluno.id]),
       (async () => {
