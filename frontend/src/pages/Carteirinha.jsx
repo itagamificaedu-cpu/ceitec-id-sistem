@@ -42,10 +42,10 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
       }}>
         <div>
           <div style={{ color: '#f5a623', fontSize: '15px', fontWeight: '900', letterSpacing: '1px', lineHeight: 1 }}>CEITEC</div>
-          <div style={{ color: '#a8c4e0', fontSize: '6px', letterSpacing: '1.2px', marginTop: '2px' }}>INOVAÇÃO E TECNOLOGIA</div>
+          <div style={{ color: '#ffffff', fontSize: '6px', fontWeight: '800', letterSpacing: '1.2px', marginTop: '2px' }}>INOVAÇÃO E TECNOLOGIA</div>
         </div>
-        <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '8px' }}>
-          <div style={{ color: '#a8c4e0', fontSize: '6px', letterSpacing: '0.5px', lineHeight: 1 }}>ID ESTUDANTIL</div>
+        <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.4)', paddingLeft: '8px' }}>
+          <div style={{ color: '#ffffff', fontSize: '6px', fontWeight: '800', letterSpacing: '0.5px', lineHeight: 1 }}>ID ESTUDANTIL</div>
           <div style={{ color: '#f5a623', fontSize: '13px', fontWeight: '900', letterSpacing: '0.5px', lineHeight: 1.2 }}>2026</div>
         </div>
       </div>
@@ -72,9 +72,9 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
 
         {/* Nome e dados */}
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-          <div style={{ color: '#1e3a5f', fontSize: '10.5px', fontWeight: '800', lineHeight: 1.3, marginBottom: '3px' }}>{aluno.nome}</div>
-          <div style={{ color: '#c47a00', fontSize: '13px', fontWeight: '900', fontFamily: 'monospace', letterSpacing: '1px', marginBottom: '3px' }}>{aluno.codigo}</div>
-          <div style={{ color: '#4a6080', fontSize: '8px', fontWeight: '600' }}>
+          <div style={{ color: '#000000', fontSize: '10.5px', fontWeight: '900', lineHeight: 1.3, marginBottom: '3px' }}>{aluno.nome}</div>
+          <div style={{ color: '#1e3a5f', fontSize: '13px', fontWeight: '900', fontFamily: 'monospace', letterSpacing: '1px', marginBottom: '3px' }}>{aluno.codigo}</div>
+          <div style={{ color: '#000000', fontSize: '8px', fontWeight: '800' }}>
             {ano}{secao ? ` • ${secao}` : ''}
           </div>
         </div>
@@ -94,7 +94,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
           }}>
             {qrcode && <img src={qrcode} alt="QR" style={{ width: '62px', height: '62px' }} />}
           </div>
-          <div style={{ color: '#4a6080', fontSize: '6.5px', marginTop: '4px', letterSpacing: '0.3px', fontWeight: '600' }}>
+          <div style={{ color: '#000000', fontSize: '6.5px', marginTop: '4px', letterSpacing: '0.3px', fontWeight: '800' }}>
             Escaneie para registrar presença
           </div>
         </div>
@@ -129,10 +129,10 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
           padding: '4px 7px',
           marginBottom: '6px',
         }}>
-          <div style={{ color: '#92400e', fontSize: '7.5px', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '2px' }}>
+          <div style={{ color: '#000000', fontSize: '7.5px', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '2px' }}>
             🎮 ACESSE SUA PÁGINA ITAGAME
           </div>
-          <div style={{ color: '#374151', fontSize: '6px', fontFamily: 'monospace', lineHeight: 1.6, wordBreak: 'break-all' }}>
+          <div style={{ color: '#000000', fontSize: '6px', fontFamily: 'monospace', fontWeight: '800', lineHeight: 1.6, wordBreak: 'break-all' }}>
             {ITAGAME_BASE}?codigo={aluno.codigo}
           </div>
         </div>
@@ -143,10 +143,10 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
           paddingTop: '5px',
           borderTop: '1px solid #d0dcea',
           textAlign: 'center',
-          color: '#8a9ab0',
+          color: '#000000',
           fontSize: '5.5px',
           letterSpacing: '0.8px',
-          fontWeight: '600',
+          fontWeight: '800',
         }}>
           DOCUMENTO DE IDENTIFICAÇÃO ESTUDANTIL • NÃO TRANSFERÍVEL
         </div>
