@@ -16,6 +16,18 @@ const N = {
   cinza:   '#888899',
 }
 
+/* ── Estilos responsivos globais ── */
+const estilosCSS = `
+  @media (max-width: 600px) {
+    .prova-header-inner { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+    .prova-progress-bar { width: 100% !important; }
+    .prova-main { padding: 12px 8px !important; }
+    .prova-grid { grid-template-columns: 1fr !important; }
+    .prova-iframe { height: 320px !important; }
+    .prova-send-btn { font-size: 15px !important; padding: 15px !important; }
+  }
+`
+
 export default function ProvaCorretor() {
   const { uuid } = useParams()
   const [searchParams] = useSearchParams()
@@ -148,26 +160,27 @@ export default function ProvaCorretor() {
 
   return (
     <div style={{ minHeight: '100vh', background: N.bg, color: N.branco, fontFamily: "'Segoe UI', sans-serif" }}>
+      <style>{estilosCSS}</style>
 
       {/* Header */}
-      <div style={{ background: N.card, borderBottom: `1px solid ${N.borda}`, padding: '14px 20px', position: 'sticky', top: 0, zIndex: 20 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <div style={{ background: N.card, borderBottom: `1px solid ${N.borda}`, padding: '14px 16px', position: 'sticky', top: 0, zIndex: 20 }}>
+        <div className="prova-header-inner" style={{ maxWidth: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div>
             <div style={{ color: N.verde, fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>
               📄 Corretor de Provas
             </div>
             <div style={{ fontWeight: 900, fontSize: 18, color: N.branco }}>{prova?.titulo}</div>
           </div>
-          <div style={{ textAlign: 'right' }}>
+          <div className="prova-progress-bar" style={{ textAlign: 'right', minWidth: 120 }}>
             <div style={{ color: N.cinza, fontSize: 12, marginBottom: 2 }}>{totalRespondidas} / {prova?.numQuestoes} respondidas</div>
-            <div style={{ width: 120, height: 6, background: N.borda, borderRadius: 3 }}>
+            <div style={{ width: '100%', height: 6, background: N.borda, borderRadius: 3 }}>
               <div style={{ width: `${progresso}%`, height: '100%', background: progresso === 100 ? N.verde : N.amarelo, borderRadius: 3, transition: 'width 0.3s' }} />
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
+      <div className="prova-main" style={{ maxWidth: '100%', padding: '16px', display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
 
         {/* PDF da prova */}
         {prova?.pdfUrl && (
@@ -181,6 +194,7 @@ export default function ProvaCorretor() {
             </div>
             <iframe
               src={prova.pdfUrl}
+              className="prova-iframe"
               style={{ width: '100%', height: 500, border: 'none', display: 'block' }}
               title="Prova"
             />
@@ -193,7 +207,7 @@ export default function ProvaCorretor() {
             ✏️ Suas Respostas — {prova?.numQuestoes} questões
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+          <div className="prova-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
             {Array.from({ length: prova?.numQuestoes || 0 }, (_, i) => i + 1).map(q => {
               const resp = respostas[String(q)]
               return (
@@ -244,6 +258,7 @@ export default function ProvaCorretor() {
 
         {/* Botão enviar */}
         <button
+          className="prova-send-btn"
           onClick={enviarProva}
           disabled={enviando || totalRespondidas < (prova?.numQuestoes || 0)}
           style={{
@@ -255,7 +270,7 @@ export default function ProvaCorretor() {
             fontWeight: 900, fontSize: 18,
             cursor: totalRespondidas === prova?.numQuestoes && !enviando ? 'pointer' : 'default',
             boxShadow: totalRespondidas === prova?.numQuestoes ? `0 0 40px ${N.verde}44` : 'none',
-            letterSpacing: 1, transition: 'all 0.2s',
+            letterSpacing: 1, transition: 'all 0.2s', width: '100%',
           }}
         >
           {enviando ? '⏳ Enviando...' : totalRespondidas < (prova?.numQuestoes || 0)

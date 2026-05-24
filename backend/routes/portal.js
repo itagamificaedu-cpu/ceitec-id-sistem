@@ -285,20 +285,71 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
     if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado.' });
 
     const CORRETOR = 'https://correcaoonlineita.pythonanywhere.com';
+    const alunoNome = aluno.nome.toUpperCase();
 
-    // Envia respostas diretamente para o Corretor Online com o nome do aluno
-    const submitResp = await fetch(`${CORRETOR}/api/responder-prova-online/${uuid}/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        aluno_nome: aluno.nome.toUpperCase(),
-        respostas,
-      }),
-    });
+    // Função auxiliar: tenta enviar respostas ao Corretor Online
+    async function tentarEnviar() {
+      const r = await fetch(`${CORRETOR}/api/responder-prova-online/${uuid}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aluno_nome: alunoNome, respostas }),
+      });
+      return r.json();
+    }
 
-    const result = await submitResp.json();
+    // 1ª tentativa direta
+    let result = await tentarEnviar();
 
-    // Se sucesso, registra no histórico de XP do portal (nota como evento)
+    // Se aluno não está na lista, importá-lo automaticamente e tentar de novo
+    if (!result.sucesso && result.erro && result.erro.includes('não foi encontrado')) {
+      try {
+        // Obtém sessão admin no Corretor Online
+        const loginResp = await fetch(
+          `${CORRETOR}/login-magico/?email=itagamificaedu%40gmail.com&nome=ITA+Admin&chave=gamificaedu_secreto_2026`,
+          { redirect: 'manual' }
+        );
+        const setCookie = loginResp.headers.get('set-cookie') || '';
+        const sessionMatch = setCookie.match(/sessionid=([^;]+)/);
+
+        if (sessionMatch) {
+          const sessionCookie = `sessionid=${sessionMatch[1]}`;
+
+          // Busca CSRF token na página de importação
+          const formPageResp = await fetch(`${CORRETOR}/importar/alunos/`, {
+            headers: { Cookie: sessionCookie }
+          });
+          const formHtml = await formPageResp.text();
+          const csrfMatch = formHtml.match(/name="csrfmiddlewaretoken" value="([^"]+)"/);
+
+          if (csrfMatch) {
+            const csrf = csrfMatch[1];
+
+            // Importa o aluno via CSV (associado à conta admin, que é a dona das provas do portal)
+            const csvContent = `Nome,Turma\n${alunoNome},PORTAL`;
+            const formData = new FormData();
+            formData.append('arquivo', new Blob([csvContent], { type: 'text/csv' }), 'alunos.csv');
+            formData.append('csrfmiddlewaretoken', csrf);
+
+            await fetch(`${CORRETOR}/importar/alunos/`, {
+              method: 'POST',
+              headers: {
+                Cookie: sessionCookie,
+                Referer: `${CORRETOR}/importar/alunos/`,
+              },
+              body: formData,
+            });
+
+            // 2ª tentativa após importação
+            result = await tentarEnviar();
+          }
+        }
+      } catch (importErr) {
+        // Falha na importação — mantém o erro original do Corretor
+        console.error('[corretor-submit] Erro ao importar aluno:', importErr.message);
+      }
+    }
+
+    // Registra no histórico do portal se aprovado
     if (result.sucesso) {
       try {
         await db.run(
@@ -306,7 +357,7 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
            VALUES (?, ?, 'prova_corretor', ?, 0, datetime('now'))`,
           [aluno.id, aluno.escola_id, `Prova: ${uuid.substring(0, 8)}… — Nota ${result.nota?.toFixed(1).replace('.', ',')}`]
         );
-      } catch (_) {} // não crítico
+      } catch (_) {}
     }
 
     res.json(result);
