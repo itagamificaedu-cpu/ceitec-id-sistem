@@ -67,6 +67,19 @@ function DashboardProfessor({ usuario }) {
 
       {/* Atalhos rápidos */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+        {/* Mestre da Escola — acesso direto com o código do professor */}
+        {prof?.codigo && (
+          <a
+            href={`/mestre?code=${prof.codigo}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shadow-sm border border-indigo-500/30 p-4 flex flex-col items-center gap-2 text-center hover:shadow-lg hover:scale-[1.02] transition-all"
+          >
+            <span className="text-2xl">📅</span>
+            <span className="text-xs font-bold text-white leading-tight">Horário do Dia</span>
+            <span className="text-[10px] text-indigo-200 font-mono">{prof.codigo}</span>
+          </a>
+        )}
         {[
           { to: '/scanner',              icon: '📷', label: 'Scanner de Presença' },
           { to: '/avaliacoes',           icon: '📝', label: 'Avaliações' },
@@ -181,6 +194,7 @@ export default function Dashboard() {
                   { icon: '📊', label: 'Desempenho', to: '/desempenho', cor: '#8e44ad' },
                   { icon: '📈', label: 'Relatórios', to: '/relatorios', cor: '#16a085' },
                   { icon: '🔬', label: 'Diagnóstico IA', to: '/diagnostico', cor: '#c0392b' },
+                  { icon: '💼', label: 'Empreendedorismo', to: '/empreendedorismo-digital', cor: '#6d28d9' },
                 ].map(a => (
                   <Link key={a.to} to={a.to} className="flex items-center gap-3 p-3 rounded-xl text-white font-medium text-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: a.cor }}>
                     <span className="text-xl">{a.icon}</span> {a.label}
