@@ -65,9 +65,9 @@ router.get('/:codigo', async (req, res) => {
       // Busca provas reais do ItagGame Django (IDs corretos para /prova/{id}/)
       (async () => {
         try {
-          const turmaParam = aluno.turma ? `&turma=${encodeURIComponent(aluno.turma)}` : '';
+          // Sem filtro de turma: mostra todas as provas ativas com questões
           const resp = await fetch(
-            `https://projetoitagame.pythonanywhere.com/api/provas/?chave=gamificaedu_secreto_2026${turmaParam}`
+            `https://projetoitagame.pythonanywhere.com/api/provas/?chave=gamificaedu_secreto_2026`
           );
           const json = await resp.json();
           // Filtra provas com questões e mapeia para o formato esperado pelo frontend
