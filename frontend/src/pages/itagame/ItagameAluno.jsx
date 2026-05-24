@@ -253,7 +253,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
 
       {/* Conteúdo */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '28px 16px' }}>
-        {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length} onItagame={onItagame} onCopaSaber={onCopaSaber} onIrCorretor={() => setAba('corretor')} />}
+        {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length + (itagame.provas || []).filter(p => p.ja_fez).length} onItagame={onItagame} onCopaSaber={onCopaSaber} onIrCorretor={() => setAba('corretor')} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
@@ -1058,7 +1058,10 @@ function AbaCorretor({ provas = [], codigoAluno }) {
       {/* Lista de provas */}
       {provas.map((prova) => {
         const isCorretor = prova.tipo === 'corretor'
-        const cor = isCorretor ? N.verde : N.azul
+        const jaFez      = !!prova.ja_fez
+        const nota       = prova.nota_aluno
+        const notaCor    = nota >= 7 ? N.verde : nota >= 5 ? N.amarelo : N.rosa
+        const cor        = jaFez ? notaCor : (isCorretor ? N.verde : N.azul)
         return (
           <NeonCard key={prova.id} cor={cor}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
@@ -1075,25 +1078,38 @@ function AbaCorretor({ provas = [], codigoAluno }) {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: prova.descricao ? 8 : 0 }}>
                   {prova.disciplina && <Tag label={prova.disciplina} cor={cor} />}
                   {prova.xp_por_acerto > 0 && <Tag label={`+${prova.xp_por_acerto} XP`} cor={N.amarelo} />}
-                  {isCorretor && <Tag label="📊 Nota registrada" cor={N.verde} />}
+                  {jaFez && <Tag label="✅ PROVA REALIZADA" cor={N.verde} />}
                 </div>
                 {/* Descrição */}
                 {prova.descricao && (
                   <div style={{ color: '#BBBBCC', fontSize: 13, lineHeight: 1.5 }}>{prova.descricao}</div>
                 )}
               </div>
-              {/* Botão Fazer */}
-              <button
-                onClick={() => abrirProva(prova)}
-                style={{
-                  background: `linear-gradient(135deg, ${cor}, ${isCorretor ? '#008844' : '#0080aa'})`,
-                  border: 'none', borderRadius: 14, padding: '12px 20px',
-                  color: '#000', fontWeight: 900, fontSize: 14, cursor: 'pointer',
-                  boxShadow: `0 0 20px ${cor}55`, flexShrink: 0,
-                  whiteSpace: 'nowrap',
-                }}>
-                {isCorretor ? '📊 Fazer agora' : '📋 Fazer agora'}
-              </button>
+
+              {/* Nota OU botão Fazer */}
+              {jaFez ? (
+                <div style={{ textAlign: 'center', flexShrink: 0, minWidth: 72 }}>
+                  <div style={{
+                    fontSize: 44, fontWeight: 900, lineHeight: 1,
+                    color: notaCor, textShadow: `0 0 20px ${notaCor}88`,
+                  }}>
+                    {nota?.toFixed(1).replace('.', ',')}
+                  </div>
+                  <div style={{ color: N.cinza, fontSize: 10, fontWeight: 900, letterSpacing: 1.5, marginTop: 4 }}>SUA NOTA</div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => abrirProva(prova)}
+                  style={{
+                    background: `linear-gradient(135deg, ${cor}, ${isCorretor ? '#008844' : '#0080aa'})`,
+                    border: 'none', borderRadius: 14, padding: '12px 20px',
+                    color: '#000', fontWeight: 900, fontSize: 14, cursor: 'pointer',
+                    boxShadow: `0 0 20px ${cor}55`, flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                  }}>
+                  {isCorretor ? '📊 Fazer agora' : '📋 Fazer agora'}
+                </button>
+              )}
             </div>
           </NeonCard>
         )
