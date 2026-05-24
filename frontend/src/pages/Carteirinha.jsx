@@ -46,7 +46,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
         </div>
         <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '8px' }}>
           <div style={{ color: '#a8c4e0', fontSize: '6px', letterSpacing: '0.5px', lineHeight: 1 }}>ID ESTUDANTIL</div>
-          <div style={{ color: '#f5a623', fontSize: '13px', fontWeight: '900', letterSpacing: '0.5px', lineHeight: 1.2 }}>2025</div>
+          <div style={{ color: '#f5a623', fontSize: '13px', fontWeight: '900', letterSpacing: '0.5px', lineHeight: 1.2 }}>2026</div>
         </div>
       </div>
 
