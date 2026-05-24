@@ -1014,10 +1014,12 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
 function AbaCorretor({ provas = [], codigoAluno }) {
 
   // Abre a prova na MESMA aba do ItagGame:
-  // 1º) Abre o login-magico em nova aba (o aluno fica autenticado no ItagGame)
-  // 2º) Após o login completar, navega ESSA MESMA aba direto para a prova
-  //     (window.open retorna referência à aba — podemos navegar dentro dela)
+  // Login mágico com parâmetro "next" — o Django já redireciona direto para a prova
   function abrirProva(prova) {
+    const provaUrl = prova.id
+      ? `${ITAGAME_URL}/prova/${prova.id}/`
+      : `${ITAGAME_URL}/provas/`
+
     const loginParams = new URLSearchParams({
       user:  codigoAluno,
       email: codigoAluno,
@@ -1025,26 +1027,11 @@ function AbaCorretor({ provas = [], codigoAluno }) {
       turma: prova._turma_aluno || '',
       chave: CHAVE,
       tipo:  'aluno',
+      next:  provaUrl,       // Django redirecionará direto para a prova após login
     })
 
-    const provaUrl = prova.id
-      ? `${ITAGAME_URL}/prova/${prova.id}/`
-      : `${ITAGAME_URL}/provas/`
-
-    // Abre 1 aba com o login mágico
-    const abaItagame = window.open(`${ITAGAME_URL}/login-magico/?${loginParams}`, '_blank')
-
-    // Aguarda o login completar (~2.5s) e navega a MESMA aba para a prova
-    if (abaItagame) {
-      setTimeout(() => {
-        try {
-          abaItagame.location.href = provaUrl
-        } catch (_) {
-          // Fallback: se o browser bloquear, pelo menos o aluno já está logado
-          // e pode clicar em Provas no menu do ItagGame
-        }
-      }, 2500)
-    }
+    // Abre em nova aba — o ItagGame cuida do login e vai direto para a prova
+    window.open(`${ITAGAME_URL}/login-magico/?${loginParams}`, '_blank')
   }
 
   if (provas.length === 0) return (
