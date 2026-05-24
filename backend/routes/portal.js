@@ -176,32 +176,29 @@ router.get('/:codigo', async (req, res) => {
           headers: { Cookie: `sessionid=${cookie}` }
         });
         const html = await avPage.text();
-        // Extrai provas publicadas e online — captura uuid e título
-        const matches = [...html.matchAll(/href="\/publica\/prova\/([\w-]+)\/"/g)];
-        const titles  = [...html.matchAll(/<a[^>]+href="\/avaliacoes\/([\w-]+)\/"[^>]*>\s*([\w\s\-:.]+?)\s*</g)];
-        const titleMap = {};
-        titles.forEach(m => { titleMap[m[1]] = m[2].trim(); });
-
-        // Também extrai turma e disciplina dos blocos de avaliação
-        const blocos = html.match(/<tr[\s\S]*?<\/tr>/g) || [];
-        for (const match of matches) {
-          const uuid  = match[1];
-          // Tenta encontrar turma/disciplina na linha da tabela
-          const blocoMatch = html.match(new RegExp(`href="/publica/prova/${uuid}/"[\\s\\S]{0,800}?(?=</tr>)`));
-          let disciplina = '', turma_nome = '';
-          if (blocoMatch) {
-            const tdVals = blocoMatch[0].match(/<td[^>]*>([\s\S]*?)<\/td>/g) || [];
-            const textos = tdVals.map(t => t.replace(/<[^>]+>/g,'').trim()).filter(Boolean);
-            disciplina  = textos[1] || '';
-            turma_nome  = textos[2] || '';
-          }
+        // Parse cada <tr> da tabela — estrutura: TD[0]=titulo TD[1]=escola TD[2]=disciplina TD[3]=turma TD[4]=questões TD[5]=status
+        const trs = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
+        for (const trMatch of trs) {
+          const trHtml = trMatch[1];
+          // Verifica se esta linha tem link de prova pública (badge Online)
+          const uuidMatch = trHtml.match(/href="\/publica\/prova\/([\w-]+)\/"/);
+          if (!uuidMatch) continue;
+          const uuid = uuidMatch[1];
+          // Extrai células de texto
+          const tds = [...trHtml.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)]
+            .map(m => m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+            .filter(t => t.length > 0);
+          const titulo     = tds[0] || 'Avaliação Online';
+          const disciplina = tds[2] || '';
+          const turma_nome = tds[3] || '';
+          const n_questoes = parseInt(tds[4]) || 0;
           provasCorretor.push({
             id:            `corretor_${uuid}`,
-            titulo:        titleMap[uuid] || 'Avaliação Online',
+            titulo,
             descricao:     turma_nome ? `Turma: ${turma_nome}` : 'Avaliação do Corretor de Provas',
-            disciplina:    disciplina,
+            disciplina,
             xp_por_acerto: 0,
-            total_questoes: 0,
+            total_questoes: n_questoes,
             tipo:          'corretor',
             url_publica:   `${CORRETOR}/publica/prova/${uuid}/`,
           });
