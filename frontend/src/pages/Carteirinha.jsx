@@ -20,126 +20,136 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
     <div style={{
       width: '204px',
       minHeight: '322px',
-      background: 'linear-gradient(170deg, #1e3a5f 0%, #0f2040 55%, #1a1040 100%)',
+      background: '#ffffff',
       borderRadius: '12px',
-      padding: '11px 12px',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
+      border: '2px solid #1e3a5f',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'Segoe UI, system-ui, sans-serif',
+      fontFamily: 'Segoe UI, Arial, sans-serif',
       flexShrink: 0,
       boxSizing: 'border-box',
+      overflow: 'hidden',
     }}>
-      <div style={{ position: 'absolute', top: '-15px', right: '-15px', width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(245,166,35,0.12)' }} />
-      <div style={{ position: 'absolute', bottom: '40px', left: '-20px', width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+      {/* Cabeçalho navy */}
+      <div style={{
+        background: '#1e3a5f',
+        padding: '8px 10px 7px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}>
         <div>
-          <div style={{ color: '#f5a623', fontSize: '14px', fontWeight: '900', letterSpacing: '1px', lineHeight: 1 }}>CEITEC</div>
-          <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '6.5px', letterSpacing: '1.5px', marginTop: '1px' }}>INOVAÇÃO E TECNOLOGIA</div>
+          <div style={{ color: '#f5a623', fontSize: '15px', fontWeight: '900', letterSpacing: '1px', lineHeight: 1 }}>CEITEC</div>
+          <div style={{ color: '#a8c4e0', fontSize: '6px', letterSpacing: '1.2px', marginTop: '2px' }}>INOVAÇÃO E TECNOLOGIA</div>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '6.5px', letterSpacing: '0.5px' }}>ID ESTUDANTIL</div>
-          <div style={{ color: '#f5a623', fontSize: '8px', fontWeight: '800', marginTop: '1px' }}>2025</div>
+        <div style={{ textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '8px' }}>
+          <div style={{ color: '#a8c4e0', fontSize: '6px', letterSpacing: '0.5px', lineHeight: 1 }}>ID ESTUDANTIL</div>
+          <div style={{ color: '#f5a623', fontSize: '13px', fontWeight: '900', letterSpacing: '0.5px', lineHeight: 1.2 }}>2025</div>
         </div>
       </div>
 
-      {/* Foto */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }}>
+      {/* Corpo */}
+      <div style={{ padding: '10px 10px 8px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+
+        {/* Foto */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+          <div style={{
+            width: '70px', height: '70px',
+            borderRadius: '50%',
+            background: '#e8f0fb',
+            border: '3px solid #1e3a5f',
+            overflow: 'hidden',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            {aluno.foto_path
+              ? <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
+              : <span style={{ fontSize: '30px' }}>👤</span>}
+          </div>
+        </div>
+
+        {/* Nome e dados */}
+        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+          <div style={{ color: '#1e3a5f', fontSize: '10.5px', fontWeight: '800', lineHeight: 1.3, marginBottom: '3px' }}>{aluno.nome}</div>
+          <div style={{ color: '#c47a00', fontSize: '13px', fontWeight: '900', fontFamily: 'monospace', letterSpacing: '1px', marginBottom: '3px' }}>{aluno.codigo}</div>
+          <div style={{ color: '#4a6080', fontSize: '8px', fontWeight: '600' }}>
+            {ano}{secao ? ` • ${secao}` : ''}
+          </div>
+        </div>
+
+        {/* Linha divisória */}
+        <div style={{ borderTop: '1px solid #d0dcea', marginBottom: '8px' }} />
+
+        {/* QR Code */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '7px' }}>
+          <div style={{
+            background: '#ffffff',
+            border: '1.5px solid #1e3a5f',
+            borderRadius: '7px',
+            padding: '4px',
+            width: '70px', height: '70px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {qrcode && <img src={qrcode} alt="QR" style={{ width: '62px', height: '62px' }} />}
+          </div>
+          <div style={{ color: '#4a6080', fontSize: '6.5px', marginTop: '4px', letterSpacing: '0.3px', fontWeight: '600' }}>
+            Escaneie para registrar presença
+          </div>
+        </div>
+
+        {/* Startup (se tiver) */}
+        {equipe && (
+          <div style={{
+            background: '#f5f0ff',
+            border: '1.5px solid #7c3aed',
+            borderRadius: '6px',
+            padding: '4px 7px',
+            marginBottom: '5px',
+          }}>
+            <div style={{ color: '#6d28d9', fontSize: '7px', fontWeight: '900', letterSpacing: '0.8px', marginBottom: '1px' }}>
+              💼 STARTUP
+            </div>
+            <div style={{ color: '#1e1b4b', fontSize: '8px', fontWeight: '800', lineHeight: 1.3 }}>
+              {equipe.nome_startup}
+            </div>
+            {equipe.e_lider
+              ? <div style={{ color: '#92400e', fontSize: '6.5px', fontWeight: '700', marginTop: '1px' }}>👑 Líder da Equipe</div>
+              : <div style={{ color: '#6d28d9', fontSize: '6px', marginTop: '1px' }}>Membro</div>
+            }
+          </div>
+        )}
+
+        {/* ItagGame */}
         <div style={{
-          width: '68px', height: '68px',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
-          border: '3px solid #f5a623',
-          overflow: 'hidden',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          {aluno.foto_path
-            ? <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
-            : <span style={{ fontSize: '28px' }}>👤</span>}
-        </div>
-      </div>
-
-      {/* Nome e dados */}
-      <div style={{ textAlign: 'center', marginBottom: '7px' }}>
-        <div style={{ color: '#ffffff', fontSize: '10.5px', fontWeight: '700', lineHeight: 1.3, marginBottom: '4px' }}>{aluno.nome}</div>
-        <div style={{ color: '#f5a623', fontSize: '12px', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '1px', marginBottom: '3px' }}>{aluno.codigo}</div>
-        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '8px' }}>
-          {ano}{secao ? ` • ${secao}` : ''}
-        </div>
-      </div>
-
-      {/* QR Code */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '6px' }}>
-        <div style={{
-          background: '#ffffff',
-          padding: '4px',
-          borderRadius: '7px',
-          width: '68px', height: '68px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {qrcode && <img src={qrcode} alt="QR" style={{ width: '60px', height: '60px' }} />}
-        </div>
-        <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '6.5px', marginTop: '3px', letterSpacing: '0.3px' }}>
-          Escaneie para registrar presença
-        </div>
-      </div>
-
-      {/* Empreendedorismo — startup do aluno (se tiver equipe) */}
-      {equipe && (
-        <div style={{
-          background: 'rgba(100,60,200,0.18)',
-          border: '1px solid rgba(150,100,255,0.35)',
-          borderRadius: '7px',
+          background: '#fffbeb',
+          border: '1.5px solid #c47a00',
+          borderRadius: '6px',
           padding: '4px 7px',
-          marginBottom: '4px',
+          marginBottom: '6px',
         }}>
-          <div style={{ color: '#c084fc', fontSize: '7px', fontWeight: '900', letterSpacing: '0.8px', marginBottom: '1px' }}>
-            💼 STARTUP
+          <div style={{ color: '#92400e', fontSize: '7.5px', fontWeight: '900', letterSpacing: '0.5px', marginBottom: '2px' }}>
+            🎮 ACESSE SUA PÁGINA ITAGAME
           </div>
-          <div style={{ color: '#ffffff', fontSize: '8px', fontWeight: '800', lineHeight: 1.3, marginBottom: '1px' }}>
-            {equipe.nome_startup}
+          <div style={{ color: '#374151', fontSize: '6px', fontFamily: 'monospace', lineHeight: 1.6, wordBreak: 'break-all' }}>
+            {ITAGAME_BASE}?codigo={aluno.codigo}
           </div>
-          {equipe.e_lider && (
-            <div style={{ color: '#f5a623', fontSize: '6.5px', fontWeight: '700' }}>👑 Líder da Equipe</div>
-          )}
-          {!equipe.e_lider && (
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '6px' }}>Membro</div>
-          )}
         </div>
-      )}
 
-      {/* ItagGame — link direto com código do aluno */}
-      <div style={{
-        background: 'rgba(245,166,35,0.13)',
-        border: '1px solid rgba(245,166,35,0.35)',
-        borderRadius: '7px',
-        padding: '4px 7px',
-        marginBottom: '5px',
-      }}>
-        <div style={{ color: '#f5a623', fontSize: '7.5px', fontWeight: '900', letterSpacing: '0.8px', marginBottom: '2px' }}>
-          🎮 ACESSE SUA PÁGINA ITAGAME
+        {/* Rodapé */}
+        <div style={{
+          marginTop: 'auto',
+          paddingTop: '5px',
+          borderTop: '1px solid #d0dcea',
+          textAlign: 'center',
+          color: '#8a9ab0',
+          fontSize: '5.5px',
+          letterSpacing: '0.8px',
+          fontWeight: '600',
+        }}>
+          DOCUMENTO DE IDENTIFICAÇÃO ESTUDANTIL • NÃO TRANSFERÍVEL
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '6px', fontFamily: 'monospace', lineHeight: 1.6, wordBreak: 'break-all' }}>
-          {ITAGAME_BASE}?codigo={aluno.codigo}
-        </div>
-      </div>
-
-      {/* Rodapé */}
-      <div style={{
-        marginTop: 'auto',
-        paddingTop: '4px',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-        textAlign: 'center',
-        color: 'rgba(255,255,255,0.25)',
-        fontSize: '6px',
-        letterSpacing: '0.8px',
-      }}>
-        DOCUMENTO DE IDENTIFICAÇÃO ESTUDANTIL • NÃO TRANSFERÍVEL
       </div>
     </div>
   )
