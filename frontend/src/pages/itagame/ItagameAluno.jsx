@@ -1013,9 +1013,10 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
 ══════════════════════════════════════════ */
 function AbaCorretor({ provas = [], codigoAluno }) {
 
-  // Abre a prova em 2 passos:
-  // 1º) Abre magic login em nova aba (autentica o aluno no ItagGame)
-  // 2º) Logo em seguida abre a prova diretamente (aluno já está logado)
+  // Abre a prova na MESMA aba do ItagGame:
+  // 1º) Abre o login-magico em nova aba (o aluno fica autenticado no ItagGame)
+  // 2º) Após o login completar, navega ESSA MESMA aba direto para a prova
+  //     (window.open retorna referência à aba — podemos navegar dentro dela)
   function abrirProva(prova) {
     const loginParams = new URLSearchParams({
       user:  codigoAluno,
@@ -1025,16 +1026,25 @@ function AbaCorretor({ provas = [], codigoAluno }) {
       chave: CHAVE,
       tipo:  'aluno',
     })
-    // Passo 1: abre o login (cria sessão no ItagGame)
-    window.open(`${ITAGAME_URL}/login-magico/?${loginParams}`, '_blank')
 
-    // Passo 2: após 2 segundos (tempo para o login completar), abre a prova
     const provaUrl = prova.id
       ? `${ITAGAME_URL}/prova/${prova.id}/`
       : `${ITAGAME_URL}/provas/`
-    setTimeout(() => {
-      window.open(provaUrl, '_blank')
-    }, 2000)
+
+    // Abre 1 aba com o login mágico
+    const abaItagame = window.open(`${ITAGAME_URL}/login-magico/?${loginParams}`, '_blank')
+
+    // Aguarda o login completar (~2.5s) e navega a MESMA aba para a prova
+    if (abaItagame) {
+      setTimeout(() => {
+        try {
+          abaItagame.location.href = provaUrl
+        } catch (_) {
+          // Fallback: se o browser bloquear, pelo menos o aluno já está logado
+          // e pode clicar em Provas no menu do ItagGame
+        }
+      }, 2500)
+    }
   }
 
   if (provas.length === 0) return (
