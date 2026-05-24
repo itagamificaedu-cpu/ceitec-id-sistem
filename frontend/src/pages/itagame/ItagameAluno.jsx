@@ -1013,13 +1013,15 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
 ══════════════════════════════════════════ */
 function AbaCorretor({ provas = [], codigoAluno }) {
 
-  // Abre a prova na MESMA aba do ItagGame:
-  // Login mágico com parâmetro "next" — o Django já redireciona direto para a prova
+  // Abre a prova correta conforme o tipo (itagame ou corretor)
   function abrirProva(prova) {
-    const provaUrl = prova.id
-      ? `${ITAGAME_URL}/prova/${prova.id}/`
-      : `${ITAGAME_URL}/provas/`
-
+    if (prova.tipo === 'corretor') {
+      // Prova do Corretor de Provas — URL pública, o aluno digita o código lá
+      window.open(prova.url_publica, '_blank')
+      return
+    }
+    // Prova do ItagGame — login mágico com next direto para a prova
+    const provaUrl = `${ITAGAME_URL}/prova/${prova.id}/`
     const loginParams = new URLSearchParams({
       user:  codigoAluno,
       email: codigoAluno,
@@ -1027,10 +1029,8 @@ function AbaCorretor({ provas = [], codigoAluno }) {
       turma: prova._turma_aluno || '',
       chave: CHAVE,
       tipo:  'aluno',
-      next:  provaUrl,       // Django redirecionará direto para a prova após login
+      next:  provaUrl,
     })
-
-    // Abre em nova aba — o ItagGame cuida do login e vai direto para a prova
     window.open(`${ITAGAME_URL}/login-magico/?${loginParams}`, '_blank')
   }
 
@@ -1055,39 +1055,48 @@ function AbaCorretor({ provas = [], codigoAluno }) {
       </div>
 
       {/* Lista de provas */}
-      {provas.map((prova) => (
-        <NeonCard key={prova.id} cor={N.azul}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              {/* Título */}
-              <div style={{ fontWeight: 900, fontSize: 17, color: N.branco, marginBottom: 8 }}>
-                📝 {prova.titulo}
+      {provas.map((prova) => {
+        const isCorretor = prova.tipo === 'corretor'
+        const cor = isCorretor ? N.verde : N.azul
+        return (
+          <NeonCard key={prova.id} cor={cor}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                {/* Fonte da prova */}
+                <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 2, color: cor, marginBottom: 4, textTransform: 'uppercase' }}>
+                  {isCorretor ? '📄 Corretor de Provas' : '🎮 ItagGame'}
+                </div>
+                {/* Título */}
+                <div style={{ fontWeight: 900, fontSize: 17, color: N.branco, marginBottom: 8 }}>
+                  {prova.titulo}
+                </div>
+                {/* Tags */}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: prova.descricao ? 8 : 0 }}>
+                  {prova.disciplina && <Tag label={prova.disciplina} cor={cor} />}
+                  {prova.xp_por_acerto > 0 && <Tag label={`+${prova.xp_por_acerto} XP`} cor={N.amarelo} />}
+                  {isCorretor && <Tag label="📊 Nota registrada" cor={N.verde} />}
+                </div>
+                {/* Descrição */}
+                {prova.descricao && (
+                  <div style={{ color: '#BBBBCC', fontSize: 13, lineHeight: 1.5 }}>{prova.descricao}</div>
+                )}
               </div>
-              {/* Tags */}
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: prova.descricao ? 8 : 0 }}>
-                {prova.disciplina && <Tag label={prova.disciplina} cor={N.azul} />}
-                {prova.xp_por_acerto > 0 && <Tag label={`+${prova.xp_por_acerto} XP por acerto`} cor={N.amarelo} />}
-              </div>
-              {/* Descrição */}
-              {prova.descricao && (
-                <div style={{ color: '#BBBBCC', fontSize: 13, lineHeight: 1.5 }}>{prova.descricao}</div>
-              )}
+              {/* Botão Fazer */}
+              <button
+                onClick={() => abrirProva(prova)}
+                style={{
+                  background: `linear-gradient(135deg, ${cor}, ${isCorretor ? '#008844' : '#0080aa'})`,
+                  border: 'none', borderRadius: 14, padding: '12px 20px',
+                  color: '#000', fontWeight: 900, fontSize: 14, cursor: 'pointer',
+                  boxShadow: `0 0 20px ${cor}55`, flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                }}>
+                {isCorretor ? '📊 Fazer agora' : '📋 Fazer agora'}
+              </button>
             </div>
-            {/* Botão Fazer */}
-            <button
-              onClick={() => abrirProva(prova)}
-              style={{
-                background: `linear-gradient(135deg, ${N.azul}, #0080aa)`,
-                border: 'none', borderRadius: 14, padding: '12px 20px',
-                color: '#000', fontWeight: 900, fontSize: 14, cursor: 'pointer',
-                boxShadow: `0 0 20px ${N.azul}55`, flexShrink: 0,
-                whiteSpace: 'nowrap',
-              }}>
-              📋 Fazer agora
-            </button>
-          </div>
-        </NeonCard>
-      ))}
+          </NeonCard>
+        )
+      })}
 
     </div>
   )

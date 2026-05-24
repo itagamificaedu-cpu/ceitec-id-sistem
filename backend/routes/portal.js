@@ -62,25 +62,22 @@ router.get('/:codigo', async (req, res) => {
       db.all('SELECT * FROM itagame_missao_entregas WHERE aluno_id = ?', [aluno.id]),
       db.all('SELECT titulo, mensagem, criado_em FROM itagame_recados WHERE escola_id = ? ORDER BY criado_em DESC LIMIT 10', [eid]),
       db.all('SELECT titulo, descricao, link_url, tipo, criado_em FROM itagame_repositorio WHERE escola_id = ? ORDER BY criado_em DESC', [eid]),
-      // Busca provas reais do ItagGame Django (IDs corretos para /prova/{id}/)
+      // Busca provas do ItagGame Django (não repetidas, com questões)
       (async () => {
         try {
-          // Sem filtro de turma: mostra todas as provas ativas com questões
           const resp = await fetch(
-            `https://projetoitagame.pythonanywhere.com/api/provas/?chave=gamificaedu_secreto_2026`
+            `https://projetoitagame.pythonanywhere.com/api/provas/?chave=gamificaedu_secreto_2026&aluno=${encodeURIComponent(aluno.codigo)}`
           );
           const json = await resp.json();
-          // Filtra provas com questões e mapeia para o formato esperado pelo frontend
-          return (json.provas || [])
-            .filter(p => p.total_questoes > 0)
-            .map(p => ({
-              id:          p.id,
-              titulo:      p.titulo,
-              descricao:   p.descricao || '',
-              disciplina:  '', // ItagGame não tem campo disciplina na prova
-              xp_por_acerto: p.xp_recompensa || 0,
-              total_questoes: p.total_questoes,
-            }));
+          return (json.provas || []).map(p => ({
+            id:            p.id,
+            titulo:        p.titulo,
+            descricao:     p.descricao || '',
+            disciplina:    '',
+            xp_por_acerto: p.xp_recompensa || 0,
+            total_questoes: p.total_questoes,
+            tipo:          'itagame', // distingue da prova do corretor
+          }));
         } catch (_) { return []; }
       })(),
       db.all('SELECT * FROM itagame_loja WHERE escola_id = ? AND ativo = 1 ORDER BY custo_xp ASC', [eid]),
@@ -141,11 +138,79 @@ router.get('/:codigo', async (req, res) => {
       })(),
     ]);
 
-    const xpTotal = xp?.xp_total || 0;
     const entregasMap = {};
     entregas.forEach(e => { entregasMap[e.missao_id] = e; });
     const resgatesMap = {};
     resgates.forEach(r => { resgatesMap[r.item_id] = r; });
+
+    // FIX: Buscar XP real do ItagGame Django e sincronizar com nossa tabela
+    let xpTotal = xp?.xp_total || 0;
+    try {
+      const statsResp = await fetch(
+        `https://projetoitagame.pythonanywhere.com/api/aluno-stats/?chave=gamificaedu_secreto_2026&aluno=${encodeURIComponent(aluno.codigo)}`
+      );
+      const stats = await statsResp.json();
+      if (stats.xp > 0) {
+        xpTotal = stats.xp; // usa XP real do ItagGame
+        // Sincroniza na nossa tabela para o ranking ficar correto
+        await db.run(
+          "INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, 1, '[]') ON CONFLICT (aluno_id) DO UPDATE SET xp_total = ?",
+          [aluno.id, aluno.turma_id, stats.xp, stats.xp]
+        );
+      }
+    } catch (_) { /* usa xp local se Django estiver fora */ }
+
+    // FIX: Buscar provas online do Corretor de Provas e adicionar à lista
+    let provasCorretor = [];
+    try {
+      const CORRETOR = 'https://correcaoonlineita.pythonanywhere.com';
+      const CHAVE_C  = 'gamificaedu_secreto_2026';
+      // Login como admin para acessar a lista de avaliações
+      const loginResp = await fetch(
+        `${CORRETOR}/login-magico/?email=itagamificaedu%40gmail.com&nome=ITA+Admin&chave=${CHAVE_C}`,
+        { redirect: 'manual' }
+      );
+      const cookie = (loginResp.headers.get('set-cookie') || '').match(/sessionid=([^;]+)/)?.[1];
+      if (cookie) {
+        const avPage = await fetch(`${CORRETOR}/avaliacoes/`, {
+          headers: { Cookie: `sessionid=${cookie}` }
+        });
+        const html = await avPage.text();
+        // Extrai provas publicadas e online — captura uuid e título
+        const matches = [...html.matchAll(/href="\/publica\/prova\/([\w-]+)\/"/g)];
+        const titles  = [...html.matchAll(/<a[^>]+href="\/avaliacoes\/([\w-]+)\/"[^>]*>\s*([\w\s\-:.]+?)\s*</g)];
+        const titleMap = {};
+        titles.forEach(m => { titleMap[m[1]] = m[2].trim(); });
+
+        // Também extrai turma e disciplina dos blocos de avaliação
+        const blocos = html.match(/<tr[\s\S]*?<\/tr>/g) || [];
+        for (const match of matches) {
+          const uuid  = match[1];
+          // Tenta encontrar turma/disciplina na linha da tabela
+          const blocoMatch = html.match(new RegExp(`href="/publica/prova/${uuid}/"[\\s\\S]{0,800}?(?=</tr>)`));
+          let disciplina = '', turma_nome = '';
+          if (blocoMatch) {
+            const tdVals = blocoMatch[0].match(/<td[^>]*>([\s\S]*?)<\/td>/g) || [];
+            const textos = tdVals.map(t => t.replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+            disciplina  = textos[1] || '';
+            turma_nome  = textos[2] || '';
+          }
+          provasCorretor.push({
+            id:            `corretor_${uuid}`,
+            titulo:        titleMap[uuid] || 'Avaliação Online',
+            descricao:     turma_nome ? `Turma: ${turma_nome}` : 'Avaliação do Corretor de Provas',
+            disciplina:    disciplina,
+            xp_por_acerto: 0,
+            total_questoes: 0,
+            tipo:          'corretor',
+            url_publica:   `${CORRETOR}/publica/prova/${uuid}/`,
+          });
+        }
+      }
+    } catch (_) { /* corretor indisponível, ignora */ }
+
+    // Combina provas do ItagGame + Corretor Online
+    const todasProvas = [...provas, ...provasCorretor];
 
     res.json({
       aluno: { id: aluno.id, nome: aluno.nome, codigo: aluno.codigo, turma: aluno.turma, foto_path: aluno.foto_path },
@@ -156,7 +221,7 @@ router.get('/:codigo', async (req, res) => {
         historico: historico_xp,
         recados,
         missoes: missoes.map(m => ({ ...m, entrega: entregasMap[m.id] || null })),
-        provas,
+        provas: todasProvas,
         loja: loja.map(item => ({ ...item, resgate: resgatesMap[item.id] || null })),
       },
       notas,
@@ -165,7 +230,7 @@ router.get('/:codigo', async (req, res) => {
       repositorio,
       avaliacoes: avaliacoes_turma.map(av => ({ ...av, ja_respondeu: parseInt(av.ja_respondeu) > 0 })),
       quizzes: quizzes_escola.map(q => ({ ...q, total_questoes: parseInt(q.total_questoes) || 0, ja_jogou: parseInt(q.ja_jogou) > 0 })),
-      startup: startup_equipe, // equipe do empreendedorismo digital (null se não cadastrado)
+      startup: startup_equipe,
     });
   } catch (err) {
     res.status(500).json({ erro: err.message });
