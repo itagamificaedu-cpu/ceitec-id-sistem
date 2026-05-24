@@ -11,7 +11,7 @@ const TABS = [
   { id: 'missoes',     label: 'MISSÕES',     emoji: '🎯' },
   { id: 'loja',        label: 'LOJA',        emoji: '💰' },
   { id: 'avaliacoes',  label: 'AVALIAÇÕES',  emoji: '🧪' },
-  { id: 'corretor',    label: 'CORRETOR',    emoji: '📋' },
+  { id: 'corretor',    label: 'PROVAS',      emoji: '📋' },
   { id: 'startup',     label: 'STARTUP',     emoji: '💼' },
   { id: 'notas',       label: 'NOTAS',       emoji: '📝' },
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
@@ -257,7 +257,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
-        {aba === 'corretor'    && <AbaCorretor codigoAluno={aluno.codigo} nomeAluno={aluno.nome} />}
+        {aba === 'corretor'    && <AbaCorretor provas={itagame.provas || []} codigoAluno={aluno.codigo} />}
         {aba === 'startup'     && <AbaStartup startup={startup} aluno={aluno} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
@@ -412,7 +412,7 @@ function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItaga
         <span>COPA DO SABER — QUIZ INTERATIVO</span>
       </button>
 
-      {/* Acesso rápido: Corretor de Provas */}
+      {/* Acesso rápido: Provas disponíveis */}
       <button onClick={onIrCorretor} style={{
         background: 'linear-gradient(135deg, #1a237e, #283593)',
         border: `1px solid #3949ab`,
@@ -422,7 +422,7 @@ function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItaga
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
       }}>
         <span style={{ fontSize: 28 }}>📋</span>
-        <span>CORRETOR DE PROVAS — VER RESULTADOS</span>
+        <span>PROVAS — FAZER AGORA</span>
       </button>
     </div>
   )
@@ -1007,82 +1007,126 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
 }
 
 /* ══════════════════════════════════════════
-   CORRETOR DE PROVAS — resultados do aluno
+   CORRETOR — provas disponíveis para o aluno fazer
+   Mostra as provas criadas pelo professor no sistema
+   ItagGame. O aluno clica e faz a prova diretamente.
 ══════════════════════════════════════════ */
-function AbaCorretor({ codigoAluno, nomeAluno }) {
-  const [resultados, setResultados] = React.useState(null)
-  const [carregando, setCarregando] = React.useState(true)
-  const [aviso, setAviso] = React.useState('')
+function AbaCorretor({ provas = [], codigoAluno }) {
+  const [codigoDigitado, setCodigoDigitado] = React.useState('')
+  const [provaAtiva, setProvaAtiva] = React.useState(null)
 
-  React.useEffect(() => {
-    async function buscar() {
-      try {
-        const { data } = await api.get(`/portal/corretor/${codigoAluno}`)
-        setResultados(data.resultados || [])
-        if (data.aviso) setAviso(data.aviso)
-      } catch {
-        setResultados([])
-        setAviso('Não foi possível carregar os resultados agora.')
-      } finally {
-        setCarregando(false)
-      }
+  // Abre a prova: se tem codigo_acesso, usa o do sistema; senão pede ao aluno
+  function abrirProva(prova) {
+    const code = prova.codigo_acesso || codigoDigitado.trim()
+    if (!code) {
+      setProvaAtiva(prova)
+      return
     }
-    buscar()
-  }, [codigoAluno])
+    const ITAGAME_URL = 'https://projetoitagame.pythonanywhere.com'
+    const CHAVE = 'gamificaedu_secreto_2026'
+    const params = new URLSearchParams({
+      codigo_prova: code,
+      aluno_codigo: codigoAluno,
+      chave: CHAVE,
+    })
+    window.open(`${ITAGAME_URL}/prova/?${params}`, '_blank')
+  }
 
-  if (carregando) return (
-    <div style={{ textAlign: 'center', paddingTop: 60, color: N.cinza }}>
-      <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-      <div style={{ fontWeight: 700 }}>Buscando seus resultados...</div>
+  if (provas.length === 0) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, paddingTop: 40 }}>
+      <div style={{ fontSize: 60 }}>📋</div>
+      <div style={{ color: N.branco, fontWeight: 900, fontSize: 20, textAlign: 'center' }}>
+        Nenhuma prova disponível
+      </div>
+      <div style={{ color: N.cinza, fontSize: 14, textAlign: 'center', maxWidth: 340, lineHeight: 1.6 }}>
+        Quando seu professor liberar uma prova para sua turma, ela aparece aqui para você fazer.
+      </div>
     </div>
-  )
-
-  if (aviso && (!resultados || resultados.length === 0)) return (
-    <div style={{ textAlign: 'center', paddingTop: 60 }}>
-      <div style={{ fontSize: 50, marginBottom: 16 }}>📋</div>
-      <div style={{ color: N.branco, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Corretor de Provas</div>
-      <div style={{ color: N.cinza, fontSize: 14, marginBottom: 24 }}>{aviso}</div>
-    </div>
-  )
-
-  if (!resultados || resultados.length === 0) return (
-    <Vazio emoji="📋" texto="Nenhuma prova corrigida ainda. Quando seu professor corrigir uma prova, aparece aqui!" />
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>
-        Provas Corrigidas — {resultados.length} resultado{resultados.length !== 1 ? 's' : ''}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Cabeçalho */}
+      <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase' }}>
+        📋 Provas disponíveis — {provas.length} prova{provas.length !== 1 ? 's' : ''}
       </div>
-      {resultados.map((r, i) => {
-        const aprovado = r.nota >= 6
-        const cor = aprovado ? N.verde : r.nota >= 4 ? N.amarelo : N.rosa
-        const pct = r.acertos + r.erros > 0 ? Math.round((r.acertos / (r.acertos + r.erros)) * 100) : 0
-        return (
-          <NeonCard key={i} cor={cor}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 900, fontSize: 16, color: N.branco, marginBottom: 6 }}>
-                  {aprovado ? '✅' : '⚠️'} {r.avaliacao || 'Avaliação'}
-                </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {r.disciplina && <Tag label={r.disciplina} cor={N.azul} />}
-                  <Tag label={`${r.acertos} acertos`} cor={N.verde} />
-                  <Tag label={`${r.erros} erros`} cor={N.rosa} />
-                  {r.data && <Tag label={r.data} cor={N.cinza} />}
-                </div>
+
+      {/* Lista de provas */}
+      {provas.map((prova) => (
+        <NeonCard key={prova.id} cor={N.azul}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              {/* Título */}
+              <div style={{ fontWeight: 900, fontSize: 17, color: N.branco, marginBottom: 8 }}>
+                📝 {prova.titulo}
               </div>
-              <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: cor, lineHeight: 1, textShadow: `0 0 14px ${cor}` }}>
-                  {r.nota.toFixed(1)}
-                </div>
-                <div style={{ color: N.cinza, fontSize: 11, fontWeight: 700 }}>nota</div>
-                <div style={{ color: cor, fontSize: 12, fontWeight: 900, marginTop: 4 }}>{pct}%</div>
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: prova.descricao ? 8 : 0 }}>
+                {prova.disciplina && <Tag label={prova.disciplina} cor={N.azul} />}
+                {prova.xp_por_acerto > 0 && <Tag label={`+${prova.xp_por_acerto} XP por acerto`} cor={N.amarelo} />}
               </div>
+              {/* Descrição */}
+              {prova.descricao && (
+                <div style={{ color: '#BBBBCC', fontSize: 13, lineHeight: 1.5 }}>{prova.descricao}</div>
+              )}
             </div>
-          </NeonCard>
-        )
-      })}
+            {/* Botão Fazer */}
+            <button
+              onClick={() => abrirProva(prova)}
+              style={{
+                background: `linear-gradient(135deg, ${N.azul}, #0080aa)`,
+                border: 'none', borderRadius: 14, padding: '12px 20px',
+                color: '#000', fontWeight: 900, fontSize: 14, cursor: 'pointer',
+                boxShadow: `0 0 20px ${N.azul}55`, flexShrink: 0,
+                whiteSpace: 'nowrap',
+              }}>
+              Fazer agora →
+            </button>
+          </div>
+        </NeonCard>
+      ))}
+
+      {/* Modal: pede código de acesso se a prova não tiver um pré-definido */}
+      {provaAtiva && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}>
+          <div style={{ background: N.card, border: `1px solid ${N.borda}`, borderRadius: 20, padding: 28, maxWidth: 360, width: '100%' }}>
+            <div style={{ fontWeight: 900, fontSize: 18, color: N.branco, marginBottom: 8 }}>🔑 Código de acesso</div>
+            <div style={{ color: N.cinza, fontSize: 13, marginBottom: 16 }}>
+              Peça o código da prova <strong style={{ color: N.branco }}>{provaAtiva.titulo}</strong> para o seu professor.
+            </div>
+            <input
+              type="text"
+              placeholder="Ex: MAT2025"
+              value={codigoDigitado}
+              onChange={e => setCodigoDigitado(e.target.value.toUpperCase())}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: '#1E1E2E', border: `1px solid ${N.borda}`,
+                color: N.branco, borderRadius: 12, padding: '12px 16px',
+                fontSize: 16, fontWeight: 700, letterSpacing: 2, textAlign: 'center',
+                outline: 'none', marginBottom: 16,
+              }}
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => { setProvaAtiva(null); setCodigoDigitado('') }}
+                style={{ flex: 1, background: 'transparent', border: `1px solid ${N.borda}`, color: N.cinza, borderRadius: 12, padding: '11px', cursor: 'pointer', fontWeight: 700 }}>
+                Cancelar
+              </button>
+              <button
+                onClick={() => { abrirProva({ ...provaAtiva, codigo_acesso: codigoDigitado.trim() }); setProvaAtiva(null) }}
+                disabled={!codigoDigitado.trim()}
+                style={{ flex: 2, background: N.azul, border: 'none', color: '#000', borderRadius: 12, padding: '11px', cursor: 'pointer', fontWeight: 900, fontSize: 15, opacity: codigoDigitado.trim() ? 1 : 0.4 }}>
+                ✅ Entrar na prova
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
