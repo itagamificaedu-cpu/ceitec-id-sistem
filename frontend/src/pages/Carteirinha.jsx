@@ -329,16 +329,10 @@ export default function Carteirinha() {
 
           .print-grid {
             display: grid !important;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
             grid-template-columns: repeat(3, auto);
             gap: 5mm;
             justify-content: center;
             align-content: start;
-            padding: 8mm;
-            box-sizing: border-box;
           }
 
           .print-card-slot {
