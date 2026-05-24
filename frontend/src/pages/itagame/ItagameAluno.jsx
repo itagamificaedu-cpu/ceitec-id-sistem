@@ -1013,20 +1013,28 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
 ══════════════════════════════════════════ */
 function AbaCorretor({ provas = [], codigoAluno }) {
 
-  // Abre a prova: faz login mágico no ItagGame e redireciona para a prova pelo ID
-  // Usa os mesmos parâmetros que o botão ItagGame usa (user + email + nome + turma + tipo)
+  // Abre a prova em 2 passos:
+  // 1º) Abre magic login em nova aba (autentica o aluno no ItagGame)
+  // 2º) Logo em seguida abre a prova diretamente (aluno já está logado)
   function abrirProva(prova) {
-    const next = prova.id ? `/prova/${prova.id}/` : '/provas/'
-    const params = new URLSearchParams({
+    const loginParams = new URLSearchParams({
       user:  codigoAluno,
       email: codigoAluno,
       nome:  prova._nome_aluno || codigoAluno,
       turma: prova._turma_aluno || '',
       chave: CHAVE,
       tipo:  'aluno',
-      next,
     })
-    window.open(`${ITAGAME_URL}/login-magico/?${params}`, '_blank')
+    // Passo 1: abre o login (cria sessão no ItagGame)
+    window.open(`${ITAGAME_URL}/login-magico/?${loginParams}`, '_blank')
+
+    // Passo 2: após 2 segundos (tempo para o login completar), abre a prova
+    const provaUrl = prova.id
+      ? `${ITAGAME_URL}/prova/${prova.id}/`
+      : `${ITAGAME_URL}/provas/`
+    setTimeout(() => {
+      window.open(provaUrl, '_blank')
+    }, 2000)
   }
 
   if (provas.length === 0) return (
