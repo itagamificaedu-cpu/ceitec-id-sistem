@@ -259,7 +259,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
         {aba === 'corretor'    && <AbaCorretor provas={(itagame.provas || []).map(p => ({ ...p, _nome_aluno: aluno.nome, _turma_aluno: aluno.turma || '' }))} codigoAluno={aluno.codigo} />}
         {aba === 'startup'     && <AbaStartup startup={startup} aluno={aluno} />}
-        {aba === 'notas'       && <AbaNotas notas={notas} />}
+        {aba === 'notas'       && <AbaNotas notas={notas} provasCorretor={(itagame.provas || []).filter(p => p.ja_fez && p.tipo === 'corretor')} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
         {aba === 'repositorio' && <AbaRepositorio repositorio={repositorio} />}
@@ -431,9 +431,11 @@ function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItaga
 /* ══════════════════════════════════════════
    NOTAS
 ══════════════════════════════════════════ */
-function AbaNotas({ notas }) {
-  if (!notas.length) return <Vazio emoji="📝" texto="Nenhuma avaliação lançada ainda." />
-  const media = Math.round((notas.reduce((s, n) => s + n.nota_final, 0) / notas.length) * 10) / 10
+function AbaNotas({ notas, provasCorretor = [] }) {
+  const totalNotas = notas.length + provasCorretor.length
+  if (!totalNotas) return <Vazio emoji="📝" texto="Nenhuma avaliação lançada ainda." />
+  const somaNotas = notas.reduce((s, n) => s + n.nota_final, 0) + provasCorretor.reduce((s, p) => s + (p.nota_aluno || 0), 0)
+  const media = Math.round((somaNotas / totalNotas) * 10) / 10
   const cm = media >= 7 ? N.verde : media >= 5 ? N.amarelo : N.rosa
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -449,7 +451,7 @@ function AbaNotas({ notas }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 52 }}>{media >= 7 ? '🏆' : media >= 5 ? '📊' : '📉'}</div>
-          <div style={{ color: N.cinza, fontSize: 14, fontWeight: 700, marginTop: 8 }}>{notas.length} avaliações</div>
+          <div style={{ color: N.cinza, fontSize: 14, fontWeight: 700, marginTop: 8 }}>{totalNotas} avaliações</div>
         </div>
       </div>
 
@@ -477,6 +479,40 @@ function AbaNotas({ notas }) {
           </NeonCard>
         )
       })}
+
+      {provasCorretor.length > 0 && (
+        <>
+          {notas.length > 0 && (
+            <div style={{ color: N.cinza, fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginTop: 4 }}>
+              📄 Provas do Corretor Online
+            </div>
+          )}
+          {provasCorretor.map((p, i) => {
+            const nota = p.nota_aluno || 0
+            const cor  = nota >= 7 ? N.verde : nota >= 5 ? N.amarelo : N.rosa
+            return (
+              <NeonCard key={`corretor_${i}`} cor={cor}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: cor, fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>📄 Corretor de Provas</div>
+                    <div style={{ fontWeight: 900, fontSize: 16, color: N.branco }}>{p.titulo}</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                      {p.disciplina && <Tag label={p.disciplina} cor={N.azul} />}
+                      <Tag label="✅ Realizada" cor={N.verde} />
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                    <div style={{ fontSize: 46, fontWeight: 900, color: cor, lineHeight: 1, textShadow: `0 0 20px ${cor}` }}>
+                      {nota.toFixed(1).replace('.', ',')}
+                    </div>
+                    <div style={{ color: N.cinza, fontSize: 12, fontWeight: 800, marginTop: 4 }}>SUA NOTA</div>
+                  </div>
+                </div>
+              </NeonCard>
+            )
+          })}
+        </>
+      )}
     </div>
   )
 }

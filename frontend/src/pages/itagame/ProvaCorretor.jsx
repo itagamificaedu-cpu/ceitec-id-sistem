@@ -117,30 +117,42 @@ export default function ProvaCorretor() {
   if (resultado) return (
     <div style={{ minHeight: '100vh', background: N.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ background: N.card, borderRadius: 28, padding: 40, maxWidth: 480, width: '100%', border: `2px solid ${N.verde}44`, textAlign: 'center', boxShadow: `0 0 60px ${N.verde}22` }}>
-        <div style={{ fontSize: 64, marginBottom: 12 }}>🎉</div>
-        <div style={{ color: N.verde, fontWeight: 900, fontSize: 28, letterSpacing: 2, marginBottom: 4 }}>PROVA ENVIADA!</div>
+        <div style={{ fontSize: 64, marginBottom: 12 }}>{resultado.ja_realizou ? '✅' : '🎉'}</div>
+        <div style={{ color: N.verde, fontWeight: 900, fontSize: 28, letterSpacing: 2, marginBottom: 4 }}>
+          {resultado.ja_realizou ? 'PROVA JÁ REALIZADA!' : 'PROVA ENVIADA!'}
+        </div>
         <div style={{ color: N.cinza, fontSize: 14, marginBottom: 32 }}>{prova?.titulo}</div>
 
         <div style={{ background: '#0A0A0F', borderRadius: 20, padding: 24, marginBottom: 24, border: `1px solid ${N.verde}33` }}>
           <div style={{ color: N.cinza, fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>SUA NOTA</div>
-          <div style={{ color: N.verde, fontWeight: 900, fontSize: 56, lineHeight: 1, textShadow: `0 0 30px ${N.verde}` }}>
-            {resultado.nota?.toFixed(1).replace('.', ',')}
-          </div>
+          {resultado.nota != null ? (
+            <div style={{ color: N.verde, fontWeight: 900, fontSize: 56, lineHeight: 1, textShadow: `0 0 30px ${N.verde}` }}>
+              {resultado.nota.toFixed(1).replace('.', ',')}
+            </div>
+          ) : (
+            <div style={{ color: N.cinza, fontSize: 16, fontWeight: 700, padding: '8px 0' }}>
+              Nota registrada no sistema
+            </div>
+          )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
-          <div style={{ background: '#0A0A0F', borderRadius: 14, padding: '12px 16px', border: `1px solid ${N.verde}33` }}>
-            <div style={{ color: N.verde, fontWeight: 900, fontSize: 24 }}>✅ {resultado.acertos}</div>
-            <div style={{ color: N.cinza, fontSize: 12, marginTop: 2 }}>Acertos</div>
+        {(resultado.acertos != null || resultado.erros != null) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
+            <div style={{ background: '#0A0A0F', borderRadius: 14, padding: '12px 16px', border: `1px solid ${N.verde}33` }}>
+              <div style={{ color: N.verde, fontWeight: 900, fontSize: 24 }}>✅ {resultado.acertos ?? '—'}</div>
+              <div style={{ color: N.cinza, fontSize: 12, marginTop: 2 }}>Acertos</div>
+            </div>
+            <div style={{ background: '#0A0A0F', borderRadius: 14, padding: '12px 16px', border: `1px solid ${N.rosa}33` }}>
+              <div style={{ color: N.rosa, fontWeight: 900, fontSize: 24 }}>❌ {resultado.erros ?? '—'}</div>
+              <div style={{ color: N.cinza, fontSize: 12, marginTop: 2 }}>Erros</div>
+            </div>
           </div>
-          <div style={{ background: '#0A0A0F', borderRadius: 14, padding: '12px 16px', border: `1px solid ${N.rosa}33` }}>
-            <div style={{ color: N.rosa, fontWeight: 900, fontSize: 24 }}>❌ {resultado.erros}</div>
-            <div style={{ color: N.cinza, fontSize: 12, marginTop: 2 }}>Erros</div>
-          </div>
-        </div>
+        )}
 
         <div style={{ color: N.cinza, fontSize: 13, marginBottom: 24, lineHeight: 1.5 }}>
-          Sua nota foi registrada automaticamente no sistema.
+          {resultado.ja_realizou
+            ? 'Esta prova já foi realizada anteriormente. A nota está salva no sistema.'
+            : 'Sua nota foi registrada automaticamente no sistema.'}
         </div>
 
         <button onClick={() => window.close()} style={{

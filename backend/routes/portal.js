@@ -172,10 +172,14 @@ router.get('/:codigo', async (req, res) => {
       );
       const cookie = (loginResp.headers.get('set-cookie') || '').match(/sessionid=([^;]+)/)?.[1];
       if (cookie) {
-        const avPage = await fetch(`${CORRETOR}/avaliacoes/`, {
-          headers: { Cookie: `sessionid=${cookie}` }
-        });
-        const html = await avPage.text();
+        // Busca avaliações E resultados em paralelo (resultados para detectar provas feitas sem histórico)
+        const [avPage, resPage] = await Promise.all([
+          fetch(`${CORRETOR}/avaliacoes/`, { headers: { Cookie: `sessionid=${cookie}` } }),
+          fetch(`${CORRETOR}/resultados/`,  { headers: { Cookie: `sessionid=${cookie}` } }),
+        ]);
+        const html         = await avPage.text();
+        const resultadosHtml = await resPage.text();
+
         // Parse cada <tr> da tabela — estrutura: TD[0]=titulo TD[1]=escola TD[2]=disciplina TD[3]=turma TD[4]=questões TD[5]=status
         const trs = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)];
         for (const trMatch of trs) {
@@ -206,32 +210,76 @@ router.get('/:codigo', async (req, res) => {
             url_publica:   `${CORRETOR}/publica/prova/${uuid}/`,
           });
         }
+
+        // Marca provas do Corretor que o aluno já fez, com a nota real do histórico
+        if (provasCorretor.length > 0) {
+          const corretorFeitas = await db.all(
+            "SELECT descricao FROM itagame_historico WHERE aluno_id = ? AND tipo = 'prova_corretor'",
+            [aluno.id]
+          );
+          // Monta mapa: primeiros 8 chars do UUID → nota
+          const notasMap = {};
+          for (const h of corretorFeitas) {
+            const m = (h.descricao || '').match(/Prova:\s+([\w]+).*Nota\s+([\d,]+)/);
+            if (m) notasMap[m[1]] = parseFloat(m[2].replace(',', '.'));
+          }
+          provasCorretor = provasCorretor.map(p => {
+            const uuid_p = p.id.replace('corretor_', '');
+            const prefix = uuid_p.substring(0, 8);
+            if (notasMap[prefix] !== undefined) {
+              return { ...p, ja_fez: true, nota_aluno: notasMap[prefix] };
+            }
+            return p;
+          });
+
+          // Para provas ainda não marcadas: verifica página de resultados do Corretor Online
+          // (detecta alunos que fizeram a prova antes do fix de historico)
+          const provasNaoMarcadas = provasCorretor.filter(p => !p.ja_fez);
+          if (provasNaoMarcadas.length > 0) {
+            try {
+              const tableMatch = resultadosHtml.match(/<table[\s\S]*?<\/table>/);
+              if (tableMatch) {
+                const rows = tableMatch[0].match(/<tr>([\s\S]*?)<\/tr>/g) || [];
+                const primeiroNome = aluno.nome.toUpperCase().split(' ')[0];
+                for (const row of rows) {
+                  const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) || [])
+                    .map(c => c.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+                  if (cells.length < 5 || !cells[0]) continue;
+                  if (!cells[0].toUpperCase().includes(primeiroNome)) continue;
+                  const tituloRes = (cells[2] || '').trim().toLowerCase();
+                  const notaRes   = parseFloat((cells[4] || '0').replace(',', '.')) || 0;
+                  // Encontra prova correspondente pelo título
+                  const provaMatch = provasNaoMarcadas.find(p =>
+                    p.titulo.trim().toLowerCase() === tituloRes ||
+                    tituloRes.startsWith(p.titulo.trim().toLowerCase().substring(0, 12))
+                  );
+                  if (provaMatch) {
+                    const uuid_m   = provaMatch.id.replace('corretor_', '');
+                    const prefix_m = uuid_m.substring(0, 8);
+                    // Salva no histórico (só se ainda não existe)
+                    const jaExiste = await db.get(
+                      "SELECT id FROM itagame_historico WHERE aluno_id = ? AND tipo = 'prova_corretor' AND descricao LIKE ?",
+                      [aluno.id, `Prova: ${prefix_m}%`]
+                    );
+                    if (!jaExiste) {
+                      await db.run(
+                        `INSERT INTO itagame_historico (aluno_id, escola_id, tipo, descricao, xp_ganho, criado_em)
+                         VALUES (?, ?, 'prova_corretor', ?, 0, NOW())`,
+                        [aluno.id, aluno.escola_id, `Prova: ${prefix_m}… — Nota ${notaRes.toFixed(1).replace('.', ',')}`]
+                      );
+                    }
+                    // Marca como ja_fez na lista
+                    provasCorretor = provasCorretor.map(p =>
+                      p.id === provaMatch.id ? { ...p, ja_fez: true, nota_aluno: notaRes } : p
+                    );
+                  }
+                }
+              }
+            } catch (_) {}
+          }
+        }
       }
     } catch (_) { /* corretor indisponível, ignora */ }
-
-    // Marca provas do Corretor que o aluno já fez, com a nota real do histórico
-    if (provasCorretor.length > 0) {
-      try {
-        const corretorFeitas = await db.all(
-          "SELECT descricao FROM itagame_historico WHERE aluno_id = ? AND tipo = 'prova_corretor'",
-          [aluno.id]
-        );
-        // Monta mapa: primeiros 8 chars do UUID → nota
-        const notasMap = {};
-        for (const h of corretorFeitas) {
-          const m = (h.descricao || '').match(/Prova:\s+([\w]+).*Nota\s+([\d,]+)/);
-          if (m) notasMap[m[1]] = parseFloat(m[2].replace(',', '.'));
-        }
-        provasCorretor = provasCorretor.map(p => {
-          const uuid   = p.id.replace('corretor_', '');
-          const prefix = uuid.substring(0, 8);
-          if (notasMap[prefix] !== undefined) {
-            return { ...p, ja_fez: true, nota_aluno: notasMap[prefix] };
-          }
-          return p;
-        });
-      } catch (_) {}
-    }
 
     // Combina provas do ItagGame + Corretor Online
     const todasProvas = [...provas, ...provasCorretor];
@@ -383,6 +431,63 @@ router.post('/corretor-submit/:uuid', async (req, res) => {
         // Falha na importação — mantém o erro original do Corretor
         console.error('[corretor-submit] Erro ao importar aluno:', importErr.message);
       }
+    }
+
+    // Caso: aluno já realizou a prova — recupera nota e retorna como sucesso
+    if (!result.sucesso && result.erro && result.erro.toLowerCase().includes('realizou')) {
+      const prefix = uuid.substring(0, 8);
+      // Tenta nota do histórico local (mais rápido)
+      const historicoEntry = await db.get(
+        "SELECT descricao FROM itagame_historico WHERE aluno_id = ? AND tipo = 'prova_corretor' AND descricao LIKE ?",
+        [aluno.id, `Prova: ${prefix}%`]
+      );
+      if (historicoEntry) {
+        const notaM = (historicoEntry.descricao || '').match(/Nota\s+([\d,]+)/);
+        const nota  = notaM ? parseFloat(notaM[1].replace(',', '.')) : null;
+        return res.json({ sucesso: true, ja_realizou: true, nota });
+      }
+      // Não está no histórico — busca na página de resultados do Corretor Online
+      try {
+        const loginResp2 = await fetch(
+          `${CORRETOR}/login-magico/?email=itagamificaedu%40gmail.com&nome=ITA+Admin&chave=gamificaedu_secreto_2026`,
+          { redirect: 'manual' }
+        );
+        const cookie2 = (loginResp2.headers.get('set-cookie') || '').match(/sessionid=([^;]+)/)?.[1];
+        if (cookie2) {
+          const [provaHtml2, resHtml] = await Promise.all([
+            fetch(`${CORRETOR}/publica/prova/${uuid}/`).then(r => r.text()).catch(() => ''),
+            fetch(`${CORRETOR}/resultados/`, { headers: { Cookie: `sessionid=${cookie2}` } }).then(r => r.text()),
+          ]);
+          const tituloM     = provaHtml2.match(/<title>([^<]+)<\/title>/);
+          const provaTitulo = tituloM ? tituloM[1].trim().toLowerCase() : '';
+          const tableMatch  = resHtml.match(/<table[\s\S]*?<\/table>/);
+          if (tableMatch) {
+            const rows = tableMatch[0].match(/<tr>([\s\S]*?)<\/tr>/g) || [];
+            const primeiroNome = alunoNome.split(' ')[0];
+            for (const row of rows) {
+              const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) || [])
+                .map(c => c.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim());
+              if (cells.length < 5 || !cells[0]) continue;
+              if (!cells[0].toUpperCase().includes(primeiroNome)) continue;
+              const tituloRes = (cells[2] || '').trim().toLowerCase();
+              if (provaTitulo && (tituloRes === provaTitulo || provaTitulo.startsWith(tituloRes.substring(0, 10)))) {
+                const nota = parseFloat((cells[4] || '0').replace(',', '.')) || 0;
+                // Salva no histórico para futuras consultas
+                try {
+                  await db.run(
+                    `INSERT INTO itagame_historico (aluno_id, escola_id, tipo, descricao, xp_ganho, criado_em)
+                     VALUES (?, ?, 'prova_corretor', ?, 0, NOW())`,
+                    [aluno.id, aluno.escola_id, `Prova: ${prefix}… — Nota ${nota.toFixed(1).replace('.', ',')}`]
+                  );
+                } catch (_) {}
+                return res.json({ sucesso: true, ja_realizou: true, nota });
+              }
+            }
+          }
+        }
+      } catch (_) {}
+      // Se não conseguiu obter a nota, informa que já realizou sem nota
+      return res.json({ sucesso: true, ja_realizou: true, nota: null });
     }
 
     // Registra no histórico do portal se aprovado
