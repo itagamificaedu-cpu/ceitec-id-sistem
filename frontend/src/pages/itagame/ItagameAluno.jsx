@@ -257,7 +257,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
-        {aba === 'corretor'    && <AbaCorretor provas={(itagame.provas || []).map(p => ({ ...p, _nome_aluno: aluno.nome }))} codigoAluno={aluno.codigo} />}
+        {aba === 'corretor'    && <AbaCorretor provas={(itagame.provas || []).map(p => ({ ...p, _nome_aluno: aluno.nome, _turma_aluno: aluno.turma || '' }))} codigoAluno={aluno.codigo} />}
         {aba === 'startup'     && <AbaStartup startup={startup} aluno={aluno} />}
         {aba === 'notas'       && <AbaNotas notas={notas} />}
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
@@ -1014,16 +1014,16 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
 function AbaCorretor({ provas = [], codigoAluno }) {
 
   // Abre a prova: faz login mágico no ItagGame e redireciona para a prova pelo ID
+  // Usa os mesmos parâmetros que o botão ItagGame usa (user + email + nome + turma + tipo)
   function abrirProva(prova) {
-    const ITAGAME_URL = 'https://projetoitagame.pythonanywhere.com'
-    const CHAVE = 'gamificaedu_secreto_2026'
-    // next aponta para a prova pelo ID (ex: /prova/5/)
-    // se não tiver ID, vai para a lista de provas
     const next = prova.id ? `/prova/${prova.id}/` : '/provas/'
     const params = new URLSearchParams({
-      email:  codigoAluno,          // usa o código como identificador
-      nome:   prova._nome_aluno || codigoAluno,
-      chave:  CHAVE,
+      user:  codigoAluno,
+      email: codigoAluno,
+      nome:  prova._nome_aluno || codigoAluno,
+      turma: prova._turma_aluno || '',
+      chave: CHAVE,
+      tipo:  'aluno',
       next,
     })
     window.open(`${ITAGAME_URL}/login-magico/?${params}`, '_blank')
