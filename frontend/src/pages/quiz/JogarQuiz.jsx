@@ -1,67 +1,143 @@
-import React, { useEffect, useState, useRef } from 'react'
+/**
+ * Quiz ao Vivo — Tela do Aluno
+ * Conecta via Socket.io à sala criada pelo professor e exibe
+ * lobby → questões → feedback → pódio individual
+ */
+
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import api from '../../api'
+import { io } from 'socket.io-client'
 
-const LETRAS = ['A', 'B', 'C', 'D']
-const CORES = ['#e21b3c', '#1368ce', '#d89e00', '#2e7d32']
-const EMOJIS_CORRETO = ['🎉', '🔥', '💪', '🚀', '⭐', '🏆']
-const EMOJIS_ERRADO = ['😬', '😅', '💀', '🤦', '😭']
+const CORES  = ['#e21b3c', '#1368ce', '#d89e00', '#26890c']
+const FORMAS = ['▲', '◆', '⬤', '■']
+const BG     = '#0f0c29'
+const CARD   = '#1a1a3e'
+const BORDA  = '#3a3a6a'
 
+/* ── Spinner genérico ── */
+function Spinner({ texto }) {
+  return (
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+      <div style={{ fontSize: 48 }}>⏳</div>
+      <p style={{ color: '#fff', fontWeight: 700, fontSize: 18, margin: 0 }}>{texto}</p>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   COMPONENTE PRINCIPAL
+══════════════════════════════════════════ */
 export default function JogarQuiz() {
   const { codigo } = useParams()
   const [searchParams] = useSearchParams()
+  const alunoCode  = searchParams.get('aluno') || ''
+  const nomeParam  = searchParams.get('nome')  || ''
 
-  const [etapa, setEtapa] = useState('nome')   // nome | carregando | jogando | resultado
-  const [nome, setNome] = useState('')
-  const [codigoCarteirinha, setCodigoCarteirinha] = useState(() => searchParams.get('aluno') || '')
-  const [quiz, setQuiz] = useState(null)
-  const [questoes, setQuestoes] = useState([])
-  const [erro, setErro] = useState('')
+  /* estados do jogo */
+  const [etapa,       setEtapa]       = useState('setup')
+  const [nome,        setNome]        = useState(nomeParam)
+  const [erro,        setErro]        = useState('')
+  const [playerInfo,  setPlayerInfo]  = useState(null)   // {nome,avatar,quizTitulo,totalQuestoes}
+  const [questao,     setQuestao]     = useState(null)   // {enunciado,alts,timeLimit,index,total}
+  const [tempo,       setTempo]       = useState(30)
+  const [respondeu,   setRespondeu]   = useState(false)
+  const [escolhida,   setEscolhida]   = useState(null)
+  const [feedback,    setFeedback]    = useState(null)   // {correct,points,totalScore,position,...}
+  const [meuResultado,setMeuResultado]= useState(null)   // {position,score,answers}
+  const [dadosFinais, setDadosFinais] = useState(null)   // {leaderboard,totalQuestoes,questoes}
 
-  const [indice, setIndice] = useState(0)
-  const [respostas, setRespostas] = useState([])
-  const [respondeu, setRespondeu] = useState(false)
-  const [escolhida, setEscolhida] = useState(null)
-  const [tempo, setTempo] = useState(30)
-  const [acertos, setAcertos] = useState(0)
+  const socketRef  = useRef(null)
+  const timerRef   = useRef(null)
+  const etapaRef   = useRef('setup')
+  etapaRef.current = etapa
 
-  const [resultado, setResultado] = useState(null)
-  const [xpGanho, setXpGanho] = useState(0)
+  /* ── Conecta Socket.io e registra eventos ── */
+  const conectar = useCallback((nomeFinal) => {
+    if (socketRef.current) socketRef.current.disconnect()
+    const socket = io()
+    socketRef.current = socket
 
-  const timerRef = useRef(null)
-  const tempoInicioRef = useRef(null)
-  const respostasRef = useRef([])  // ref para evitar stale closure
+    socket.on('connect', () => {
+      socket.emit('quiz:join', {
+        codigo:    (codigo || '').toUpperCase(),
+        alunoCode: alunoCode || undefined,
+        alunoNome: nomeFinal,
+      })
+    })
 
-  // Carrega quiz ao entrar
-  async function iniciar() {
-    if (!nome.trim()) return setErro('Digite seu nome para começar!')
-    setErro('')
-    setEtapa('carregando')
-    try {
-      const { data } = await api.get(`/quiz/jogar/${codigo}`)
-      setQuiz(data)
-      setQuestoes(data.questoes || [])
-      setTempo(data.tempo_por_questao || 30)
-      tempoInicioRef.current = Date.now()
-      setEtapa('jogando')
-    } catch {
-      setErro('Quiz não encontrado ou link inválido.')
-      setEtapa('nome')
-    }
-  }
+    socket.on('quiz:error', msg => {
+      setErro(msg)
+      setEtapa('setup')
+      socket.disconnect()
+      socketRef.current = null
+    })
 
-  // Timer por questão
+    socket.on('quiz:joined', data => {
+      setPlayerInfo(data)
+      setEtapa('lobby')
+    })
+
+    socket.on('quiz:game-start', () => setEtapa('aguardando-questao'))
+
+    socket.on('quiz:question', q => {
+      clearInterval(timerRef.current)
+      setQuestao(q)
+      setTempo(q.timeLimit || 30)
+      setRespondeu(false)
+      setEscolhida(null)
+      setFeedback(null)
+      setEtapa('playing')
+    })
+
+    socket.on('quiz:answer-ack', () => {
+      if (etapaRef.current === 'playing') setEtapa('answered')
+    })
+
+    socket.on('quiz:feedback', data => {
+      clearInterval(timerRef.current)
+      setFeedback(data)
+      setEtapa('feedback')
+    })
+
+    socket.on('quiz:my-results', data => setMeuResultado(data))
+
+    socket.on('quiz:finished', data => {
+      setDadosFinais(data)
+      setEtapa('finished')
+    })
+
+    socket.on('disconnect', () => {
+      if (etapaRef.current !== 'finished') {
+        setErro('Conexão perdida. Recarregue a página.')
+        setEtapa('setup')
+      }
+    })
+  }, [codigo, alunoCode])
+
+  /* Auto-conectar se nome vier via URL (aluno chegando do portal) */
   useEffect(() => {
-    if (etapa !== 'jogando' || respondeu) return
-    const totalTempo = quiz?.tempo_por_questao || 30
-    setTempo(totalTempo)
+    if (nomeParam) {
+      setEtapa('conectando')
+      conectar(nomeParam)
+    }
+    return () => {
+      clearInterval(timerRef.current)
+      if (socketRef.current) socketRef.current.disconnect()
+    }
+  }, []) // eslint-disable-line
 
+  /* Timer regressivo */
+  useEffect(() => {
+    if (etapa !== 'playing' || respondeu || !questao) return
+    clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
       setTempo(t => {
         if (t <= 1) {
           clearInterval(timerRef.current)
-          if (!respondeu) {
-            responderSemSelecao()
+          if (!respondeu && socketRef.current) {
+            socketRef.current.emit('quiz:answer', { answer: -1, timeLeft: 0 })
+            setRespondeu(true)
+            setEtapa('answered')
           }
           return 0
         }
@@ -69,160 +145,271 @@ export default function JogarQuiz() {
       })
     }, 1000)
     return () => clearInterval(timerRef.current)
-  }, [indice, etapa])
+  }, [questao?.index, etapa, respondeu]) // eslint-disable-line
 
-  function responderSemSelecao() {
-    setRespondeu(true)
-    setEscolhida(null)
-    const nova = { questao_id: questoes[indice].id, resposta: -1 }
-    respostasRef.current = [...respostasRef.current, nova]
-    setRespostas(respostasRef.current)
-    agendar()
+  function entrar() {
+    const nomeFinal = nome.trim()
+    if (!nomeFinal) return setErro('Digite seu nome para entrar!')
+    setErro('')
+    setEtapa('conectando')
+    conectar(nomeFinal)
   }
 
-  function responder(altIdx) {
-    if (respondeu) return
+  function responder(idx) {
+    if (respondeu || etapa !== 'playing' || !socketRef.current) return
     setRespondeu(true)
+    setEscolhida(idx)
     clearInterval(timerRef.current)
-    setEscolhida(altIdx)
-
-    const q = questoes[indice]
-    const correta = altIdx === q.resposta_correta
-    if (correta) setAcertos(a => a + 1)
-
-    const nova = { questao_id: q.id, resposta: altIdx }
-    respostasRef.current = [...respostasRef.current, nova]
-    setRespostas(respostasRef.current)
-    agendar()
+    socketRef.current.emit('quiz:answer', { answer: idx, timeLeft: tempo })
   }
 
-  function agendar() {
-    setTimeout(() => {
-      const proximo = indice + 1
-      if (proximo >= questoes.length) {
-        finalizarQuiz()
-      } else {
-        setIndice(proximo)
-        setRespondeu(false)
-        setEscolhida(null)
-      }
-    }, 2000)
-  }
+  /* ══════════════════════════════════════════
+     TELAS
+  ══════════════════════════════════════════ */
 
-  async function finalizarQuiz() {
-    const tempoDecorrido = Math.round((Date.now() - tempoInicioRef.current) / 1000)
-    setEtapa('enviando')
-    try {
-      const { data } = await api.post(`/quiz/jogar/${codigo}/responder`, {
-        aluno_nome: nome,
-        aluno_codigo: codigoCarteirinha.trim().toUpperCase() || undefined,
-        respostas: respostasRef.current,
-        tempo_total: tempoDecorrido,
-      })
-      setResultado(data)
-      setAcertos(data.acertos)
-      setXpGanho(data.xp_ganho || 0)
-      setEtapa('resultado')
-    } catch {
-      setEtapa('resultado')
-    }
-  }
+  /* ── Setup / Entrada ── */
+  if (etapa === 'setup') return (
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: CARD, borderRadius: 24, padding: 32, maxWidth: 400, width: '100%', border: `1px solid ${BORDA}`, textAlign: 'center' }}>
+        <div style={{ fontSize: 56, marginBottom: 12 }}>🎮</div>
+        <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 26, margin: '0 0 4px' }}>Quiz ao Vivo</h1>
+        <p style={{ color: '#a0a0c0', fontSize: 14, margin: '0 0 24px' }}>
+          Código: <strong style={{ color: '#FFE600', letterSpacing: 4 }}>{(codigo || '').toUpperCase()}</strong>
+        </p>
 
-  // ─── TELAS ─────────────────────────────────────────────────────────────────
+        {erro && (
+          <div style={{ background: '#ff2d7822', border: '1px solid #ff2d7866', borderRadius: 10, padding: '10px 14px', color: '#ff8fa3', marginBottom: 16, fontSize: 14 }}>
+            {erro}
+          </div>
+        )}
 
-  if (etapa === 'nome') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-600 via-purple-700 to-indigo-800">
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 w-full max-w-md shadow-2xl border border-white/20 text-center">
-          <div className="text-6xl mb-4">🎯</div>
-          <h1 className="text-3xl font-black text-white mb-1">Quiz</h1>
-          <p className="text-white/70 text-sm mb-6">Código: <span className="font-black text-yellow-300 tracking-widest">{codigo?.toUpperCase()}</span></p>
+        <input
+          style={{ width: '100%', background: '#ffffff15', border: '2px solid #ffffff30', borderRadius: 12, padding: '12px 16px', color: '#fff', fontSize: 18, fontWeight: 700, textAlign: 'center', outline: 'none', boxSizing: 'border-box', marginBottom: 16 }}
+          placeholder="Seu nome"
+          value={nome}
+          onChange={e => setNome(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && entrar()}
+          maxLength={30}
+          autoFocus
+        />
 
-          {erro && <p className="text-red-300 text-sm mb-3 font-medium">{erro}</p>}
+        {alunoCode && (
+          <p style={{ color: '#00FF88', fontSize: 12, marginBottom: 16, fontWeight: 600 }}>
+            ⚡ Código {alunoCode} — XP será contabilizado!
+          </p>
+        )}
 
-          <input
-            className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-3 text-white placeholder-white/50 font-medium text-center text-lg outline-none focus:border-yellow-300 focus:ring-2 focus:ring-yellow-300/30 mb-3"
-            placeholder="Seu nome ou apelido"
-            value={nome}
-            onChange={e => setNome(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && iniciar()}
-            maxLength={40}
-          />
+        <button
+          onClick={entrar}
+          style={{ width: '100%', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', border: 'none', borderRadius: 14, padding: '14px', color: '#fff', fontWeight: 900, fontSize: 18, cursor: 'pointer', letterSpacing: 1 }}
+        >
+          ▶ ENTRAR
+        </button>
+      </div>
+    </div>
+  )
 
-          <input
-            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 font-medium text-center text-sm outline-none focus:border-yellow-300/50 mb-1 tracking-widest"
-            placeholder="Código da carteirinha (opcional)"
-            value={codigoCarteirinha}
-            onChange={e => setCodigoCarteirinha(e.target.value.toUpperCase())}
-            onKeyDown={e => e.key === 'Enter' && iniciar()}
-            maxLength={20}
-          />
-          <p className="text-white/30 text-xs mb-4 text-center">⚡ Informe seu código para ganhar XP</p>
+  if (etapa === 'conectando') return <Spinner texto="Entrando na sala..." />
 
-          <button
-            onClick={iniciar}
-            className="w-full py-4 rounded-2xl font-black text-lg text-purple-800 bg-gradient-to-r from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500 transition-all shadow-lg"
-          >
-            ▶ Entrar no Quiz!
-          </button>
+  /* ── Lobby ── */
+  if (etapa === 'lobby') return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #1a0533, #0f0c29)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 24 }}>
+      <div style={{ fontSize: 88, filter: 'drop-shadow(0 0 24px #7c3aed88)', lineHeight: 1 }}>
+        {playerInfo?.avatar || '🦊'}
+      </div>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ color: '#fff', fontWeight: 900, fontSize: 28, lineHeight: 1 }}>{playerInfo?.nome}</div>
+        <div style={{ color: '#a0a0c0', fontSize: 14, marginTop: 6 }}>{playerInfo?.quizTitulo}</div>
+        {playerInfo?.totalQuestoes && (
+          <div style={{ color: '#ffffff40', fontSize: 12, marginTop: 4 }}>{playerInfo.totalQuestoes} questões</div>
+        )}
+      </div>
+      <div style={{ background: '#ffffff0d', border: '1px solid #ffffff15', borderRadius: 20, padding: '18px 36px', textAlign: 'center' }}>
+        <div style={{ color: '#FFE600', fontWeight: 900, fontSize: 14, letterSpacing: 3, textTransform: 'uppercase' }}>
+          AGUARDANDO O PROFESSOR
         </div>
+        <div style={{ color: '#ffffff50', fontSize: 13, marginTop: 6 }}>O jogo começará em breve...</div>
+        <div style={{ marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed', animation: `dot 1.2s ${i * 0.4}s infinite ease-in-out` }} />
+          ))}
+        </div>
+      </div>
+      <style>{`@keyframes dot{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}`}</style>
+    </div>
+  )
+
+  if (etapa === 'aguardando-questao') return <Spinner texto="Jogo iniciado! Preparando a primeira questão..." />
+
+  /* ── Jogo ── */
+  if ((etapa === 'playing' || etapa === 'answered') && questao) {
+    const totalTempo = questao.timeLimit || 30
+    const pctTimer   = Math.max(0, (tempo / totalTempo) * 100)
+    const urgente    = tempo <= 5 && !respondeu
+
+    return (
+      <div style={{ minHeight: '100vh', background: '#1a1a2e', display: 'flex', flexDirection: 'column' }}>
+        {/* Barra de tempo */}
+        <div style={{ height: 8, background: '#ffffff15', flexShrink: 0 }}>
+          <div style={{
+            height: '100%', width: `${pctTimer}%`,
+            background: urgente ? '#ef4444' : 'linear-gradient(90deg, #7c3aed, #06b6d4)',
+            transition: 'width 1s linear, background 0.3s',
+          }} />
+        </div>
+
+        {/* Header */}
+        <div style={{ background: '#0f0c29', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderBottom: '1px solid #ffffff10' }}>
+          <span style={{ color: '#a0a0c0', fontSize: 13 }}>
+            Questão <strong style={{ color: '#fff' }}>{(questao.index ?? 0) + 1}</strong>/{questao.total}
+          </span>
+          <span style={{
+            fontSize: 26, fontWeight: 900,
+            color: urgente ? '#ef4444' : '#FFE600',
+            animation: urgente ? 'blink .5s infinite' : 'none',
+          }}>{tempo}</span>
+        </div>
+
+        {/* Enunciado */}
+        <div style={{ background: '#ffffff06', padding: '20px 16px', textAlign: 'center', borderBottom: '1px solid #ffffff10', flexShrink: 0 }}>
+          <p style={{ color: '#fff', fontWeight: 800, fontSize: 20, lineHeight: 1.4, margin: 0, maxWidth: 600, marginInline: 'auto' }}>
+            {questao.enunciado}
+          </p>
+        </div>
+
+        {/* Alternativas */}
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '14px 10px 12px' }}>
+          {(questao.alts || []).map((alt, idx) => {
+            const selecionada = escolhida === idx
+            const inativa     = respondeu && !selecionada
+            return (
+              <button
+                key={idx}
+                onClick={() => responder(idx)}
+                disabled={respondeu}
+                style={{
+                  background:    CORES[idx],
+                  border:        'none',
+                  borderRadius:  16,
+                  padding:       '14px 10px',
+                  color:         '#fff',
+                  fontWeight:    800,
+                  fontSize:      15,
+                  cursor:        respondeu ? 'default' : 'pointer',
+                  opacity:       inativa ? 0.35 : 1,
+                  transform:     selecionada ? 'scale(0.97)' : 'scale(1)',
+                  transition:    'opacity .2s, transform .1s',
+                  display:       'flex',
+                  alignItems:    'center',
+                  gap:           10,
+                  textAlign:     'left',
+                  minHeight:     72,
+                  boxShadow:     selecionada ? '0 0 0 4px rgba(255,255,255,.5)' : 'none',
+                }}
+              >
+                <span style={{ fontSize: 22, opacity: .75 }}>{FORMAS[idx]}</span>
+                <span style={{ lineHeight: 1.3, flex: 1 }}>{alt}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Status respondeu */}
+        {respondeu && (
+          <div style={{ background: '#000000bb', padding: '14px 16px', textAlign: 'center', color: '#a0a0c0', fontSize: 14, fontWeight: 600, flexShrink: 0 }}>
+            ✓ Resposta registrada — aguardando os outros jogadores...
+          </div>
+        )}
+
+        <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
       </div>
     )
   }
 
-  if (etapa === 'carregando' || etapa === 'enviando') {
+  /* ── Feedback ── */
+  if (etapa === 'feedback' && feedback) {
+    const correto = feedback.correct
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-600 via-purple-700 to-indigo-800">
-        <div className="text-center text-white">
-          <div className="text-5xl mb-4 animate-bounce">⏳</div>
-          <p className="font-bold text-xl">{etapa === 'enviando' ? 'Calculando resultado...' : 'Carregando quiz...'}</p>
+      <div style={{ minHeight: '100vh', background: correto ? '#011a0f' : '#1a0108', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 20 }}>
+        <div style={{ fontSize: 80 }}>{correto ? '✅' : '❌'}</div>
+
+        <div style={{ color: correto ? '#00FF88' : '#FF2D78', fontWeight: 900, fontSize: 34, letterSpacing: 2, textAlign: 'center' }}>
+          {correto ? 'CORRETO!' : 'ERROU!'}
         </div>
+
+        {correto ? (
+          <div style={{ background: '#00FF8818', border: '2px solid #00FF8855', borderRadius: 20, padding: '18px 36px', textAlign: 'center' }}>
+            <div style={{ color: '#00FF88', fontWeight: 900, fontSize: 32 }}>+{feedback.points} pts</div>
+            <div style={{ color: '#ffffff60', fontSize: 13, marginTop: 4 }}>Total acumulado: <strong style={{ color: '#fff' }}>{feedback.totalScore}</strong></div>
+          </div>
+        ) : (
+          <div style={{ background: '#FF2D7818', border: '2px solid #FF2D7855', borderRadius: 20, padding: '18px 36px', textAlign: 'center' }}>
+            <div style={{ color: '#ff8fa3', fontSize: 15, fontWeight: 600 }}>Continue tentando! Você consegue 💪</div>
+          </div>
+        )}
+
+        <div style={{ background: '#ffffff10', borderRadius: 16, padding: '14px 28px', textAlign: 'center' }}>
+          <div style={{ color: '#FFE600', fontWeight: 900, fontSize: 24 }}>#{feedback.position}</div>
+          <div style={{ color: '#ffffff50', fontSize: 12 }}>de {feedback.totalPlayers} jogadores</div>
+        </div>
+
+        {feedback.streak >= 3 && (
+          <div style={{ color: '#FF8C00', fontWeight: 700, fontSize: 15 }}>🔥 {feedback.streak} acertos seguidos!</div>
+        )}
+
+        <div style={{ color: '#ffffff30', fontSize: 12 }}>Aguardando próxima questão...</div>
       </div>
     )
   }
 
-  if (etapa === 'resultado') {
-    const total = questoes.length
-    const pct = total > 0 ? Math.round((acertos / total) * 100) : 0
-    const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '😊' : pct >= 40 ? '😐' : '😢'
-    const mensagem = pct === 100 ? 'Perfeito! Mandou muito!' : pct >= 80 ? 'Ótimo resultado!' : pct >= 60 ? 'Bom trabalho!' : pct >= 40 ? 'Continue praticando!' : 'Pode melhorar!'
+  /* ── Resultado Final ── */
+  if (etapa === 'finished') {
+    const pos     = meuResultado?.position
+    const score   = meuResultado?.score || 0
+    const answers = meuResultado?.answers || []
+    const podioEmoji = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '🎮'
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-600 via-purple-700 to-indigo-800 p-4">
-        <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl text-center">
-          <div className="text-7xl mb-2">{emoji}</div>
-          <p className="text-gray-500 font-medium mb-1">{nome}</p>
-          <div className="text-6xl font-black text-gray-900 mb-1">{pct}%</div>
-          <p className="text-gray-500 text-sm mb-1">{acertos} de {total} corretas</p>
-          <p className="text-lg font-bold text-gray-700 mb-6">{mensagem}</p>
-
-          {/* Barra de progresso */}
-          <div className="w-full bg-gray-100 rounded-full h-3 mb-6">
-            <div
-              className="h-3 rounded-full transition-all duration-1000"
-              style={{
-                width: `${pct}%`,
-                background: pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444',
-              }}
-            />
+      <div style={{ minHeight: '100vh', background: BG, color: '#fff', padding: 20, fontFamily: 'sans-serif' }}>
+        <div style={{ maxWidth: 500, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', paddingTop: 24, marginBottom: 28 }}>
+            <div style={{ fontSize: 72, filter: pos && pos <= 3 ? 'drop-shadow(0 0 24px gold)' : 'none' }}>{podioEmoji}</div>
+            <div style={{ fontWeight: 900, fontSize: 28, color: '#FFE600', marginTop: 8 }}>
+              {pos ? `${pos}º Lugar` : 'Fim de jogo!'}
+            </div>
+            <div style={{ color: '#a0a0c0', fontSize: 16, marginTop: 4 }}>{playerInfo?.nome}</div>
+            <div style={{ color: '#00FF88', fontWeight: 900, fontSize: 26, marginTop: 10 }}>{score} pontos</div>
           </div>
 
-          {xpGanho > 0 && (
-            <div className="mb-4 py-3 px-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-400 text-center">
-              <p className="font-black text-gray-900 text-lg">⚡ +{xpGanho} XP ganhos!</p>
-              <p className="text-gray-800 text-xs font-medium">Adicionados à sua carteirinha</p>
+          {/* Grid de acertos/erros por questão */}
+          {answers.length > 0 && (
+            <div style={{ background: CARD, borderRadius: 20, padding: 20, border: `1px solid ${BORDA}`, marginBottom: 20 }}>
+              <div style={{ color: '#a0a0c0', fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16 }}>
+                Suas respostas
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))', gap: 8 }}>
+                {answers.map((a, i) => (
+                  <div key={i} style={{ textAlign: 'center' }}>
+                    <div style={{ color: '#ffffff40', fontSize: 10, marginBottom: 4 }}>Q{i + 1}</div>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10, marginInline: 'auto',
+                      background: a.correct ? '#00FF8822' : a.answer === -1 ? '#33333355' : '#FF2D7822',
+                      border: `2px solid ${a.correct ? '#00FF88' : a.answer === -1 ? '#555' : '#FF2D78'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                      color: a.correct ? '#00FF88' : a.answer === -1 ? '#555' : '#FF2D78',
+                    }}>
+                      {a.correct ? '✓' : a.answer === -1 ? '—' : '✗'}
+                    </div>
+                    {a.correct && <div style={{ color: '#00FF88', fontSize: 9, marginTop: 2 }}>+{a.points}</div>}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           <button
-            onClick={() => { setEtapa('nome'); setNome(''); setCodigoCarteirinha(''); setIndice(0); setRespostas([]); respostasRef.current = []; setAcertos(0); setEscolhida(null); setRespondeu(false); setXpGanho(0) }}
-            className="w-full py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90 mb-2"
-          >
-            🔄 Jogar de novo
-          </button>
-          <button
             onClick={() => window.history.length > 1 ? window.history.back() : window.close()}
-            className="w-full py-3 rounded-2xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
+            style={{ width: '100%', background: '#ffffff12', border: 'none', borderRadius: 14, padding: '14px', color: '#a0a0c0', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}
           >
             ← Voltar
           </button>
@@ -231,113 +418,5 @@ export default function JogarQuiz() {
     )
   }
 
-  // ─── TELA DE JOGO ──────────────────────────────────────────────────────────
-
-  const q = questoes[indice]
-  const totalTempo = quiz?.tempo_por_questao || 30
-  const pctTimer = (tempo / totalTempo) * 100
-  const urgente = tempo <= 5
-
-  const getAlts = q => [q.alt_a, q.alt_b, q.alt_c, q.alt_d].filter(Boolean)
-  const alts = getAlts(q)
-
-  function statusBotao(aIdx) {
-    if (!respondeu) return 'normal'
-    if (aIdx === q.resposta_correta) return 'correta'
-    if (aIdx === escolhida && escolhida !== q.resposta_correta) return 'errada'
-    return 'neutra'
-  }
-
-  const emojisFeedback = respondeu
-    ? (escolhida === q.resposta_correta
-        ? EMOJIS_CORRETO[Math.floor(Math.random() * EMOJIS_CORRETO.length)]
-        : EMOJIS_ERRADO[Math.floor(Math.random() * EMOJIS_ERRADO.length)])
-    : null
-
-  return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
-      {/* Header: progresso + timer */}
-      <div className="bg-gray-800 px-4 py-3">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-2 text-sm text-white/70 font-medium">
-            <span>Pergunta {indice + 1} / {questoes.length}</span>
-            <span
-              className={`font-black text-xl tabular-nums ${urgente ? 'text-red-400 animate-pulse' : 'text-white'}`}
-            >{tempo}</span>
-          </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{
-                width: `${pctTimer}%`,
-                background: urgente ? '#ef4444' : 'linear-gradient(90deg, #00d68f, #22d3ee)',
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Pergunta */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 gap-6">
-        <div className="w-full max-w-2xl bg-white/10 backdrop-blur border border-white/15 rounded-2xl p-6 text-center">
-          <p className="text-white/50 text-xs uppercase tracking-widest font-bold mb-2">PERGUNTA {indice + 1}</p>
-          <p className="text-white text-xl font-bold leading-snug">{q.enunciado}</p>
-        </div>
-
-        {/* Feedback pós-resposta */}
-        {respondeu && (
-          <div className="text-center animate-bounce">
-            <div className="text-4xl">{escolhida === q.resposta_correta ? '🎉' : '😬'}</div>
-            <p className={`font-black text-lg mt-1 ${escolhida === q.resposta_correta ? 'text-green-400' : 'text-red-400'}`}>
-              {escolhida === q.resposta_correta ? 'Correto!' : 'Errou!'}
-            </p>
-            {escolhida !== q.resposta_correta && (
-              <p className="text-white/60 text-sm">
-                Resposta correta: <strong className="text-green-400">{LETRAS[q.resposta_correta]}</strong>
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Alternativas */}
-        <div className="w-full max-w-2xl grid grid-cols-2 gap-3">
-          {alts.map((alt, aIdx) => {
-            const st = statusBotao(aIdx)
-            let opacity = 'opacity-100'
-            let ring = ''
-            if (respondeu) {
-              if (st === 'correta') ring = 'ring-4 ring-green-300 scale-105'
-              else if (st === 'errada') ring = 'ring-4 ring-red-300'
-              else opacity = 'opacity-40'
-            }
-
-            return (
-              <button
-                key={aIdx}
-                onClick={() => responder(aIdx)}
-                disabled={respondeu}
-                className={`
-                  flex items-center gap-3 rounded-2xl p-4 text-white font-bold text-sm text-left
-                  transition-all duration-200 min-h-[72px]
-                  ${opacity} ${ring}
-                  ${respondeu ? 'cursor-default' : 'hover:scale-102 active:scale-98 cursor-pointer'}
-                `}
-                style={{ backgroundColor: CORES[aIdx] }}
-              >
-                <span className="bg-black/25 rounded-lg w-9 h-9 flex-shrink-0 flex items-center justify-center font-black text-base">
-                  {LETRAS[aIdx]}
-                </span>
-                <span className="flex-1 leading-tight">{alt}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Info do jogador */}
-        <div className="text-white/40 text-xs font-medium">
-          {nome} • {acertos} acerto{acertos !== 1 ? 's' : ''} até agora
-        </div>
-      </div>
-    </div>
-  )
+  return <Spinner texto="Carregando..." />
 }

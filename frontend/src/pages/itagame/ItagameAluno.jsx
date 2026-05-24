@@ -256,7 +256,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
         {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length + (itagame.provas || []).filter(p => p.ja_fez).length} onItagame={onItagame} onCopaSaber={onCopaSaber} onIrCorretor={() => setAba('corretor')} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
-        {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} />}
+        {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} nomeAluno={aluno.nome} />}
         {aba === 'corretor'    && <AbaCorretor provas={(itagame.provas || []).map(p => ({ ...p, _nome_aluno: aluno.nome, _turma_aluno: aluno.turma || '' }))} codigoAluno={aluno.codigo} />}
         {aba === 'startup'     && <AbaStartup startup={startup} aluno={aluno} />}
         {aba === 'notas'       && <AbaNotas notas={notas} provasCorretor={(itagame.provas || []).filter(p => p.ja_fez && p.tipo === 'corretor')} />}
@@ -947,7 +947,7 @@ function AbaLoja({ loja, xpTotal, codigoAluno, onAtualizar }) {
 /* ══════════════════════════════════════════
    AVALIAÇÕES — provas do itagame + avaliações do professor
 ══════════════════════════════════════════ */
-function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) {
+function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno, nomeAluno = '' }) {
   const temConteudo = avaliacoesProfessor.length > 0 || quizzes.length > 0
   if (!temConteudo) return <Vazio emoji="📝" texto="Nenhuma avaliação disponível ainda." />
 
@@ -1008,7 +1008,7 @@ function AbaAvaliacoes({ avaliacoesProfessor = [], quizzes = [], codigoAluno }) 
           {quizzes.map((q) => (
             <a
               key={q.id}
-              href={`/q/${q.codigo_acesso}?aluno=${codigoAluno}`}
+              href={`/q/${q.codigo_acesso}?aluno=${codigoAluno}${nomeAluno ? `&nome=${encodeURIComponent(nomeAluno)}` : ''}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{ textDecoration: 'none' }}
