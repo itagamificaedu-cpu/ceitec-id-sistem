@@ -1016,8 +1016,9 @@ function AbaCorretor({ provas = [], codigoAluno }) {
   // Abre a prova correta conforme o tipo (itagame ou corretor)
   function abrirProva(prova) {
     if (prova.tipo === 'corretor') {
-      // Prova do Corretor de Provas — URL pública, o aluno digita o código lá
-      window.open(prova.url_publica, '_blank')
+      // Prova do Corretor — abre página nativa do portal, sem precisar digitar código
+      const uuid = prova.id.replace('corretor_', '')
+      window.open(`/itagame/prova-corretor/${uuid}?codigo=${encodeURIComponent(codigoAluno)}`, '_blank')
       return
     }
     // Prova do ItagGame — login mágico com next direto para a prova

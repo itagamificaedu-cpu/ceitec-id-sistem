@@ -237,6 +237,84 @@ router.get('/:codigo', async (req, res) => {
   }
 });
 
+/* ── GET /api/portal/corretor-prova/:uuid — busca estrutura de prova do Corretor Online ── */
+router.get('/corretor-prova/:uuid', async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    const CORRETOR = 'https://correcaoonlineita.pythonanywhere.com';
+
+    const html = await fetch(`${CORRETOR}/publica/prova/${uuid}/`).then(r => r.text());
+
+    // Extrai título
+    const tituloMatch = html.match(/<title>([^<]+)<\/title>/);
+    const titulo = tituloMatch ? tituloMatch[1].trim() : 'Prova';
+
+    // Extrai URL do PDF
+    const pdfMatch = html.match(/src="(\/media\/provas\/[^"]+\.pdf)"/);
+    const pdfUrl = pdfMatch ? `${CORRETOR}${pdfMatch[1]}` : null;
+
+    // Extrai URL do PDF mobile
+    const pdfMobileMatch = html.match(/href="(\/media\/provas\/[^"]+\.pdf)"/);
+    const pdfMobileUrl = pdfMobileMatch ? `${CORRETOR}${pdfMobileMatch[1]}` : pdfUrl;
+
+    // Conta as questões e alternativas
+    const questaoMatches = [...html.matchAll(/data-q="(\d+)"/g)];
+    const numQuestoes = questaoMatches.length;
+
+    // Extrai alternativas da primeira questão
+    const primeiroBloco = html.match(/data-q="1"([\s\S]*?)data-q="2"/)?.[1] || html.match(/data-q="1"([\s\S]*?)<\/div>/)?.[1] || '';
+    const alternativas = [...primeiroBloco.matchAll(/data-ans="([A-E])"/g)].map(m => m[1]);
+
+    if (numQuestoes === 0) return res.status(404).json({ erro: 'Prova não encontrada ou sem questões.' });
+
+    res.json({ uuid, titulo, pdfUrl, pdfMobileUrl, numQuestoes, alternativas });
+  } catch (err) {
+    res.status(500).json({ erro: 'Não foi possível carregar a prova.' });
+  }
+});
+
+/* ── POST /api/portal/corretor-submit/:uuid — aluno envia respostas da prova ── */
+router.post('/corretor-submit/:uuid', async (req, res) => {
+  try {
+    const { uuid } = req.params;
+    const { codigo, respostas } = req.body;
+
+    if (!codigo || !respostas) return res.status(400).json({ erro: 'Código e respostas são obrigatórios.' });
+
+    const aluno = await db.get('SELECT * FROM alunos WHERE codigo = ? AND ativo = 1', [codigo.toUpperCase()]);
+    if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado.' });
+
+    const CORRETOR = 'https://correcaoonlineita.pythonanywhere.com';
+
+    // Envia respostas diretamente para o Corretor Online com o nome do aluno
+    const submitResp = await fetch(`${CORRETOR}/api/responder-prova-online/${uuid}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        aluno_nome: aluno.nome.toUpperCase(),
+        respostas,
+      }),
+    });
+
+    const result = await submitResp.json();
+
+    // Se sucesso, registra no histórico de XP do portal (nota como evento)
+    if (result.sucesso) {
+      try {
+        await db.run(
+          `INSERT INTO itagame_historico (aluno_id, escola_id, tipo, descricao, xp_ganho, criado_em)
+           VALUES (?, ?, 'prova_corretor', ?, 0, datetime('now'))`,
+          [aluno.id, aluno.escola_id, `Prova: ${uuid.substring(0, 8)}… — Nota ${result.nota?.toFixed(1).replace('.', ',')}`]
+        );
+      } catch (_) {} // não crítico
+    }
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao enviar respostas.' });
+  }
+});
+
 /* ── POST /api/portal/missao-entrega — aluno envia prova de missão ── */
 router.post('/missao-entrega', upload.single('arquivo'), async (req, res) => {
   try {

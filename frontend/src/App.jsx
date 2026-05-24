@@ -28,6 +28,7 @@ import JogarQuiz from './pages/quiz/JogarQuiz'
 import RankingQuiz from './pages/quiz/RankingQuiz'
 import ItagameDashboard from './pages/itagame/ItagameDashboard'
 import ItagameAluno from './pages/itagame/ItagameAluno'
+import ProvaCorretor from './pages/itagame/ProvaCorretor'
 import PlanoDeAula from './pages/ia/PlanoDeAula'
 import CriadorQuestoes from './pages/ia/CriadorQuestoes'
 import CorretorProvas from './pages/ia/CorretorProvas'
@@ -152,6 +153,8 @@ export default function App() {
         <Route path="/itagame" element={<P><ItagameDashboard /></P>} />
         <Route path="/itagame/aluno" element={<ItagameAluno />} />
         <Route path="/aluno/:codigo" element={<ItagameAluno />} />
+        {/* Prova do Corretor de Provas — página nativa sem precisar de código */}
+        <Route path="/itagame/prova-corretor/:uuid" element={<ProvaCorretor />} />
 
         {/* Avaliações — portal do aluno sem login */}
         <Route path="/responder/:avaliacao_id/:codigo" element={<ResponderAvaliacao />} />
