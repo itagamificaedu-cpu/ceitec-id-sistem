@@ -21,7 +21,7 @@ router.get('/publico/:escola_id', async (req, res) => {
        FROM avisos
        WHERE escola_id = ?
          AND (data_evento IS NULL OR date(data_evento) >= date('now', '-1 day'))
-       ORDER BY fixado DESC, COALESCE(data_evento, '9999') ASC, criado_em DESC
+       ORDER BY fixado DESC, data_evento ASC NULLS LAST, criado_em DESC
        LIMIT 30`,
       [escola_id]
     )
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
        FROM avisos a
        LEFT JOIN avisos_lidos al ON al.aviso_id = a.id AND al.usuario_id = ?
        WHERE a.escola_id = ?
-       ORDER BY a.fixado DESC, COALESCE(a.data_evento, '9999') ASC, a.criado_em DESC`,
+       ORDER BY a.fixado DESC, a.data_evento ASC NULLS LAST, a.criado_em DESC`,
       [uid, eid]
     )
     res.json(avisos)
