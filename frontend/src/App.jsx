@@ -64,12 +64,7 @@ function RotaProtegida({ children }) {
     // Registra login diário para o Professor Game (XP de presença na plataforma)
     api.post('/prof-game/login-diario').catch(() => {})
     // Cria sessão Django a partir do JWT — permite acessar páginas Django sem novo login
-    fetch('/api/auth/set-session/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ token }),
-    }).catch(() => {})
+    api.post('/auth/set-session/').catch(() => {})
     api.get('/auth/me').then(({ data }) => {
       if (data.trocar_senha) {
         // Atualiza localStorage e força o redirect no próximo render
