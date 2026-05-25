@@ -43,6 +43,11 @@ urlpatterns = [
     # /api/monitoramento/registrar/          ← recebe eventos do JS
     # /professor/monitoramento/<prova_id>/   ← relatório do professor
     path('', include('monitoramento.urls')),
+
+    # ── Dia do Desafio — Evento esportivo CEITEC ──────────────────
+    # /desafio/            → inscrição pública (sem login)
+    # /desafio/admin/      → dashboard admin (is_staff)
+    path('desafio/', include('desafio.urls', namespace='desafio')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

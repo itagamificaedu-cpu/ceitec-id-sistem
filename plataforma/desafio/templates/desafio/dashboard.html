@@ -1,0 +1,336 @@
+{% extends "ita_core/base_portal.html" %}
+{% block title %}Dia do Desafio — Dashboard Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Cards de métricas ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    box-shadow: var(--shadow);
+  }
+  .metric-label {
+    font-size: .75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .25rem;
+  }
+  .metric-val {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--azul-escuro);
+    line-height: 1.1;
+  }
+  .metric-val.verde { color: #1D9E75; }
+
+  /* ── Barras de categoria ── */
+  .cat-bar { margin-bottom: 14px; }
+  .cat-bar-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: .88rem;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .cat-bar-pista {
+    background: #f0f0f0;
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .cat-bar-fill {
+    height: 100%;
+    background: #1D9E75;
+    border-radius: 6px;
+    transition: width .5s ease;
+  }
+
+  /* ── Filtros ── */
+  .filtros {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .filtros input,
+  .filtros select {
+    padding: .55rem .9rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: .875rem;
+    color: var(--text);
+    background: var(--card);
+    font-family: 'Nunito', sans-serif;
+  }
+  .filtros input { flex: 1; min-width: 180px; }
+  .filtros input:focus, .filtros select:focus { outline: none; border-color: #1D9E75; }
+
+  /* ── Tabela ── */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: .8rem 1rem;
+    text-align: left;
+    font-size: .78rem;
+    color: var(--muted);
+    background: #f8f8f8;
+    white-space: nowrap;
+  }
+  tbody tr { border-top: 1px solid #f0f0f0; transition: background .15s; }
+  tbody tr:hover { background: #fafafa; }
+  tbody td { padding: .65rem 1rem; font-size: .88rem; }
+  td.num { font-family: monospace; color: #1D9E75; font-size: .85rem; }
+  td.muted { color: var(--muted); }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: .2rem .7rem;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 800;
+  }
+  .badge-aluno     { background: #E1F5EE; color: #0F6E56; }
+  .badge-comunidade{ background: #E6F1FB; color: #185FA5; }
+
+  /* ── Cabeçalho da página ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+  }
+  .page-header h1 { font-size: 1.5rem; font-weight: 900; color: var(--azul-escuro); }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-acao {
+    padding: .5rem 1rem;
+    border-radius: 8px;
+    font-size: .82rem;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity .15s;
+  }
+  .btn-acao:hover { opacity: .85; }
+  .btn-verde  { background: #1D9E75; color: #fff; }
+  .btn-border { background: none; border: 1.5px solid #1D9E75; color: #1D9E75; }
+  .btn-cinza  { background: #e5e5e5; color: #333; }
+
+  /* ── Indicador de atualização ── */
+  .live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: #1D9E75;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    margin-right: 4px;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .3; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>🏆 Dia do Desafio</h1>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:.2rem">
+      <span class="live-dot"></span>Atualização automática a cada 10 segundos
+    </p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'desafio:publico' %}" target="_blank" class="btn-acao btn-border">Ver página pública ↗</a>
+    <a href="{% url 'desafio:banner' %}"    class="btn-acao btn-verde">⬇ Banner Instagram</a>
+    <a href="{% url 'desafio:exportar' %}"  class="btn-acao btn-cinza">📊 Exportar CSV</a>
+  </div>
+</div>
+
+{# ── Cards de métricas ── #}
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-label">Total inscritos</div>
+    <div class="metric-val verde" id="total">—</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Alunos</div>
+    <div class="metric-val" id="total-alunos">—</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Comunidade</div>
+    <div class="metric-val" id="total-comunidade">—</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Última atualização</div>
+    <div class="metric-val" id="atualizado" style="font-size:1.1rem">—</div>
+  </div>
+</div>
+
+{# ── Barras por categoria ── #}
+<div class="card" style="padding:1.25rem 1.5rem;margin-bottom:1.5rem">
+  <div style="font-weight:900;color:var(--azul-escuro);margin-bottom:1rem">Inscrições por categoria</div>
+  <div id="categorias-container">
+    <p style="color:var(--muted);font-size:.875rem">Carregando...</p>
+  </div>
+</div>
+
+{# ── Filtros ── #}
+<div class="filtros">
+  <input type="text" id="busca" placeholder="🔍  Buscar por nome...">
+  <select id="filtro-tipo">
+    <option value="">Todos os tipos</option>
+    <option value="Aluno">Alunos</option>
+    <option value="Comunidade">Comunidade</option>
+  </select>
+  <select id="filtro-cat">
+    <option value="">Todas as categorias</option>
+    {% for cat in categorias %}
+    <option value="{{ cat.nome }}">{{ cat.icone }} {{ cat.nome }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+{# ── Tabela de inscrições ── #}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>Categoria</th>
+        <th>Atividade</th>
+        <th>Horário</th>
+        <th>Comprovante</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">Carregando...</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let todasInscricoes = [];
+
+  // ── Busca dados da API e atualiza toda a UI ──
+  async function atualizarStats() {
+    try {
+      const resp = await fetch('{% url "desafio:stats" %}');
+      const data = await resp.json();
+
+      // Métricas numéricas
+      document.getElementById('total').textContent           = data.total;
+      document.getElementById('total-alunos').textContent    = data.alunos;
+      document.getElementById('total-comunidade').textContent = data.comunidade;
+      document.getElementById('atualizado').textContent      = data.atualizado_em;
+
+      // Barras de categoria
+      const cont = document.getElementById('categorias-container');
+      if (data.por_categoria.length === 0) {
+        cont.innerHTML = '<p style="color:var(--muted);font-size:.875rem">Nenhuma categoria cadastrada.</p>';
+      } else {
+        cont.innerHTML = data.por_categoria.map(cat => `
+          <div class="cat-bar">
+            <div class="cat-bar-top">
+              <span>${cat.icone} <b>${cat.nome}</b></span>
+              <span style="color:var(--muted)">
+                ${cat.alunos} alunos + ${cat.comunidade} comunidade =
+                <b style="color:var(--azul-escuro)">${cat.total}</b>
+              </span>
+            </div>
+            <div class="cat-bar-pista">
+              <div class="cat-bar-fill"
+                   style="width:${data.total > 0 ? (cat.total / data.total * 100).toFixed(1) : 0}%">
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Salva para filtro local
+      todasInscricoes = data.ultimas_inscricoes;
+      filtrarTabela();
+
+    } catch (e) {
+      console.error('[Desafio] Erro ao buscar stats:', e);
+    }
+  }
+
+  // ── Filtra e renderiza a tabela ──
+  function filtrarTabela() {
+    const busca = document.getElementById('busca').value.toLowerCase().trim();
+    const tipo  = document.getElementById('filtro-tipo').value;
+    const cat   = document.getElementById('filtro-cat').value;
+
+    const filtradas = todasInscricoes.filter(i =>
+      (!busca || i.nome.toLowerCase().includes(busca)) &&
+      (!tipo  || i.tipo === tipo) &&
+      (!cat   || i.categoria === cat)
+    );
+
+    const tbody = document.getElementById('tbody');
+
+    if (filtradas.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">
+          Nenhuma inscrição encontrada.
+        </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtradas.map(i => `
+      <tr>
+        <td class="num">${i.numero}</td>
+        <td><b>${i.nome}</b></td>
+        <td>
+          <span class="badge ${i.tipo === 'Aluno' ? 'badge-aluno' : 'badge-comunidade'}">
+            ${i.tipo}
+          </span>
+        </td>
+        <td>${i.categoria}</td>
+        <td class="muted">${i.atividade}</td>
+        <td class="muted">${i.horario}</td>
+        <td>
+          <a href="/desafio/comprovante/${i.numero}/" target="_blank"
+             style="color:#1D9E75;font-size:.8rem;font-weight:700">
+            📄 Ver
+          </a>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Filtros interativos (busca local, sem nova requisição ao servidor)
+  ['busca', 'filtro-tipo', 'filtro-cat'].forEach(id => {
+    document.getElementById(id).addEventListener('input',  filtrarTabela);
+    document.getElementById(id).addEventListener('change', filtrarTabela);
+  });
+
+  // Inicia e agenda polling a cada 10 segundos
+  atualizarStats();
+  setInterval(atualizarStats, 10000);
+</script>
+{% endblock %}

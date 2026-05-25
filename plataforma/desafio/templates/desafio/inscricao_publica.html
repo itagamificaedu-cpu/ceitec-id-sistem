@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dia do Desafio — CEITEC Itapipoca</title>
+
+  {# Open Graph para compartilhamento no Instagram/WhatsApp #}
+  <meta property="og:title"       content="Dia do Desafio — CEITEC Itapipoca 2026">
+  <meta property="og:description" content="🚴 Ciclismo • 🏃 Corrida • 🥾 Trilha — Faça sua inscrição!">
+  <meta property="og:type"        content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Reset e base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 3rem 1.5rem 1.5rem;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: #1D9E75;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      padding: .3rem .9rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 8vw, 3.8rem);
+      font-weight: 800;
+      color: #1D9E75;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .hero .sub {
+      color: #555;
+      margin-top: .5rem;
+      font-size: .95rem;
+    }
+    .hero .cats {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .cat-pill {
+      background: #111;
+      border: 1px solid #222;
+      color: #ccc;
+      padding: .4rem 1rem;
+      border-radius: 30px;
+      font-size: .85rem;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 1.2rem 5rem;
+    }
+
+    /* ── Escolha de perfil ── */
+    .label-escolha {
+      text-align: center;
+      color: #555;
+      font-size: .9rem;
+      margin: 1.5rem 0 .75rem;
+    }
+    .escolha {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: .5rem;
+    }
+    .btn-perfil {
+      background: #111;
+      border: 1.5px solid #1D9E75;
+      border-radius: 14px;
+      color: #ccc;
+      padding: 1.4rem 1rem;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      transition: all .2s;
+      text-align: center;
+    }
+    .btn-perfil:hover,
+    .btn-perfil.ativo { background: #1D9E75; color: #fff; }
+    .btn-perfil .icon { font-size: 2rem; display: block; margin-bottom: .4rem; }
+
+    /* ── Seções de formulário ── */
+    .form-section { display: none; }
+    .form-section.visivel {
+      display: block;
+      animation: fadeIn .3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .separador { height: 1px; background: #1a1a1a; margin: 1.5rem 0; }
+
+    /* ── Campos ── */
+    .form-group { margin-bottom: 1rem; }
+    label {
+      display: block;
+      font-size: .75rem;
+      color: #666;
+      margin-bottom: .3rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    input, select {
+      width: 100%;
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #fff;
+      padding: .8rem 1rem;
+      font-size: 1rem;
+      font-family: 'Syne', sans-serif;
+      transition: border-color .2s;
+      appearance: none;
+    }
+    input::placeholder { color: #444; }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1D9E75;
+    }
+    select option { background: #1a1a1a; }
+
+    /* ── Botão principal ── */
+    .btn-submit {
+      width: 100%;
+      background: #1D9E75;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background .2s, transform .15s;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: #0F6E56;
+      transform: translateY(-1px);
+    }
+    .btn-submit:disabled { background: #333; cursor: not-allowed; }
+
+    /* ── Tela de sucesso ── */
+    .sucesso {
+      text-align: center;
+      padding: 2.5rem 0;
+      display: none;
+    }
+    .sucesso .check { font-size: 3.5rem; }
+    .sucesso h2 { color: #1D9E75; font-size: 1.8rem; margin: .75rem 0 .4rem; }
+    .sucesso p  { color: #555; font-size: .9rem; }
+    .numero-badge {
+      display: inline-block;
+      background: #111;
+      border: 2px solid #1D9E75;
+      border-radius: 12px;
+      padding: 1rem 2.5rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1D9E75;
+      margin: 1.2rem 0;
+      letter-spacing: 3px;
+    }
+    .btn-comprovante {
+      display: inline-block;
+      background: #1D9E75;
+      color: #fff;
+      border-radius: 10px;
+      padding: .9rem 2rem;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 1rem;
+      transition: background .2s;
+    }
+    .btn-comprovante:hover { background: #0F6E56; color: #fff; }
+
+    /* ── Rodapé ── */
+    .rodape {
+      text-align: center;
+      margin-top: 3rem;
+      color: #333;
+      font-size: .78rem;
+      padding-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="hero-tag">CEITEC — Itapipoca, CE — 2026</div>
+  <h1>DIA DO<br>DESAFIO</h1>
+  <p class="sub">Inscreva-se gratuitamente e venha se superar!</p>
+  <div class="cats">
+    <span class="cat-pill">🚴 Ciclismo</span>
+    <span class="cat-pill">🏃 Corrida</span>
+    <span class="cat-pill">🥾 Trilha</span>
+  </div>
+</div>
+
+<!-- ── Formulário de inscrição ── -->
+<div class="container">
+
+  <div id="form-container">
+    <p class="label-escolha">Como você vai participar?</p>
+
+    <div class="escolha">
+      <button class="btn-perfil" onclick="mostrarForm('aluno', this)">
+        <span class="icon">🎒</span>Sou Aluno
+      </button>
+      <button class="btn-perfil" onclick="mostrarForm('comunidade', this)">
+        <span class="icon">🏃</span>Comunidade
+      </button>
+    </div>
+
+    <!-- ── FORMULÁRIO ALUNO ── -->
+    <div id="form-aluno" class="form-section">
+      <div class="separador"></div>
+      <form id="form-aluno-el">
+        <input type="hidden" name="tipo" value="aluno">
+
+        <div class="form-group">
+          <label>Nome completo *</label>
+          <input type="text" name="nome_completo" placeholder="Seu nome completo" required>
+        </div>
+        <div class="form-group">
+          <label>Data de nascimento *</label>
+          <input type="date" name="data_nascimento" required>
+        </div>
+        <div class="form-group">
+          <label>E-mail *</label>
+          <input type="email" name="email" placeholder="email@exemplo.com" required>
+        </div>
+        <div class="form-group">
+          <label>Telefone *</label>
+          <input type="tel" name="telefone" placeholder="(88) 99999-9999" required>
+        </div>
+        <div class="form-group">
+          <label>Escola *</label>
+          <input type="text" name="escola" placeholder="Nome da sua escola" required>
+        </div>
+        <div class="form-group">
+          <label>Turma *</label>
+          <input type="text" name="turma" placeholder="Ex: 9º A, 3º Ano EM" required>
+        </div>
+        <div class="form-group">
+          <label>Matrícula (opcional)</label>
+          <input type="text" name="matricula" placeholder="Número de matrícula">
+        </div>
+
+        {% include 'desafio/_campos_categoria.html' %}
+
+        <button type="submit" class="btn-submit">Confirmar inscrição →</button>
+      </form>
+    </div>
+
+    <!-- ── FORMULÁRIO COMUNIDADE ── -->
+    <div id="form-comunidade" class="form-section">
+      <div class="separador"></div>
+      <form id="form-comunidade-el">
+        <input type="hidden" name="tipo" value="comunidade">
+
+        <div class="form-group">
+          <label>Nome completo *</label>
+          <input type="text" name="nome_completo" placeholder="Seu nome completo" required>
+        </div>
+        <div class="form-group">
+          <label>CPF *</label>
+          <input type="text" name="cpf" id="cpf-input" placeholder="000.000.000-00" maxlength="14" required>
+        </div>
+        <div class="form-group">
+          <label>Data de nascimento *</label>
+          <input type="date" name="data_nascimento" required>
+        </div>
+        <div class="form-group">
+          <label>E-mail *</label>
+          <input type="email" name="email" placeholder="email@exemplo.com" required>
+        </div>
+        <div class="form-group">
+          <label>Telefone *</label>
+          <input type="tel" name="telefone" placeholder="(88) 99999-9999" required>
+        </div>
+        <div class="form-group">
+          <label>Cidade *</label>
+          <input type="text" name="cidade" placeholder="Sua cidade" required>
+        </div>
+
+        {% include 'desafio/_campos_categoria.html' %}
+
+        <button type="submit" class="btn-submit">Confirmar inscrição →</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Tela de sucesso ── -->
+  <div id="sucesso" class="sucesso">
+    <div class="check">✅</div>
+    <h2>Inscrição confirmada!</h2>
+    <p>Guarde o seu número de inscrição:</p>
+    <div class="numero-badge" id="numero-inscricao"></div>
+    <p style="color:#444;font-size:.8rem">Apresente este número no dia do evento.</p>
+    <br>
+    <a id="link-comprovante" href="#" class="btn-comprovante">📄 Baixar comprovante PDF</a>
+  </div>
+
+  <div class="rodape">
+    CEITEC — Centro Educacional de Inovação e Tecnologia<br>
+    Itapipoca, Ceará · 2026
+  </div>
+</div>
+
+<script>
+// ── Mostrar/esconder formulário conforme perfil escolhido ──
+function mostrarForm(tipo, btn) {
+  document.querySelectorAll('.form-section').forEach(el => el.classList.remove('visivel'));
+  document.getElementById('form-' + tipo).classList.add('visivel');
+  document.querySelectorAll('.btn-perfil').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+}
+
+// ── Carrega atividades dinamicamente ao selecionar categoria ──
+document.querySelectorAll('[name="categoria"]').forEach(sel => {
+  sel.addEventListener('change', async function () {
+    const ativSelect = this.closest('form').querySelector('[name="atividade"]');
+    ativSelect.innerHTML = '<option value="">Carregando...</option>';
+    try {
+      const resp = await fetch(`/desafio/atividades/${this.value}/`);
+      const data = await resp.json();
+      ativSelect.innerHTML = '<option value="">Selecione a atividade</option>';
+      data.atividades.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.nome;
+        ativSelect.appendChild(opt);
+      });
+    } catch (e) {
+      ativSelect.innerHTML = '<option value="">Erro ao carregar atividades</option>';
+    }
+  });
+});
+
+// ── Obter CSRF token do cookie ──
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+
+// ── Submit genérico — cobre os dois formulários ──
+['form-aluno-el', 'form-comunidade-el'].forEach(id => {
+  const form = document.getElementById(id);
+  if (!form) return;
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    const textoOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const formData = Object.fromEntries(new FormData(this));
+
+    try {
+      const resp = await fetch('/desafio/inscricao/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') || '',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await resp.json();
+
+      if (data.sucesso) {
+        // Exibe tela de sucesso
+        document.getElementById('form-container').style.display = 'none';
+        document.getElementById('numero-inscricao').textContent = data.numero;
+        document.getElementById('link-comprovante').href = `/desafio/comprovante/${data.numero}/`;
+        document.getElementById('sucesso').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        alert('⚠️ ' + (data.erro || 'Erro ao realizar inscrição. Tente novamente.'));
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
+    } catch (err) {
+      alert('❌ Erro de conexão. Verifique sua internet e tente novamente.');
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
+    }
+  });
+});
+
+// ── Máscara de CPF ──
+document.getElementById('cpf-input')?.addEventListener('input', function () {
+  let v = this.value.replace(/\D/g, '').slice(0, 11);
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  this.value = v;
+});
+
+// ── Máscara de telefone ──
+document.querySelectorAll('[name="telefone"]').forEach(el => {
+  el.addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 2)  v = '(' + v.slice(0, 2) + ') ' + v.slice(2);
+    if (v.length > 10) v = v.slice(0, 10) + '-' + v.slice(10);
+    this.value = v;
+  });
+});
+</script>
+</body>
+</html>

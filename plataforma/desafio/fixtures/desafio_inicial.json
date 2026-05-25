@@ -1,0 +1,29 @@
+[
+  {"model": "desafio.categoriadesafio", "pk": 1,
+   "fields": {"nome": "Ciclismo", "icone": "🚴", "ativo": true}},
+  {"model": "desafio.categoriadesafio", "pk": 2,
+   "fields": {"nome": "Corrida",  "icone": "🏃", "ativo": true}},
+  {"model": "desafio.categoriadesafio", "pk": 3,
+   "fields": {"nome": "Trilha",   "icone": "🥾", "ativo": true}},
+
+  {"model": "desafio.atividadedesafio", "pk": 1,
+   "fields": {"categoria": 1, "nome": "Ciclismo 5km",  "descricao": ""}},
+  {"model": "desafio.atividadedesafio", "pk": 2,
+   "fields": {"categoria": 1, "nome": "Ciclismo 10km", "descricao": ""}},
+  {"model": "desafio.atividadedesafio", "pk": 3,
+   "fields": {"categoria": 1, "nome": "Ciclismo 20km", "descricao": ""}},
+
+  {"model": "desafio.atividadedesafio", "pk": 4,
+   "fields": {"categoria": 2, "nome": "Corrida 3km",  "descricao": ""}},
+  {"model": "desafio.atividadedesafio", "pk": 5,
+   "fields": {"categoria": 2, "nome": "Corrida 5km",  "descricao": ""}},
+  {"model": "desafio.atividadedesafio", "pk": 6,
+   "fields": {"categoria": 2, "nome": "Corrida 10km", "descricao": ""}},
+
+  {"model": "desafio.atividadedesafio", "pk": 7,
+   "fields": {"categoria": 3, "nome": "Trilha Curta (3km)",  "descricao": ""}},
+  {"model": "desafio.atividadedesafio", "pk": 8,
+   "fields": {"categoria": 3, "nome": "Trilha Média (7km)",  "descricao": ""}},
+  {"model": "desafio.atividadedesafio", "pk": 9,
+   "fields": {"categoria": 3, "nome": "Trilha Longa (12km)", "descricao": ""}}
+]

@@ -1,0 +1,16 @@
+{# Template parcial — seletores de Categoria e Atividade, incluído em ambos os formulários #}
+<div class="form-group">
+  <label>Categoria *</label>
+  <select name="categoria" required>
+    <option value="">Selecione a categoria</option>
+    {% for cat in categorias %}
+      <option value="{{ cat.id }}">{{ cat.icone }} {{ cat.nome }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="form-group">
+  <label>Atividade *</label>
+  <select name="atividade" required>
+    <option value="">Selecione a categoria primeiro</option>
+  </select>
+</div>
