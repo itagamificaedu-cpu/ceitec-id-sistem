@@ -394,6 +394,29 @@ async function initDatabase() {
       xp_ganho   INTEGER DEFAULT 0,
       criado_em  TIMESTAMP DEFAULT NOW()
     )`,
+
+    /* ========== AGENDA E AVISOS ========== */
+
+    `CREATE TABLE IF NOT EXISTS avisos (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      titulo TEXT NOT NULL,
+      conteudo TEXT NOT NULL,
+      tipo TEXT NOT NULL DEFAULT 'aviso',
+      data_evento DATE,
+      fixado INTEGER DEFAULT 0,
+      criado_por_nome TEXT DEFAULT '',
+      criado_por_id INTEGER,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS avisos_lidos (
+      aviso_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      lido_em TIMESTAMP DEFAULT NOW(),
+      PRIMARY KEY (aviso_id, usuario_id)
+    )`,
+
   ];
 
   for (const sql of tabelas) {
