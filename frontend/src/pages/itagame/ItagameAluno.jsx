@@ -233,7 +233,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScan
                 onClick={() => window.history.back()}
                 style={{ background: '#1e3a5f', border: '1px solid #2d5a9e', color: '#7eb8f7', borderRadius: 10, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                ← Scanner
+                ← Scanner Game
               </button>
             )}
             <button onClick={onSair} style={{ background: 'transparent', border: `1px solid ${N.borda}`, color: N.cinza, borderRadius: 10, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
