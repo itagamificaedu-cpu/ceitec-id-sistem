@@ -51,6 +51,7 @@ import MobileTracker from './pages/MobileTracker'
 import SaidaSala from './pages/SaidaSala'
 import PainelSaidaSala from './pages/PainelSaidaSala'
 import EmpreendedorismoDigital from './pages/EmpreendedorismoDigital'
+import Agenda from './pages/Agenda'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -203,6 +204,9 @@ export default function App() {
 
         {/* Empreendedorismo Digital — professor, coordenador e ita_admin */}
         <Route path="/empreendedorismo-digital" element={<P><EmpreendedorismoDigital /></P>} />
+
+        {/* Agenda e Avisos — todos os usuários autenticados */}
+        <Route path="/agenda" element={<P><Agenda /></P>} />
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />

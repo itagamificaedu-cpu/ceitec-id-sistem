@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import api from '../api'
 
@@ -32,6 +32,7 @@ const SECOES_ESTATICAS = [
     titulo: 'ESCOLA',
     itens: [
       { path: '/dashboard',          label: 'Dashboard Geral',        icon: '🏠' },
+      { path: '/agenda',             label: 'Agenda & Avisos',        icon: '📋' },
       { path: '/scanner',            label: 'Scanner de Presença',    icon: '📷' },
       { path: '/scanner/portal',     label: 'Scanner Game Aluno',      icon: '📲' },
       { path: '/saida-sala',         label: 'Saída de Sala (Scanner)', icon: '🚪' },
@@ -100,7 +101,21 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
+  const [naoLidos, setNaoLidos] = useState(0)
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+
+  // Busca contagem de avisos não lidos a cada 60 segundos
+  useEffect(() => {
+    const buscarNaoLidos = async () => {
+      try {
+        const { data } = await api.get('/agenda/nao-lidos')
+        setNaoLidos(data.total || 0)
+      } catch { setNaoLidos(0) }
+    }
+    buscarNaoLidos()
+    const intervalo = setInterval(buscarNaoLidos, 60000)
+    return () => clearInterval(intervalo)
+  }, [])
 
   const ssoUrl = (next) => {
     const base = `${DJANGO_URL}/accounts/login-magico/`
@@ -285,7 +300,27 @@ export default function Navbar() {
           <span className="font-bold text-secondary text-sm">ITA</span>
           <span className="font-bold text-white text-xs ml-1">TECNOLOGIA</span>
         </div>
-        <button onClick={() => setAberto(!aberto)} className="text-xl p-1">☰</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Sino de notificações — mobile */}
+          <button
+            onClick={() => { setAberto(false); navigate('/agenda') }}
+            style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+          >
+            <span style={{ fontSize: 20 }}>🔔</span>
+            {naoLidos > 0 && (
+              <span style={{
+                position: 'absolute', top: 0, right: 0,
+                background: '#EF4444', color: '#fff',
+                borderRadius: 999, fontSize: 9, fontWeight: 700,
+                minWidth: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0 3px', lineHeight: 1,
+              }}>
+                {naoLidos > 9 ? '9+' : naoLidos}
+              </span>
+            )}
+          </button>
+          <button onClick={() => setAberto(!aberto)} className="text-xl p-1">☰</button>
+        </div>
       </div>
 
       {/* Sidebar */}
@@ -305,13 +340,32 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Usuário */}
+        {/* Usuário + sino */}
         <div className="px-4 py-2.5 border-b border-white/10 flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm flex-shrink-0">👤</div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-medium truncate">{usuario.nome}</p>
             <p className="text-white/50 text-xs capitalize">{usuario.perfil}</p>
           </div>
+          {/* Sino de notificações — sidebar desktop */}
+          <button
+            onClick={() => { setAberto(false); navigate('/agenda') }}
+            style={{ position: 'relative', background: 'rgba(255,255,255,.1)', border: 'none', cursor: 'pointer', padding: '5px 7px', borderRadius: 8, flexShrink: 0 }}
+            title="Agenda & Avisos"
+          >
+            <span style={{ fontSize: 16 }}>🔔</span>
+            {naoLidos > 0 && (
+              <span style={{
+                position: 'absolute', top: 0, right: 0,
+                background: '#EF4444', color: '#fff',
+                borderRadius: 999, fontSize: 9, fontWeight: 700,
+                minWidth: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0 3px', lineHeight: 1,
+              }}>
+                {naoLidos > 9 ? '9+' : naoLidos}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Menu com scroll */}

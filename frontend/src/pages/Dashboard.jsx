@@ -120,9 +120,13 @@ export default function Dashboard() {
   const [dados, setDados] = useState(null)
   const [semanal, setSemanal] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [avisos, setAvisos] = useState([])
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
   useEffect(() => {
+    // Busca avisos recentes (mostra os 3 mais recentes no dashboard)
+    api.get('/agenda').then(({ data }) => setAvisos(data.slice(0, 3))).catch(() => {})
+
     if (usuario.perfil === 'professor') { setCarregando(false); return }
     async function carregar() {
       try {
@@ -272,6 +276,35 @@ export default function Dashboard() {
               </div>
             </>
           ) : null}
+
+          {/* ── Card de Avisos Recentes ── */}
+          {avisos.length > 0 && (
+            <div style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 1px 4px #0001', border: '1px solid #E2E8F0', marginTop: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1E293B' }}>📋 Avisos Recentes</h3>
+                <Link to="/agenda" style={{ fontSize: 13, color: '#3B82F6', textDecoration: 'none', fontWeight: 600 }}>Ver todos →</Link>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {avisos.map(a => {
+                  const cores = { aviso: '#3B82F6', evento: '#8B5CF6', urgente: '#EF4444' }
+                  const icones = { aviso: '📢', evento: '📅', urgente: '🚨' }
+                  const cor = cores[a.tipo] || '#3B82F6'
+                  return (
+                    <Link key={a.id} to="/agenda" style={{ textDecoration: 'none', display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, background: '#F8FAFC', border: '1px solid #E2E8F0', borderLeft: `3px solid ${cor}` }}>
+                      <span style={{ fontSize: 18, marginTop: 1 }}>{icones[a.tipo] || '📢'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontWeight: 700, fontSize: 14, color: '#1E293B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.titulo}</span>
+                          {!a.lido && <span style={{ background: cor, color: '#fff', borderRadius: 999, fontSize: 9, padding: '1px 6px', fontWeight: 700, flexShrink: 0 }}>NOVO</span>}
+                        </div>
+                        <p style={{ margin: '2px 0 0', color: '#64748B', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.conteudo}</p>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
