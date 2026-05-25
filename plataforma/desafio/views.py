@@ -303,116 +303,157 @@ def exportar_csv(request):
 @require_tipo('admin')
 def banner_instagram(request):
     """
-    Gera banner 1080×1080px para o Instagram com Pillow.
-    Visual idêntico à página de inscrição: fundo escuro, amarelo #FFD600, verde #1D9E75.
-    Gerado em memória — sem salvar em disco.
+    Gera Story 1080×1920px para Instagram.
+    Visual idêntico à página de inscrição: fundo escuro #070f0c,
+    tag amarela, título DIA DO DESAFIO, pills de modalidade, link em destaque.
     """
     from PIL import Image, ImageDraw, ImageFont
 
-    W, H = 1080, 1080
+    W, H = 1080, 1920
 
-    # ── Fundo escuro com gradiente simulado ────────────────────────────────
-    img  = Image.new('RGB', (W, H), color='#070f0c')
+    # ── Fundo escuro base ─────────────────────────────────────────────────
+    img  = Image.new('RGB', (W, H), '#070f0c')
     draw = ImageDraw.Draw(img)
 
-    # Gradiente radial simulado no topo (ellipse grande verde escuro)
-    for i in range(30, 0, -1):
-        alpha = int(18 * (i / 30))
-        r = int(14 + (30 - i) * 1.2)
-        g = int(42 + (30 - i) * 1.8)
-        b = int(30 + (30 - i) * 0.8)
-        draw.ellipse(
-            [W//2 - i*28, -i*15, W//2 + i*28, i*22],
-            fill=(r, g, b)
-        )
+    # Gradiente radial verde escuro no topo (camadas de elipse)
+    cx = W // 2
+    for i in range(40, 0, -1):
+        t = i / 40
+        r = int(7  + t * 12)
+        g = int(15 + t * 35)
+        b = int(12 + t * 20)
+        ew = int(W * 0.9 * t)
+        eh = int(700 * t)
+        draw.ellipse([cx - ew, -eh//2, cx + ew, eh], fill=(r, g, b))
 
-    # ── Decorações geométricas — igual à inscrição ─────────────────────────
-    # Canto superior direito: círculo verde
-    draw.ellipse([780, -160, 1240, 300],  fill='#0e2a1e')
-    draw.ellipse([840, -100, 1160, 220],  fill='#1D9E75')
+    # Blob decorativo canto superior direito
+    draw.ellipse([820, -80,  1180, 280],  fill='#0a1f16')
+    draw.ellipse([880, -20,  1140, 240],  fill='#0d2b1c')
 
-    # Canto inferior esquerdo: círculo verde escuro
-    draw.ellipse([-160, 780, 300, 1240],  fill='#0e2a1e')
-    draw.ellipse([-100, 840, 220, 1160],  fill='#0F6E56')
-
-    # Linha divisória horizontal amarela
-    draw.rectangle([60, 590, 1020, 596], fill='#FFD600')
+    # Blob decorativo canto inferior esquerdo
+    draw.ellipse([-100, 1680, 260, 2020], fill='#0a1f16')
+    draw.ellipse([-40,  1720, 200, 1980], fill='#0d2b1c')
 
     # ── Fontes ────────────────────────────────────────────────────────────
     try:
-        bold_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-        reg_path  = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
-        f_tag     = ImageFont.truetype(bold_path, 28)   # tag CEITEC
-        f_ano     = ImageFont.truetype(bold_path, 38)   # 2026
-        f_titulo  = ImageFont.truetype(bold_path, 108)  # DIA DO
-        f_titulo2 = ImageFont.truetype(bold_path, 108)  # DESAFIO
-        f_cat     = ImageFont.truetype(bold_path, 50)   # modalidades
-        f_cta     = ImageFont.truetype(bold_path, 46)   # CTA
-        f_link    = ImageFont.truetype(reg_path,  34)   # link
-        f_hash    = ImageFont.truetype(reg_path,  30)   # hashtags
+        B = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+        R = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+        f_tag    = ImageFont.truetype(B, 32)
+        f_titulo = ImageFont.truetype(B, 160)   # DIA DO
+        f_des    = ImageFont.truetype(B, 160)   # DESAFIO
+        f_sub    = ImageFont.truetype(R, 42)
+        f_pill   = ImageFont.truetype(B, 44)
+        f_cta    = ImageFont.truetype(B, 54)
+        f_link   = ImageFont.truetype(B, 38)
+        f_small  = ImageFont.truetype(R, 30)
     except OSError:
-        f_tag = f_ano = f_titulo = f_titulo2 = f_cat = f_cta = f_link = f_hash = ImageFont.load_default()
+        f_tag = f_titulo = f_des = f_sub = f_pill = f_cta = f_link = f_small = ImageFont.load_default()
 
-    # ── Tag amarela "CEITEC — ITAPIPOCA 2026" ─────────────────────────────
-    tag_text = 'CEITEC  •  ITAPIPOCA  •  2026'
-    tag_bbox = draw.textbbox((0, 0), tag_text, font=f_tag)
-    tag_w    = tag_bbox[2] - tag_bbox[0]
-    tag_x    = (W - tag_w) // 2
-    # Fundo amarelo arredondado (simulado com retângulo)
-    pad = 16
-    draw.rounded_rectangle(
-        [tag_x - pad, 105, tag_x + tag_w + pad, 105 + 46],
-        radius=23, fill='#FFD600'
-    )
-    draw.text((W // 2, 128), tag_text, font=f_tag, fill='#070f0c', anchor='mm')
+    def text_w(txt, fnt):
+        bb = draw.textbbox((0, 0), txt, font=fnt)
+        return bb[2] - bb[0]
 
-    # ── Título principal "DIA DO DESAFIO" ─────────────────────────────────
-    draw.text((W // 2, 280), 'DIA DO',  font=f_titulo,  fill='#FFFFFF', anchor='mm')
-    draw.text((W // 2, 400), 'DESAFIO', font=f_titulo2, fill='#FFD600', anchor='mm')
+    def pill(cx, cy, txt, fnt, bg, fg, pad_x=32, pad_y=18, radius=30, border=None):
+        """Desenha uma pill centralizada em (cx, cy)."""
+        tw = text_w(txt, fnt)
+        th_bb = draw.textbbox((0, 0), txt, font=fnt)
+        th = th_bb[3] - th_bb[1]
+        w2 = tw + pad_x * 2
+        h2 = th + pad_y * 2
+        x0, y0 = cx - w2 // 2, cy - h2 // 2
+        x1, y1 = cx + w2 // 2, cy + h2 // 2
+        if border:
+            draw.rounded_rectangle([x0 - 3, y0 - 3, x1 + 3, y1 + 3], radius=radius + 3, fill=border)
+        draw.rounded_rectangle([x0, y0, x1, y1], radius=radius, fill=bg)
+        draw.text((cx, cy), txt, font=fnt, fill=fg, anchor='mm')
+        return w2, h2
 
-    # ── Subtítulo verde ────────────────────────────────────────────────────
-    draw.text((W // 2, 500), 'Evento esportivo CEITEC Itapipoca', font=f_ano, fill='#c8e6d8', anchor='mm')
+    # ══════════════════════════════════════════════════════════════════════
+    # BLOCO 1 — TAG no topo
+    # ══════════════════════════════════════════════════════════════════════
+    tag = 'CEITEC – ITAPIPOCA, CE – 2026'
+    pill(W // 2, 130, tag, f_tag, bg='#070f0c', fg='#FFD600',
+         pad_x=36, pad_y=16, radius=50, border='#FFD600')
 
-    # ── Modalidades (abaixo da linha) ─────────────────────────────────────
-    draw.text((W // 2, 660), '🚴  Ciclismo    🏃  Corrida    🥾  Trilha', font=f_cat, fill='#FFFFFF', anchor='mm')
+    # ══════════════════════════════════════════════════════════════════════
+    # BLOCO 2 — Título principal
+    # ══════════════════════════════════════════════════════════════════════
+    draw.text((W // 2, 380), 'DIA DO',  font=f_titulo, fill='#FFFFFF', anchor='mm')
+    draw.text((W // 2, 560), 'DESAFIO', font=f_des,    fill='#FFD600', anchor='mm')
 
-    # ── Pills das distâncias ───────────────────────────────────────────────
-    pills = ['1 km', '2 km', '800 m', '1 km']
-    total_w = sum(80 for _ in pills) + 12 * (len(pills) - 1)
-    px = (W - total_w) // 2
-    for p in pills:
-        pw = 80
-        draw.rounded_rectangle([px, 730, px + pw, 782], radius=14, fill='#FFD600')
-        pb = draw.textbbox((0, 0), p, font=f_hash)
-        pw2 = pb[2] - pb[0]
-        draw.text((px + 40, 756), p, font=f_hash, fill='#070f0c', anchor='mm')
-        px += pw + 12
+    # Subtítulo
+    draw.text((W // 2, 670),
+              'Inscreva-se gratuitamente e venha se superar!',
+              font=f_sub, fill='#c8e6d8', anchor='mm')
 
-    # ── CTA ────────────────────────────────────────────────────────────────
-    draw.text((W // 2, 845), 'Inscrições Abertas!', font=f_cta, fill='#1D9E75', anchor='mm')
+    # ══════════════════════════════════════════════════════════════════════
+    # BLOCO 3 — Pills de modalidade (igual à página)
+    # ══════════════════════════════════════════════════════════════════════
+    mods = [('🚴  Ciclismo', 340), ('🏃  Corrida', 700), ('🥾  Trilha', 1040)]
+    y_mod = 800
+    for label, cx_mod in mods:
+        pill(cx_mod, y_mod, label, f_pill,
+             bg='#111c15', fg='#FFD600', pad_x=28, pad_y=16, radius=40, border='#FFD600')
 
-    # ── Link destacado ─────────────────────────────────────────────────────
-    link_text = 'itatecnologiaeducacional.tech/desafio'
-    lb = draw.textbbox((0, 0), link_text, font=f_link)
-    lw = lb[2] - lb[0]
-    lx = (W - lw) // 2
-    # Fundo escuro semi-transparente para o link
-    draw.rounded_rectangle(
-        [lx - 24, 885, lx + lw + 24, 885 + 50],
-        radius=12, fill='#1D9E75'
-    )
-    draw.text((W // 2, 910), link_text, font=f_link, fill='#FFFFFF', anchor='mm')
+    # ══════════════════════════════════════════════════════════════════════
+    # BLOCO 4 — Separador
+    # ══════════════════════════════════════════════════════════════════════
+    draw.rectangle([80, 920, W - 80, 923], fill='#1D9E75')
 
-    # ── Hashtags ──────────────────────────────────────────────────────────
-    draw.text((W // 2, 980), '#DiadoDesafio  #CEITEC  #Itapipoca', font=f_hash, fill='#4a7a62', anchor='mm')
+    # ══════════════════════════════════════════════════════════════════════
+    # BLOCO 5 — Cards "Sou Aluno" e "Comunidade" (igual à página)
+    # ══════════════════════════════════════════════════════════════════════
+    f_card_label = f_pill
+    f_card_title = ImageFont.truetype(
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 52
+    ) if True else f_cta
 
-    # ── Instagram ─────────────────────────────────────────────────────────
-    draw.text((W // 2, 1030), '@ceitecitapipoca', font=f_hash, fill='#2d5040', anchor='mm')
+    draw.text((W // 2, 990), 'Como você vai participar?',
+              font=f_cta, fill='#FFFFFF', anchor='mm')
+
+    # Card esquerdo — Sou Aluno
+    cx_al, cy_al = 290, 1175
+    draw.rounded_rectangle([cx_al - 230, cy_al - 110, cx_al + 230, cy_al + 110],
+                            radius=22, fill='#111c15', outline='#2a4a38', width=2)
+    draw.text((cx_al, cy_al - 30), '🎒', font=f_titulo, fill='#FFFFFF', anchor='mm')
+    draw.text((cx_al, cy_al + 65), 'Sou Aluno', font=f_card_title, fill='#FFFFFF', anchor='mm')
+
+    # Card direito — Comunidade
+    cx_co, cy_co = 790, 1175
+    draw.rounded_rectangle([cx_co - 230, cy_co - 110, cx_co + 230, cy_co + 110],
+                            radius=22, fill='#111c15', outline='#2a4a38', width=2)
+    draw.text((cx_co, cy_co - 30), '🏃', font=f_titulo, fill='#FFFFFF', anchor='mm')
+    draw.text((cx_co, cy_co + 65), 'Comunidade', font=f_card_title, fill='#FFFFFF', anchor='mm')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # BLOCO 6 — CTA + Link destacado
+    # ══════════════════════════════════════════════════════════════════════
+    draw.text((W // 2, 1400), 'Inscrições Abertas!', font=f_cta, fill='#1D9E75', anchor='mm')
+
+    # Caixa do link — fundo verde com texto branco
+    link = 'itatecnologiaeducacional.tech/desafio'
+    lw = text_w(link, f_link)
+    pad = 36
+    lx0, ly0 = W // 2 - lw // 2 - pad, 1450
+    lx1, ly1 = W // 2 + lw // 2 + pad, 1450 + 68
+    draw.rounded_rectangle([lx0, ly0, lx1, ly1], radius=14, fill='#1D9E75')
+    draw.text((W // 2, (ly0 + ly1) // 2), link, font=f_link, fill='#FFFFFF', anchor='mm')
+
+    # ══════════════════════════════════════════════════════════════════════
+    # RODAPÉ
+    # ══════════════════════════════════════════════════════════════════════
+    draw.text((W // 2, 1580), '#DiadoDesafio  #CEITEC  #Itapipoca',
+              font=f_small, fill='#3a6450', anchor='mm')
+    draw.text((W // 2, 1640),
+              'CEITEC — Centro Educacional de Inovacao e Tecnologia',
+              font=f_small, fill='#2d4a3e', anchor='mm')
+    draw.text((W // 2, 1680), 'Itapipoca, Ceara  •  2026',
+              font=f_small, fill='#2d4a3e', anchor='mm')
 
     buffer = io.BytesIO()
     img.save(buffer, format='PNG', quality=95)
     buffer.seek(0)
 
     response = HttpResponse(buffer.read(), content_type='image/png')
-    response['Content-Disposition'] = 'attachment; filename=banner_dia_do_desafio.png'
+    response['Content-Disposition'] = 'attachment; filename=story_dia_do_desafio.png'
     return response
