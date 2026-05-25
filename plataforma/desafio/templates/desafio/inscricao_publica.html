@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dia do Desafio — CEITEC Itapipoca</title>
-
-  {# Open Graph para compartilhamento no Instagram/WhatsApp #}
   <meta property="og:title"       content="Dia do Desafio — CEITEC Itapipoca 2026">
   <meta property="og:description" content="🚴 Ciclismo • 🏃 Corrida • 🥾 Trilha — Faça sua inscrição!">
   <meta property="og:type"        content="website">
@@ -14,77 +12,79 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 
   <style>
-    /* ── Reset e base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      background: linear-gradient(160deg, #0d1f18 0%, #0a0a0a 60%);
-      color: #f0f0f0;
+      background: #070f0c;
+      color: #ffffff;
       font-family: 'Syne', sans-serif;
       min-height: 100vh;
     }
 
-    /* ── Hero ── */
+    /* ── HERO ── */
     .hero {
       text-align: center;
       padding: 3rem 1.5rem 1.5rem;
+      background: radial-gradient(ellipse at top, #0e2a1e 0%, #070f0c 70%);
     }
     .hero-tag {
       display: inline-block;
-      background: #1D9E75;
-      color: #fff;
+      background: #FFD600;
+      color: #070f0c;
       font-size: .72rem;
       font-weight: 800;
-      letter-spacing: .15em;
+      letter-spacing: .18em;
       text-transform: uppercase;
-      padding: .3rem .9rem;
+      padding: .32rem 1rem;
       border-radius: 20px;
-      margin-bottom: 1rem;
+      margin-bottom: 1.1rem;
     }
     .hero h1 {
-      font-size: clamp(2.2rem, 8vw, 3.8rem);
+      font-size: clamp(2.4rem, 9vw, 4rem);
       font-weight: 800;
-      color: #2ecc97;
-      letter-spacing: -1px;
+      color: #ffffff;
       line-height: 1;
-      text-shadow: 0 0 40px rgba(30,158,117,.4);
+      letter-spacing: -1px;
     }
+    .hero h1 span { color: #FFD600; }
     .hero .sub {
-      color: #b0c8be;
-      margin-top: .6rem;
+      color: #c8e6d8;
+      margin-top: .7rem;
       font-size: 1rem;
       font-weight: 600;
     }
     .hero .cats {
-      margin-top: 1rem;
+      margin-top: 1.1rem;
       display: flex;
       justify-content: center;
-      gap: .75rem;
+      gap: .7rem;
       flex-wrap: wrap;
     }
     .cat-pill {
-      background: rgba(29,158,117,.18);
-      border: 1.5px solid #1D9E75;
-      color: #7de0bc;
-      padding: .45rem 1.1rem;
+      background: rgba(255,214,0,.12);
+      border: 1.5px solid #FFD600;
+      color: #FFD600;
+      padding: .4rem 1.1rem;
       border-radius: 30px;
-      font-size: .88rem;
-      font-weight: 700;
+      font-size: .85rem;
+      font-weight: 800;
     }
 
-    /* ── Container ── */
+    /* ── CONTAINER ── */
     .container {
       max-width: 520px;
       margin: 0 auto;
       padding: 0 1.2rem 5rem;
     }
 
-    /* ── Escolha de perfil ── */
-    .label-escolha {
+    /* ── ESCOLHA TIPO ── */
+    .label-section {
       text-align: center;
-      color: #b0c8be;
-      font-size: .95rem;
-      font-weight: 600;
-      margin: 1.5rem 0 .75rem;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 1.8rem 0 .9rem;
+      letter-spacing: .03em;
     }
     .escolha {
       display: grid;
@@ -94,10 +94,10 @@
     }
     .btn-perfil {
       background: rgba(255,255,255,.05);
-      border: 2px solid #1D9E75;
+      border: 2px solid rgba(255,255,255,.25);
       border-radius: 14px;
-      color: #d0ede3;
-      padding: 1.4rem 1rem;
+      color: #ffffff;
+      padding: 1.3rem 1rem;
       cursor: pointer;
       font-family: 'Syne', sans-serif;
       font-size: .95rem;
@@ -105,69 +105,129 @@
       transition: all .2s;
       text-align: center;
     }
-    .btn-perfil:hover,
+    .btn-perfil:hover { border-color: #FFD600; color: #FFD600; }
     .btn-perfil.ativo {
-      background: #1D9E75;
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(29,158,117,.4);
+      background: #FFD600;
+      border-color: #FFD600;
+      color: #070f0c;
+      box-shadow: 0 4px 20px rgba(255,214,0,.35);
     }
     .btn-perfil .icon { font-size: 2rem; display: block; margin-bottom: .4rem; }
 
-    /* ── Seções de formulário ── */
+    /* ── SEÇÕES ── */
     .form-section { display: none; }
-    .form-section.visivel {
-      display: block;
-      animation: fadeIn .3s ease;
-    }
+    .form-section.visivel { display: block; animation: fadeIn .3s ease; }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .separador {
+    .divisor {
       height: 1px;
-      background: linear-gradient(90deg, transparent, #1D9E75, transparent);
-      margin: 1.5rem 0;
-      opacity: .5;
+      background: rgba(255,255,255,.1);
+      margin: 1.6rem 0;
+    }
+    .divisor-titulo {
+      text-align: center;
+      color: #FFD600;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin: 1.6rem 0 1rem;
     }
 
-    /* ── Campos ── */
+    /* ── CAMPOS ── */
     .form-group { margin-bottom: 1.1rem; }
-    label {
+    label.field-label {
       display: block;
-      font-size: .78rem;
-      color: #7de0bc;
+      font-size: .75rem;
+      color: #ffffff;
       margin-bottom: .35rem;
-      letter-spacing: .08em;
+      letter-spacing: .07em;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: 800;
     }
     input, select {
       width: 100%;
-      background: rgba(255,255,255,.06);
-      border: 1.5px solid rgba(29,158,117,.4);
+      background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.2);
       border-radius: 10px;
-      color: #f0f0f0;
+      color: #ffffff;
       padding: .85rem 1rem;
       font-size: 1rem;
       font-family: 'Syne', sans-serif;
       transition: border-color .2s, background .2s;
       appearance: none;
     }
-    input::placeholder { color: rgba(255,255,255,.35); }
+    input::placeholder { color: rgba(255,255,255,.4); }
     input:focus, select:focus {
       outline: none;
-      border-color: #1D9E75;
-      background: rgba(29,158,117,.08);
+      border-color: #FFD600;
+      background: rgba(255,214,0,.07);
     }
-    select { color: #f0f0f0; }
-    select option { background: #1a2e24; color: #f0f0f0; }
+    select { color: #ffffff; }
+    select option { background: #0d1f14; color: #fff; }
 
-    /* ── Botão principal ── */
+    /* ── MODALIDADES (checkboxes) ── */
+    .modalidades-grid { display: flex; flex-direction: column; gap: .7rem; }
+    .mod-card {
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid rgba(255,255,255,.15);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: border-color .2s, background .2s;
+    }
+    .mod-card.selecionado {
+      border-color: #FFD600;
+      background: rgba(255,214,0,.08);
+    }
+    .mod-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      cursor: pointer;
+    }
+    .mod-check {
+      width: 22px; height: 22px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-radius: 6px;
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    .mod-check.checked { background: #FFD600; border-color: #FFD600; }
+    .mod-check.checked::after { content: '✓'; color: #070f0c; font-size: .85rem; font-weight: 900; }
+    .mod-nome { font-size: 1rem; font-weight: 700; color: #ffffff; }
+    .mod-dist {
+      margin-top: .75rem;
+      display: none;
+    }
+    .mod-dist.visivel { display: block; }
+    .mod-dist select {
+      background: rgba(255,255,255,.1);
+      border-color: rgba(255,214,0,.4);
+    }
+    .badge-so-aluno {
+      display: inline-block;
+      background: rgba(29,158,117,.25);
+      color: #5debb8;
+      font-size: .62rem;
+      font-weight: 800;
+      padding: .1rem .5rem;
+      border-radius: 20px;
+      margin-left: .4rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      vertical-align: middle;
+    }
+
+    /* ── BOTÃO ── */
     .btn-submit {
       width: 100%;
-      background: #1D9E75;
-      color: #fff;
+      background: #FFD600;
+      color: #070f0c;
       border: none;
       border-radius: 12px;
       padding: 1.1rem;
@@ -175,69 +235,76 @@
       font-weight: 800;
       font-family: 'Syne', sans-serif;
       cursor: pointer;
-      margin-top: 1.2rem;
-      transition: background .2s, transform .15s, box-shadow .2s;
-      box-shadow: 0 4px 20px rgba(29,158,117,.35);
+      margin-top: 1.4rem;
+      transition: all .2s;
+      box-shadow: 0 4px 24px rgba(255,214,0,.35);
       letter-spacing: .03em;
     }
     .btn-submit:hover:not(:disabled) {
-      background: #25c48f;
+      background: #ffe033;
       transform: translateY(-2px);
-      box-shadow: 0 6px 28px rgba(29,158,117,.5);
+      box-shadow: 0 6px 32px rgba(255,214,0,.5);
     }
-    .btn-submit:disabled { background: #2a3d33; color: #5a7a6a; cursor: not-allowed; box-shadow: none; }
+    .btn-submit:disabled {
+      background: #2a3028;
+      color: #666;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
 
-    /* ── Tela de sucesso ── */
-    .sucesso {
-      text-align: center;
-      padding: 2.5rem 0;
-      display: none;
-    }
+    /* ── SUCESSO ── */
+    .sucesso { text-align: center; padding: 2.5rem 0; display: none; }
     .sucesso .check { font-size: 3.5rem; }
-    .sucesso h2 { color: #2ecc97; font-size: 1.8rem; margin: .75rem 0 .4rem; }
-    .sucesso p  { color: #b0c8be; font-size: .95rem; }
+    .sucesso h2 { color: #FFD600; font-size: 1.8rem; margin: .75rem 0 .4rem; }
+    .sucesso p { color: #c8e6d8; font-size: .95rem; }
+    .numeros-wrap { display: flex; flex-direction: column; gap: .6rem; margin: 1.2rem 0; align-items: center; }
     .numero-badge {
       display: inline-block;
-      background: rgba(29,158,117,.15);
-      border: 2px solid #1D9E75;
+      background: rgba(255,214,0,.12);
+      border: 2px solid #FFD600;
       border-radius: 12px;
-      padding: 1rem 2.5rem;
-      font-size: 1.5rem;
+      padding: .8rem 2rem;
+      font-size: 1.4rem;
       font-weight: 800;
-      color: #2ecc97;
-      margin: 1.2rem 0;
+      color: #FFD600;
       letter-spacing: 3px;
     }
+    .numero-label { font-size: .72rem; color: #fff; font-weight: 800; text-transform: uppercase; margin-bottom: .2rem; letter-spacing: .08em; }
     .btn-comprovante {
       display: inline-block;
-      background: #1D9E75;
-      color: #fff;
+      background: #FFD600;
+      color: #070f0c;
       border-radius: 10px;
-      padding: .9rem 2rem;
+      padding: .8rem 1.8rem;
       text-decoration: none;
-      font-weight: 700;
-      margin-top: 1rem;
-      transition: background .2s, box-shadow .2s;
-      box-shadow: 0 4px 16px rgba(29,158,117,.4);
+      font-weight: 800;
+      margin: .4rem .3rem 0;
+      transition: all .2s;
     }
-    .btn-comprovante:hover { background: #25c48f; color: #fff; }
+    .btn-comprovante:hover { background: #ffe033; }
 
-    /* ── Rodapé ── */
-    .rodape {
-      text-align: center;
-      margin-top: 3rem;
-      color: #5a7a6a;
-      font-size: .78rem;
-      padding-bottom: 2rem;
+    /* ── RODAPÉ ── */
+    .rodape { text-align: center; margin-top: 3rem; color: rgba(255,255,255,.3); font-size: .78rem; padding-bottom: 2rem; }
+
+    /* ── ERRO ── */
+    .msg-erro {
+      background: rgba(255,80,80,.12);
+      border: 1.5px solid rgba(255,80,80,.4);
+      border-radius: 10px;
+      color: #ff9090;
+      padding: .75rem 1rem;
+      font-size: .9rem;
+      margin-top: .75rem;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-<!-- ── Hero ── -->
+<!-- HERO -->
 <div class="hero">
   <div class="hero-tag">CEITEC — Itapipoca, CE — 2026</div>
-  <h1>DIA DO<br>DESAFIO</h1>
+  <h1>DIA DO <span>DESAFIO</span></h1>
   <p class="sub">Inscreva-se gratuitamente e venha se superar!</p>
   <div class="cats">
     <span class="cat-pill">🚴 Ciclismo</span>
@@ -246,11 +313,11 @@
   </div>
 </div>
 
-<!-- ── Formulário de inscrição ── -->
+<!-- FORMULÁRIO -->
 <div class="container">
 
   <div id="form-container">
-    <p class="label-escolha">Como você vai participar?</p>
+    <p class="label-section">Como você vai participar?</p>
 
     <div class="escolha">
       <button class="btn-perfil" onclick="mostrarForm('aluno', this)">
@@ -263,92 +330,176 @@
 
     <!-- ── FORMULÁRIO ALUNO ── -->
     <div id="form-aluno" class="form-section">
-      <div class="separador"></div>
+      <div class="divisor"></div>
+
       <form id="form-aluno-el">
         <input type="hidden" name="tipo" value="aluno">
 
         <div class="form-group">
-          <label>Nome completo *</label>
+          <label class="field-label">Nome completo *</label>
           <input type="text" name="nome_completo" placeholder="Seu nome completo" required>
         </div>
         <div class="form-group">
-          <label>Data de nascimento *</label>
+          <label class="field-label">Data de nascimento *</label>
           <input type="date" name="data_nascimento" required>
         </div>
         <div class="form-group">
-          <label>E-mail *</label>
+          <label class="field-label">E-mail *</label>
           <input type="email" name="email" placeholder="email@exemplo.com" required>
         </div>
         <div class="form-group">
-          <label>Telefone *</label>
+          <label class="field-label">Telefone *</label>
           <input type="tel" name="telefone" placeholder="(88) 99999-9999" required>
         </div>
         <div class="form-group">
-          <label>Escola *</label>
+          <label class="field-label">Escola *</label>
           <input type="text" name="escola" placeholder="Nome da sua escola" required>
         </div>
         <div class="form-group">
-          <label>Turma *</label>
+          <label class="field-label">Turma *</label>
           <input type="text" name="turma" placeholder="Ex: 9º A, 3º Ano EM" required>
         </div>
         <div class="form-group">
-          <label>Matrícula (opcional)</label>
+          <label class="field-label">Matrícula (opcional)</label>
           <input type="text" name="matricula" placeholder="Número de matrícula">
         </div>
 
-        {% include 'desafio/_campos_categoria.html' %}
+        <!-- MODALIDADES ALUNO: Ciclismo + Corrida + Trilha -->
+        <div class="divisor-titulo">Escolha sua(s) modalidade(s)</div>
+        <div class="modalidades-grid" id="mods-aluno">
 
-        <button type="submit" class="btn-submit">Confirmar inscrição →</button>
+          <div class="mod-card" id="aluno-cic-card">
+            <div class="mod-header" onclick="toggleMod('aluno-cic')">
+              <div class="mod-check" id="aluno-cic-check"></div>
+              <span class="mod-nome">🚴 Ciclismo</span>
+            </div>
+            <div class="mod-dist" id="aluno-cic-dist">
+              <label class="field-label" style="margin-top:.6rem">Distância *</label>
+              <select name="dist_ciclismo" id="aluno-dist-cic">
+                <option value="">Selecione a distância</option>
+                <option value="1">1 km</option>
+                <option value="2">2 km</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mod-card" id="aluno-cor-card">
+            <div class="mod-header" onclick="toggleMod('aluno-cor')">
+              <div class="mod-check" id="aluno-cor-check"></div>
+              <span class="mod-nome">🏃 Corrida</span>
+            </div>
+            <div class="mod-dist" id="aluno-cor-dist">
+              <label class="field-label" style="margin-top:.6rem">Distância *</label>
+              <select name="dist_corrida" id="aluno-dist-cor">
+                <option value="">Selecione a distância</option>
+                <option value="4">800 metros</option>
+                <option value="5">1 km</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mod-card" id="aluno-tri-card">
+            <div class="mod-header" onclick="toggleMod('aluno-tri')">
+              <div class="mod-check" id="aluno-tri-check"></div>
+              <span class="mod-nome">🥾 Trilha <span class="badge-so-aluno">Só alunos</span></span>
+            </div>
+            <div class="mod-dist" id="aluno-tri-dist">
+              <input type="hidden" name="dist_trilha" value="7">
+              <p style="color:#c8e6d8;font-size:.85rem;margin-top:.6rem">Modalidade única — percurso surpresa no dia do evento 🌿</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="msg-erro" id="erro-aluno"></div>
+        <button type="submit" class="btn-submit">🏁 Confirmar inscrição</button>
       </form>
     </div>
 
     <!-- ── FORMULÁRIO COMUNIDADE ── -->
     <div id="form-comunidade" class="form-section">
-      <div class="separador"></div>
+      <div class="divisor"></div>
+
       <form id="form-comunidade-el">
         <input type="hidden" name="tipo" value="comunidade">
 
         <div class="form-group">
-          <label>Nome completo *</label>
+          <label class="field-label">Nome completo *</label>
           <input type="text" name="nome_completo" placeholder="Seu nome completo" required>
         </div>
         <div class="form-group">
-          <label>CPF *</label>
+          <label class="field-label">CPF *</label>
           <input type="text" name="cpf" id="cpf-input" placeholder="000.000.000-00" maxlength="14" required>
         </div>
         <div class="form-group">
-          <label>Data de nascimento *</label>
+          <label class="field-label">Data de nascimento *</label>
           <input type="date" name="data_nascimento" required>
         </div>
         <div class="form-group">
-          <label>E-mail *</label>
+          <label class="field-label">E-mail *</label>
           <input type="email" name="email" placeholder="email@exemplo.com" required>
         </div>
         <div class="form-group">
-          <label>Telefone *</label>
+          <label class="field-label">Telefone *</label>
           <input type="tel" name="telefone" placeholder="(88) 99999-9999" required>
         </div>
         <div class="form-group">
-          <label>Cidade *</label>
+          <label class="field-label">Cidade *</label>
           <input type="text" name="cidade" placeholder="Sua cidade" required>
         </div>
 
-        {% include 'desafio/_campos_categoria.html' %}
+        <!-- MODALIDADES COMUNIDADE: Ciclismo + Corrida (SEM Trilha) -->
+        <div class="divisor-titulo">Escolha sua(s) modalidade(s)</div>
+        <div class="modalidades-grid" id="mods-comunidade">
 
-        <button type="submit" class="btn-submit">Confirmar inscrição →</button>
+          <div class="mod-card" id="com-cic-card">
+            <div class="mod-header" onclick="toggleMod('com-cic')">
+              <div class="mod-check" id="com-cic-check"></div>
+              <span class="mod-nome">🚴 Ciclismo</span>
+            </div>
+            <div class="mod-dist" id="com-cic-dist">
+              <label class="field-label" style="margin-top:.6rem">Distância *</label>
+              <select name="dist_ciclismo" id="com-dist-cic">
+                <option value="">Selecione a distância</option>
+                <option value="1">1 km</option>
+                <option value="2">2 km</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mod-card" id="com-cor-card">
+            <div class="mod-header" onclick="toggleMod('com-cor')">
+              <div class="mod-check" id="com-cor-check"></div>
+              <span class="mod-nome">🏃 Corrida</span>
+            </div>
+            <div class="mod-dist" id="com-cor-dist">
+              <label class="field-label" style="margin-top:.6rem">Distância *</label>
+              <select name="dist_corrida" id="com-dist-cor">
+                <option value="">Selecione a distância</option>
+                <option value="4">800 metros</option>
+                <option value="5">1 km</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="msg-erro" id="erro-comunidade"></div>
+        <button type="submit" class="btn-submit">🏁 Confirmar inscrição</button>
       </form>
     </div>
   </div>
 
-  <!-- ── Tela de sucesso ── -->
+  <!-- SUCESSO -->
   <div id="sucesso" class="sucesso">
-    <div class="check">✅</div>
+    <div class="check">🏆</div>
     <h2>Inscrição confirmada!</h2>
-    <p>Guarde o seu número de inscrição:</p>
-    <div class="numero-badge" id="numero-inscricao"></div>
-    <p style="color:#444;font-size:.8rem">Apresente este número no dia do evento.</p>
-    <br>
-    <a id="link-comprovante" href="#" class="btn-comprovante">📄 Baixar comprovante PDF</a>
+    <p>Guarde seus números de inscrição:</p>
+    <div class="numeros-wrap" id="numeros-wrap"></div>
+    <p style="color:rgba(255,255,255,.5);font-size:.8rem;margin-top:.5rem">
+      Apresente o número no dia do evento.
+    </p>
+    <div id="links-comprovante" style="margin-top:1rem"></div>
   </div>
 
   <div class="rodape">
@@ -358,105 +509,164 @@
 </div>
 
 <script>
-// ── Mostrar/esconder formulário conforme perfil escolhido ──
+// ─── Estado dos checkboxes ───────────────────────────────────────────────────
+const ESTADO = {}
+
+function toggleMod(id) {
+  ESTADO[id] = !ESTADO[id]
+  const check = document.getElementById(id + '-check')
+  const dist  = document.getElementById(id + '-dist')
+  const card  = document.getElementById(id + '-card')
+
+  if (ESTADO[id]) {
+    check.classList.add('checked')
+    dist.classList.add('visivel')
+    card.classList.add('selecionado')
+  } else {
+    check.classList.remove('checked')
+    dist.classList.remove('visivel')
+    card.classList.remove('selecionado')
+  }
+}
+
+// ─── Mostrar/ocultar formulário ──────────────────────────────────────────────
 function mostrarForm(tipo, btn) {
-  document.querySelectorAll('.form-section').forEach(el => el.classList.remove('visivel'));
-  document.getElementById('form-' + tipo).classList.add('visivel');
-  document.querySelectorAll('.btn-perfil').forEach(b => b.classList.remove('ativo'));
-  btn.classList.add('ativo');
+  document.querySelectorAll('.form-section').forEach(el => el.classList.remove('visivel'))
+  document.getElementById('form-' + tipo).classList.add('visivel')
+  document.querySelectorAll('.btn-perfil').forEach(b => b.classList.remove('ativo'))
+  btn.classList.add('ativo')
 }
 
-// ── Carrega atividades dinamicamente ao selecionar categoria ──
-document.querySelectorAll('[name="categoria"]').forEach(sel => {
-  sel.addEventListener('change', async function () {
-    const ativSelect = this.closest('form').querySelector('[name="atividade"]');
-    ativSelect.innerHTML = '<option value="">Carregando...</option>';
-    try {
-      const resp = await fetch(`/desafio/atividades/${this.value}/`);
-      const data = await resp.json();
-      ativSelect.innerHTML = '<option value="">Selecione a atividade</option>';
-      data.atividades.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.id;
-        opt.textContent = a.nome;
-        ativSelect.appendChild(opt);
-      });
-    } catch (e) {
-      ativSelect.innerHTML = '<option value="">Erro ao carregar atividades</option>';
-    }
-  });
-});
-
-// ── Obter CSRF token do cookie ──
+// ─── CSRF ────────────────────────────────────────────────────────────────────
 function getCookie(name) {
-  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-  return v ? v[2] : null;
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)')
+  return v ? v[2] : null
 }
 
-// ── Submit genérico — cobre os dois formulários ──
-['form-aluno-el', 'form-comunidade-el'].forEach(id => {
-  const form = document.getElementById(id);
-  if (!form) return;
+// ─── Coleta modalidades selecionadas ────────────────────────────────────────
+function coletarModalidades(prefixo) {
+  const mods = []
 
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const btn = this.querySelector('button[type="submit"]');
-    const textoOriginal = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Enviando...';
+  // Ciclismo
+  if (ESTADO[prefixo + '-cic']) {
+    const distEl = document.getElementById(prefixo + '-dist-cic')
+    if (!distEl.value) { return { erro: 'Selecione a distância do Ciclismo.' } }
+    mods.push({ categoria: 1, atividade: parseInt(distEl.value) })
+  }
+  // Corrida
+  if (ESTADO[prefixo + '-cor']) {
+    const distEl = document.getElementById(prefixo + '-dist-cor')
+    if (!distEl.value) { return { erro: 'Selecione a distância da Corrida.' } }
+    mods.push({ categoria: 2, atividade: parseInt(distEl.value) })
+  }
+  // Trilha (só aluno)
+  if (prefixo === 'aluno' && ESTADO['aluno-tri']) {
+    mods.push({ categoria: 3, atividade: 7 })
+  }
 
-    const formData = Object.fromEntries(new FormData(this));
+  if (mods.length === 0) {
+    return { erro: 'Selecione pelo menos uma modalidade.' }
+  }
+  return { mods }
+}
 
+// ─── Submit genérico ─────────────────────────────────────────────────────────
+async function enviarInscricao(formEl, prefixo) {
+  const btn = formEl.querySelector('button[type="submit"]')
+  const erroEl = document.getElementById('erro-' + prefixo)
+
+  // Valida modalidades
+  const { mods, erro } = coletarModalidades(prefixo)
+  if (erro) {
+    erroEl.textContent = '⚠️ ' + erro
+    erroEl.style.display = 'block'
+    return
+  }
+  erroEl.style.display = 'none'
+
+  const dadosPessoais = Object.fromEntries(new FormData(formEl))
+  btn.disabled = true
+  btn.textContent = 'Enviando...'
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-CSRFToken': getCookie('csrftoken') || '',
+  }
+
+  const resultados = []
+  for (const mod of mods) {
     try {
       const resp = await fetch('/desafio/inscricao/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken') || '',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await resp.json();
-
+        headers,
+        body: JSON.stringify({ ...dadosPessoais, ...mod }),
+      })
+      const data = await resp.json()
       if (data.sucesso) {
-        // Exibe tela de sucesso
-        document.getElementById('form-container').style.display = 'none';
-        document.getElementById('numero-inscricao').textContent = data.numero;
-        document.getElementById('link-comprovante').href = `/desafio/comprovante/${data.numero}/`;
-        document.getElementById('sucesso').style.display = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        resultados.push({ numero: data.numero, modalidade: data.atividade })
       } else {
-        alert('⚠️ ' + (data.erro || 'Erro ao realizar inscrição. Tente novamente.'));
-        btn.disabled = false;
-        btn.textContent = textoOriginal;
+        erroEl.textContent = '⚠️ ' + (data.erro || 'Erro ao realizar inscrição.')
+        erroEl.style.display = 'block'
+        btn.disabled = false
+        btn.textContent = '🏁 Confirmar inscrição'
+        return
       }
-    } catch (err) {
-      alert('❌ Erro de conexão. Verifique sua internet e tente novamente.');
-      btn.disabled = false;
-      btn.textContent = textoOriginal;
+    } catch (e) {
+      erroEl.textContent = '❌ Erro de conexão. Verifique sua internet.'
+      erroEl.style.display = 'block'
+      btn.disabled = false
+      btn.textContent = '🏁 Confirmar inscrição'
+      return
     }
-  });
-});
+  }
 
-// ── Máscara de CPF ──
+  // Exibe sucesso
+  document.getElementById('form-container').style.display = 'none'
+  const wrap   = document.getElementById('numeros-wrap')
+  const linksEl = document.getElementById('links-comprovante')
+  wrap.innerHTML = ''
+  linksEl.innerHTML = ''
+
+  resultados.forEach(r => {
+    wrap.innerHTML += `
+      <div>
+        <div class="numero-label">${r.modalidade}</div>
+        <div class="numero-badge">${r.numero}</div>
+      </div>`
+    linksEl.innerHTML += `
+      <a href="/desafio/comprovante/${r.numero}/" class="btn-comprovante" target="_blank">
+        📄 Comprovante — ${r.numero}
+      </a>`
+  })
+
+  document.getElementById('sucesso').style.display = 'block'
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// ─── Bind dos forms ──────────────────────────────────────────────────────────
+document.getElementById('form-aluno-el').addEventListener('submit', function (e) {
+  e.preventDefault(); enviarInscricao(this, 'aluno')
+})
+document.getElementById('form-comunidade-el').addEventListener('submit', function (e) {
+  e.preventDefault(); enviarInscricao(this, 'com')
+})
+
+// ─── Máscaras ────────────────────────────────────────────────────────────────
 document.getElementById('cpf-input')?.addEventListener('input', function () {
-  let v = this.value.replace(/\D/g, '').slice(0, 11);
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-  this.value = v;
-});
-
-// ── Máscara de telefone ──
+  let v = this.value.replace(/\D/g, '').slice(0, 11)
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d)/, '$1.$2')
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  this.value = v
+})
 document.querySelectorAll('[name="telefone"]').forEach(el => {
   el.addEventListener('input', function () {
-    let v = this.value.replace(/\D/g, '').slice(0, 11);
-    if (v.length > 2)  v = '(' + v.slice(0, 2) + ') ' + v.slice(2);
-    if (v.length > 10) v = v.slice(0, 10) + '-' + v.slice(10);
-    this.value = v;
-  });
-});
+    let v = this.value.replace(/\D/g, '').slice(0, 11)
+    if (v.length > 2)  v = '(' + v.slice(0, 2) + ') ' + v.slice(2)
+    if (v.length > 10) v = v.slice(0, 10) + '-' + v.slice(10)
+    this.value = v
+  })
+})
 </script>
 </body>
 </html>

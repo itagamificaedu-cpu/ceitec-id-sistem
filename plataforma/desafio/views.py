@@ -31,7 +31,7 @@ def get_atividades(request, categoria_id):
     """Retorna as atividades de uma categoria em JSON (usado pelo formulário dinâmico)."""
     atividades = AtividadeDesafio.objects.filter(
         categoria_id=categoria_id
-    ).values('id', 'nome')
+    ).exclude(nome__startswith='_').values('id', 'nome')
     return JsonResponse({'atividades': list(atividades)})
 
 
