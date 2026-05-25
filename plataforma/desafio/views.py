@@ -10,17 +10,12 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 
+# Usa o decorator de autenticação do próprio ITA (redireciona para /login/ correto)
+from ita_core.views import require_tipo
+
 from .models import CategoriaDesafio, AtividadeDesafio, InscricaoDesafio
-
-
-# ─── Helpers ──────────────────────────────────────────────────────────────────
-
-def _eh_staff(usuario):
-    """Verifica se o usuário é staff ou ita_admin."""
-    return usuario.is_staff or getattr(usuario, 'type_user', '') == 'admin'
 
 
 # ─── Área pública (sem login) ──────────────────────────────────────────────────
@@ -202,16 +197,14 @@ def comprovante_pdf(request, numero):
 
 # ─── Área admin (requer login + is_staff) ────────────────────────────────────
 
-@login_required
-@user_passes_test(_eh_staff)
+@require_tipo('admin')
 def dashboard_desafio(request):
     """Dashboard admin com acompanhamento em tempo real das inscrições."""
     categorias = CategoriaDesafio.objects.filter(ativo=True)
     return render(request, 'desafio/dashboard.html', {'categorias': categorias})
 
 
-@login_required
-@user_passes_test(_eh_staff)
+@require_tipo('admin')
 def stats_desafio_json(request):
     """Retorna JSON com estatísticas em tempo real — chamado pelo polling do dashboard."""
     categorias = CategoriaDesafio.objects.filter(ativo=True)
@@ -251,8 +244,7 @@ def stats_desafio_json(request):
     })
 
 
-@login_required
-@user_passes_test(_eh_staff)
+@require_tipo('admin')
 def lista_inscricoes(request):
     """Lista todas as inscrições (JSON) — usada pelo dashboard."""
     todas = InscricaoDesafio.objects.select_related(
@@ -273,8 +265,7 @@ def lista_inscricoes(request):
     return JsonResponse({'inscricoes': resultado, 'total': len(resultado)})
 
 
-@login_required
-@user_passes_test(_eh_staff)
+@require_tipo('admin')
 def exportar_csv(request):
     """Exporta todas as inscrições como arquivo CSV com encoding UTF-8-BOM (compatível com Excel)."""
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
@@ -309,8 +300,7 @@ def exportar_csv(request):
     return response
 
 
-@login_required
-@user_passes_test(_eh_staff)
+@require_tipo('admin')
 def banner_instagram(request):
     """
     Gera banner 1080×1080px para o Instagram com Pillow.
