@@ -304,45 +304,110 @@ def exportar_csv(request):
 def banner_instagram(request):
     """
     Gera banner 1080×1080px para o Instagram com Pillow.
+    Visual idêntico à página de inscrição: fundo escuro, amarelo #FFD600, verde #1D9E75.
     Gerado em memória — sem salvar em disco.
     """
     from PIL import Image, ImageDraw, ImageFont
 
-    largura, altura = 1080, 1080
-    img  = Image.new('RGB', (largura, altura), color='#0a0a0a')
+    W, H = 1080, 1080
+
+    # ── Fundo escuro com gradiente simulado ────────────────────────────────
+    img  = Image.new('RGB', (W, H), color='#070f0c')
     draw = ImageDraw.Draw(img)
 
-    # Formas geométricas decorativas
-    draw.ellipse([800, -100, 1180, 280],  fill='#1D9E75')
-    draw.ellipse([-100, 800, 280, 1180],  fill='#0F6E56')
-    draw.rectangle([0, 540, 1080, 543],   fill='#1D9E75')
+    # Gradiente radial simulado no topo (ellipse grande verde escuro)
+    for i in range(30, 0, -1):
+        alpha = int(18 * (i / 30))
+        r = int(14 + (30 - i) * 1.2)
+        g = int(42 + (30 - i) * 1.8)
+        b = int(30 + (30 - i) * 0.8)
+        draw.ellipse(
+            [W//2 - i*28, -i*15, W//2 + i*28, i*22],
+            fill=(r, g, b)
+        )
 
-    # Carrega fontes (usa padrão se não tiver TrueType disponível)
+    # ── Decorações geométricas — igual à inscrição ─────────────────────────
+    # Canto superior direito: círculo verde
+    draw.ellipse([780, -160, 1240, 300],  fill='#0e2a1e')
+    draw.ellipse([840, -100, 1160, 220],  fill='#1D9E75')
+
+    # Canto inferior esquerdo: círculo verde escuro
+    draw.ellipse([-160, 780, 300, 1240],  fill='#0e2a1e')
+    draw.ellipse([-100, 840, 220, 1160],  fill='#0F6E56')
+
+    # Linha divisória horizontal amarela
+    draw.rectangle([60, 590, 1020, 596], fill='#FFD600')
+
+    # ── Fontes ────────────────────────────────────────────────────────────
     try:
-        fonte_titulo = ImageFont.truetype(
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 90)
-        fonte_sub = ImageFont.truetype(
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 44)
-        fonte_cat = ImageFont.truetype(
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 52)
-        fonte_link = ImageFont.truetype(
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 36)
+        bold_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+        reg_path  = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+        f_tag     = ImageFont.truetype(bold_path, 28)   # tag CEITEC
+        f_ano     = ImageFont.truetype(bold_path, 38)   # 2026
+        f_titulo  = ImageFont.truetype(bold_path, 108)  # DIA DO
+        f_titulo2 = ImageFont.truetype(bold_path, 108)  # DESAFIO
+        f_cat     = ImageFont.truetype(bold_path, 50)   # modalidades
+        f_cta     = ImageFont.truetype(bold_path, 46)   # CTA
+        f_link    = ImageFont.truetype(reg_path,  34)   # link
+        f_hash    = ImageFont.truetype(reg_path,  30)   # hashtags
     except OSError:
-        fonte_titulo = fonte_sub = fonte_cat = fonte_link = ImageFont.load_default()
+        f_tag = f_ano = f_titulo = f_titulo2 = f_cat = f_cta = f_link = f_hash = ImageFont.load_default()
 
-    # Textos do banner
-    draw.text((540, 200), 'DIA DO DESAFIO',          font=fonte_titulo, fill='#FFFFFF', anchor='mm')
-    draw.text((540, 320), 'CEITEC — Itapipoca',       font=fonte_sub,   fill='#1D9E75', anchor='mm')
-    draw.text((540, 430), '2026',                      font=fonte_sub,   fill='#555555', anchor='mm')
-    draw.text((540, 590), 'Ciclismo  •  Corrida  •  Trilha',
-              font=fonte_cat, fill='#FFFFFF', anchor='mm')
-    draw.text((540, 720), 'Inscrições abertas!',       font=fonte_sub,   fill='#9FE1CB', anchor='mm')
-    draw.text((540, 840), 'itatecnologiaeducacional.tech/desafio',
-              font=fonte_link, fill='#5DCAA5', anchor='mm')
-    draw.text((540, 940), '#DiadoDesafio  #CEITEC  #Itapipoca',
-              font=fonte_link, fill='#888780', anchor='mm')
-    draw.text((540, 1030), 'instagram.com/ceitecitapipoca',
-              font=fonte_link, fill='#555555', anchor='mm')
+    # ── Tag amarela "CEITEC — ITAPIPOCA 2026" ─────────────────────────────
+    tag_text = 'CEITEC  •  ITAPIPOCA  •  2026'
+    tag_bbox = draw.textbbox((0, 0), tag_text, font=f_tag)
+    tag_w    = tag_bbox[2] - tag_bbox[0]
+    tag_x    = (W - tag_w) // 2
+    # Fundo amarelo arredondado (simulado com retângulo)
+    pad = 16
+    draw.rounded_rectangle(
+        [tag_x - pad, 105, tag_x + tag_w + pad, 105 + 46],
+        radius=23, fill='#FFD600'
+    )
+    draw.text((W // 2, 128), tag_text, font=f_tag, fill='#070f0c', anchor='mm')
+
+    # ── Título principal "DIA DO DESAFIO" ─────────────────────────────────
+    draw.text((W // 2, 280), 'DIA DO',  font=f_titulo,  fill='#FFFFFF', anchor='mm')
+    draw.text((W // 2, 400), 'DESAFIO', font=f_titulo2, fill='#FFD600', anchor='mm')
+
+    # ── Subtítulo verde ────────────────────────────────────────────────────
+    draw.text((W // 2, 500), 'Evento esportivo CEITEC Itapipoca', font=f_ano, fill='#c8e6d8', anchor='mm')
+
+    # ── Modalidades (abaixo da linha) ─────────────────────────────────────
+    draw.text((W // 2, 660), '🚴  Ciclismo    🏃  Corrida    🥾  Trilha', font=f_cat, fill='#FFFFFF', anchor='mm')
+
+    # ── Pills das distâncias ───────────────────────────────────────────────
+    pills = ['1 km', '2 km', '800 m', '1 km']
+    total_w = sum(80 for _ in pills) + 12 * (len(pills) - 1)
+    px = (W - total_w) // 2
+    for p in pills:
+        pw = 80
+        draw.rounded_rectangle([px, 730, px + pw, 782], radius=14, fill='#FFD600')
+        pb = draw.textbbox((0, 0), p, font=f_hash)
+        pw2 = pb[2] - pb[0]
+        draw.text((px + 40, 756), p, font=f_hash, fill='#070f0c', anchor='mm')
+        px += pw + 12
+
+    # ── CTA ────────────────────────────────────────────────────────────────
+    draw.text((W // 2, 845), 'Inscrições Abertas!', font=f_cta, fill='#1D9E75', anchor='mm')
+
+    # ── Link destacado ─────────────────────────────────────────────────────
+    link_text = 'itatecnologiaeducacional.tech/desafio'
+    lb = draw.textbbox((0, 0), link_text, font=f_link)
+    lw = lb[2] - lb[0]
+    lx = (W - lw) // 2
+    # Fundo escuro semi-transparente para o link
+    draw.rounded_rectangle(
+        [lx - 24, 885, lx + lw + 24, 885 + 50],
+        radius=12, fill='#1D9E75'
+    )
+    draw.text((W // 2, 910), link_text, font=f_link, fill='#FFFFFF', anchor='mm')
+
+    # ── Hashtags ──────────────────────────────────────────────────────────
+    draw.text((W // 2, 980), '#DiadoDesafio  #CEITEC  #Itapipoca', font=f_hash, fill='#4a7a62', anchor='mm')
+
+    # ── Instagram ─────────────────────────────────────────────────────────
+    draw.text((W // 2, 1030), '@ceitecitapipoca', font=f_hash, fill='#2d5040', anchor='mm')
 
     buffer = io.BytesIO()
     img.save(buffer, format='PNG', quality=95)
