@@ -7,9 +7,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.utils import timezone
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.http import JsonResponse
+import json
 from django.conf import settings
 
 from gamificaedu.accounts.models import Professor
@@ -200,6 +201,45 @@ def portal_login(request):
         secure=not settings.DEBUG,
     )
     return response
+
+
+@csrf_exempt
+@require_POST
+def criar_sessao_django(request):
+    """
+    Cria sessão Django a partir do JWT do React.
+    Chamado pelo frontend antes de navegar para páginas Django protegidas.
+    Assim, quem está logado no React (JWT) também fica logado no Django (sessão).
+    """
+    try:
+        data = json.loads(request.body)
+        token = data.get('token', '')
+        if not token:
+            return JsonResponse({'ok': False, 'erro': 'Token não informado.'}, status=400)
+
+        # Valida o JWT do SimpleJWT (mesmo usado pela API React)
+        from rest_framework_simplejwt.tokens import AccessToken, TokenError
+        try:
+            at = AccessToken(token)
+        except TokenError:
+            return JsonResponse({'ok': False, 'erro': 'Token inválido ou expirado.'}, status=401)
+
+        user_id = at.get('user_id')
+        if not user_id:
+            return JsonResponse({'ok': False, 'erro': 'Token sem user_id.'}, status=401)
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        usuario = User.objects.get(pk=user_id)
+
+        # Cria a sessão Django (assim @require_tipo passa)
+        auth_login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+        _log(request, 'portal', 'sessao_criada_jwt', {'user_id': user_id})
+
+        return JsonResponse({'ok': True, 'tipo': getattr(usuario, 'type_user', 'prof')})
+
+    except Exception as e:
+        return JsonResponse({'ok': False, 'erro': str(e)}, status=401)
 
 
 def portal_logout(request):

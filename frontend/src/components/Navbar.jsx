@@ -4,6 +4,26 @@ import api from '../api'
 
 const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.pythonanywhere.com'
 
+/**
+ * Navega para uma página Django protegida.
+ * Antes de redirecionar, troca o JWT do React por uma sessão Django
+ * para que o @require_tipo do Django reconheça o usuário sem pedir login.
+ */
+async function navegarDjango(url) {
+  const token = localStorage.getItem('token')
+  if (token) {
+    try {
+      await fetch('/api/auth/set-session/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ token }),
+      })
+    } catch (_) {}
+  }
+  window.location.href = url
+}
+
 // itaAdmin: true  →  item visível APENAS para o dono da plataforma (perfil ita_admin)
 const SECOES_ESTATICAS = [
   {
@@ -60,8 +80,8 @@ const SECOES_ESTATICAS = [
   {
     titulo: 'EVENTOS',
     itens: [
-      { href: '/desafio/admin/', label: 'Dia do Desafio 🏆', icon: '🚴', itaAdmin: true },
-      { href: '/desafio/',       label: 'Inscrição Pública',  icon: '📋', itaAdmin: true },
+      { onClick: () => navegarDjango('/desafio/admin/'), label: 'Dia do Desafio 🏆', icon: '🚴', itaAdmin: true },
+      { onClick: () => navegarDjango('/desafio/'),       label: 'Inscrição Pública',  icon: '📋', itaAdmin: true },
     ]
   },
   {
