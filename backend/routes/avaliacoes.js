@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { autenticar } = require('../middleware/auth');
+const { addProfXP } = require('./professorGame');
 
 const router = express.Router();
 router.use(autenticar);
@@ -70,6 +71,9 @@ router.post('/', async (req, res) => {
       await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, avId]);
     }
 
+    // XP ao professor por criar avaliação
+    const av = await db.get('SELECT titulo FROM avaliacoes WHERE id = ?', [avId])
+    addProfXP(req.usuario.id, req.usuario.escola_id, 'avaliacao_criada', av?.titulo).catch(() => {})
     res.status(201).json(await db.get('SELECT * FROM avaliacoes WHERE id = ?', [avId]));
   } catch (err) {
     res.status(500).json({ erro: err.message });

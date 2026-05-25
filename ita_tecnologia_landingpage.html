@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ITA Tecnologia Educacional — Transformando Escolas com Tecnologia</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #1B2D5B;
+      --blue: #2563EB;
+      --sky: #38BDF8;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --purple: #8B5CF6;
+      --white: #FFFFFF;
+      --light: #F0F7FF;
+      --gray: #64748B;
+      --dark: #0F172A;
+    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: var(--dark); background: #fff; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(27,45,91,0.97); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%; height: 64px;
+    }
+    .nav-logo { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--sky); }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a { color: #B0C8F5; font-size: 0.93rem; transition: color .2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      background: var(--emerald); color: #fff; padding: 0.5rem 1.4rem;
+      border-radius: 6px; font-weight: 700; font-size: 0.9rem; transition: opacity .2s;
+    }
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; background: linear-gradient(135deg, var(--navy) 0%, #0d1e45 60%, #0a1833 100%);
+      display: flex; align-items: center; padding: 64px 5% 0;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; right: -10%; top: -10%;
+      width: 650px; height: 650px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 70%);
+    }
+    .hero-content { max-width: 680px; position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-block; background: var(--emerald); color: #fff;
+      padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 1px; margin-bottom: 1.4rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900; color: #fff;
+      line-height: 1.1; margin-bottom: 0.4rem;
+    }
+    .hero h1 span { color: var(--sky); }
+    .hero-sub {
+      font-size: 1.15rem; color: #B0C8F5; margin: 1.2rem 0 2.2rem;
+      line-height: 1.7; max-width: 580px;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--emerald); color: #fff; padding: 0.85rem 2rem;
+      border-radius: 8px; font-weight: 700; font-size: 1rem;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.35); transition: transform .2s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(16,185,129,0.45); }
+    .btn-secondary {
+      background: transparent; color: var(--sky); padding: 0.85rem 2rem;
+      border-radius: 8px; font-weight: 700; font-size: 1rem;
+      border: 2px solid var(--sky); transition: background .2s, color .2s;
+    }
+    .btn-secondary:hover { background: var(--sky); color: var(--navy); }
+    .hero-stats {
+      display: flex; gap: 2.5rem; margin-top: 3rem; padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .hero-stat-num { font-size: 2rem; font-weight: 900; color: var(--sky); }
+    .hero-stat-label { font-size: 0.82rem; color: #7A9FD4; margin-top: 2px; }
+
+    /* ── SECTION COMMON ── */
+    section { padding: 90px 5%; }
+    .section-tag {
+      display: inline-block; background: var(--light); color: var(--blue);
+      padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.78rem;
+      font-weight: 700; letter-spacing: 1px; margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 900;
+      color: var(--navy); margin-bottom: 0.8rem; line-height: 1.2;
+    }
+    .section-sub { font-size: 1.05rem; color: var(--gray); max-width: 600px; line-height: 1.7; }
+    .text-center { text-align: center; }
+    .text-center .section-sub { margin: 0 auto; }
+
+    /* ── PROBLEMA ── */
+    .problema { background: var(--light); }
+    .prob-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .prob-card {
+      background: #fff; border-radius: 12px; padding: 2rem;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.07); border-left: 4px solid var(--blue);
+    }
+    .prob-card.amber { border-left-color: var(--amber); }
+    .prob-card.emerald { border-left-color: var(--emerald); }
+    .prob-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+    .prob-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.6rem; }
+    .prob-card p { color: var(--gray); line-height: 1.6; font-size: 0.95rem; }
+
+    /* ── ECOSSISTEMA ── */
+    .eco-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .eco-card {
+      border-radius: 14px; padding: 2rem; color: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12); transition: transform .2s;
+    }
+    .eco-card:hover { transform: translateY(-5px); }
+    .eco-card.blue { background: linear-gradient(135deg, var(--blue), #1d4ed8); }
+    .eco-card.emerald { background: linear-gradient(135deg, var(--emerald), #059669); }
+    .eco-card.amber { background: linear-gradient(135deg, var(--amber), #d97706); }
+    .eco-card.purple { background: linear-gradient(135deg, var(--purple), #7c3aed); }
+    .eco-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .eco-card h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.6rem; }
+    .eco-card p { font-size: 0.92rem; opacity: 0.88; line-height: 1.6; }
+    .eco-tag {
+      display: inline-block; background: rgba(255,255,255,0.2); color: #fff;
+      padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.73rem;
+      font-weight: 700; margin-top: 1rem;
+    }
+
+    /* ── IA ── */
+    .ia-section { background: var(--dark); }
+    .ia-section .section-title { color: #fff; }
+    .ia-section .section-sub { color: #8BA5C8; }
+    .ia-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-top: 3rem; }
+    .ia-card {
+      background: #1a2b4a; border-radius: 12px; padding: 1.6rem;
+      border: 1px solid #2A3F6E; transition: border-color .2s;
+    }
+    .ia-card:hover { border-color: var(--sky); }
+    .ia-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+    .ia-card h4 { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .ia-card p { color: #8BA5C8; font-size: 0.88rem; line-height: 1.55; }
+    .ia-badge {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: #1a2b4a; border: 1px solid #2A3F6E;
+      border-radius: 8px; padding: 0.6rem 1rem; margin-top: 2rem; width: fit-content;
+    }
+    .ia-badge span { color: #B0C8F5; font-size: 0.88rem; }
+
+    /* ── RESULTADOS ── */
+    .resultados { background: var(--navy); }
+    .resultados .section-title { color: #fff; }
+    .resultados .section-sub { color: #B0C8F5; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .stat-card {
+      background: rgba(255,255,255,0.06); border-radius: 12px; padding: 2rem;
+      text-align: center; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-num { font-size: 2.8rem; font-weight: 900; }
+    .stat-label { color: #fff; font-weight: 700; margin: 0.3rem 0; font-size: 1rem; }
+    .stat-sub { color: #7A9FD4; font-size: 0.85rem; line-height: 1.4; }
+
+    /* ── PREÇOS ── */
+    .precos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; align-items: start; }
+    .preco-card {
+      background: #fff; border-radius: 16px; padding: 2.2rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 2px solid #E2E8F0;
+      position: relative; transition: transform .2s;
+    }
+    .preco-card:hover { transform: translateY(-4px); }
+    .preco-card.featured { border-color: var(--emerald); box-shadow: 0 8px 40px rgba(16,185,129,0.18); }
+    .preco-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: var(--emerald); color: #fff; padding: 0.3rem 1.2rem;
+      border-radius: 20px; font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+    }
+    .preco-name { font-size: 1rem; color: var(--gray); font-weight: 600; margin-bottom: 0.5rem; }
+    .preco-val { font-size: 2.8rem; font-weight: 900; color: var(--navy); }
+    .preco-val span { font-size: 1rem; color: var(--gray); font-weight: 400; }
+    .preco-items { list-style: none; margin: 1.5rem 0 2rem; display: flex; flex-direction: column; gap: 0.7rem; }
+    .preco-items li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; color: var(--gray); }
+    .preco-items li::before { content: '✓'; color: var(--emerald); font-weight: 900; }
+    .btn-plan {
+      display: block; text-align: center; padding: 0.85rem;
+      border-radius: 8px; font-weight: 700; font-size: 0.95rem;
+      background: var(--blue); color: #fff; transition: opacity .2s;
+    }
+    .btn-plan:hover { opacity: 0.88; }
+    .btn-plan.green { background: var(--emerald); }
+    .btn-plan.amber-btn { background: var(--amber); }
+
+    /* ── DEPOIMENTOS ── */
+    .depoimentos { background: var(--light); }
+    .dep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .dep-card {
+      background: #fff; border-radius: 12px; padding: 2rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+    .dep-stars { color: var(--amber); font-size: 1.1rem; margin-bottom: 1rem; }
+    .dep-text { color: var(--gray); line-height: 1.7; font-size: 0.95rem; margin-bottom: 1.2rem; font-style: italic; }
+    .dep-author { display: flex; align-items: center; gap: 0.8rem; }
+    .dep-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--navy); display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 1rem;
+    }
+    .dep-name { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+    .dep-role { color: var(--gray); font-size: 0.82rem; }
+
+    /* ── COMO FUNCIONA ── */
+    .steps { display: flex; gap: 1.5rem; margin-top: 3rem; flex-wrap: wrap; }
+    .step { flex: 1; min-width: 200px; text-align: center; }
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; margin: 0 auto 1rem;
+      font-size: 1.4rem; font-weight: 900; color: #fff;
+    }
+    .step h3 { font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+    .step p { color: var(--gray); font-size: 0.9rem; line-height: 1.6; }
+    .step-arrow { display: flex; align-items: center; color: #CBD5E1; font-size: 1.5rem; padding-top: 28px; }
+
+    /* ── CTA FINAL ── */
+    .cta-final {
+      background: linear-gradient(135deg, var(--navy) 0%, #0d1e45 100%);
+      text-align: center; padding: 100px 5%;
+    }
+    .cta-final h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; color: #fff; margin-bottom: 1rem; }
+    .cta-final h2 span { color: var(--sky); }
+    .cta-final p { color: #B0C8F5; font-size: 1.1rem; max-width: 560px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--dark); padding: 3rem 5%; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 2.5rem; }
+    .footer-brand { font-size: 1.3rem; font-weight: 900; color: #fff; margin-bottom: 0.8rem; }
+    .footer-brand span { color: var(--sky); }
+    .footer-desc { color: #64748B; font-size: 0.9rem; line-height: 1.7; max-width: 300px; }
+    .footer-col h4 { color: #fff; font-weight: 700; margin-bottom: 1rem; font-size: 0.95rem; }
+    .footer-col a { display: block; color: #64748B; font-size: 0.9rem; margin-bottom: 0.5rem; transition: color .2s; }
+    .footer-col a:hover { color: var(--sky); }
+    .footer-bottom {
+      border-top: 1px solid #1E293B; padding-top: 1.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-bottom p { color: #475569; font-size: 0.85rem; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+      .step-arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ITA <span>Tecnologia</span></div>
+  <div class="nav-links">
+    <a href="#solucao">Solução</a>
+    <a href="#ia">IA Educacional</a>
+    <a href="#precos">Preços</a>
+    <a href="#contato">Contato</a>
+  </div>
+  <a href="#contato" class="nav-cta">Demonstração grátis</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-content">
+    <span class="hero-badge">🚀 EDTECH BRASIL 2026</span>
+    <h1>Transforme sua escola com<br><span>tecnologia educacional</span></h1>
+    <p class="hero-sub">
+      O ecossistema completo de tecnologia para gestores e professores —
+      gamificação, presença digital com QR Code, IA educacional e
+      gestão integrada em uma única plataforma.
+    </p>
+    <div class="hero-btns">
+      <a href="#contato" class="btn-primary">📅 Agendar demonstração grátis</a>
+      <a href="#solucao" class="btn-secondary">Conhecer a plataforma</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">4+</div>
+        <div class="hero-stat-label">Módulos integrados</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">80%</div>
+        <div class="hero-stat-label">Redução no tempo de correção</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">100%</div>
+        <div class="hero-stat-label">Presença digital sem papel</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section class="problema">
+  <div class="text-center">
+    <span class="section-tag">O PROBLEMA</span>
+    <h2 class="section-title">Sua escola ainda enfrenta esses desafios?</h2>
+    <p class="section-sub">Identificamos os 3 maiores problemas que travam a eficiência das escolas brasileiras</p>
+  </div>
+  <div class="prob-grid">
+    <div class="prob-card">
+      <div class="prob-icon">📋</div>
+      <h3>Controle de Presença Manual</h3>
+      <p>Chamadas em papel, registros perdidos, erros no lançamento de faltas e pais sem informação em tempo real sobre a frequência dos filhos.</p>
+    </div>
+    <div class="prob-card amber">
+      <div class="prob-icon">📝</div>
+      <h3>Provas Corrigidas à Mão</h3>
+      <p>Professores perdem horas corrigindo provas, gerando estatísticas manualmente, sem feedback rápido e sem análise de desempenho por turma.</p>
+    </div>
+    <div class="prob-card emerald">
+      <div class="prob-icon">😕</div>
+      <h3>Falta de Engajamento dos Alunos</h3>
+      <p>Alunos desmotivados, sem gamificação, sem reconhecimento de evolução e sem ferramentas modernas que tornem o aprendizado atraente.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ECOSSISTEMA -->
+<section id="solucao">
+  <div class="text-center">
+    <span class="section-tag">A SOLUÇÃO</span>
+    <h2 class="section-title">O ecossistema ITA Tecnologia</h2>
+    <p class="section-sub">Quatro plataformas integradas que resolvem todos os desafios da escola moderna em um só lugar</p>
+  </div>
+  <div class="eco-grid">
+    <div class="eco-card blue">
+      <div class="eco-icon">🎓</div>
+      <h3>GamificaEdu</h3>
+      <p>Plataforma SaaS completa para professores com XP, níveis, conquistas, gerador de aulas e provas com IA, ranking e materiais didáticos.</p>
+      <span class="eco-tag">Para Professores</span>
+    </div>
+    <div class="eco-card emerald">
+      <div class="eco-icon">📊</div>
+      <h3>Corretor de Provas Online</h3>
+      <p>Crie provas com gabarito, gere QR Codes e corrija automaticamente. Estatísticas completas com exportação para Excel em segundos.</p>
+      <span class="eco-tag">Correção Automática</span>
+    </div>
+    <div class="eco-card amber">
+      <div class="eco-icon">🪪</div>
+      <h3>ID System — Presença Digital</h3>
+      <p>Carteirinha digital com QR Code, scanner de presença em tempo real, notificações automáticas via WhatsApp e relatórios completos.</p>
+      <span class="eco-tag">Gestão de Presença</span>
+    </div>
+    <div class="eco-card purple">
+      <div class="eco-icon">🏆</div>
+      <h3>ItagGame</h3>
+      <p>Gamificação para alunos com sistema de XP, níveis (Aprendiz → Lenda), badges, ranking por turma e histórico de evolução.</p>
+      <span class="eco-tag">Engajamento de Alunos</span>
+    </div>
+  </div>
+</section>
+
+<!-- IA -->
+<section class="ia-section" id="ia">
+  <div class="text-center">
+    <span class="section-tag" style="background:#1a2b4a; color: var(--sky);">INTELIGÊNCIA ARTIFICIAL</span>
+    <h2 class="section-title">IA Educacional integrada</h2>
+    <p class="section-sub">Powered by Claude (Anthropic) + Google Gemini — a IA mais avançada do mundo a serviço da sua escola</p>
+    <div class="ia-badge" style="margin: 1rem auto 0;">
+      <span>🤖 Claude (Anthropic)</span>
+      <span style="color:#374151;">+</span>
+      <span>🔍 Google Gemini</span>
+    </div>
+  </div>
+  <div class="ia-grid">
+    <div class="ia-card">
+      <div class="ia-icon">📚</div>
+      <h4>Gerador de Planos de Aula</h4>
+      <p>Planos completos alinhados à BNCC, com objetivos, atividades e avaliação — em segundos.</p>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">❓</div>
+      <h4>Criador de Questões</h4>
+      <p>Questões de múltipla escolha e dissertativas contextualizadas para qualquer disciplina e série.</p>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">🔍</div>
+      <h4>Corretor Inteligente</h4>
+      <p>A IA analisa provas dissertativas, sugere feedback personalizado e identifica dificuldades.</p>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">🧠</div>
+      <h4>Diagnóstico do Aluno</h4>
+      <p>Análise individual de desempenho com pontos fortes, fragilidades e recomendações personalizadas.</p>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">🎨</div>
+      <h4>Criador de Conteúdo</h4>
+      <p>Materiais didáticos, resumos, explicações simplificadas e atividades de fixação geradas por IA.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTADOS -->
+<section class="resultados">
+  <div class="text-center">
+    <span class="section-tag" style="background:rgba(255,255,255,0.1); color: var(--sky);">IMPACTO</span>
+    <h2 class="section-title">Resultados reais nas escolas</h2>
+    <p class="section-sub">Números que mostram o impacto do ITA Tecnologia na rotina escolar</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-num" style="color: var(--sky);">5</div>
+      <div class="stat-label">Plataformas</div>
+      <div class="stat-sub">Integradas em 1 único ecossistema</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color: var(--emerald);">80%</div>
+      <div class="stat-label">Redução</div>
+      <div class="stat-sub">No tempo de correção de provas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color: var(--amber);">100%</div>
+      <div class="stat-label">Digital</div>
+      <div class="stat-sub">Controle de presença sem papel</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color: #A78BFA;">5x</div>
+      <div class="stat-label">Engajamento</div>
+      <div class="stat-sub">Maior com gamificação ativa</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color: #F87171;">1 sem</div>
+      <div class="stat-label">Implantação</div>
+      <div class="stat-sub">Tempo médio para escola em funcionamento</div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona">
+  <div class="text-center">
+    <span class="section-tag">IMPLANTAÇÃO</span>
+    <h2 class="section-title">Como funciona a implantação</h2>
+    <p class="section-sub">Em apenas 4 passos simples sua escola está transformada</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num" style="background: var(--blue);">1</div>
+      <h3>🤝 Contratação</h3>
+      <p>Escolha o plano ideal para sua escola ou rede. Acesso imediato à plataforma após a confirmação.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num" style="background: var(--emerald);">2</div>
+      <h3>👥 Cadastro</h3>
+      <p>Cadastre professores, alunos e turmas. Importe planilhas já existentes facilmente.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num" style="background: var(--amber);">3</div>
+      <h3>🎓 Capacitação</h3>
+      <p>Treinamento online de 2 horas para toda a equipe. Material de apoio incluso sem custo extra.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num" style="background: var(--purple);">4</div>
+      <h3>🚀 Uso Pleno</h3>
+      <p>Escola operando com presença digital, gamificação e IA desde o primeiro dia de uso.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="depoimentos">
+  <div class="text-center">
+    <span class="section-tag">DEPOIMENTOS</span>
+    <h2 class="section-title">O que dizem quem usa</h2>
+    <p class="section-sub">Gestores e professores que já transformaram suas escolas com o ITA Tecnologia</p>
+  </div>
+  <div class="dep-grid">
+    <div class="dep-card">
+      <div class="dep-stars">★★★★★</div>
+      <p class="dep-text">"A correção automática de provas revolucionou minha rotina. O que levava 3 horas agora leva 10 minutos. Os alunos recebem feedback na mesma hora!"</p>
+      <div class="dep-author">
+        <div class="dep-avatar">MA</div>
+        <div>
+          <div class="dep-name">Maria Aparecida</div>
+          <div class="dep-role">Professora de Matemática — Escola Estadual</div>
+        </div>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="dep-stars">★★★★★</div>
+      <p class="dep-text">"O controle de presença com QR Code eliminou as listas de papel. Os pais recebem notificação no WhatsApp automaticamente. Incrível!"</p>
+      <div class="dep-author">
+        <div class="dep-avatar">JC</div>
+        <div>
+          <div class="dep-name">João Carlos</div>
+          <div class="dep-role">Diretor Escolar — Escola Municipal</div>
+        </div>
+      </div>
+    </div>
+    <div class="dep-card">
+      <div class="dep-stars">★★★★★</div>
+      <p class="dep-text">"A gamificação transformou a sala de aula. Os alunos ficam empolgados para ganhar XP e subir no ranking. A participação nas aulas aumentou muito!"</p>
+      <div class="dep-author">
+        <div class="dep-avatar">PS</div>
+        <div>
+          <div class="dep-name">Patricia Santos</div>
+          <div class="dep-role">Coordenadora Pedagógica</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREÇOS -->
+<section id="precos">
+  <div class="text-center">
+    <span class="section-tag">PLANOS E PREÇOS</span>
+    <h2 class="section-title">Para cada realidade escolar</h2>
+    <p class="section-sub">Escolha o plano ideal. Sem taxa de implantação. Cancele quando quiser.</p>
+  </div>
+  <div class="precos-grid">
+    <div class="preco-card">
+      <p class="preco-name">Plano Professor</p>
+      <div class="preco-val">R$ 59<span>/mês</span></div>
+      <p style="color: var(--emerald); font-size: 0.82rem; font-weight: 700; margin-top: -0.4rem; margin-bottom: 1rem;">ou R$ 590/ano (2 meses grátis)</p>
+      <ul class="preco-items">
+        <li>GamificaEdu completo</li>
+        <li>Corretor de provas (ilimitado)</li>
+        <li>IA: planos de aula</li>
+        <li>IA: criador de questões</li>
+        <li>IA: diagnóstico de alunos</li>
+        <li>Até 10 turmas</li>
+      </ul>
+      <a href="#contato" class="btn-plan">Comece grátis por 14 dias</a>
+    </div>
+    <div class="preco-card featured">
+      <div class="preco-badge">⭐ MELHOR CUSTO-BENEFÍCIO</div>
+      <p class="preco-name">Plano Escola</p>
+      <div class="preco-val">R$ 299<span>/mês</span></div>
+      <p style="color: #10B981; font-size: 0.82rem; font-weight: 700; margin-top: -0.4rem; margin-bottom: 1rem;">≈ R$ 1,00/aluno/mês (300 alunos)</p>
+      <ul class="preco-items">
+        <li>Tudo do Plano Professor</li>
+        <li>ID System + Carteirinha digital</li>
+        <li>Scanner de presença QR Code</li>
+        <li>WhatsApp automático para pais</li>
+        <li>Professores ilimitados</li>
+        <li>Relatórios para gestão</li>
+        <li>Suporte prioritário</li>
+      </ul>
+      <a href="#contato" class="btn-plan green">Agendar demonstração</a>
+    </div>
+    <div class="preco-card">
+      <p class="preco-name">Plano Prefeitura / Rede</p>
+      <div class="preco-val" style="font-size: 1.8rem; line-height:1.2;">R$ 1,00<br><span style="font-size:1rem;">/ aluno / mês</span></div>
+      <p style="color: var(--amber); font-size: 0.82rem; font-weight: 700; margin-top: 0.4rem; margin-bottom: 1rem;">Ex: 5.000 alunos = R$ 5.000/mês</p>
+      <ul class="preco-items">
+        <li>Escolas ilimitadas na rede</li>
+        <li>Implantação assistida</li>
+        <li>Treinamento de toda a equipe</li>
+        <li>Suporte dedicado 24h</li>
+        <li>Personalização com a marca</li>
+        <li>Dashboard da secretaria</li>
+        <li>Relatórios para prestação de contas</li>
+      </ul>
+      <a href="#contato" class="btn-plan amber-btn">Solicitar proposta</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="contato">
+  <h2>Pronto para transformar<br><span>sua escola?</span></h2>
+  <p>Agende uma demonstração gratuita de 30 minutos e veja o ITA Tecnologia funcionando na prática com sua equipe. Sem compromisso.</p>
+  <div class="cta-btns">
+    <a href="https://wa.me/5585999999999?text=Ol%C3%A1!%20Quero%20conhecer%20o%20ITA%20Tecnologia%20Educacional" class="btn-primary" style="font-size:1.05rem; padding: 1rem 2.2rem;">
+      📱 Agendar pelo WhatsApp
+    </a>
+    <a href="mailto:itagamificaedu@gmail.com" class="btn-secondary" style="border-color: #7EB8F7; color: #7EB8F7; font-size:1.05rem; padding: 1rem 2.2rem;">
+      📧 Enviar e-mail
+    </a>
+  </div>
+  <p style="margin-top: 2rem; font-size: 0.88rem; color: #4A6FA5;">
+    📧 itagamificaedu@gmail.com &nbsp;|&nbsp; 🌐 gamificaedu.com.br
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">ITA <span>Tecnologia</span></div>
+      <p class="footer-desc">O ecossistema completo de tecnologia educacional para escolas públicas, privadas e redes municipais brasileiras.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Plataformas</h4>
+      <a href="#">GamificaEdu</a>
+      <a href="#">Corretor de Provas</a>
+      <a href="#">ID System</a>
+      <a href="#">ItagGame</a>
+      <a href="#">IA Educacional</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contato</h4>
+      <a href="mailto:itagamificaedu@gmail.com">itagamificaedu@gmail.com</a>
+      <a href="#">gamificaedu.com.br</a>
+      <a href="#">WhatsApp</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 ITA Tecnologia Educacional. Todos os direitos reservados.</p>
+    <p style="color: #334155;">Desenvolvido em Itapipoca - CE 🌵</p>
+  </div>
+</footer>
+
+</body>
+</html>

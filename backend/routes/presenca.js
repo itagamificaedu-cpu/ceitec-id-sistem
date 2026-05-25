@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { autenticar } = require('../middleware/auth');
+const { addProfXP } = require('./professorGame');
 
 const router = express.Router();
 router.use(autenticar);
@@ -100,6 +101,8 @@ router.post('/manual', async (req, res) => {
         [aluno_id, data, horaAgora, status, registrado_por || 'manual', req.usuario.escola_id]
       );
       presenca = await db.get('SELECT * FROM presencas WHERE id = ?', [result.lastInsertRowid]);
+      // XP ao professor por registrar presença manualmente (apenas inserções novas)
+      addProfXP(req.usuario.id, req.usuario.escola_id, 'presenca_turma', data).catch(() => {});
     }
 
     res.json({ mensagem: 'Presença atualizada', presenca });

@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { autenticar } = require('../middleware/auth');
+const { addProfXP } = require('./professorGame');
 
 const router = express.Router();
 router.use(autenticar);
@@ -55,6 +56,7 @@ router.post('/', async (req, res) => {
       'INSERT INTO ocorrencias (aluno_id, professor_id, turma_id, tipo, descricao, gravidade, notificou_responsavel, escola_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [aluno_id, professor_id || null, turma_id || null, tipo, descricao, gravidade || 'baixa', notificar_responsavel ? 1 : 0, req.usuario.escola_id]
     );
+    addProfXP(req.usuario.id, req.usuario.escola_id, 'ocorrencia', req.body.tipo).catch(() => {})
     res.status(201).json(await db.get('SELECT * FROM ocorrencias WHERE id = ?', [result.lastInsertRowid]));
   } catch (err) {
     res.status(500).json({ erro: err.message });

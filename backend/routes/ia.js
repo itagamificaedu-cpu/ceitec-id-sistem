@@ -6,6 +6,7 @@ const { gerarQuestoes } = require('../ia/criadorQuestoes');
 const { interpretarFolhaResposta, corrigirRespostas } = require('../ia/corretorProvas');
 const { gerarDiagnostico, gerarConteudo } = require('../ia/diagnosticoAluno');
 const db = require('../db');
+const { addProfXP } = require('./professorGame');
 
 const router = express.Router();
 router.use(autenticar);
@@ -26,6 +27,7 @@ router.post('/plano-aula', async (req, res) => {
     const resultado = await gerarPlanoAula(req.body);
     if (req.body.salvar) {
       await db.run('INSERT INTO planos_aula (professor_id, turma_id, disciplina, tema, objetivo, conteudo_json, gerado_por_ia, data_aula) VALUES (?, ?, ?, ?, ?, ?, 1, ?)', [req.body.professor_id || null, req.body.turma_id || null, req.body.disciplina, req.body.tema, req.body.objetivos || null, JSON.stringify({ texto: resultado }), req.body.data_aula || null]);
+      addProfXP(req.usuario.id, req.usuario.escola_id, 'plano_ia', req.body.tema).catch(() => {})
     }
     res.json({ texto: resultado });
   } catch (err) {

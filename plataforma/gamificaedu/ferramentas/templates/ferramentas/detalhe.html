@@ -1,0 +1,17 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ ferramenta.titulo }} - itagamificaedu{% endblock %}
+{% block content %}
+<h2>{{ ferramenta.titulo }}</h2>
+<span class="badge bg-secondary mb-3">{{ ferramenta.get_categoria_display }}</span>
+<p>{{ ferramenta.descricao }}</p>
+<p class="text-muted">Por: {{ ferramenta.autor }} | {{ ferramenta.criado_em|date:"d/m/Y" }}</p>
+<hr>
+{% if ferramenta.arquivo %}
+    <a href="{{ ferramenta.arquivo.url }}" class="btn btn-success mb-3" target="_blank">📥 Baixar Material</a>
+{% endif %}
+{% if ferramenta.link %}
+    <a href="{{ ferramenta.link }}" class="btn btn-primary mb-3" target="_blank">🔗 Acessar Link</a>
+{% endif %}
+<br>
+<a href="/ferramentas/" class="btn btn-outline-primary">Voltar</a>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% block title %}Cadastro realizado!{% endblock %}
+{% block content %}
+<section style="min-height:80vh;display:flex;align-items:center;text-align:center">
+<div class="container">
+    <div style="font-size:5rem;margin-bottom:16px">📬</div>
+    <h2 class="section-title">Cadastro realizado!</h2>
+    <p class="section-subtitle mt-3 mx-auto" style="max-width:480px">
+        Enviamos um email de confirmação para você. Após confirmar, aguarde a aprovação do administrador. Você receberá um aviso por email.
+    </p>
+    <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
+        <a href="/" class="btn-glow-purple btn">Voltar ao início</a>
+    </div>
+    <div class="mt-4">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#reenviarModal" style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-decoration:none">Não recebi o email</a>
+    </div>
+</div>
+</section>
+{% endblock %}

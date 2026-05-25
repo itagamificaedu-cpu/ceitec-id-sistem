@@ -64,6 +64,46 @@ export default function Usuarios() {
 
   const usuarioAtual = JSON.parse(localStorage.getItem('usuario') || '{}')
 
+  async function gerarSenhasPDF() {
+    if (!window.confirm('Isso vai gerar uma NOVA senha para TODOS os usuários e abrir o PDF para imprimir. Continuar?')) return
+    try {
+      const { data } = await api.post('/usuarios/gerar-senhas')
+      const lista = data.usuarios
+      const html = `<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>Senhas — CEITEC</title>
+        <style>
+          body{font-family:Arial,sans-serif;padding:24px;color:#111}
+          h1{font-size:18px;margin-bottom:4px}
+          p.sub{font-size:12px;color:#666;margin-bottom:16px}
+          .aviso{background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;font-size:12px;margin-bottom:16px}
+          table{width:100%;border-collapse:collapse;font-size:13px}
+          th{background:#1a237e;color:#fff;padding:8px 10px;text-align:left}
+          td{padding:7px 10px;border-bottom:1px solid #ddd}
+          tr:nth-child(even) td{background:#f5f5f5}
+          @media print{.no-print{display:none}}
+        </style></head><body>
+        <h1>🔑 Senhas de Acesso — CEITEC Itapipoca</h1>
+        <p class="sub">Gerado em ${new Date().toLocaleString('pt-BR')}</p>
+        <div class="aviso">⚠️ <strong>Atenção:</strong> No primeiro acesso cada usuário deve criar uma senha pessoal.</div>
+        <button class="no-print" onclick="window.print()" style="margin-bottom:14px;padding:8px 18px;background:#1a237e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">🖨️ Imprimir PDF</button>
+        <table><thead><tr><th>#</th><th>Nome</th><th>Email</th><th>Senha provisória</th><th>Perfil</th></tr></thead><tbody>
+        ${lista.map((u, i) => `<tr><td>${i+1}</td><td>${u.nome}</td><td>${u.email}</td><td><strong>${u.senha}</strong></td><td>${u.perfil}</td></tr>`).join('')}
+        </tbody></table></body></html>`
+
+      const blob = new Blob([html], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.target = '_blank'
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 3000)
+      carregar()
+    } catch (err) {
+      alert('Erro ao gerar senhas: ' + (err.response?.data?.erro || err.message))
+    }
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Navbar />
@@ -75,7 +115,10 @@ export default function Usuarios() {
               <h1 className="text-2xl font-bold text-textMain">Gerenciar Usuários</h1>
               <p className="text-sm text-gray-500 mt-1">Crie e gerencie contas de acesso ao sistema</p>
             </div>
-            <button onClick={abrirNovo} className="btn-primary text-sm">+ Nova Conta</button>
+            <div className="flex gap-2">
+              <button onClick={gerarSenhasPDF} className="px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700">🔑 Gerar Senhas + PDF</button>
+              <button onClick={abrirNovo} className="btn-primary text-sm">+ Nova Conta</button>
+            </div>
           </div>
 
           {carregando ? (

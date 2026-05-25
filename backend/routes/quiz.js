@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { autenticar } = require('../middleware/auth');
+const { addProfXP } = require('./professorGame');
 
 const router = express.Router();
 
@@ -136,6 +137,8 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // XP ao professor por criar quiz
+    addProfXP(req.usuario.id, req.usuario.escola_id, 'quiz_criado', titulo).catch(() => {})
     res.status(201).json(await db.get('SELECT * FROM quizzes WHERE id = ?', [quizId]));
   } catch (err) {
     res.status(500).json({ erro: err.message });

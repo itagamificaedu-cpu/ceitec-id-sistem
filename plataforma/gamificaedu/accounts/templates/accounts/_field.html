@@ -1,0 +1,28 @@
+<div>
+    <label style="color:rgba(255,255,255,0.7);font-size:0.85rem;font-weight:600;margin-bottom:6px;display:block">{{ field.label }}</label>
+    <div style="position:relative">
+        {% if field.field.widget.input_type == 'select' %}
+            <select name="{{ field.html_name }}" id="{{ field.id_for_label }}"
+                style="width:100%;background:#1a1a35;border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;color:#fff;font-size:0.95rem;outline:none;appearance:none">
+                {% for val, label in field.field.choices %}
+                    <option value="{{ val }}" {% if field.value == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        {% elif field.field.widget.input_type == 'textarea' %}
+            <textarea name="{{ field.html_name }}" id="{{ field.id_for_label }}" rows="3"
+                placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                style="width:100%;background:#1a1a35;border:1px solid rgba(124,58,237,0.3);border-radius:12px;padding:12px 16px;color:#fff;font-size:0.95rem;outline:none;resize:vertical">{{ field.value|default:'' }}</textarea>
+        {% else %}
+            <input type="{{ field.field.widget.input_type }}"
+                name="{{ field.html_name }}"
+                id="{{ field.id_for_label }}"
+                value="{% if field.field.widget.input_type != 'password' %}{{ field.value|default:'' }}{% endif %}"
+                placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
+                {% if field.field.widget.attrs.autofocus %}autofocus{% endif %}
+                style="width:100%;background:#1a1a35;border:1px solid {% if field.errors %}rgba(239,68,68,0.5){% else %}rgba(124,58,237,0.3){% endif %};border-radius:12px;padding:12px 16px;color:#fff;font-size:0.95rem;outline:none">
+        {% endif %}
+    </div>
+    {% if field.errors %}
+        <div style="color:#fca5a5;font-size:0.82rem;margin-top:4px">{{ field.errors|join:', ' }}</div>
+    {% endif %}
+</div>

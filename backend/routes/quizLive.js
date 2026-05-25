@@ -3,6 +3,8 @@
  * Estilo Kahoot/Wayground: lobby, questões, placar, pódio
  */
 
+const { addProfXP } = require('./professorGame');
+
 const AVATARS = [
   '🦊','🐼','🐯','🦁','🐸','🦄','🐧','🦋','🐺','🦝',
   '🐭','🐰','🐻','🐨','🐮','🐷','🐙','🦑','🦀','🐬',
@@ -226,6 +228,8 @@ module.exports = function setupQuizLive(io) {
         socket.join(`quiz-${quizId}`);
         socket.data.isHost = true;
         socket.data.hostQuizId = quizId;
+        socket.data.hostUsuarioId = decoded.id;
+        socket.data.hostEscolaId = decoded.escola_id;
 
         const room = rooms.get(quizId);
         socket.emit('quiz:room-ready', {
@@ -282,6 +286,10 @@ module.exports = function setupQuizLive(io) {
       room.questionAnswers = new Map();
       io.to(`quiz-${quizId}`).emit('quiz:game-start', { totalQuestoes: room.questoes.length });
       setTimeout(() => sendQuestion(io, room), 1200);
+      // XP ao professor por realizar Quiz ao Vivo
+      if (socket.data.hostUsuarioId && socket.data.hostEscolaId) {
+        addProfXP(socket.data.hostUsuarioId, socket.data.hostEscolaId, 'quiz_ao_vivo', room.quiz.titulo).catch(() => {});
+      }
     });
 
     // ── ALUNO: Responde questão ───────────────────────────────────────────

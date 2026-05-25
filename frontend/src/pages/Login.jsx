@@ -41,7 +41,7 @@ export default function Login() {
       const { data } = await api.post('/auth/login', { email, senha })
       localStorage.setItem('token', data.token)
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
-      navigate('/dashboard')
+      navigate(data.trocar_senha ? '/trocar-senha' : '/dashboard')
     } catch (err) {
       if (!err.response) setErro('Servidor offline. Verifique se o backend está rodando.')
       else setErro(err.response?.data?.erro || 'Email ou senha incorretos.')

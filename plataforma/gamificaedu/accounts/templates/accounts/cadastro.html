@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+{% block title %}Criar conta — itagamificaedu{% endblock %}
+{% block content %}
+<section style="min-height:90vh;display:flex;align-items:center;padding:60px 0;background:radial-gradient(ellipse at 30% 50%, rgba(124,58,237,0.1) 0%, transparent 60%), var(--dark)">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-7">
+    <div class="text-center mb-4">
+        <div class="hero-badge">🚀 É grátis para começar</div>
+        <h2 class="section-title mt-3">Criar sua conta</h2>
+        <p class="section-subtitle">Preencha os dados abaixo e aguarde a aprovação</p>
+    </div>
+    <div class="card-3d p-4 p-md-5">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fca5a5;padding:12px 16px;margin-bottom:20px">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">{% include 'accounts/_field.html' with field=form.first_name %}</div>
+                <div class="col-md-6">{% include 'accounts/_field.html' with field=form.last_name %}</div>
+                <div class="col-12">{% include 'accounts/_field.html' with field=form.email %}</div>
+                <div class="col-12">{% include 'accounts/_field.html' with field=form.username %}</div>
+                <div class="col-md-6">{% include 'accounts/_field.html' with field=form.password1 %}</div>
+                <div class="col-md-6">{% include 'accounts/_field.html' with field=form.password2 %}</div>
+
+                <div class="col-12"><hr style="border-color:rgba(255,255,255,0.08)"><p style="color:rgba(255,255,255,0.5);font-size:0.85rem">Dados profissionais</p></div>
+
+                <div class="col-12">{% include 'accounts/_field.html' with field=form.escola %}</div>
+                <div class="col-12">{% include 'accounts/_field.html' with field=form.disciplina %}</div>
+                <div class="col-md-6">{% include 'accounts/_field.html' with field=form.cidade %}</div>
+                <div class="col-md-6">{% include 'accounts/_field.html' with field=form.estado %}</div>
+                <div class="col-12">{% include 'accounts/_field.html' with field=form.telefone %}</div>
+                <div class="col-12">{% include 'accounts/_field.html' with field=form.bio %}</div>
+
+                <div class="col-12">
+                    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;color:rgba(255,255,255,0.7);font-size:0.9rem">
+                        {{ form.termos }}
+                        <span>{{ form.termos.label }}</span>
+                    </label>
+                    {% if form.termos.errors %}<div style="color:#fca5a5;font-size:0.85rem;margin-top:4px">{{ form.termos.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-glow-orange btn w-100 mt-4" style="font-size:1.1rem">
+                🚀 Criar conta grátis
+            </button>
+        </form>
+        <p class="text-center mt-4" style="color:rgba(255,255,255,0.4);font-size:0.9rem">
+            Já tem conta? <a href="/accounts/login/" style="color:#a78bfa;font-weight:700">Entrar</a>
+        </p>
+    </div>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}
