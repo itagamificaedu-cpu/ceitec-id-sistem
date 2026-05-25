@@ -208,12 +208,24 @@ def portal_login(request):
 def criar_sessao_django(request):
     """
     Cria sessão Django a partir do JWT do React.
-    Chamado pelo frontend antes de navegar para páginas Django protegidas.
-    Assim, quem está logado no React (JWT) também fica logado no Django (sessão).
+    Lê o token do header Authorization: Bearer <token> (enviado pelo axios automaticamente).
+    Fallback: lê do body JSON se não vier no header.
     """
     try:
-        data = json.loads(request.body)
-        token = data.get('token', '')
+        # 1) Tenta ler do header Authorization: Bearer <token>
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        token = ''
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:].strip()
+
+        # 2) Fallback: lê do body JSON
+        if not token:
+            try:
+                data = json.loads(request.body)
+                token = data.get('token', '')
+            except Exception:
+                pass
+
         if not token:
             return JsonResponse({'ok': False, 'erro': 'Token não informado.'}, status=400)
 

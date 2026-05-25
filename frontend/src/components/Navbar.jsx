@@ -6,21 +6,15 @@ const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.py
 
 /**
  * Navega para uma página Django protegida.
- * Antes de redirecionar, troca o JWT do React por uma sessão Django
- * para que o @require_tipo do Django reconheça o usuário sem pedir login.
+ * Usa o api (axios) que já inclui o JWT no header Authorization automaticamente.
+ * O Django lê o JWT do header e cria a sessão antes do redirect.
  */
 async function navegarDjango(url) {
-  const token = localStorage.getItem('token')
-  if (token) {
-    try {
-      await fetch('/api/auth/set-session/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ token }),
-      })
-    } catch (_) {}
-  }
+  try {
+    // api já injeta Authorization: Bearer <token> automaticamente
+    const { default: api } = await import('../api')
+    await api.post('/auth/set-session/')
+  } catch (_) {}
   window.location.href = url
 }
 
