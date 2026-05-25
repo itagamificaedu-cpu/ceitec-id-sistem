@@ -17,8 +17,8 @@
     /* ── Reset e base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #0a0a0a;
-      color: #fff;
+      background: linear-gradient(160deg, #0d1f18 0%, #0a0a0a 60%);
+      color: #f0f0f0;
       font-family: 'Syne', sans-serif;
       min-height: 100vh;
     }
@@ -43,29 +43,32 @@
     .hero h1 {
       font-size: clamp(2.2rem, 8vw, 3.8rem);
       font-weight: 800;
-      color: #1D9E75;
+      color: #2ecc97;
       letter-spacing: -1px;
       line-height: 1;
+      text-shadow: 0 0 40px rgba(30,158,117,.4);
     }
     .hero .sub {
-      color: #555;
-      margin-top: .5rem;
-      font-size: .95rem;
+      color: #b0c8be;
+      margin-top: .6rem;
+      font-size: 1rem;
+      font-weight: 600;
     }
     .hero .cats {
       margin-top: 1rem;
       display: flex;
       justify-content: center;
-      gap: 1rem;
+      gap: .75rem;
       flex-wrap: wrap;
     }
     .cat-pill {
-      background: #111;
-      border: 1px solid #222;
-      color: #ccc;
-      padding: .4rem 1rem;
+      background: rgba(29,158,117,.18);
+      border: 1.5px solid #1D9E75;
+      color: #7de0bc;
+      padding: .45rem 1.1rem;
       border-radius: 30px;
-      font-size: .85rem;
+      font-size: .88rem;
+      font-weight: 700;
     }
 
     /* ── Container ── */
@@ -78,8 +81,9 @@
     /* ── Escolha de perfil ── */
     .label-escolha {
       text-align: center;
-      color: #555;
-      font-size: .9rem;
+      color: #b0c8be;
+      font-size: .95rem;
+      font-weight: 600;
       margin: 1.5rem 0 .75rem;
     }
     .escolha {
@@ -89,20 +93,24 @@
       margin-bottom: .5rem;
     }
     .btn-perfil {
-      background: #111;
-      border: 1.5px solid #1D9E75;
+      background: rgba(255,255,255,.05);
+      border: 2px solid #1D9E75;
       border-radius: 14px;
-      color: #ccc;
+      color: #d0ede3;
       padding: 1.4rem 1rem;
       cursor: pointer;
       font-family: 'Syne', sans-serif;
       font-size: .95rem;
-      font-weight: 600;
+      font-weight: 700;
       transition: all .2s;
       text-align: center;
     }
     .btn-perfil:hover,
-    .btn-perfil.ativo { background: #1D9E75; color: #fff; }
+    .btn-perfil.ativo {
+      background: #1D9E75;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(29,158,117,.4);
+    }
     .btn-perfil .icon { font-size: 2rem; display: block; margin-bottom: .4rem; }
 
     /* ── Seções de formulário ── */
@@ -116,36 +124,44 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .separador { height: 1px; background: #1a1a1a; margin: 1.5rem 0; }
+    .separador {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #1D9E75, transparent);
+      margin: 1.5rem 0;
+      opacity: .5;
+    }
 
     /* ── Campos ── */
-    .form-group { margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1.1rem; }
     label {
       display: block;
-      font-size: .75rem;
-      color: #666;
-      margin-bottom: .3rem;
-      letter-spacing: .06em;
+      font-size: .78rem;
+      color: #7de0bc;
+      margin-bottom: .35rem;
+      letter-spacing: .08em;
       text-transform: uppercase;
+      font-weight: 700;
     }
     input, select {
       width: 100%;
-      background: #161616;
-      border: 1px solid #2a2a2a;
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(29,158,117,.4);
       border-radius: 10px;
-      color: #fff;
-      padding: .8rem 1rem;
+      color: #f0f0f0;
+      padding: .85rem 1rem;
       font-size: 1rem;
       font-family: 'Syne', sans-serif;
-      transition: border-color .2s;
+      transition: border-color .2s, background .2s;
       appearance: none;
     }
-    input::placeholder { color: #444; }
+    input::placeholder { color: rgba(255,255,255,.35); }
     input:focus, select:focus {
       outline: none;
       border-color: #1D9E75;
+      background: rgba(29,158,117,.08);
     }
-    select option { background: #1a1a1a; }
+    select { color: #f0f0f0; }
+    select option { background: #1a2e24; color: #f0f0f0; }
 
     /* ── Botão principal ── */
     .btn-submit {
@@ -154,19 +170,22 @@
       color: #fff;
       border: none;
       border-radius: 12px;
-      padding: 1rem;
-      font-size: 1.05rem;
-      font-weight: 700;
+      padding: 1.1rem;
+      font-size: 1.1rem;
+      font-weight: 800;
       font-family: 'Syne', sans-serif;
       cursor: pointer;
-      margin-top: 1rem;
-      transition: background .2s, transform .15s;
+      margin-top: 1.2rem;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(29,158,117,.35);
+      letter-spacing: .03em;
     }
     .btn-submit:hover:not(:disabled) {
-      background: #0F6E56;
-      transform: translateY(-1px);
+      background: #25c48f;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(29,158,117,.5);
     }
-    .btn-submit:disabled { background: #333; cursor: not-allowed; }
+    .btn-submit:disabled { background: #2a3d33; color: #5a7a6a; cursor: not-allowed; box-shadow: none; }
 
     /* ── Tela de sucesso ── */
     .sucesso {
@@ -175,17 +194,17 @@
       display: none;
     }
     .sucesso .check { font-size: 3.5rem; }
-    .sucesso h2 { color: #1D9E75; font-size: 1.8rem; margin: .75rem 0 .4rem; }
-    .sucesso p  { color: #555; font-size: .9rem; }
+    .sucesso h2 { color: #2ecc97; font-size: 1.8rem; margin: .75rem 0 .4rem; }
+    .sucesso p  { color: #b0c8be; font-size: .95rem; }
     .numero-badge {
       display: inline-block;
-      background: #111;
+      background: rgba(29,158,117,.15);
       border: 2px solid #1D9E75;
       border-radius: 12px;
       padding: 1rem 2.5rem;
       font-size: 1.5rem;
       font-weight: 800;
-      color: #1D9E75;
+      color: #2ecc97;
       margin: 1.2rem 0;
       letter-spacing: 3px;
     }
@@ -198,15 +217,16 @@
       text-decoration: none;
       font-weight: 700;
       margin-top: 1rem;
-      transition: background .2s;
+      transition: background .2s, box-shadow .2s;
+      box-shadow: 0 4px 16px rgba(29,158,117,.4);
     }
-    .btn-comprovante:hover { background: #0F6E56; color: #fff; }
+    .btn-comprovante:hover { background: #25c48f; color: #fff; }
 
     /* ── Rodapé ── */
     .rodape {
       text-align: center;
       margin-top: 3rem;
-      color: #333;
+      color: #5a7a6a;
       font-size: .78rem;
       padding-bottom: 2rem;
     }
