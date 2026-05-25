@@ -6,14 +6,22 @@ const DJANGO_URL = import.meta.env.VITE_DJANGO_URL || 'https://itagamificaedu.py
 
 /**
  * Navega para uma página Django protegida.
- * Usa o api (axios) que já inclui o JWT no header Authorization automaticamente.
- * O Django lê o JWT do header e cria a sessão antes do redirect.
+ * Usa fetch direto com a URL /api/ (Django), independente do VITE_API_URL que aponta para /node-api/.
+ * O JWT é lido do localStorage e enviado no header Authorization.
  */
 async function navegarDjango(url) {
   try {
-    // api já injeta Authorization: Bearer <token> automaticamente
-    const { default: api } = await import('../api')
-    await api.post('/auth/set-session/')
+    const token = localStorage.getItem('token')
+    if (token) {
+      await fetch('/api/auth/set-session/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+      })
+    }
   } catch (_) {}
   window.location.href = url
 }

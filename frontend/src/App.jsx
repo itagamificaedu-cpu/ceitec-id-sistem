@@ -63,8 +63,18 @@ function RotaProtegida({ children }) {
     if (!token) return
     // Registra login diário para o Professor Game (XP de presença na plataforma)
     api.post('/prof-game/login-diario').catch(() => {})
-    // Cria sessão Django a partir do JWT — permite acessar páginas Django sem novo login
-    api.post('/auth/set-session/').catch(() => {})
+    // Cria sessão Django a partir do JWT — usa fetch direto pois /api/ é Django, não /node-api/
+    const _token = localStorage.getItem('token')
+    if (_token) {
+      fetch('/api/auth/set-session/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${_token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+      }).catch(() => {})
+    }
     api.get('/auth/me').then(({ data }) => {
       if (data.trocar_senha) {
         // Atualiza localStorage e força o redirect no próximo render
