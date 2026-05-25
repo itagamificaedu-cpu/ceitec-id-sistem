@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .ia-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .card-neon { background: #151528; border: 1px solid #2a2a4a; border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px; }
+    .card-neon h2 { color: #00e5ff; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+    .form-label { color: #cbd5e1; font-weight: bold; margin-top: 15px; display: block; }
+    .form-control, .form-select { background: #0b0b16 !important; border: 1px solid #2a2a4a !important; color: #fff !important; border-radius: 8px; padding: 12px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+    .form-control:focus, .form-select:focus { border-color: #00e5ff !important; box-shadow: 0 0 10px rgba(0, 229, 255, 0.2) !important; outline: none; }
+    .btn-neon-cyan { background: #00e5ff; color: #000; font-weight: bold; padding: 15px 30px; border-radius: 8px; border: none; width: 100%; font-size: 1.1rem; box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); transition: 0.3s; cursor: pointer; margin-top: 20px; }
+    .btn-neon-cyan:hover { background: #00b8cc; box-shadow: 0 0 25px rgba(0, 229, 255, 0.6); }
+    .resultado-box { background: #0b0b16; border: 1px solid #00e5ff; border-radius: 12px; padding: 25px; color: #e2e8f0; line-height: 1.6; font-size: 1.05rem; white-space: pre-wrap; }
+    .loading-text { display: none; text-align: center; color: #00e5ff; font-weight: bold; margin-top: 15px; font-size: 1.2rem; }
+</style>
+
+<div class="ia-container">
+    <div class="card-neon">
+        <h2>🧠 Criador de Provas com IA</h2>
+        <p style="color: #a0a0b5; margin-bottom: 30px;">Preencha os dados abaixo e deixe a Inteligência Artificial criar uma questão inédita, com texto-base e justificativa pedagógica para os distratores.</p>
+
+        <form method="POST" action="{{ request.path }}" onsubmit="document.getElementById('btn-gerar').style.display='none'; document.getElementById('loading').style.display='block';">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Disciplina</label>
+                    <input type="text" name="disciplina" class="form-control" placeholder="Ex: História, Biologia" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Ano / Série</label>
+                    <input type="text" name="serie" class="form-control" placeholder="Ex: 3º Ano do Ensino Médio" required>
+                </div>
+            </div>
+
+            <label class="form-label">Tema Específico da Aula</label>
+            <input type="text" name="tema" class="form-control" placeholder="Ex: Revolução Industrial" required>
+
+            <label class="form-label">Nível de Dificuldade</label>
+            <select name="dificuldade" class="form-select" required>
+                <option value="Fácil">Fácil</option>
+                <option value="Médio" selected>Médio</option>
+                <option value="Difícil">Difícil</option>
+            </select>
+            <div class="mb-3">
+            <label for="quantidade" class="form-label">Quantidade de Questões</label>
+            <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" max="10" value="1" required>
+        </div>
+            <button type="submit" id="btn-gerar" class="btn-neon-cyan">✨ Gerar Questão Inédita</button>
+            <div id="loading" class="loading-text">⏳ A Inteligência Artificial está elaborando a questão... Aguarde.</div>
+        </form>
+    </div>
+
+    {% if erro %}
+    <div class="card-neon" style="border-color: #ff4444;">
+        <h3 style="color: #ff4444;">❌ Ops, ocorreu um erro:</h3>
+        <p>{{ erro }}</p>
+    </div>
+    {% endif %}
+
+    {% if resultado %}
+    <div class="card-neon">
+        <h2>✅ Questão Gerada com Sucesso!</h2>
+        <div class="resultado-box">{{ resultado }}</div>
+        <button onclick="navigator.clipboard.writeText(document.querySelector('.resultado-box').innerText); alert('Copiado!');" class="btn-neon-cyan" style="margin-top: 20px; background: #2a2a4a; color: #fff; box-shadow: none;">📋 Copiar Questão</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

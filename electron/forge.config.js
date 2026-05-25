@@ -2,7 +2,7 @@ module.exports = {
   packagerConfig: {
     name: 'ITA Tecnologia Educacional',
     executableName: 'ITATecnologiaEducacional',
-    icon: './icon', // .ico no Windows, .icns no Mac (sem extensão)
+    // icon: './icon', // descomente e adicione icon.ico/.icns quando tiver o arquivo
     appVersion: '1.0.0',
     appCopyright: 'ITA Tecnologia Educacional © 2025',
     win32metadata: {
@@ -20,7 +20,7 @@ module.exports = {
       config: {
         name: 'ITATecnologiaEducacional',
         setupExe: 'ITA-Tecnologia-Educacional-Setup.exe',
-        setupIcon: './icon.ico',
+        // setupIcon: './icon.ico', // adicione quando tiver o arquivo
         // Squirrel cria atalho no Desktop e no Menu Iniciar automaticamente
         shortcutName: 'ITA Tecnologia Educacional',
       },
@@ -37,7 +37,7 @@ module.exports = {
       name: '@electron-forge/maker-dmg',
       config: {
         name: 'ITA Tecnologia Educacional',
-        icon: './icon.icns',
+        // icon: './icon.icns', // adicione quando tiver o arquivo
       },
     },
 

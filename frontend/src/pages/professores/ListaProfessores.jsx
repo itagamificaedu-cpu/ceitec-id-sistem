@@ -104,6 +104,18 @@ export default function ListaProfessores() {
                     </div>
                   )}
                   <div className="flex gap-2 flex-wrap">
+                    {/* Acesso direto ao Mestre da Escola */}
+                    {p.codigo && (
+                      <a
+                        href={`/mestre?code=${p.codigo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Abrir Mestre da Escola como ${p.nome}`}
+                        className="flex-1 py-1.5 rounded-lg text-xs font-medium text-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                      >
+                        📅 Horário
+                      </a>
+                    )}
                     <button
                       onClick={() => abrirModalAcesso(p)}
                       className="flex-1 py-1.5 rounded-lg text-xs font-medium text-center bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"

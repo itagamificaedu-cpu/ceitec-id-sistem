@@ -44,6 +44,7 @@ import ResponderAvaliacao from './pages/ResponderAvaliacao'
 import TrocarSenha from './pages/TrocarSenha'
 import AtividadeUsuarios from './pages/AtividadeUsuarios'
 import SalaMaker from './pages/salaMaker'
+import ProfessorGame from './pages/ProfessorGame'
 import CursoFerias from './pages/CursoFerias'
 import ScannerCursoFerias from './pages/ScannerCursoFerias'
 import MobileTracker from './pages/MobileTracker'
@@ -60,6 +61,8 @@ function RotaProtegida({ children }) {
   // Verifica do servidor se admin resetou a senha (localStorage pode estar desatualizado)
   useEffect(() => {
     if (!token) return
+    // Registra login diário para o Professor Game (XP de presença na plataforma)
+    api.post('/prof-game/login-diario').catch(() => {})
     api.get('/auth/me').then(({ data }) => {
       if (data.trocar_senha) {
         // Atualiza localStorage e força o redirect no próximo render
@@ -179,6 +182,9 @@ export default function App() {
 
         {/* Corretor de Provas — resultados reais */}
         <Route path="/corretor-resultados" element={<P><CorretorResultados /></P>} />
+
+        {/* Professor Game — ranking e gamificação dos professores */}
+        <Route path="/professor-game" element={<P><ProfessorGame /></P>} />
 
         {/* Sala Maker — acessível a todos os usuários autenticados */}
         <Route path="/sala-maker" element={<P><SalaMaker /></P>} />

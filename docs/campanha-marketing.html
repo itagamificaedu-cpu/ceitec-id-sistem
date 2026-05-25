@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kit de Marketing — Alunos Maker Não Tiram Férias 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0A0E1A;
+      --bg2: #111827;
+      --bg3: #1a2235;
+      --orange: #F5A623;
+      --orange2: #e8941a;
+      --orange-light: #ffd07a;
+      --white: #F8F9FA;
+      --gray: #9CA3AF;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --red: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Space Grotesk', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, #0A0E1A 0%, #1a1032 50%, #0d1a2e 100%);
+      border-bottom: 3px solid var(--orange);
+      text-align: center;
+      padding: 60px 40px 50px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: -80px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(245,166,35,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; right: -60px;
+      width: 250px; height: 250px;
+      background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--orange);
+      color: #0A0E1A;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      padding: 6px 18px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      color: var(--orange);
+      letter-spacing: 3px;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .hero h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      color: var(--gray);
+      font-weight: 400;
+      margin-bottom: 30px;
+    }
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .hero-meta span {
+      background: var(--bg3);
+      border: 1px solid rgba(245,166,35,0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--orange-light);
+    }
+
+    /* ===== NAV ===== */
+    .nav {
+      background: var(--bg2);
+      border-bottom: 1px solid rgba(245,166,35,0.2);
+      padding: 12px 40px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .nav a {
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .nav a:hover { background: var(--orange); color: #0A0E1A; }
+
+    /* ===== MAIN ===== */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* ===== SECTION ===== */
+    .section {
+      margin-bottom: 70px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 30px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid rgba(245,166,35,0.3);
+    }
+    .section-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: rgba(245,166,35,0.3);
+      line-height: 1;
+      min-width: 60px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--orange);
+      letter-spacing: 2px;
+      line-height: 1.1;
+    }
+    .section-sub {
+      font-size: 0.9rem;
+      color: var(--gray);
+      margin-top: 4px;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--bg2);
+      border: 1px solid rgba(245,166,35,0.15);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: var(--orange);
+      letter-spacing: 1px;
+    }
+    .card-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .tag-orange { background: rgba(245,166,35,0.15); color: var(--orange); border: 1px solid rgba(245,166,35,0.3); }
+    .tag-blue { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .tag-green { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+    .tag-purple { background: rgba(168,85,247,0.15); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.3); }
+    .tag-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ===== COPY BLOCK ===== */
+    .copy-block {
+      background: var(--bg3);
+      border-left: 4px solid var(--orange);
+      border-radius: 0 8px 8px 0;
+      padding: 20px 22px;
+      margin: 14px 0;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.8;
+    }
+    .copy-block.blue { border-color: var(--blue); }
+    .copy-block.green { border-color: var(--green); }
+    .copy-block.purple { border-color: var(--purple); }
+    .copy-block.red { border-color: var(--red); }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--orange);
+      color: #0A0E1A;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      letter-spacing: 0.5px;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: var(--orange2); }
+    .copy-btn.copied { background: var(--green); color: white; }
+
+    /* ===== LABEL ===== */
+    .label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+    .label:first-child { margin-top: 0; }
+
+    /* ===== VISUAL DESC ===== */
+    .visual-desc {
+      background: rgba(59,130,246,0.08);
+      border: 1px dashed rgba(59,130,246,0.4);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      color: #93c5fd;
+      font-style: italic;
+      margin: 10px 0;
+    }
+
+    /* ===== GRID ===== */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    /* ===== TABLE ===== */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(245,166,35,0.15);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead tr {
+      background: var(--orange);
+      color: #0A0E1A;
+    }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 700;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 1px;
+      font-size: 1rem;
+    }
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+    tbody tr:hover { background: rgba(245,166,35,0.06); }
+    tbody td { padding: 10px 16px; color: var(--white); }
+    .td-day { font-weight: 700; color: var(--orange); }
+    .td-canal { color: #93c5fd; }
+    .td-hora { color: #86efac; font-weight: 600; }
+
+    /* ===== CHECKLIST ===== */
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.92rem;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--orange);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .check-cat {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ===== FLYER ===== */
+    .flyer-preview {
+      background: linear-gradient(135deg, #0A0E1A 0%, #0d1528 100%);
+      border: 3px solid var(--orange);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .flyer-logo-area {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      color: var(--orange);
+      letter-spacing: 3px;
+      border-bottom: 1px solid rgba(245,166,35,0.3);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .flyer-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      color: var(--white);
+      letter-spacing: 3px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .flyer-subtitle {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      color: var(--orange);
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+    .flyer-icons {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      letter-spacing: 8px;
+    }
+    .flyer-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .flyer-info-box {
+      background: rgba(245,166,35,0.1);
+      border: 1px solid rgba(245,166,35,0.3);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .flyer-info-label {
+      font-size: 0.68rem;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .flyer-info-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      color: var(--orange);
+      letter-spacing: 1px;
+    }
+    .flyer-price-box {
+      background: var(--orange);
+      border-radius: 10px;
+      padding: 16px 24px;
+      margin: 20px 0;
+    }
+    .flyer-price-label {
+      font-size: 0.8rem;
+      color: rgba(0,0,0,0.6);
+      margin-bottom: 4px;
+    }
+    .flyer-price-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      color: #0A0E1A;
+      line-height: 1;
+    }
+    .flyer-price-parcela {
+      font-size: 0.85rem;
+      color: rgba(0,0,0,0.7);
+      margin-top: 4px;
+    }
+    .flyer-qr-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    .flyer-qr-box {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .flyer-qr-box img { width: 90px; height: 90px; }
+    .flyer-qr-label {
+      font-size: 0.7rem;
+      color: var(--gray);
+      margin-top: 8px;
+      text-align: center;
+    }
+    .flyer-contact {
+      background: var(--bg3);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.95rem;
+    }
+    .flyer-contact strong { color: var(--orange); }
+    .flyer-vagas {
+      display: inline-block;
+      background: var(--red);
+      color: white;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .flyer-techs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0;
+    }
+    .flyer-tech-badge {
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.4);
+      color: #93c5fd;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ===== RADIO SCRIPT ===== */
+    .radio-script {
+      background: var(--bg3);
+      border: 1px solid rgba(168,85,247,0.3);
+      border-radius: 10px;
+      padding: 24px;
+    }
+    .radio-time {
+      display: inline-block;
+      background: rgba(168,85,247,0.2);
+      color: #d8b4fe;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+
+    /* ===== TV SCRIPT ===== */
+    .scene {
+      background: var(--bg3);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+    }
+    .scene-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: rgba(245,166,35,0.4);
+      min-width: 48px;
+      line-height: 1;
+    }
+    .scene-content {}
+    .scene-image {
+      font-size: 0.82rem;
+      color: #93c5fd;
+      font-style: italic;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: rgba(59,130,246,0.08);
+      border-radius: 6px;
+    }
+    .scene-narration {
+      font-size: 0.95rem;
+      color: var(--white);
+      font-weight: 500;
+      line-height: 1.7;
+    }
+    .scene-label {
+      font-size: 0.7rem;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    /* ===== INFO BOX ===== */
+    .info-box {
+      background: rgba(245,166,35,0.08);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      color: var(--orange-light);
+      margin-bottom: 20px;
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white !important; color: #111 !important; }
+      .nav, .hero::before, .hero::after { display: none; }
+      .hero { padding: 20px; background: white !important; border-bottom: 2px solid #F5A623; }
+      .hero h1, .section-title, .card-title { color: #F5A623 !important; }
+      .card { border: 1px solid #eee; background: #fafafa !important; }
+      .copy-block { background: #f5f5f5 !important; border-left: 4px solid #F5A623; color: #111 !important; }
+      .copy-btn { display: none !important; }
+      .section-num { color: #ddd !important; }
+      .table-wrap { border: 1px solid #ddd; }
+      thead tr { background: #F5A623 !important; }
+      tbody tr:nth-child(even) { background: #f9f9f9 !important; }
+      .visual-desc { background: #f0f4ff !important; border-color: #93c5fd; color: #3b82f6 !important; }
+      .flyer-preview { background: white !important; border: 2px solid #F5A623; }
+      .flyer-title, .flyer-logo-area, .flyer-info-value, .flyer-subtitle { color: #F5A623 !important; }
+      .flyer-price-value { color: white !important; }
+      .radio-script { background: #f9f9f9 !important; }
+      .scene { background: #f5f5f5 !important; }
+      .info-box { background: #fff8e6 !important; color: #7a5000 !important; }
+      .tag { border: 1px solid #ccc !important; background: #f5f5f5 !important; color: #555 !important; }
+      .flyer-tech-badge { background: #e8f0fe !important; color: #3b82f6 !important; }
+      .check-box { border-color: #F5A623 !important; }
+      .copy-block.blue, .copy-block.green, .copy-block.purple, .copy-block.red { border-left-color: #F5A623 !important; }
+      a { color: #1a0dab !important; }
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ========== HERO ========== -->
+<div class="hero">
+  <div class="hero-badge">KIT COMPLETO DE MARKETING DIGITAL</div>
+  <h1>Alunos Maker<br>Não Tiram Férias</h1>
+  <h2>ITA Tecnologia Educacional — Itapipoca, Ceará — Julho de 2026</h2>
+  <div class="hero-meta">
+    <span>📱 9 Seções de Conteúdo</span>
+    <span>🤖 10 Posts Instagram</span>
+    <span>💬 3 Mensagens WhatsApp</span>
+    <span>📻 2 Scripts de Rádio</span>
+    <span>📅 Calendário 4 Semanas</span>
+    <span>✅ Checklist Completo</span>
+  </div>
+</div>
+
+<!-- ========== NAV ========== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#sec1">01 Instagram</a>
+    <a href="#sec2">02 WhatsApp</a>
+    <a href="#sec3">03 Facebook</a>
+    <a href="#sec4">04 Flyer</a>
+    <a href="#sec5">05 Rádio</a>
+    <a href="#sec6">06 TV/Vídeo</a>
+    <a href="#sec7">07 E-mail Escolas</a>
+    <a href="#sec8">08 Calendário</a>
+    <a href="#sec9">09 Checklist</a>
+  </div>
+</nav>
+
+<!-- ========== MAIN ========== -->
+<div class="main">
+
+  <!-- ========== SEÇÃO 1: INSTAGRAM ========== -->
+  <section class="section" id="sec1">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div>
+        <div class="section-title">Posts para Instagram</div>
+        <div class="section-sub">10 posts com legenda completa, arte sugerida, CTA e horário ideal</div>
+      </div>
+    </div>
+
+    <!-- POST 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 1 — Abertura das Inscrições</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Feed 1:1</span>
+          <span class="tag tag-green">Abertura</span>
+          <span class="tag tag-blue">Horário: 19h de segunda</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Fundo escuro (#0A0E1A). Centro: circuito eletrônico em laranja neon formando o número "30". Texto grande "VAGAS ABERTAS" em Bebas Neue branco. Placa de Arduino no canto inferior direito em destaque. Logo ITA no topo. Raios elétricos saindo do número 30 em laranja.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🚀 AS INSCRIÇÕES ESTÃO ABERTAS!
+
+Seu filho ama tecnologia mas fica no celular o dia todo nas férias? E se esse tempo livre virasse um projeto de robótica DE VERDADE? 🤖
+
+Este julho, a ITA Tecnologia Educacional traz pra Itapipoca o curso ALUNOS MAKER NÃO TIRAM FÉRIAS — 5 dias intensivos onde jovens de 11 a 17 anos vão:
+
+⚡ Programar um Arduino do zero
+🌐 Conectar dispositivos com ESP32
+🔧 Montar um projeto funcional com as próprias mãos
+🏆 Receber certificado oficial ao final
+🤝 Fazer parte de uma turma de futuros engenheiros
+
+📅 Julho de 2026 | Itapipoca-CE
+💰 R$ 199 à vista ou 3x de R$ 66,33
+⚠️ Apenas 30 vagas — sem lista de espera!
+
+👉 Clique no link da bio para garantir a vaga do seu filho agora!
+
+#robótica #arduino #cursodeferias #itapipoca #ceará #maker #tecnologia #jovens #stem #esp32 #programação #férias #cursotécnico #inovação #itatecnologia</div>
+      <div class="label">CTA</div>
+      <div class="copy-block blue">Link na bio → https://itatecnologiaeducacional.tech/curso-ferias.html
+Ou chame direto no WhatsApp: (88) 9 8841-1890</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 2 — Dia 1 do Curso: Mundo Maker e Arduino</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Carrossel (5 slides)</span>
+          <span class="tag tag-purple">Conteúdo Educativo</span>
+          <span class="tag tag-blue">Horário: 20h de terça</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Slide 1: Fundo escuro, título "DIA 1 🔌" em laranja grande, subtítulo "Você vai conhecer o Arduino!". Slides 2-5: cada um com ícone temático (chip, LED, código, robô) e texto curto. Paleta: fundo #0A0E1A, texto branco, detalhes laranja.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🔌 DIA 1 DO CURSO: SEJA BEM-VINDO AO MUNDO MAKER!
+
+Desliza pra ver o que acontece no primeiro dia do ALUNOS MAKER NÃO TIRAM FÉRIAS ➡️
+
+No Dia 1, os alunos chegam sem saber nada de eletrônica... e saem acendendo LEDs com código!
+
+✅ O que é o movimento Maker?
+✅ Como funciona um Arduino?
+✅ Primeiras conexões no protoboard
+✅ Escrever o primeiro código: pisca LED!
+✅ Por que esse conhecimento vai mudar a vida deles?
+
+Parece complexo? NÃO É! Nossa metodologia é feita pra quem nunca tocou em um fio na vida. 😄
+
+Do medo ao fascínio em menos de 8 horas. Esse é o poder do Dia 1.
+
+👉 Garanta a vaga: link na bio ou WhatsApp (88) 9 8841-1890
+
+📅 Julho de 2026 | Itapipoca-CE | Apenas 30 vagas
+
+#arduino #maker #stem #robótica #itapipoca #cursodeferias #tecnologia #programação #jovens #ceará #itatecnologia</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 3 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 3 — Dia 2: Sensores e Lógica de Programação</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Feed 1:1</span>
+          <span class="tag tag-purple">Conteúdo Educativo</span>
+          <span class="tag tag-blue">Horário: 18h30 de quarta</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Fundo escuro com grade de circuito em laranja claro transparente. Ícone de sensor ultrassônico no centro com ondas sonoras em laranja. Texto "DIA 2" em Bebas Neue grande. Gráfico de código (if/else) decorativo ao fundo.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🎯 E se o computador "enxergasse" o mundo real?
+
+No Dia 2 do ALUNOS MAKER NÃO TIRAM FÉRIAS, os alunos aprendem exatamente isso! 👀
+
+🔊 Sensor ultrassônico detectando objetos
+💡 Lógica condicional: se isso... então aquilo!
+🌡️ Sensor de temperatura lendo o ambiente
+🚨 Alarmes inteligentes com buzzer
+💻 Primeiros passos com lógica de programação
+
+A criança que antes só usava o celular pra ver vídeo agora está CRIANDO a tecnologia.
+
+"Mas o meu filho não tem jeito pra exatas..." — Isso não existe! 99% dos nossos alunos chegam sem experiência e saem encantados. A metodologia faz toda a diferença. ✨
+
+📍 Itapipoca, Ceará
+💰 R$ 199 (ou 3x de R$ 66,33)
+📅 Julho de 2026
+
+👇 Comentem aqui: qual sensor vocês acham mais incrível?
+
+🔗 Link pra inscrição na bio!
+
+#arduino #sensores #programação #robótica #cursodeferias #itapipoca #maker #stem #tecnologia #ceará #jovens #itatecnologia</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 4 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 4 — Dia 3: IoT e ESP32 — A Internet das Coisas</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Reels (30s)</span>
+          <span class="tag tag-purple">Conteúdo Educativo</span>
+          <span class="tag tag-blue">Horário: 19h de quinta</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva / Roteiro do Reels)</div>
+      <div class="visual-desc">
+        Reels: texto animado aparecendo na tela. Cena 1: texto "Você sabia que sua geladeira pode mandar mensagem no WhatsApp?" Cena 2: "Com ESP32, isso é possível!" Cena 3: logo do Wi-Fi + chip + smartphone. Cena 4: "No Dia 3 você vai fazer isso!" Música: trilha eletrônica animada.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🌐 IoT — A tecnologia que está em TUDO!
+
+Geladeira conectada. Lâmpada que você controla pelo celular. Ar condicionado que liga antes de você chegar em casa. Isso é IoT — e no Dia 3, os alunos CRIAM ISSO! 🏠📱
+
+Com o ESP32, a plaquinha mais poderosa do mundo maker:
+
+📶 Conectar dispositivos ao Wi-Fi
+📲 Controlar LEDs pelo celular
+📊 Enviar dados para a internet em tempo real
+🔔 Criar notificações automáticas
+🌍 Entender como a "casa inteligente" funciona
+
+Em 2030, 75% de todos os empregos de tecnologia vão envolver IoT. Seu filho vai sair na frente! 🚀
+
+Apenas R$ 199 por 5 dias de aprendizado intensivo.
+📍 Itapipoca | 📅 Julho 2026 | ⚠️ 30 vagas
+
+🔗 Link pra se inscrever: bio ou WhatsApp (88) 9 8841-1890
+
+#iot #esp32 #internetdascoisas #arduino #robótica #maker #stem #itapipoca #cursodeferias #tecnologia #ceará #itatecnologia #programação</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 5 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 5 — Dia 4: Construção do Projeto Final</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Carrossel</span>
+          <span class="tag tag-purple">Conteúdo Educativo</span>
+          <span class="tag tag-blue">Horário: 20h de sexta</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Carrossel 4 slides. Slide 1: título "DIA 4 — HORA DE CONSTRUIR!" com ícone de chave de fenda e chip. Slides 2-4: fotos de ilustração (mãos montando circuito, código na tela, robô sendo construído). Fundo escuro, destaque laranja.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🔧 No Dia 4, as mãos entram em ação!
+
+Esqueça a teoria por um momento. No quarto dia do ALUNOS MAKER NÃO TIRAM FÉRIAS, cada aluno começa a montar o SEU projeto do zero! 🤖
+
+🧩 Cada aluno escolhe um projeto:
+   → Robô seguidor de linha
+   → Sistema de alarme inteligente
+   → Estação meteorológica conectada
+   → Automação residencial básica
+
+🔨 Montagem física do hardware
+💻 Codificação personalizada
+🐛 Aprendendo a encontrar e corrigir erros (debugging)
+🎨 Personalização do projeto
+
+A melhor parte? Eles mesmos resolvem os problemas. Nosso papel é só guiar! 💪
+
+O projeto final é DELES. Levam pra casa. Mostram pros amigos. E nunca mais olham pro mundo do mesmo jeito.
+
+📅 Julho de 2026 | Itapipoca-CE | 30 vagas | R$ 199
+
+Inscrições: link na bio ou (88) 9 8841-1890 no WhatsApp
+
+#robótica #maker #arduino #esp32 #stem #itapipoca #cursodeferias #programação #tecnologia #ceará #itatecnologia #projetofinal</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 6 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 6 — Dia 5: Demo Day e Certificação</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Feed 1:1</span>
+          <span class="tag tag-green">Demo Day</span>
+          <span class="tag tag-blue">Horário: 18h de sábado</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Fundo escuro com confetes laranja e branco. Troféu dourado no centro com circuito eletrônico integrado ao design. Texto "DIA 5 — DEMO DAY!" em Bebas Neue. Dois alunos (silhueta) segurando projetos em destaque. Certificado estilizado no canto.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🏆 O GRANDE DIA: DEMO DAY!
+
+5 dias de aprendizado. Projetos reais. E agora chegou a hora de MOSTRAR PRO MUNDO! 🌍
+
+No Dia 5 do ALUNOS MAKER NÃO TIRAM FÉRIAS:
+
+🎤 Cada aluno apresenta seu projeto finalizado
+👨‍👩‍👧 Pais e família são convidados para assistir
+📜 Entrega do CERTIFICADO OFICIAL ITA
+🥇 Reconhecimento dos destaques da turma
+📸 Fotos e memórias que vão durar pra sempre
+
+Imagina a cena: seu filho de 13 anos, no palco, explicando como programou um sistema inteligente do zero.
+
+Isso é confiança. Isso é futuro. Isso é o que a ITA Tecnologia Educacional proporciona. ❤️
+
+Não deixa seu filho ficar de fora!
+⚠️ APENAS 30 VAGAS — inscrições abertas AGORA
+
+👉 Acesse: https://itatecnologiaeducacional.tech/curso-ferias.html
+📱 WhatsApp: (88) 9 8841-1890
+
+#demoday #certificado #robótica #arduino #maker #stem #itapipoca #cursodeferias #tecnologia #ceará #jovens #orgulho #itatecnologia</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 7 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 7 — Depoimento (Simulado realista)</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Story 9:16</span>
+          <span class="tag tag-green">Prova Social</span>
+          <span class="tag tag-blue">Horário: 19h de segunda</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Story vertical. Fundo com foto desfocada de jovem sorrindo (banco de imagens gratuito). Caixa de depoimento no centro com aspas grandes em laranja. Nome e idade do aluno abaixo. Logo ITA no canto inferior. Gradiente escuro sobre a foto.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">💬 "Eu achei que não ia conseguir... mas no segundo dia eu já estava programando!"
+
+— Lucas, 14 anos, Itapipoca
+
+Essa é a reação mais comum dos nossos alunos no curso ALUNOS MAKER NÃO TIRAM FÉRIAS. 🤯
+
+Eles chegam com medo. Com dúvida. Achando que "tecnologia não é pra mim."
+
+E vão embora com:
+✅ Um projeto funcional nas mãos
+✅ Conhecimento real de Arduino e ESP32
+✅ Certificado oficial
+✅ Autoconfiança que nenhuma escola ensina
+✅ Amigos com o mesmo interesse
+
+O que seu filho vai carregar dessas férias?
+
+Vagas encerrando em breve. São apenas 30.
+
+📲 Garante agora: (88) 9 8841-1890
+🔗 Link na bio
+
+#depoimento #robótica #arduino #maker #itapipoca #stem #cursodeferias #tecnologia #ceará #jovens #transformação #itatecnologia</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 8 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 8 — Depoimento de Pai/Mãe</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Feed 1:1</span>
+          <span class="tag tag-green">Prova Social</span>
+          <span class="tag tag-blue">Horário: 20h de quarta</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Fundo escuro com textura de circuito suave. Foto de mãe sorrindo (ilustração ou banco de imagens). Citação em destaque com tipografia grande. Ícones de coração e estrela em laranja. Logo ITA no canto inferior.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">👩 "Minha filha voltou do curso diferente. Mais confiante, mais curiosa. Me pediu um livro de programação nas férias!"
+
+— Francisca, mãe da Ana Clara, 12 anos, Itapipoca
+
+Quando um curso de férias muda o comportamento da criança em CASA... é porque foi além da técnica. 🧠❤️
+
+É isso que acontece no ALUNOS MAKER NÃO TIRAM FÉRIAS:
+
+🎯 Pensamento lógico que ajuda em TODAS as matérias
+🤝 Trabalho em equipe e comunicação
+💪 Resiliência: errar, corrigir, tentar de novo
+🚀 Motivação de verdade por aprendizado
+🌟 Autoestima e autoconhecimento
+
+Enquanto outros cursos de férias ensinam dança ou artesanato, a ITA prepara seu filho para a economia do futuro.
+
+Não é sobre ser engenheiro. É sobre PENSAR como um.
+
+⚠️ Apenas 30 vagas | R$ 199 | Julho 2026
+
+👉 https://itatecnologiaeducacional.tech/curso-ferias.html
+
+#pais #educação #robótica #maker #arduino #itapipoca #cursodeferias #stem #tecnologia #ceará #itatecnologia #futuro</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 9 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 9 — Urgência: Últimas Vagas</div>
+        <div class="card-meta">
+          <span class="tag tag-red">URGÊNCIA</span>
+          <span class="tag tag-orange">Story + Feed</span>
+          <span class="tag tag-blue">Horário: 12h e 20h</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Fundo vermelho escuro com borda laranja pulsante. Centro: "⚠️ ÚLTIMAS VAGAS" em Bebas Neue branco enorme. Abaixo: contador estilizado de vagas (ex: "5 VAGAS RESTANTES"). Urgência visual com triângulo de atenção.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">⚠️ ATENÇÃO: ESTAMOS NAS ÚLTIMAS VAGAS!
+
+Quando as 30 vagas esgotarem, não tem lista de espera.
+Não tem segunda chamada.
+Não tem "pode entrar só mais um."
+
+O curso ALUNOS MAKER NÃO TIRAM FÉRIAS tem vagas LIMITADAS por uma razão: atenção individualizada para cada aluno.
+
+Com muita gente, perde-se a qualidade. E qualidade é o que a ITA Tecnologia Educacional nunca abre mão.
+
+Se você ficou em dúvida até agora, a hora é ESSA.
+
+👉 GARANTA A VAGA AGORA:
+🔗 https://itatecnologiaeducacional.tech/inscricao/formulario/
+📲 WhatsApp: (88) 9 8841-1890
+
+Não deixa seu filho perder essa oportunidade por indecisão de um adulto. 💙
+
+5 dias que podem mudar a visão de mundo do seu filho.
+Por R$ 199 ou 3x de R$ 66,33.
+Em Itapipoca mesmo.
+
+Corre! 🏃‍♂️
+
+#últimasvagas #robótica #arduino #maker #itapipoca #cursodeferias #stem #urgência #ceará #itatecnologia #vagas</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+    <!-- POST 10 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Post 10 — Demo Day Final (Pós-curso)</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Feed 1:1</span>
+          <span class="tag tag-green">Resultado</span>
+          <span class="tag tag-blue">Horário: 18h (dia do evento)</span>
+        </div>
+      </div>
+      <div class="label">Descrição Visual (para o Canva)</div>
+      <div class="visual-desc">
+        Colagem de fotos (use fotos reais do evento). Moldura laranja. Texto sobreposto "ELES FIZERAM ACONTECER!" em Bebas Neue branco. Confetes e estrelas decorativas. Logo ITA em destaque. Fundo com gradiente escuro.
+      </div>
+      <div class="label">Legenda Completa</div>
+      <div class="copy-block">🎉 ELES FIZERAM ACONTECER!
+
+Hoje foi incrível. Hoje foi emocionante. Hoje foi HISTÓRICO para Itapipoca! 🏆
+
+30 jovens. 5 dias. Projetos reais de robótica, Arduino e ESP32.
+
+E hoje eles subiram no palco e APRESENTARAM o que fizeram.
+
+Orgulho não é uma palavra suficiente. 🥹
+
+Parabéns a cada aluno que aceitou o desafio de APRENDER nas férias.
+Parabéns aos pais que acreditaram na educação tecnológica.
+Parabéns à turma 2026 do ALUNOS MAKER NÃO TIRAM FÉRIAS!
+
+📅 Próxima turma: em breve!
+Siga nosso perfil para ser avisado em primeira mão 🔔
+
+📲 Contato: (88) 9 8841-1890
+✉️ itagamificaedu@gmail.com
+
+Marca nos comentários um amigo que deveria ter estado aqui! 👇
+
+#demoday #robótica #arduino #maker #itapipoca #ceará #stem #cursodeferias #tecnologia #itatecnologia #formatura #orgulho</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Legenda</button>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 2: WHATSAPP ========== -->
+  <section class="section" id="sec2">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div>
+        <div class="section-title">Mensagens para WhatsApp</div>
+        <div class="section-sub">3 mensagens prontas para enviar em grupos, listas de transmissão e follow-up</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Mensagem 1 — Primeiro Contato (Grupos e Listas)</div>
+        <div class="card-meta">
+          <span class="tag tag-green">Abertura</span>
+          <span class="tag tag-blue">Grupos de pais, amigos, escola</span>
+        </div>
+      </div>
+      <div class="info-box">💡 Envie para grupos de pais de escola, WhatsApp de amigos e familiares, listas de transmissão de alunos da ITA.</div>
+      <div class="label">Mensagem Completa</div>
+      <div class="copy-block green">Olá, tudo bem? 😊
+
+Meu nome é [SEU NOME] e sou da ITA Tecnologia Educacional de Itapipoca.
+
+Estou passando porque abrimos as inscrições para um curso de férias incrível para jovens de 11 a 17 anos! 🤖
+
+📌 ALUNOS MAKER NÃO TIRAM FÉRIAS
+
+✅ 5 dias intensivos de Robótica, Arduino e ESP32
+✅ Projeto real para levar pra casa
+✅ Certificado oficial
+✅ Apenas 30 vagas!
+
+📅 Julho de 2026 | Itapipoca-CE
+💰 R$ 199 ou 3x de R$ 66,33
+
+👉 Inscrição aqui: https://itatecnologiaeducacional.tech/curso-ferias.html
+
+Qualquer dúvida, me chama aqui mesmo! Bora preparar nossos jovens para o futuro? 🚀</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Mensagem</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Mensagem 2 — Follow-up (Quem Demonstrou Interesse)</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Follow-up</span>
+          <span class="tag tag-blue">Contato individual — 3 dias após o primeiro contato</span>
+        </div>
+      </div>
+      <div class="info-box">💡 Envie individualmente para quem clicou no link mas não se inscreveu, ou quem disse "vou pensar".</div>
+      <div class="label">Mensagem Completa</div>
+      <div class="copy-block">Oi! Tudo certo? 😊
+
+Passei aqui rapidinho pra saber se você viu as informações do curso de férias de robótica!
+
+Sei que você está pensando e quero te ajudar a decidir. Posso responder qualquer dúvida que você tiver:
+
+❓ Como é a metodologia?
+❓ Meu filho nunca teve contato com tecnologia — dá pra participar?
+❓ O que exatamente eles levam pra casa?
+❓ Tem como parcelar?
+
+Sobre a última pergunta: SIM! 3x de R$ 66,33 sem juros! 💳
+
+O curso começa em julho e as vagas estão diminuindo. São só 30 no total — a turma é pequena justamente pra garantir atenção pra cada aluno. 🎯
+
+Me fala: o que está impedindo a inscrição? Me conta que a gente resolve juntos! ✊
+
+👉 Link direto: https://itatecnologiaeducacional.tech/inscricao/formulario/</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Mensagem</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Mensagem 3 — Urgência: Últimas Vagas</div>
+        <div class="card-meta">
+          <span class="tag tag-red">URGÊNCIA</span>
+          <span class="tag tag-blue">Enviar quando restar menos de 10 vagas</span>
+        </div>
+      </div>
+      <div class="info-box">💡 Use quando sobrar menos de 10 vagas. Envie para todos os contatos que demonstraram interesse mas ainda não se inscreveram.</div>
+      <div class="label">Mensagem Completa</div>
+      <div class="copy-block red">⚠️ AVISO IMPORTANTE — ÚLTIMAS VAGAS!
+
+[NOME], preciso te avisar: estamos com as últimas vagas do curso ALUNOS MAKER NÃO TIRAM FÉRIAS!
+
+Quando fechar, não tem como entrar mais. Não tem lista de espera. 😬
+
+Sei que você estava interessado(a) e não quero que seu filho fique de fora por falta de informação.
+
+📌 O que está incluído:
+→ 5 dias de Robótica, Arduino e ESP32
+→ Projeto real para casa
+→ Certificado oficial
+→ Metodologia 100% prática
+→ Turma pequena: atenção individualizada
+
+💰 R$ 199 à vista ou 3x de R$ 66,33
+📅 Julho de 2026 | Itapipoca-CE
+
+👉 GARANTA AGORA:
+https://itatecnologiaeducacional.tech/inscricao/formulario/
+
+📞 Ou me liga/chama: (88) 9 8841-1890
+
+Esse pode ser o passo que muda o futuro do seu filho. Não deixa passar! 🚀</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Mensagem</button>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 3: FACEBOOK ========== -->
+  <section class="section" id="sec3">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div>
+        <div class="section-title">Posts para Facebook</div>
+        <div class="section-sub">3 posts com foco em pais (35-50 anos) e benefícios de longo prazo</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Facebook Post 1 — Lançamento do Curso</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Lançamento</span>
+          <span class="tag tag-blue">Horário: 19h de segunda-feira</span>
+        </div>
+      </div>
+      <div class="label">Texto Completo</div>
+      <div class="copy-block">INSCRIÇÕES ABERTAS — Curso de Férias de Robótica em Itapipoca!
+
+A ITA Tecnologia Educacional tem o prazer de anunciar a abertura das inscrições para o curso "ALUNOS MAKER NÃO TIRAM FÉRIAS", uma oportunidade única para jovens de 11 a 17 anos de Itapipoca e região.
+
+Em 5 dias intensivos de aprendizado, seu filho ou filha terá contato direto com:
+
+🔧 Arduino — a plataforma de eletrônica mais usada do mundo
+🌐 ESP32 — tecnologia de Internet das Coisas (IoT)
+💻 Programação prática — sem decorar, construindo projetos reais
+🏆 Demo Day — apresentação do projeto para a família com certificado
+
+Por que investir em educação tecnológica nas férias?
+
+Segundo o Fórum Econômico Mundial, as profissões mais demandadas em 2030 ainda não existem. Mas todas terão um ponto em comum: a habilidade de trabalhar com tecnologia. Criança que aprende a programar hoje aprende a RESOLVER PROBLEMAS, a pensar de forma estruturada, a criar soluções — habilidades que valem em qualquer carreira.
+
+📍 Local: Itapipoca, Ceará
+📅 Período: Julho de 2026 (5 dias)
+👥 Público: Jovens de 11 a 17 anos
+💰 Investimento: R$ 199,00 (ou 3x de R$ 66,33 sem juros)
+⚠️ Vagas: APENAS 30 — turma intencional pequena para garantir qualidade
+
+Acesse o link para se inscrever ou obter mais informações:
+👉 https://itatecnologiaeducacional.tech/curso-ferias.html
+
+Dúvidas? WhatsApp: (88) 9 8841-1890 | E-mail: itagamificaedu@gmail.com
+
+Compartilhe! Você pode estar ajudando uma família a tomar a melhor decisão do ano. 🙏</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Post Facebook</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Facebook Post 2 — Benefícios para a Carreira e Universidade</div>
+        <div class="card-meta">
+          <span class="tag tag-orange">Educativo</span>
+          <span class="tag tag-blue">Horário: 20h de quarta-feira</span>
+        </div>
+      </div>
+      <div class="label">Texto Completo</div>
+      <div class="copy-block">O QUE UM CURSO DE ROBÓTICA NAS FÉRIAS MUDA NA VIDA DO SEU FILHO?
+
+Muitos pais me perguntam: "vale a pena investir em robótica para um jovem de 13 anos?"
+
+Deixa eu te contar o que a ciência e o mercado dizem.
+
+📊 DADOS QUE FALAM POR SI:
+
+• Jovens que aprendem programação antes dos 18 anos têm 3x mais chances de ingressar em cursos de exatas na universidade pública (ENEM/FIES)
+• Habilidades em Arduino e IoT já são critério de seleção em estágios de tecnologia para ensino médio
+• O setor de tecnologia no Nordeste cresceu 42% nos últimos 3 anos — a demanda local já é real
+• Lógica de programação melhora o desempenho em matemática, física e interpretação de texto
+
+🎯 O QUE MUDA NO DIA A DIA:
+
+→ Seu filho passa a pensar em SOLUÇÕES, não só em problemas
+→ A disciplina e paciência necessárias na eletrônica se transferem para os estudos
+→ A confiança de ter CONSTRUÍDO algo real é transformadora
+→ Abre portas para olimpíadas de ciência, feiras de inovação e bolsas
+
+NO CURSO ALUNOS MAKER NÃO TIRAM FÉRIAS:
+
+✅ 5 dias de imersão em Robótica, Arduino e ESP32
+✅ Projeto real que o aluno monta e leva pra casa
+✅ Certificado oficial ITA Tecnologia Educacional
+✅ Apenas 30 vagas — turma pequena e personalizada
+✅ R$ 199 ou 3x de R$ 66,33 — sem juros
+
+Julho de 2026 | Itapipoca-CE
+
+Inscrições: https://itatecnologiaeducacional.tech/inscricao/formulario/
+WhatsApp: (88) 9 8841-1890
+
+Marque um pai ou mãe que precisa ver isso! 👇</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Post Facebook</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Facebook Post 3 — Últimas Vagas / Urgência para Pais</div>
+        <div class="card-meta">
+          <span class="tag tag-red">Urgência</span>
+          <span class="tag tag-blue">Horário: 12h de sexta-feira</span>
+        </div>
+      </div>
+      <div class="label">Texto Completo</div>
+      <div class="copy-block">UMA MENSAGEM DIRETA PARA OS PAIS DE ITAPIPOCA
+
+Prezados pais e responsáveis,
+
+Estamos encerrando as inscrições do curso ALUNOS MAKER NÃO TIRAM FÉRIAS com poucas vagas restantes.
+
+Entendo que as decisões de onde investir o tempo e o dinheiro dos filhos nunca são simples. Por isso, quero ser direto com vocês.
+
+O QUE GARANTO A VOCÊS:
+
+✔️ Um ambiente seguro, organizado e estimulante
+✔️ Instrutores com experiência em ensino de tecnologia para jovens
+✔️ Metodologia 100% prática — o aluno aprende fazendo, não decorando
+✔️ Turma pequena (máximo 30 alunos) para atenção personalizada
+✔️ Um projeto real nas mãos ao final dos 5 dias
+✔️ Certificado reconhecido pela ITA Tecnologia Educacional
+
+O QUE PEÇO:
+
+Uma chance de mostrar que educação tecnológica de qualidade também existe no interior do Ceará. Que Itapipoca não precisa ficar para trás.
+
+Seu filho tem entre 11 e 17 anos? Tem curiosidade por tecnologia, eletrônica ou jogos? Esse curso foi feito para ele.
+
+INFORMAÇÕES:
+📅 Julho de 2026 | Itapipoca, Ceará
+💰 R$ 199 à vista ou 3x de R$ 66,33
+⚠️ Vagas limitadas a 30 alunos
+
+Inscrições: https://itatecnologiaeducacional.tech/inscricao/formulario/
+WhatsApp: (88) 9 8841-1890
+
+Com respeito,
+ITA Tecnologia Educacional</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Post Facebook</button>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 4: FLYER ========== -->
+  <section class="section" id="sec4">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div>
+        <div class="section-title">Flyer para Imprimir</div>
+        <div class="section-sub">Flyer A4 para escolas, comércios e pontos de ônibus</div>
+      </div>
+    </div>
+
+    <div class="info-box">💡 Para imprimir: use Ctrl+P nesta página e selecione "Imprimir somente esta seção", ou copie o HTML do flyer. Substitua o placeholder do QR code pela imagem gerada em https://qr.io apontando para https://itatecnologiaeducacional.tech/curso-ferias.html</div>
+
+    <div class="flyer-preview">
+      <div class="flyer-logo-area">
+        🤖 ITA TECNOLOGIA EDUCACIONAL
+      </div>
+
+      <div class="flyer-vagas">⚠️ APENAS 30 VAGAS</div>
+
+      <div class="flyer-title">ALUNOS MAKER</div>
+      <div class="flyer-subtitle">NÃO TIRAM FÉRIAS</div>
+
+      <div class="flyer-icons">🤖 ⚡ 💻 🔧</div>
+
+      <div class="flyer-techs">
+        <span class="flyer-tech-badge">Arduino</span>
+        <span class="flyer-tech-badge">ESP32</span>
+        <span class="flyer-tech-badge">Robótica</span>
+        <span class="flyer-tech-badge">IoT</span>
+        <span class="flyer-tech-badge">Programação</span>
+      </div>
+
+      <div class="flyer-info-grid">
+        <div class="flyer-info-box">
+          <div class="flyer-info-label">Público</div>
+          <div class="flyer-info-value">11 a 17 anos</div>
+        </div>
+        <div class="flyer-info-box">
+          <div class="flyer-info-label">Duração</div>
+          <div class="flyer-info-value">5 dias intensivos</div>
+        </div>
+        <div class="flyer-info-box">
+          <div class="flyer-info-label">Período</div>
+          <div class="flyer-info-value">Julho de 2026</div>
+        </div>
+        <div class="flyer-info-box">
+          <div class="flyer-info-label">Local</div>
+          <div class="flyer-info-value">Itapipoca-CE</div>
+        </div>
+      </div>
+
+      <div class="flyer-price-box">
+        <div class="flyer-price-label">INVESTIMENTO</div>
+        <div class="flyer-price-value">R$ 199</div>
+        <div class="flyer-price-parcela">ou 3x de R$ 66,33 sem juros no cartão</div>
+      </div>
+
+      <div style="font-size:0.82rem; color: var(--orange-light); margin-bottom:14px; line-height:1.6;">
+        ✅ Projeto real para levar pra casa &nbsp;|&nbsp; ✅ Certificado oficial &nbsp;|&nbsp; ✅ Turma pequena
+      </div>
+
+      <div class="flyer-qr-area">
+        <div>
+          <div class="flyer-qr-box">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https://itatecnologiaeducacional.tech/curso-ferias.html" alt="QR Code Inscrição" />
+          </div>
+          <div class="flyer-qr-label">Aponte a câmera<br>pra se inscrever</div>
+        </div>
+        <div style="text-align:left; flex:1; min-width:160px;">
+          <div style="font-size:0.78rem; color:var(--gray); margin-bottom:6px;">MAIS INFORMAÇÕES</div>
+          <div style="font-size:0.88rem; line-height:2;">
+            📱 <strong style="color:var(--orange)">(88) 9 8841-1890</strong><br>
+            ✉️ itagamificaedu@gmail.com<br>
+            🌐 itatecnologiaeducacional.tech
+          </div>
+        </div>
+      </div>
+
+      <div class="flyer-contact">
+        <strong>📲 WhatsApp: (88) 9 8841-1890</strong><br>
+        <span style="font-size:0.82rem; color:var(--gray);">Vagas preenchidas por ordem de inscrição. Não perca!</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 5: RÁDIO ========== -->
+  <section class="section" id="sec5">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div>
+        <div class="section-title">Scripts para Rádio Local</div>
+        <div class="section-sub">2 peças de 30 segundos — tom animado, jovem e urgente</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Peça de Rádio 1 — Versão Jovem e Animada</div>
+        <div class="card-meta">
+          <span class="tag tag-purple">30 segundos</span>
+          <span class="tag tag-orange">Tom jovem e enérgico</span>
+        </div>
+      </div>
+      <div class="radio-script">
+        <div class="radio-time">⏱ 30 SEGUNDOS — NARRADOR(A) JOVEM, VOZ ANIMADA, TRILHA ELETRÔNICA AO FUNDO</div>
+        <div class="copy-block purple">— E aí, Itapipoca! Chegou o verão... mas tem jovem aqui que não vai perder tempo!
+
+[TRILHA SOBE]
+
+O ALUNOS MAKER NÃO TIRAM FÉRIAS é o curso de robótica que vai deixar seu filho montando projetos reais de Arduino e ESP32 em apenas 5 dias!
+
+Certificado garantido! Projeto pra levar pra casa! E só trinta vagas no total!
+
+O investimento é só cento e noventa e nove reais — ou três vezes de sessenta e seis reais e trinta e três!
+
+[TRILHA DESTAQUE]
+
+Garante a vaga pelo WhatsApp: oitenta e oito, nove, oito oito quatro um, um oito nove zero!
+
+Repito: oitenta e oito, nove, oito oito quatro um, um oito nove zero!
+
+ITA Tecnologia Educacional — porque o futuro começa em Itapipoca!</div>
+      </div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Script</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Peça de Rádio 2 — Versão Pais / Tom Familiar</div>
+        <div class="card-meta">
+          <span class="tag tag-purple">30 segundos</span>
+          <span class="tag tag-orange">Tom carinhoso e urgente</span>
+        </div>
+      </div>
+      <div class="radio-script">
+        <div class="radio-time">⏱ 30 SEGUNDOS — NARRADOR(A) ADULTO, VOZ QUENTE, TRILHA SUAVE COM ACELERAÇÃO NO FINAL</div>
+        <div class="copy-block purple">— Pai, mãe... as férias de julho chegando e seu filho em casa sem fazer nada?
+
+[PAUSA]
+
+A ITA Tecnologia Educacional de Itapipoca tem a solução!
+
+O curso ALUNOS MAKER NÃO TIRAM FÉRIAS: cinco dias intensivos de robótica, Arduino e programação para jovens de onze a dezessete anos.
+
+Seu filho sai com um projeto montado nas mãos e certificado na mochila!
+
+[TRILHA SOBE]
+
+Apenas trinta vagas! Valor especial de cento e noventa e nove reais ou três parcelas sem juros!
+
+Ligue agora: oitenta e oito, nove, oito oito quatro um, um oito nove zero.
+
+Novamente: oitenta e oito, nove, oito oito quatro um, um oito nove zero.
+
+ITA Tecnologia Educacional — preparando os makers do futuro aqui mesmo em Itapipoca!</div>
+      </div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar Script</button>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 6: TV / VÍDEO ========== -->
+  <section class="section" id="sec6">
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <div>
+        <div class="section-title">Script para TV / Vídeo</div>
+        <div class="section-sub">Roteiro cena a cena — 45 segundos — produção local</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Roteiro Completo — 45 segundos</div>
+        <div class="card-meta">
+          <span class="tag tag-purple">45 segundos</span>
+          <span class="tag tag-orange">7 cenas</span>
+          <span class="tag tag-blue">Produção local possível</span>
+        </div>
+      </div>
+      <div class="info-box">💡 Pode ser gravado com celular de boa qualidade + boa luz natural. Editar no CapCut ou DaVinci Resolve (gratuito).</div>
+
+      <div class="scene">
+        <div class="scene-num">01</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (0-5s)</div>
+          <div class="scene-image">Close em um jovem de 13-14 anos olhando o celular entediado no sofá. Luz de TV batendo no rosto. Expressão vazia.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"Mais um verão passando... fazendo nada."</div>
+        </div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">02</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (5-12s)</div>
+          <div class="scene-image">CORTE RÁPIDO — mesmo jovem agora em uma bancada, animado, conectando fios em uma placa Arduino. Outros jovens ao redor, todos focados. Ambiente de laboratório simples mas organizado.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"E se esse tempo virasse o começo do seu futuro?"</div>
+        </div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">03</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (12-20s)</div>
+          <div class="scene-image">Sequência rápida (3 clips de 2s): 1) Mãos programando no computador, tela mostrando código. 2) LED acendendo em uma placa. 3) Jovem sorrindo ao ver o projeto funcionar. Trilha eletrônica animada.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"No curso ALUNOS MAKER NÃO TIRAM FÉRIAS, jovens de 11 a 17 anos constroem projetos reais de robótica, Arduino e IoT em 5 dias intensivos."</div>
+        </div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">04</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (20-27s)</div>
+          <div class="scene-image">Aluno segurando o projeto finalizado (pequeno robô ou circuito) e sorrindo para a câmera. Ao fundo, outros colegas e um instrutor.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"Cada aluno sai com um projeto nas mãos e um certificado no bolso."</div>
+        </div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">05</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (27-33s)</div>
+          <div class="scene-image">Pai ou mãe observando o filho apresentar o projeto. Expressão de orgulho. Aperto de mão ou abraço ao receber o certificado.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"Julho de 2026, aqui em Itapipoca. Apenas 30 vagas."</div>
+        </div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">06</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (33-40s)</div>
+          <div class="scene-image">Cartela com fundo escuro. Texto animado aparecendo: "R$ 199" em grande, laranja. Abaixo: "ou 3x de R$ 66,33". Logo ITA no canto.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"Por apenas cento e noventa e nove reais — ou três parcelas sem juros. Porque educação boa também existe no interior do Ceará."</div>
+        </div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">07</div>
+        <div class="scene-content">
+          <div class="scene-label">IMAGEM (40-45s)</div>
+          <div class="scene-image">Cartela final com logo ITA grande. Número de WhatsApp em destaque com ícone. URL do site. Fundo escuro, laranja vibrante. Trilha finaliza com impacto.</div>
+          <div class="scene-label">NARRAÇÃO</div>
+          <div class="scene-narration">"ITA Tecnologia Educacional. WhatsApp: oitenta e oito, nove, oito oito quatro um, um oito nove zero. Garante a vaga do seu filho agora!"</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== SEÇÃO 7: E-MAIL ESCOLAS ========== -->
+  <section class="section" id="sec7">
+    <div class="section-header">
+      <div class="section-num">07</div>
+      <div>
+        <div class="section-title">E-mail para Escolas Parceiras</div>
+        <div class="section-sub">Para diretores de escolas municipais e estaduais de Itapipoca</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Modelo de E-mail — Pedido de Parceria e Divulgação</div>
+        <div class="card-meta">
+          <span class="tag tag-blue">E-mail formal</span>
+          <span class="tag tag-orange">Para diretores e coordenadores</span>
+        </div>
+      </div>
+      <div class="label">Assunto do E-mail</div>
+      <div class="copy-block green">Parceria Educacional — Curso de Férias de Robótica para Alunos de Itapipoca | ITA Tecnologia Educacional</div>
+      <div class="label">Corpo do E-mail</div>
+      <div class="copy-block">Prezado(a) [Nome do(a) Diretor(a) / Coordenador(a)],
+
+Cumprimentos da ITA Tecnologia Educacional!
+
+Meu nome é [SEU NOME] e represento a ITA Tecnologia Educacional, empresa de educação tecnológica sediada em Itapipoca, Ceará, dedicada a democratizar o acesso ao ensino de ciência, tecnologia, engenharia e matemática (STEM) para jovens da nossa região.
+
+O motivo do meu contato é solicitar a gentileza de sua parceria para a divulgação do nosso curso de férias:
+
+ALUNOS MAKER NÃO TIRAM FÉRIAS
+Curso intensivo de Robótica, Arduino e ESP32
+
+🎯 PÚBLICO-ALVO: Jovens de 11 a 17 anos
+📅 PERÍODO: Julho de 2026 (5 dias)
+📍 LOCAL: Itapipoca, Ceará
+💰 INVESTIMENTO: R$ 199,00 (ou 3x de R$ 66,33 sem juros)
+📜 CERTIFICADO: Oficial ITA Tecnologia Educacional
+👥 VAGAS: 30 (turma pequena e personalizada)
+
+SOBRE O CURSO:
+
+O programa oferece uma imersão prática em robótica e programação, onde cada aluno desenvolve um projeto real do início ao fim. Ao longo dos 5 dias, os jovens trabalham com Arduino, ESP32 e fundamentos de IoT (Internet das Coisas), utilizando metodologia maker baseada em aprendizagem por projeto — amplamente reconhecida como superior às abordagens tradicionais para engajamento juvenil.
+
+No último dia, os alunos apresentam seus projetos em um Demo Day aberto aos familiares e recebem o certificado oficial.
+
+PEDIDO:
+
+Gostaríamos de solicitar:
+
+1. Autorização para distribuir nossos flyers nos murais e na secretaria da escola
+2. Divulgação no grupo de WhatsApp de pais e responsáveis (se houver)
+3. Menção em avisos ou informativos escolares, caso julgue pertinente
+
+Em contrapartida, a ITA Tecnologia Educacional se compromete a:
+
+✅ Mencionar a escola parceira em nossas redes sociais
+✅ Emitir declaração de parceria educacional
+✅ Oferecer condição especial de desconto para alunos da instituição (mediante consulta)
+
+Seguem em anexo o flyer do curso e o nosso material de apresentação institucional.
+
+Ficamos à disposição para uma conversa presencial, por telefone ou por videochamada, conforme sua disponibilidade.
+
+Atenciosamente,
+
+[SEU NOME]
+ITA Tecnologia Educacional
+📱 (88) 9 8841-1890
+✉️ itagamificaedu@gmail.com
+🌐 https://itatecnologiaeducacional.tech</div>
+      <button class="copy-btn" onclick="copyText(this)">📋 Copiar E-mail</button>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 8: CALENDÁRIO ========== -->
+  <section class="section" id="sec8">
+    <div class="section-header">
+      <div class="section-num">08</div>
+      <div>
+        <div class="section-title">Calendário de Publicação</div>
+        <div class="section-sub">4 semanas de conteúdo estratégico antes do início do curso em julho</div>
+      </div>
+    </div>
+
+    <div class="info-box">💡 Referência: O curso acontece em julho de 2026. As 4 semanas de campanha intensa começam em 1 de junho. Adapte as datas exatas conforme definir o período do curso.</div>
+
+    <!-- SEMANA 1 -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Semana 1 — 1 a 7 de Junho: LANÇAMENTO</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Canal</th>
+              <th>Tipo de Conteúdo</th>
+              <th>Horário Ideal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-day">Segunda 01/06</td>
+              <td class="td-canal">Instagram Feed</td>
+              <td>Post 1 — Abertura das Inscrições</td>
+              <td class="td-hora">19h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Segunda 01/06</td>
+              <td class="td-canal">Facebook</td>
+              <td>Facebook Post 1 — Lançamento</td>
+              <td class="td-hora">19h30</td>
+            </tr>
+            <tr>
+              <td class="td-day">Segunda 01/06</td>
+              <td class="td-canal">WhatsApp</td>
+              <td>Mensagem 1 — Primeiro Contato (grupos)</td>
+              <td class="td-hora">20h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Terça 02/06</td>
+              <td class="td-canal">Instagram Story</td>
+              <td>Contagem regressiva "30 vagas abertas"</td>
+              <td class="td-hora">09h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quarta 03/06</td>
+              <td class="td-canal">Instagram Reels</td>
+              <td>Post 4 — Dia 3: IoT e ESP32</td>
+              <td class="td-hora">19h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quinta 04/06</td>
+              <td class="td-canal">E-mail</td>
+              <td>Envio e-mail para 3 escolas parceiras</td>
+              <td class="td-hora">08h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sexta 05/06</td>
+              <td class="td-canal">Instagram Feed</td>
+              <td>Post 2 — Dia 1: Arduino e Mundo Maker</td>
+              <td class="td-hora">18h30</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sábado 06/06</td>
+              <td class="td-canal">WhatsApp</td>
+              <td>Mensagem 2 — Follow-up para interessados</td>
+              <td class="td-hora">10h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sábado 06/06</td>
+              <td class="td-canal">Rádio</td>
+              <td>Veicular Peça de Rádio 1 (1ª inserção)</td>
+              <td class="td-hora">07h e 12h</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEMANA 2 -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Semana 2 — 8 a 14 de Junho: CONTEÚDO EDUCATIVO</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Canal</th>
+              <th>Tipo de Conteúdo</th>
+              <th>Horário Ideal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-day">Segunda 08/06</td>
+              <td class="td-canal">Instagram Feed</td>
+              <td>Post 3 — Dia 2: Sensores e Lógica</td>
+              <td class="td-hora">18h30</td>
+            </tr>
+            <tr>
+              <td class="td-day">Terça 09/06</td>
+              <td class="td-canal">Facebook</td>
+              <td>Facebook Post 2 — Benefícios carreira/universidade</td>
+              <td class="td-hora">20h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quarta 10/06</td>
+              <td class="td-canal">Instagram Carrossel</td>
+              <td>Post 5 — Dia 4: Construção do Projeto</td>
+              <td class="td-hora">20h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quinta 11/06</td>
+              <td class="td-canal">Instagram Story</td>
+              <td>"Você sabe o que é ESP32?" — Quiz interativo</td>
+              <td class="td-hora">12h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sexta 12/06</td>
+              <td class="td-canal">Instagram Feed</td>
+              <td>Post 6 — Dia 5: Demo Day e Certificação</td>
+              <td class="td-hora">18h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sábado 13/06</td>
+              <td class="td-canal">Rádio</td>
+              <td>Veicular Peça de Rádio 2 (para pais)</td>
+              <td class="td-hora">07h e 17h</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sábado 13/06</td>
+              <td class="td-canal">Flyers</td>
+              <td>Distribuição em escolas e comércios</td>
+              <td class="td-hora">Manhã</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEMANA 3 -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Semana 3 — 15 a 21 de Junho: DEPOIMENTOS E BASTIDORES</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Canal</th>
+              <th>Tipo de Conteúdo</th>
+              <th>Horário Ideal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-day">Segunda 15/06</td>
+              <td class="td-canal">Instagram Story</td>
+              <td>Post 7 — Depoimento jovem (simulado)</td>
+              <td class="td-hora">19h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Terça 16/06</td>
+              <td class="td-canal">WhatsApp</td>
+              <td>Mensagem 2 — Follow-up (rodada 2)</td>
+              <td class="td-hora">10h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quarta 17/06</td>
+              <td class="td-canal">Instagram Feed</td>
+              <td>Post 8 — Depoimento de mãe/pai</td>
+              <td class="td-hora">20h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quinta 18/06</td>
+              <td class="td-canal">Instagram Story</td>
+              <td>Bastidores: "Como é a sala do curso?"</td>
+              <td class="td-hora">19h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sexta 19/06</td>
+              <td class="td-canal">Facebook</td>
+              <td>Compartilhar depoimento com texto longo</td>
+              <td class="td-hora">18h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sábado 20/06</td>
+              <td class="td-canal">Rádio</td>
+              <td>Ambas as peças (rodízio diário)</td>
+              <td class="td-hora">07h, 12h e 17h</td>
+            </tr>
+            <tr>
+              <td class="td-day">Domingo 21/06</td>
+              <td class="td-canal">Instagram Reels</td>
+              <td>"3 razões pra não perder esse curso" — Reels rápido</td>
+              <td class="td-hora">18h00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEMANA 4 -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Semana 4 — 22 a 30 de Junho: URGÊNCIA E ÚLTIMAS VAGAS</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Canal</th>
+              <th>Tipo de Conteúdo</th>
+              <th>Horário Ideal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-day">Segunda 22/06</td>
+              <td class="td-canal">Instagram Feed + Story</td>
+              <td>Post 9 — Urgência: Últimas Vagas</td>
+              <td class="td-hora">12h e 20h</td>
+            </tr>
+            <tr>
+              <td class="td-day">Segunda 22/06</td>
+              <td class="td-canal">Facebook</td>
+              <td>Facebook Post 3 — Urgência para pais</td>
+              <td class="td-hora">12h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Terça 23/06</td>
+              <td class="td-canal">WhatsApp</td>
+              <td>Mensagem 3 — Urgência a todos os interessados</td>
+              <td class="td-hora">09h e 19h</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quarta 24/06</td>
+              <td class="td-canal">Rádio</td>
+              <td>Peça de Rádio 1 — aumento de inserções</td>
+              <td class="td-hora">07h, 12h e 18h</td>
+            </tr>
+            <tr>
+              <td class="td-day">Quinta 25/06</td>
+              <td class="td-canal">Instagram Story</td>
+              <td>"X vagas restantes" — atualizar diariamente</td>
+              <td class="td-hora">09h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sexta 26/06</td>
+              <td class="td-canal">Instagram Feed</td>
+              <td>Post "Inscrições encerram em breve!" — arte simples e urgente</td>
+              <td class="td-hora">18h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Sábado 27/06</td>
+              <td class="td-canal">WhatsApp + Instagram</td>
+              <td>Contagem regressiva — "últimas 72 horas"</td>
+              <td class="td-hora">10h00</td>
+            </tr>
+            <tr>
+              <td class="td-day">Segunda 29/06</td>
+              <td class="td-canal">Todos os canais</td>
+              <td>ENCERRAMENTO DAS INSCRIÇÕES — post de fechamento</td>
+              <td class="td-hora">20h00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========== SEÇÃO 9: CHECKLIST ========== -->
+  <section class="section" id="sec9">
+    <div class="section-header">
+      <div class="section-num">09</div>
+      <div>
+        <div class="section-title">Checklist de Divulgação</div>
+        <div class="section-sub">Tudo que precisa ser feito para executar a campanha com sucesso</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Redes Sociais</div>
+        <ul class="checklist">
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Instagram</span>
+              Criar ou otimizar perfil @cluberobotica.ita — foto de perfil logo ITA, bio com link do curso
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Instagram</span>
+              Adicionar link de inscrição na bio: https://itatecnologiaeducacional.tech/curso-ferias.html
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Facebook</span>
+              Criar Página do Facebook "ITA Tecnologia Educacional" com dados completos
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Facebook</span>
+              Entrar em grupos locais de Itapipoca no Facebook para divulgar (grupos de compra/venda, grupos de pais, etc.)
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Instagram / Facebook</span>
+              Criar destaques no Instagram: "Sobre o Curso", "Inscrições", "Depoimentos", "FAQ"
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">WhatsApp</div>
+        <ul class="checklist">
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">WhatsApp Business</span>
+              Instalar WhatsApp Business no número (88) 9 8841-1890 com mensagem automática de boas-vindas
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">WhatsApp</span>
+              Criar grupo "Curso Maker Férias 2026" para alunos inscritos
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">WhatsApp</span>
+              Montar lista de transmissão com todos os contatos de pais e responsáveis conhecidos
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">WhatsApp Business</span>
+              Configurar catálogo de serviços no WhatsApp Business com informações do curso
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Material Impresso</div>
+        <ul class="checklist">
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Flyer</span>
+              Imprimir mínimo 200 flyers em papel couché (gráfica local ou em Fortaleza)
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Flyer</span>
+              Gerar QR Code em https://qr.io apontando para a página do curso e inserir no flyer
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Distribuição</span>
+              Distribuir flyers na EEMTI e demais escolas estaduais de Itapipoca
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Distribuição</span>
+              Colocar flyers em farmácias, supermercados, papelarias e lanchonetes do centro
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Distribuição</span>
+              Distribuir nas proximidades das escolas no horário de saída (11h30 e 17h30)
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Rádio e TV</div>
+        <ul class="checklist">
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Rádio</span>
+              Entrar em contato com Rádio Tupinambá e demais rádios locais de Itapipoca para veiculação
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Rádio</span>
+              Negociar pacote de inserções: mínimo 3x por dia por 2 semanas
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">TV / Vídeo</span>
+              Gravar vídeo de 45 segundos conforme roteiro da Seção 6 (celular + boa luz)
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">TV / Vídeo</span>
+              Editar vídeo no CapCut ou DaVinci Resolve com trilha e legendas
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">TV / Vídeo</span>
+              Publicar vídeo no Reels, Stories e YouTube Shorts
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Escolas e Parceiros</div>
+        <ul class="checklist">
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">E-mail</span>
+              Enviar e-mail modelo (Seção 7) para pelo menos 5 escolas da região
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Visita</span>
+              Agendar visita presencial a 2 ou 3 escolas-chave com material impresso
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Parceria</span>
+              Contatar pastores/padres de igrejas locais para mencionar no aviso comunitário
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Parceria</span>
+              Falar com donos de cursos de idiomas e reforço escolar para indicação
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Operacional</div>
+        <ul class="checklist">
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Site</span>
+              Verificar se o link de inscrição está funcionando: https://itatecnologiaeducacional.tech/inscricao/formulario/
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Site</span>
+              Verificar se a landing page do curso está online: https://itatecnologiaeducacional.tech/curso-ferias.html
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Canva</span>
+              Criar conta no Canva (gratuito) e preparar os 10 artes do Instagram seguindo as descrições visuais
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Agendamento</span>
+              Usar o Meta Business Suite para agendar posts do Instagram e Facebook com antecedência
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Planilha</span>
+              Criar planilha de controle de inscrições com: nome, idade, contato, forma de pagamento
+            </div>
+          </li>
+          <li>
+            <div class="check-box"></div>
+            <div>
+              <span class="check-cat">Confirmação</span>
+              Configurar mensagem automática de confirmação de inscrição no WhatsApp Business
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div><!-- end grid -->
+
+  </section>
+
+</div><!-- end main -->
+
+<!-- ========== FOOTER ========== -->
+<div style="background: var(--bg2); border-top: 2px solid rgba(245,166,35,0.2); text-align:center; padding: 30px 20px; margin-top:40px;">
+  <div style="font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--orange); letter-spacing:2px; margin-bottom:8px;">
+    ITA TECNOLOGIA EDUCACIONAL
+  </div>
+  <div style="font-size:0.85rem; color:var(--gray); line-height:2;">
+    📱 (88) 9 8841-1890 &nbsp;|&nbsp; ✉️ itagamificaedu@gmail.com &nbsp;|&nbsp; 🌐 itatecnologiaeducacional.tech<br>
+    📍 Itapipoca, Ceará, Brasil &nbsp;|&nbsp; Alunos Maker Não Tiram Férias — Julho de 2026
+  </div>
+  <div style="font-size:0.72rem; color:rgba(156,163,175,0.5); margin-top:16px;">
+    Kit de Marketing gerado em maio de 2026 — Uso exclusivo ITA Tecnologia Educacional
+  </div>
+</div>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+  function copyText(btn) {
+    const card = btn.closest('.card') || btn.closest('.radio-script') || btn.parentElement;
+    // Find the nearest copy-block before or above the button
+    const blocks = card.querySelectorAll('.copy-block');
+    let targetBlock = null;
+    blocks.forEach(b => {
+      if (b.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING) {
+        targetBlock = b;
+      }
+    });
+    if (!targetBlock && blocks.length > 0) targetBlock = blocks[blocks.length - 1];
+    if (!targetBlock) return;
+
+    const text = targetBlock.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.innerHTML;
+      btn.innerHTML = '✅ Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const original = btn.innerHTML;
+      btn.innerHTML = '✅ Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

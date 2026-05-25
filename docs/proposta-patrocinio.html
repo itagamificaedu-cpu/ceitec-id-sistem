@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposta de Patrocínio — Alunos Maker Não Tiram Férias</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       RESET E BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:   #F5A623;
+      --gold2:  #FFD166;
+      --bg:     #0A0E1A;
+      --bg2:    #0F1525;
+      --bg3:    #151C30;
+      --glass:  rgba(245,166,35,0.07);
+      --border: rgba(245,166,35,0.20);
+      --text:   #E8EAF0;
+      --muted:  #8B93A8;
+      --white:  #FFFFFF;
+      --green:  #4CAF50;
+      --radius: 12px;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 0.05em;
+      color: var(--white);
+    }
+
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ============================================================
+       PÁGINAS (A4)
+    ============================================================ */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 24px;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 14mm 16mm 18mm;
+      border: 1px solid var(--border);
+    }
+
+    /* ============================================================
+       RODAPÉ GLOBAL
+    ============================================================ */
+    .page-footer {
+      margin-top: auto;
+      padding-top: 10mm;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .page-footer span { font-family: 'Space Grotesk', sans-serif; }
+    .page-footer .footer-brand { color: var(--gold); font-weight: 600; }
+
+    /* ============================================================
+       ELEMENTOS COMPARTILHADOS
+    ============================================================ */
+    .gold { color: var(--gold); }
+    .gold2 { color: var(--gold2); }
+    .muted { color: var(--muted); }
+
+    .tag {
+      display: inline-block;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.06em;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .section-title .line { color: var(--gold); }
+
+    .section-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .divider {
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+      border: none;
+      margin: 16px 0;
+      border-radius: 2px;
+    }
+
+    /* Glassmorphism card */
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .card-sm {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    /* Grid utilitários */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+
+    /* Checklist */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .checklist li { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; }
+    .checklist li::before {
+      content: "✓";
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Highlight box */
+    .highlight-box {
+      border-left: 3px solid var(--gold);
+      padding: 10px 14px;
+      background: rgba(245,166,35,0.05);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+    }
+
+    /* ============================================================
+       PÁGINA 1 — CAPA
+    ============================================================ */
+    .cover {
+      background: var(--bg);
+      padding: 0;
+      justify-content: stretch;
+    }
+
+    .cover-top-bar {
+      background: linear-gradient(135deg, #0F1525 0%, #1A2240 100%);
+      padding: 16px 20mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .cover-logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.1em;
+      color: var(--white);
+    }
+
+    .cover-logo-text span { color: var(--gold); }
+
+    .cover-tagline-small {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .cover-hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20mm 18mm;
+      text-align: center;
+      position: relative;
+    }
+
+    /* decoração geométrica de fundo */
+    .cover-hero::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cover-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .cover-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 58px;
+      line-height: 1;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .cover-title .accent { color: var(--gold); }
+
+    .cover-subtitle {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.12em;
+      color: var(--gold2);
+      margin-bottom: 20px;
+    }
+
+    .cover-desc {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 380px;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .cover-badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .cover-badge {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+    }
+
+    .cover-cta {
+      background: linear-gradient(135deg, var(--gold) 0%, #E8940F 100%);
+      color: #0A0E1A;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.12em;
+      padding: 12px 36px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cover-bottom {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 12px 20mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cover-info-item { font-size: 11px; color: var(--muted); }
+    .cover-info-item strong { color: var(--gold); display: block; font-size: 12px; }
+
+    /* ============================================================
+       PÁGINA 2 — CARTA DE APRESENTAÇÃO
+    ============================================================ */
+    .letter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .letter-date { font-size: 12px; color: var(--muted); text-align: right; }
+    .letter-date strong { display: block; color: var(--gold); font-size: 13px; }
+
+    .letter-salut {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 14px;
+    }
+
+    .letter-body p {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.75;
+      text-align: justify;
+    }
+
+    .letter-sign {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .letter-sign-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+    }
+
+    .letter-sign-role { font-size: 12px; color: var(--muted); }
+    .letter-sign-contact { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ============================================================
+       PÁGINA 3 — PROBLEMA E SOLUÇÃO
+    ============================================================ */
+    .problem-stat {
+      text-align: center;
+      padding: 14px 10px;
+    }
+
+    .problem-stat .number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      color: var(--gold);
+      line-height: 1;
+      display: block;
+    }
+
+    .problem-stat .label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      line-height: 1.3;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .solution-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(245,166,35,0.08);
+    }
+
+    .solution-item:last-child { border-bottom: none; }
+
+    .solution-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .solution-item h4 { font-size: 14px; color: var(--gold); margin-bottom: 3px; }
+    .solution-item p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ============================================================
+       PÁGINA 4 — O EVENTO
+    ============================================================ */
+    .timeline { display: flex; flex-direction: column; gap: 10px; }
+
+    .timeline-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .timeline-dot {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--gold) 0%, #E8940F 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px;
+      color: #0A0E1A;
+      font-weight: 900;
+    }
+
+    .timeline-content { padding-top: 4px; }
+    .timeline-content h4 { font-size: 14px; color: var(--gold); margin-bottom: 2px; }
+    .timeline-content p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    .event-highlight {
+      background: linear-gradient(135deg, rgba(245,166,35,0.12) 0%, rgba(245,166,35,0.04) 100%);
+      border: 1px solid rgba(245,166,35,0.3);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      text-align: center;
+    }
+
+    .event-highlight h3 {
+      font-size: 24px;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .event-highlight p { font-size: 12px; color: var(--muted); }
+
+    /* ============================================================
+       PÁGINA 5 — POR QUE PATROCINAR?
+    ============================================================ */
+    .benefit-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .benefit-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+    }
+
+    .benefit-card .icon { font-size: 24px; margin-bottom: 6px; }
+    .benefit-card h4 { font-size: 14px; color: var(--gold); margin-bottom: 5px; }
+    .benefit-card p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    .case-box {
+      background: rgba(76,175,80,0.06);
+      border: 1px solid rgba(76,175,80,0.2);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .case-box h4 { font-size: 13px; color: #81C784; margin-bottom: 8px; }
+    .case-box p { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+    /* ============================================================
+       PÁGINA 6 — COTAS
+    ============================================================ */
+    .cota-card {
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cota-ouro {
+      background: linear-gradient(135deg, rgba(245,166,35,0.15) 0%, rgba(245,166,35,0.05) 100%);
+      border: 1.5px solid rgba(245,166,35,0.5);
+    }
+
+    .cota-prata {
+      background: linear-gradient(135deg, rgba(192,192,192,0.10) 0%, rgba(192,192,192,0.03) 100%);
+      border: 1.5px solid rgba(192,192,192,0.30);
+    }
+
+    .cota-bronze {
+      background: linear-gradient(135deg, rgba(205,127,50,0.10) 0%, rgba(205,127,50,0.03) 100%);
+      border: 1.5px solid rgba(205,127,50,0.30);
+    }
+
+    .cota-material {
+      background: linear-gradient(135deg, rgba(100,180,255,0.08) 0%, rgba(100,180,255,0.02) 100%);
+      border: 1.5px solid rgba(100,180,255,0.25);
+    }
+
+    .cota-medal {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .cota-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.08em;
+    }
+
+    .cota-ouro .cota-name { color: var(--gold); }
+    .cota-prata .cota-name { color: #C0C0C0; }
+    .cota-bronze .cota-name { color: #CD7F32; }
+    .cota-material .cota-name { color: #64B4FF; }
+
+    .cota-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .cota-ouro .cota-price { color: var(--gold); }
+    .cota-prata .cota-price { color: #C0C0C0; }
+    .cota-bronze .cota-price { color: #CD7F32; }
+    .cota-material .cota-price { color: #64B4FF; }
+
+    .cota-price-sub { font-size: 10px; color: var(--muted); margin-top: -4px; }
+
+    .cota-divider { height: 1px; background: var(--border); }
+
+    .cota-checklist { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .cota-checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .cota-ouro .cota-checklist li::before { content: "●"; color: var(--gold); font-size: 7px; margin-top: 4px; flex-shrink: 0; }
+    .cota-prata .cota-checklist li::before { content: "●"; color: #C0C0C0; font-size: 7px; margin-top: 4px; flex-shrink: 0; }
+    .cota-bronze .cota-checklist li::before { content: "●"; color: #CD7F32; font-size: 7px; margin-top: 4px; flex-shrink: 0; }
+    .cota-material .cota-checklist li::before { content: "●"; color: #64B4FF; font-size: 7px; margin-top: 4px; flex-shrink: 0; }
+
+    /* layout especial para cotas: 2 colunas */
+    .cotas-grid-top {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .cotas-grid-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .cota-ouro-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--gold);
+      color: #0A0E1A;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    /* ============================================================
+       PÁGINA 7 — ALCANCE
+    ============================================================ */
+    .reach-big {
+      text-align: center;
+      padding: 12px 8px;
+    }
+
+    .reach-big .num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--gold);
+      line-height: 1;
+      display: block;
+    }
+
+    .reach-big .lbl {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      line-height: 1.4;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .reach-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .reach-bar-label { width: 140px; font-size: 11px; color: var(--text); flex-shrink: 0; }
+    .reach-bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+    .reach-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--gold) 0%, var(--gold2) 100%); }
+    .reach-bar-val { font-size: 11px; color: var(--gold); font-weight: 600; width: 50px; text-align: right; flex-shrink: 0; }
+
+    .funnel {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .funnel-item {
+      width: 100%;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .funnel-item .f-label { font-size: 12px; color: var(--text); }
+    .funnel-item .f-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); }
+
+    /* ============================================================
+       PÁGINA 8 — COMO PARTICIPAR
+    ============================================================ */
+    .form-section label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .form-section input,
+    .form-section select,
+    .form-section textarea {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .form-section input:focus,
+    .form-section select:focus,
+    .form-section textarea:focus {
+      border-color: var(--gold);
+    }
+
+    .form-section select option { background: #1A2240; }
+
+    .form-section textarea { resize: none; }
+
+    .form-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold) 0%, #E8940F 100%);
+      color: #0A0E1A;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.12em;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .steps-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .step-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, var(--gold), #E8940F);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px;
+      color: #0A0E1A;
+      flex-shrink: 0;
+    }
+
+    .step-content h4 { font-size: 13px; color: var(--gold); margin-bottom: 1px; }
+    .step-content p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    /* ============================================================
+       PÁGINA 9 — EQUIPE
+    ============================================================ */
+    .team-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .team-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold) 0%, #E8940F 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 10px;
+    }
+
+    .team-card h4 { font-size: 14px; color: var(--white); margin-bottom: 3px; }
+    .team-card .role { font-size: 11px; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+    .team-card .bio { font-size: 10px; color: var(--muted); line-height: 1.5; }
+
+    .values-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .value-item {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .value-item .v-icon { font-size: 18px; flex-shrink: 0; }
+    .value-item .v-text h4 { font-size: 12px; color: var(--gold); margin-bottom: 1px; }
+    .value-item .v-text p { font-size: 11px; color: var(--muted); }
+
+    /* ============================================================
+       PÁGINA 10 — CONTATO E ASSINATURA
+    ============================================================ */
+    .contact-big {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .contact-big h2 {
+      font-size: 40px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .contact-big p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .contact-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .contact-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .contact-card .c-icon { font-size: 28px; margin-bottom: 8px; }
+    .contact-card h4 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .contact-card p { font-size: 13px; color: var(--gold); font-weight: 600; }
+
+    .signature-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 24px;
+    }
+
+    .sig-box {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .sig-box .sig-name { font-size: 11px; color: var(--muted); }
+    .sig-box .sig-role { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .legal-note {
+      margin-top: 16px;
+      font-size: 9px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       BÔNUS — E-MAIL TEMPLATE
+    ============================================================ */
+    .email-section {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .email-header {
+      background: linear-gradient(135deg, #1A2240, #111827);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .email-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .email-dot.red { background: #FF5F57; }
+    .email-dot.yellow { background: #FEBC2E; }
+    .email-dot.green { background: #28C840; }
+
+    .email-subject {
+      margin-left: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .email-body {
+      padding: 16px;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.75;
+      font-family: 'Space Grotesk', sans-serif;
+      white-space: pre-wrap;
+    }
+
+    .email-placeholder {
+      color: var(--gold);
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    /* ============================================================
+       PRINT
+    ============================================================ */
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { margin: 0; background: var(--bg) !important; }
+
+      .page {
+        width: 210mm !important;
+        min-height: 297mm !important;
+        page-break-before: always;
+        page-break-after: always;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      .page:first-child { page-break-before: auto; }
+
+      .page-footer { position: fixed; bottom: 14mm; left: 16mm; right: 16mm; }
+
+      .form-btn { display: none; }
+
+      a { text-decoration: none !important; }
+    }
+
+    @page { size: A4; margin: 0; }
+
+    /* ============================================================
+       TELA (visualização no browser)
+    ============================================================ */
+    @media screen {
+      body { padding: 24px 0; background: #060810; }
+      .page { box-shadow: 0 8px 40px rgba(0,0,0,0.6); border-radius: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     PÁGINA 1 — CAPA
+============================================================ -->
+<section class="page cover">
+  <div class="cover-top-bar">
+    <div>
+      <div class="cover-logo-text">ITA <span>Tecnologia</span> Educacional</div>
+      <div class="cover-tagline-small">Itapipoca · Ceará · itatecnologiaeducacional.tech</div>
+    </div>
+    <div class="tag">Proposta de Patrocínio 2026</div>
+  </div>
+
+  <div class="cover-hero">
+    <div class="cover-eyebrow">Curso de Férias · Julho de 2026</div>
+    <h1 class="cover-title">Alunos Maker<br><span class="accent">Não Tiram</span><br>Férias</h1>
+    <div class="cover-subtitle">Robótica · Programação · Inovação</div>
+    <p class="cover-desc">
+      30 jovens de Itapipoca aprendem tecnologia durante as férias de julho.
+      Sua empresa faz parte dessa história — e da vida desses alunos.
+    </p>
+
+    <div class="cover-badges">
+      <span class="cover-badge">🎓 30 Alunos</span>
+      <span class="cover-badge">📍 Itapipoca · CE</span>
+      <span class="cover-badge">🤖 Robótica &amp; Código</span>
+      <span class="cover-badge">🏆 Demo Day Final</span>
+      <span class="cover-badge">📜 Certificados</span>
+    </div>
+
+    <div class="cover-cta">Seja Patrocinador</div>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="cover-info-item">
+      <strong>Público Direto</strong>
+      30 alunos + ~70 familiares
+    </div>
+    <div class="cover-info-item">
+      <strong>Período</strong>
+      Férias de Julho · 2026
+    </div>
+    <div class="cover-info-item">
+      <strong>Cotas a partir de</strong>
+      R$ 150 ou em material
+    </div>
+    <div class="cover-info-item">
+      <strong>Contato</strong>
+      (88) 9 8841-1890
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 2 — CARTA DE APRESENTAÇÃO
+============================================================ -->
+<section class="page">
+  <div class="letter-header">
+    <div>
+      <div class="tag">Carta de Apresentação</div>
+    </div>
+    <div class="letter-date">
+      <strong>Itapipoca, maio de 2026</strong>
+      ITA Tecnologia Educacional
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <p class="letter-salut">Prezado(a) empresário(a) e líder comunitário(a) de Itapipoca,</p>
+
+  <div class="letter-body">
+    <p>
+      É com grande entusiasmo que a <strong style="color:var(--gold)">ITA Tecnologia Educacional</strong>
+      apresenta o projeto <em>"Alunos Maker Não Tiram Férias"</em> — um curso intensivo de robótica e
+      programação voltado para jovens de 11 a 17 anos da nossa cidade, a ser realizado durante as
+      férias de julho de 2026.
+    </p>
+    <p>
+      A ITA Tecnologia Educacional nasceu com uma missão clara: <strong style="color:var(--gold2)">democratizar o
+      acesso à educação tecnológica no interior do Ceará</strong>. Sabemos que jovens de cidades como
+      a nossa raramente têm acesso às mesmas oportunidades de aprendizado que estudantes dos
+      grandes centros. Queremos mudar isso — e estamos mudando.
+    </p>
+    <p>
+      Neste curso, os participantes aprenderão a programar, montar circuitos, resolver problemas reais
+      com tecnologia e apresentar seus projetos em um <strong style="color:var(--gold2)">Demo Day</strong> público,
+      com a presença de familiares e da comunidade. Ao final, cada aluno recebe um
+      <strong style="color:var(--gold2)">certificado de participação</strong> — um registro concreto da sua
+      capacidade de criar com a tecnologia.
+    </p>
+    <p>
+      Para que esse projeto aconteça, precisamos de parceiros que acreditem no potencial da nossa
+      juventude. Empresas e profissionais locais que, além dos seus produtos e serviços, também
+      investem no desenvolvimento humano da comunidade onde atuam.
+    </p>
+    <p>
+      Nesta proposta, você encontrará as <strong style="color:var(--gold)">cotas de patrocínio</strong>,
+      os benefícios detalhados para cada nível de parceria e toda a projeção de alcance e
+      visibilidade que oferecemos em troca do seu apoio.
+    </p>
+    <p>
+      Acreditamos que <strong style="color:var(--gold2)">cada empresa que patrocina educação está investindo
+      no seu próprio futuro</strong> — nos futuros colaboradores, clientes e líderes da nossa cidade.
+      Conte conosco para transformar esse investimento em visibilidade real, reconhecimento e impacto
+      positivo para a sua marca.
+    </p>
+    <p>
+      Ficamos à disposição para esclarecer qualquer dúvida e apresentar a proposta pessoalmente.
+    </p>
+  </div>
+
+  <div class="letter-sign">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div class="letter-sign-name">Equipe ITA Tecnologia Educacional</div>
+        <div class="letter-sign-role">Educação Maker · Robótica · Tecnologia no Interior do Ceará</div>
+        <div class="letter-sign-contact">✉ itagamificaedu@gmail.com &nbsp;|&nbsp; 📱 (88) 9 8841-1890</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="border-top:1px solid var(--border); width:160px; padding-top:6px; font-size:10px; color:var(--muted);">Assinatura do responsável</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 3 — O PROBLEMA E A SOLUÇÃO
+============================================================ -->
+<section class="page">
+  <div class="tag">O Contexto</div>
+  <div class="section-title" style="margin-top:10px;">O <span class="line">Problema</span> e a Solução</div>
+  <p class="section-sub">Por que um curso de robótica importa em Itapipoca?</p>
+
+  <hr class="divider" />
+
+  <!-- Stats do problema -->
+  <div class="card" style="margin-bottom:14px;">
+    <div style="font-size:12px; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">A Realidade dos Jovens do Interior</div>
+    <div class="grid-4">
+      <div class="problem-stat">
+        <span class="number">+110 mil</span>
+        <span class="label">Habitantes em Itapipoca</span>
+      </div>
+      <div class="problem-stat">
+        <span class="number">&lt; 5%</span>
+        <span class="label">Jovens com acesso a cursos de tecnologia</span>
+      </div>
+      <div class="problem-stat">
+        <span class="number">70%</span>
+        <span class="label">Vagas de emprego futuro exigirão habilidades digitais</span>
+      </div>
+      <div class="problem-stat">
+        <span class="number">0</span>
+        <span class="label">Cursos gratuitos de robótica disponíveis na cidade</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Problema descrito -->
+  <div class="highlight-box" style="margin-bottom:14px;">
+    <strong style="color:var(--gold); font-size:13px;">O problema é simples e urgente:</strong>
+    <p style="font-size:12px; color:var(--muted); margin-top:5px; line-height:1.7;">
+      Jovens do interior do Ceará crescem sem acesso a laboratórios de tecnologia, cursos de
+      programação ou experiências com robótica. Enquanto isso, o mercado de trabalho exige cada vez
+      mais habilidades digitais. Essa distância entre o que os jovens aprendem e o que o mundo exige
+      é uma barreira real — e ela começa aqui, na nossa cidade.
+    </p>
+  </div>
+
+  <!-- Solução -->
+  <div style="font-size:13px; color:var(--gold); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Nossa Resposta</div>
+
+  <div class="solution-item">
+    <div class="solution-icon">🤖</div>
+    <div>
+      <h4>Aprendizado Prático com Robótica</h4>
+      <p>Os alunos montam, programam e testam robôs reais. Aprendem lógica, resolução de problemas e trabalho em equipe — habilidades que valem para qualquer profissão.</p>
+    </div>
+  </div>
+
+  <div class="solution-item">
+    <div class="solution-icon">💡</div>
+    <div>
+      <h4>Acesso Democratizado</h4>
+      <p>Não importa a situação financeira da família: todo aluno selecionado tem acesso ao material, ao espaço e à orientação de professores especializados. Sem custo para o estudante.</p>
+    </div>
+  </div>
+
+  <div class="solution-item">
+    <div class="solution-icon">🌱</div>
+    <div>
+      <h4>Semente para o Futuro</h4>
+      <p>Alunos que participam de programas como esse têm mais chance de seguir carreiras em tecnologia, engenharia e inovação — e de trazer isso de volta para Itapipoca.</p>
+    </div>
+  </div>
+
+  <div class="solution-item">
+    <div class="solution-icon">🏅</div>
+    <div>
+      <h4>Reconhecimento Concreto</h4>
+      <p>Cada aluno recebe um certificado de participação. Os projetos são apresentados publicamente no Demo Day — visível para a família, a comunidade e os patrocinadores.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 4 — O EVENTO
+============================================================ -->
+<section class="page">
+  <div class="tag">O Projeto</div>
+  <div class="section-title" style="margin-top:10px;">O <span class="line">Evento</span></div>
+  <p class="section-sub">Como é o curso "Alunos Maker Não Tiram Férias"</p>
+
+  <hr class="divider" />
+
+  <!-- Destaques do evento -->
+  <div class="grid-4" style="margin-bottom:18px;">
+    <div class="event-highlight">
+      <h3>5</h3>
+      <p>dias de curso intensivo</p>
+    </div>
+    <div class="event-highlight">
+      <h3>30</h3>
+      <p>alunos selecionados</p>
+    </div>
+    <div class="event-highlight">
+      <h3>11–17</h3>
+      <p>anos · faixa etária</p>
+    </div>
+    <div class="event-highlight">
+      <h3>1</h3>
+      <p>Demo Day público final</p>
+    </div>
+  </div>
+
+  <!-- Programação / Timeline -->
+  <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Programação do Curso</div>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot">D1</div>
+      <div class="timeline-content">
+        <h4>Dia 1 — Boas-vindas ao Mundo Maker</h4>
+        <p>Apresentação dos alunos e professores. Introdução à robótica e programação. Primeiro contato com os kits. Formação das equipes e escolha dos projetos.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">D2</div>
+      <div class="timeline-content">
+        <h4>Dia 2 — Fundamentos: Eletrônica e Lógica</h4>
+        <p>Montagem de circuitos básicos. Introdução a sensores e atuadores. Primeiros comandos de programação. Desafios práticos em equipe.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">D3</div>
+      <div class="timeline-content">
+        <h4>Dia 3 — Construindo o Projeto</h4>
+        <p>Cada equipe trabalha no seu robô/dispositivo. Programação aplicada ao projeto. Mentoria individual com professores. Resolução de bugs e problemas.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">D4</div>
+      <div class="timeline-content">
+        <h4>Dia 4 — Refinamento e Ensaio</h4>
+        <p>Finalização dos projetos. Teste completo de funcionamento. Preparação da apresentação oral para o Demo Day. Criação do pitch de 2 minutos por equipe.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">D5</div>
+      <div class="timeline-content">
+        <h4>Dia 5 — DEMO DAY 🏆</h4>
+        <p>Apresentação pública dos projetos para familiares, comunidade e patrocinadores. Entrega dos certificados. Agradecimento especial aos patrocinadores. Foto oficial do evento.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detalhe do Demo Day -->
+  <div class="card" style="margin-top:16px; background: linear-gradient(135deg, rgba(245,166,35,0.10), rgba(245,166,35,0.03)); border-color: rgba(245,166,35,0.4);">
+    <div style="display:flex; gap:14px; align-items:center;">
+      <div style="font-size:36px;">🎤</div>
+      <div>
+        <h4 style="font-size:14px; color:var(--gold); margin-bottom:4px;">Demo Day — O Grande Encerramento</h4>
+        <p style="font-size:12px; color:var(--muted); line-height:1.6;">
+          O Demo Day é o momento em que os alunos apresentam seus projetos para a comunidade.
+          <strong style="color:var(--text);">Patrocinadores recebem menção especial no palco</strong>, têm seus logos expostos
+          e participam da entrega dos certificados. É visibilidade real, com presença de famílias,
+          imprensa local e redes sociais do evento ao vivo.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 5 — POR QUE PATROCINAR?
+============================================================ -->
+<section class="page">
+  <div class="tag">Benefícios para o Patrocinador</div>
+  <div class="section-title" style="margin-top:10px;">Por Que <span class="line">Patrocinar?</span></div>
+  <p class="section-sub">Seu investimento vai muito além da visibilidade de marca</p>
+
+  <hr class="divider" />
+
+  <div class="grid-2" style="margin-bottom:14px;">
+    <div class="benefit-card">
+      <div class="icon">👥</div>
+      <h4>Visibilidade para o Público Certo</h4>
+      <p>Pais, mães e responsáveis de 30 famílias. Jovens de 11 a 17 anos. Professores e escolas da região. São pessoas que moram na mesma cidade que seu negócio — seus clientes atuais e futuros.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">🌟</div>
+      <h4>Imagem de Responsabilidade Social</h4>
+      <p>Associar sua marca a um projeto de educação tecnológica é uma das formas mais eficientes de construir reputação positiva. As pessoas compram de empresas em que confiam — e confiam em quem investe na comunidade.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">📱</div>
+      <h4>Presença nas Redes Sociais</h4>
+      <p>Menções orgânicas em posts de fotos, stories e vídeos do curso. Seu logo em conteúdos que as famílias vão compartilhar porque se sentem orgulhosas. Alcance real, sem precisar comprar anúncio.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">🏆</div>
+      <h4>Diferenciação Local</h4>
+      <p>Poucas empresas em Itapipoca patrocinam projetos educacionais. Ser um dos primeiros a apoiar essa iniciativa posiciona sua marca como referência em inovação e compromisso social na cidade.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">🤝</div>
+      <h4>Conexão Genuína com a Comunidade</h4>
+      <p>Não é publicidade fria — é participação real. Seu nome aparece em certificados que os alunos vão guardar para sempre. Em banners que ficam no laboratório durante todo o curso. Em apostilas que as famílias levam para casa.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">📊</div>
+      <h4>Relatório de Resultados</h4>
+      <p>Patrocinadores das cotas Ouro e Prata recebem um relatório pós-evento com números reais: alcance das redes sociais, fotos, número de alunos, cobertura de imprensa. Tudo documentado.</p>
+    </div>
+  </div>
+
+  <div class="case-box">
+    <h4>💡 Por que marcas que investem em educação fidelizam mais?</h4>
+    <p>
+      Estudos de comportamento do consumidor mostram consistentemente que pessoas têm muito mais fidelidade
+      a marcas que percebem como "do bem" — especialmente quando o impacto é local e visível.
+      Uma farmácia que patrocina uma escola, um supermercado que apoia jovens da comunidade, uma clínica
+      que investe em educação: essas marcas deixam de ser "apenas um comércio" e passam a ser referência
+      de confiança. Em Itapipoca, onde as relações são pessoais, esse efeito é ainda mais forte.
+    </p>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 6 — TABELA DE COTAS
+============================================================ -->
+<section class="page">
+  <div class="tag">Cotas de Patrocínio</div>
+  <div class="section-title" style="margin-top:10px;">Escolha o Seu <span class="line">Nível de Parceria</span></div>
+  <p class="section-sub">Cada cota tem benefícios específicos — escolha o que faz sentido para o seu negócio</p>
+
+  <hr class="divider" />
+
+  <div class="cotas-grid-top">
+    <!-- OURO -->
+    <div class="cota-card cota-ouro">
+      <span class="cota-ouro-badge">MAIS COMPLETA</span>
+      <div>
+        <div class="cota-medal">🥇</div>
+        <div class="cota-name">Cota Ouro</div>
+      </div>
+      <div>
+        <div class="cota-price">R$ 500</div>
+        <div class="cota-price-sub">investimento único · patrocínio total do curso</div>
+      </div>
+      <div class="cota-divider"></div>
+      <ul class="cota-checklist">
+        <li>Logo na <strong>capa e contracapa</strong> da apostila</li>
+        <li>Banner físico no laboratório durante todo o curso</li>
+        <li>Menção em <strong>todos os posts</strong> das redes sociais (5+)</li>
+        <li><strong>2 minutos de agradecimento</strong> no palco do Demo Day</li>
+        <li>Logo impresso no <strong>certificado de todos os alunos</strong></li>
+        <li>Foto profissional com a equipe para sua divulgação</li>
+        <li>Relatório pós-evento com alcance e métricas reais</li>
+      </ul>
+    </div>
+
+    <!-- PRATA -->
+    <div class="cota-card cota-prata">
+      <div>
+        <div class="cota-medal">🥈</div>
+        <div class="cota-name">Cota Prata</div>
+      </div>
+      <div>
+        <div class="cota-price">R$ 300</div>
+        <div class="cota-price-sub">investimento único</div>
+      </div>
+      <div class="cota-divider"></div>
+      <ul class="cota-checklist">
+        <li>Logo na apostila (página interna)</li>
+        <li>Banner físico no laboratório</li>
+        <li>Menção em <strong>3 posts</strong> nas redes sociais</li>
+        <li>Agradecimento especial no Demo Day</li>
+        <li>Relatório pós-evento com métricas</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cotas-grid-bottom">
+    <!-- BRONZE -->
+    <div class="cota-card cota-bronze">
+      <div>
+        <div class="cota-medal">🥉</div>
+        <div class="cota-name">Cota Bronze</div>
+      </div>
+      <div>
+        <div class="cota-price">R$ 150</div>
+        <div class="cota-price-sub">investimento único</div>
+      </div>
+      <div class="cota-divider"></div>
+      <ul class="cota-checklist">
+        <li>Logo na apostila (página interna)</li>
+        <li>Menção em <strong>1 post</strong> nas redes sociais</li>
+        <li>Agradecimento no Demo Day</li>
+      </ul>
+    </div>
+
+    <!-- MATERIAL -->
+    <div class="cota-card cota-material">
+      <div>
+        <div class="cota-medal">🤝</div>
+        <div class="cota-name">Cota Material</div>
+      </div>
+      <div>
+        <div class="cota-price" style="font-size:22px;">Em produto</div>
+        <div class="cota-price-sub">doação de produtos ou serviços</div>
+      </div>
+      <div class="cota-divider"></div>
+      <ul class="cota-checklist">
+        <li>Nome impresso/afixado no material doado</li>
+        <li>Menção nas redes sociais com foto do material</li>
+        <li>Agradecimento no Demo Day</li>
+        <li><em style="color:var(--muted);">Ex.: estantes, cabos, material elétrico, impressões, lanche, etc.</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="margin-top:14px;">
+    <strong style="color:var(--gold);">Quer uma cota personalizada?</strong>
+    <span style="font-size:12px; color:var(--muted);"> Podemos montar uma proposta sob medida para o seu negócio. Entre em contato: (88) 9 8841-1890</span>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 7 — PROJEÇÃO DE ALCANCE
+============================================================ -->
+<section class="page">
+  <div class="tag">Impacto e Alcance</div>
+  <div class="section-title" style="margin-top:10px;">Projeção de <span class="line">Alcance</span></div>
+  <p class="section-sub">Quem vai ver a sua marca associada a este projeto</p>
+
+  <hr class="divider" />
+
+  <!-- Big numbers -->
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="card reach-big">
+      <span class="num">30</span>
+      <span class="lbl">Alunos diretos no curso</span>
+    </div>
+    <div class="card reach-big">
+      <span class="num">~70</span>
+      <span class="lbl">Pais e responsáveis engajados</span>
+    </div>
+    <div class="card reach-big">
+      <span class="num">5+</span>
+      <span class="lbl">Posts nas redes sociais (cota Ouro)</span>
+    </div>
+    <div class="card reach-big">
+      <span class="num">1–2</span>
+      <span class="lbl">Veículos de imprensa local</span>
+    </div>
+  </div>
+
+  <!-- Funil de alcance -->
+  <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Funil de Alcance da Marca</div>
+
+  <div class="funnel" style="margin-bottom:16px;">
+    <div class="funnel-item" style="border-color:rgba(245,166,35,0.5); background: rgba(245,166,35,0.10);">
+      <span class="f-label" style="color:var(--gold);">👨‍🎓 Alunos (contato direto)</span>
+      <span class="f-num">30 pessoas</span>
+    </div>
+    <div class="funnel-item">
+      <span class="f-label">👨‍👩‍👧 Familiares imediatos</span>
+      <span class="f-num">~70 pessoas</span>
+    </div>
+    <div class="funnel-item">
+      <span class="f-label">🏫 Colegas de escola dos alunos</span>
+      <span class="f-num">~300 pessoas</span>
+    </div>
+    <div class="funnel-item">
+      <span class="f-label">📱 Seguidores redes sociais (orgânico)</span>
+      <span class="f-num">500–2.000 pessoas</span>
+    </div>
+    <div class="funnel-item">
+      <span class="f-label">📰 Alcance imprensa e boca a boca</span>
+      <span class="f-num">comunidade local</span>
+    </div>
+  </div>
+
+  <!-- Barras de alcance por cota -->
+  <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Visibilidade por Cota</div>
+
+  <div class="reach-bar-item">
+    <div class="reach-bar-label">🥇 Cota Ouro</div>
+    <div class="reach-bar-track"><div class="reach-bar-fill" style="width:100%;"></div></div>
+    <div class="reach-bar-val">100%</div>
+  </div>
+  <div class="reach-bar-item">
+    <div class="reach-bar-label">🥈 Cota Prata</div>
+    <div class="reach-bar-track"><div class="reach-bar-fill" style="width:65%;"></div></div>
+    <div class="reach-bar-val">65%</div>
+  </div>
+  <div class="reach-bar-item">
+    <div class="reach-bar-label">🥉 Cota Bronze</div>
+    <div class="reach-bar-track"><div class="reach-bar-fill" style="width:35%;"></div></div>
+    <div class="reach-bar-val">35%</div>
+  </div>
+  <div class="reach-bar-item">
+    <div class="reach-bar-label">🤝 Cota Material</div>
+    <div class="reach-bar-track"><div class="reach-bar-fill" style="width:25%;"></div></div>
+    <div class="reach-bar-val">25%</div>
+  </div>
+
+  <!-- Perspectiva de longo prazo -->
+  <div class="card" style="margin-top:14px; border-color:rgba(100,180,255,0.2); background: rgba(100,180,255,0.04);">
+    <h4 style="font-size:13px; color:#64B4FF; margin-bottom:6px;">🔮 Perspectiva de Longo Prazo</h4>
+    <p style="font-size:12px; color:var(--muted); line-height:1.7;">
+      Este é o primeiro curso de férias — mas não será o último. Empresas que entrarem como patrocinadoras agora
+      terão preferência nas próximas edições e serão associadas ao crescimento do projeto.
+      <strong style="color:var(--text);">Sua marca não patrocina apenas um curso: ela passa a fazer parte da história da
+      educação tecnológica em Itapipoca.</strong>
+    </p>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 8 — COMO PARTICIPAR
+============================================================ -->
+<section class="page">
+  <div class="tag">Como Participar</div>
+  <div class="section-title" style="margin-top:10px;">Quero <span class="line">Ser Patrocinador</span></div>
+  <p class="section-sub">O processo é simples e rápido. Veja os passos abaixo</p>
+
+  <hr class="divider" />
+
+  <div class="grid-2" style="gap:20px;">
+    <!-- Passos -->
+    <div>
+      <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Processo de Adesão</div>
+
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Entre em Contato</h4>
+            <p>Mande uma mensagem no WhatsApp (88) 9 8841-1890 ou por e-mail itagamificaedu@gmail.com dizendo qual cota te interessa. Sem compromisso.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Confirmação e Dados</h4>
+            <p>Após confirmar, envie: logo em alta resolução (PNG ou JPG), nome completo para nota fiscal/recibo e dados de contato para o relatório pós-evento.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Pagamento ou Entrega</h4>
+            <p>Cotas em dinheiro: via PIX ou transferência. Cota Material: combinar entrega diretamente conosco antes do início do curso.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Pronto — Você é Patrocinador!</h4>
+            <p>Sua marca entra em todos os materiais e começa a aparecer nas redes sociais antes mesmo do início do curso. Acompanhe tudo em tempo real.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Após o Curso</h4>
+            <p>Receba o relatório com fotos, métricas e registro do Demo Day. Cotas Ouro e Prata recebem documento completo com todos os resultados.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top:14px;">
+        <strong style="color:var(--gold); font-size:12px;">⏰ Prazo de Confirmação</strong>
+        <p style="font-size:11px; color:var(--muted); margin-top:4px;">Para garantir que sua logo apareça em todos os materiais impressos, confirme o patrocínio <strong style="color:var(--text);">até 2 semanas antes do início do curso</strong>. Após esse prazo, não garantimos inclusão nos materiais físicos.</p>
+      </div>
+    </div>
+
+    <!-- Formulário de intenção -->
+    <div>
+      <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Formulário de Intenção de Patrocínio</div>
+
+      <div class="form-section">
+        <label>Nome da Empresa / Estabelecimento</label>
+        <input type="text" placeholder="Ex.: Farmácia São João" />
+
+        <label>Responsável pelo Contato</label>
+        <input type="text" placeholder="Nome completo" />
+
+        <label>WhatsApp ou Telefone</label>
+        <input type="tel" placeholder="(88) 9 XXXX-XXXX" />
+
+        <label>E-mail</label>
+        <input type="email" placeholder="email@suaempresa.com.br" />
+
+        <label>Cota de Interesse</label>
+        <select>
+          <option value="">Selecione uma cota...</option>
+          <option value="ouro">🥇 Cota Ouro — R$ 500</option>
+          <option value="prata">🥈 Cota Prata — R$ 300</option>
+          <option value="bronze">🥉 Cota Bronze — R$ 150</option>
+          <option value="material">🤝 Cota Material (produto/serviço)</option>
+        </select>
+
+        <label>Mensagem (opcional)</label>
+        <textarea rows="2" placeholder="Conte o que sua empresa pode oferecer ou tire dúvidas..."></textarea>
+
+        <button class="form-btn" onclick="alert('Para enviar, entre em contato pelo WhatsApp: (88) 9 8841-1890 ou itagamificaedu@gmail.com')">
+          ENVIAR INTENÇÃO DE PATROCÍNIO
+        </button>
+
+        <p style="font-size:10px; color:var(--muted); text-align:center; margin-top:8px;">
+          Ou envie direto: 📱 (88) 9 8841-1890 · ✉ itagamificaedu@gmail.com
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 9 — EQUIPE
+============================================================ -->
+<section class="page">
+  <div class="tag">Quem Faz Acontecer</div>
+  <div class="section-title" style="margin-top:10px;">Nossa <span class="line">Equipe</span></div>
+  <p class="section-sub">Profissionais comprometidos com a educação tecnológica no interior do Ceará</p>
+
+  <hr class="divider" />
+
+  <div class="grid-3" style="margin-bottom:18px;">
+    <div class="team-card">
+      <div class="team-avatar">👨‍🏫</div>
+      <h4>Coordenação Pedagógica</h4>
+      <div class="role">Educação &amp; Tecnologia</div>
+      <div class="bio">Educador especializado em metodologias ativas e educação maker, com experiência em projetos de robótica para jovens do ensino fundamental e médio.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">👩‍💻</div>
+      <h4>Instrutores Técnicos</h4>
+      <div class="role">Robótica &amp; Programação</div>
+      <div class="bio">Profissionais de tecnologia com formação em engenharia e ciência da computação, com experiência em ensino prático de eletrônica e programação para iniciantes.</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">📋</div>
+      <h4>Equipe de Apoio</h4>
+      <div class="role">Organização &amp; Comunicação</div>
+      <div class="bio">Responsáveis pela organização do evento, comunicação nas redes sociais, documentação fotográfica e atendimento às famílias dos participantes.</div>
+    </div>
+  </div>
+
+  <!-- Valores da ITA -->
+  <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Os Valores que Guiam a ITA Tecnologia Educacional</div>
+
+  <div class="values-list">
+    <div class="value-item">
+      <div class="v-icon">🎯</div>
+      <div class="v-text">
+        <h4>Acesso Democrático</h4>
+        <p>Tecnologia e conhecimento não podem ser privilégio de poucos. Trabalhamos para que jovens do interior do CE tenham as mesmas oportunidades que jovens das capitais.</p>
+      </div>
+    </div>
+    <div class="value-item">
+      <div class="v-icon">🔨</div>
+      <div class="v-text">
+        <h4>Aprender Fazendo</h4>
+        <p>Nenhum aluno aprende robótica lendo slide. Nossos cursos são 80% prática — os jovens montam, testam, erram e constroem de verdade.</p>
+      </div>
+    </div>
+    <div class="value-item">
+      <div class="v-icon">🌍</div>
+      <div class="v-text">
+        <h4>Impacto Local Real</h4>
+        <p>Não somos um projeto de vitrine. Somos uma organização que acredita que Itapipoca pode e deve ser protagonista na formação de jovens de tecnologia no Ceará.</p>
+      </div>
+    </div>
+    <div class="value-item">
+      <div class="v-icon">🤝</div>
+      <div class="v-text">
+        <h4>Parceria Honesta</h4>
+        <p>Cada patrocinador recebe exatamente o que foi prometido. Documentamos, publicamos, medimos e prestamos contas. Transparência não é opcional.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PÁGINA 10 — CONTATO E ASSINATURA
+============================================================ -->
+<section class="page">
+  <div class="tag">Fale Conosco</div>
+
+  <div class="contact-big">
+    <h2>Vamos Conversar?</h2>
+    <p>Estamos prontos para apresentar o projeto pessoalmente e responder todas as suas dúvidas.</p>
+  </div>
+
+  <div class="contact-cards">
+    <div class="contact-card">
+      <div class="c-icon">📱</div>
+      <h4>WhatsApp</h4>
+      <p>(88) 9 8841-1890</p>
+    </div>
+    <div class="contact-card">
+      <div class="c-icon">✉️</div>
+      <h4>E-mail</h4>
+      <p>itagamificaedu@gmail.com</p>
+    </div>
+    <div class="contact-card">
+      <div class="c-icon">📍</div>
+      <h4>Cidade</h4>
+      <p>Itapipoca · Ceará</p>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Resumo das cotas para decisão final -->
+  <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Resumo Rápido das Cotas</div>
+
+  <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin-bottom:20px;">
+    <div style="text-align:center; padding:10px 6px; background:rgba(245,166,35,0.10); border:1px solid rgba(245,166,35,0.4); border-radius:8px;">
+      <div style="font-size:20px;">🥇</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--gold);">OURO</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--gold);">R$ 500</div>
+      <div style="font-size:9px; color:var(--muted);">7 benefícios + relatório</div>
+    </div>
+    <div style="text-align:center; padding:10px 6px; background:rgba(192,192,192,0.07); border:1px solid rgba(192,192,192,0.3); border-radius:8px;">
+      <div style="font-size:20px;">🥈</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; color:#C0C0C0;">PRATA</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:#C0C0C0;">R$ 300</div>
+      <div style="font-size:9px; color:var(--muted);">5 benefícios + relatório</div>
+    </div>
+    <div style="text-align:center; padding:10px 6px; background:rgba(205,127,50,0.07); border:1px solid rgba(205,127,50,0.3); border-radius:8px;">
+      <div style="font-size:20px;">🥉</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; color:#CD7F32;">BRONZE</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:22px; color:#CD7F32;">R$ 150</div>
+      <div style="font-size:9px; color:var(--muted);">3 benefícios</div>
+    </div>
+    <div style="text-align:center; padding:10px 6px; background:rgba(100,180,255,0.06); border:1px solid rgba(100,180,255,0.25); border-radius:8px;">
+      <div style="font-size:20px;">🤝</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; color:#64B4FF;">MATERIAL</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; color:#64B4FF;">Produto</div>
+      <div style="font-size:9px; color:var(--muted);">Em produto ou serviço</div>
+    </div>
+  </div>
+
+  <!-- Bloco de assinatura -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="font-size:11px; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">Assinatura do Parceiro</div>
+    <div class="signature-block">
+      <div class="sig-box">
+        <div style="height:40px;"></div>
+        <div class="sig-name">Empresa patrocinadora</div>
+        <div class="sig-role">Responsável · Data: ___ / ___ / 2026</div>
+      </div>
+      <div class="sig-box">
+        <div style="height:40px;"></div>
+        <div class="sig-name">ITA Tecnologia Educacional</div>
+        <div class="sig-role">Responsável pelo projeto · Data: ___ / ___ / 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legal-note">
+    Esta proposta é válida para o curso de férias "Alunos Maker Não Tiram Férias" — Julho de 2026 · Itapipoca, Ceará.<br />
+    ITA Tecnologia Educacional · itagamificaedu@gmail.com · (88) 9 8841-1890 · itatecnologiaeducacional.tech<br />
+    Documento gerado em maio de 2026. Para mais informações, entre em contato diretamente.
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     BÔNUS — E-MAIL TEMPLATE
+============================================================ -->
+<section class="page" style="page-break-before: always;">
+  <div class="tag">Bônus Exclusivo</div>
+  <div class="section-title" style="margin-top:10px;">Template de <span class="line">E-mail</span> para Empresas</div>
+  <p class="section-sub">Copie, adapte o nome da empresa e envie. Personalize os campos em <span style="color:var(--gold); font-weight:600;">[destaque]</span></p>
+
+  <hr class="divider" />
+
+  <div class="email-section">
+    <div class="email-header">
+      <div class="email-dot red"></div>
+      <div class="email-dot yellow"></div>
+      <div class="email-dot green"></div>
+      <span class="email-subject">
+        Assunto: Convite para Patrocínio — Curso de Robótica em Itapipoca · Julho/2026
+      </span>
+    </div>
+    <div class="email-body">
+<strong>Para:</strong> <span class="email-placeholder">[nome do responsável]</span>
+<strong>Assunto:</strong> Convite para Patrocínio — Curso de Robótica para Jovens de Itapipoca
+
+Prezado(a) <span class="email-placeholder">[Nome do responsável / Sr. / Sra.]</span>,
+
+Meu nome é <span class="email-placeholder">[seu nome]</span>, da <strong>ITA Tecnologia Educacional</strong>,
+e venho convidá-lo(a) a ser parceiro(a) de um projeto que vai marcar o verão de 2026
+em Itapipoca: o curso <strong>"Alunos Maker Não Tiram Férias"</strong>.
+
+Durante as férias de julho, vamos reunir 30 jovens de 11 a 17 anos para aprender
+robótica e programação na prática. Ao final, cada aluno apresenta seu projeto num
+<strong>Demo Day público</strong> e recebe um certificado de participação.
+
+Pensamos na <strong><span class="email-placeholder">[Nome da Empresa]</span></strong> como uma das empresas que poderiam
+apoiar esse projeto — exatamente porque vocês têm um papel importante aqui em Itapipoca
+e acreditamos que essa parceria faz sentido para a imagem de vocês.
+
+<strong>Em troca do patrocínio, a sua empresa aparece:</strong>
+ • Na apostila distribuída para todos os alunos
+ • Em banners no laboratório durante o curso
+ • Nos posts das redes sociais do evento
+ • No palco do Demo Day, com menção especial
+ • No certificado de cada aluno (Cota Ouro)
+
+As cotas partem de <strong>R$ 150</strong> — e também aceitamos patrocínio em produtos
+ou serviços (Cota Material), se preferir.
+
+Posso te enviar a proposta completa em PDF ou conversar pessoalmente — como preferir.
+
+Aguardo seu retorno!
+
+Abraço,
+
+<strong><span class="email-placeholder">[Seu Nome]</span></strong>
+ITA Tecnologia Educacional
+📱 (88) 9 8841-1890  |  ✉ itagamificaedu@gmail.com
+🌐 itatecnologiaeducacional.tech</div>
+  </div>
+
+  <!-- Dicas de abordagem -->
+  <div style="margin-top:14px;">
+    <div style="font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Dicas de Abordagem por Tipo de Empresa</div>
+
+    <div class="grid-2">
+      <div class="card-sm">
+        <div style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:5px;">💊 Farmácias &amp; Clínicas</div>
+        <p style="font-size:11px; color:var(--muted); line-height:1.5;">Destaque o vínculo com saúde e qualidade de vida. "Saúde não é só corpo — é mente ativa, futuro, oportunidade."</p>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:5px;">🛒 Supermercados</div>
+        <p style="font-size:11px; color:var(--muted); line-height:1.5;">Foque no apelo familiar. "Seu estabelecimento está na rotina dessas famílias — estar no certificado do filho é um vínculo poderoso."</p>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:5px;">📱 Lojas de Celular &amp; Informática</div>
+        <p style="font-size:11px; color:var(--muted); line-height:1.5;">Foco na identidade de marca. "Vocês vendem tecnologia — apoiar um curso de robótica é coerência total com o que vocês representam."</p>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:5px;">🏗️ Construtoras &amp; Imobiliárias</div>
+        <p style="font-size:11px; color:var(--muted); line-height:1.5;">Argumento ESG. "Construtores de casas apoiando quem constrói o futuro da cidade. Isso é responsabilidade social de verdade."</p>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:5px;">🏦 Cooperativas (Sicoob, Sicredi)</div>
+        <p style="font-size:11px; color:var(--muted); line-height:1.5;">Missão cooperativista. "Cooperativa existe para desenvolver a comunidade — e desenvolver jovens é a raiz disso."</p>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:12px; color:var(--gold); font-weight:700; margin-bottom:5px;">🏛️ Prefeitura / Sec. de Educação</div>
+        <p style="font-size:11px; color:var(--muted); line-height:1.5;">Cota especial de parceria institucional. "Parceria com a Secretaria de Educação abre portas para escolas públicas e amplifica o impacto."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-brand">ITA Tecnologia Educacional</span>
+    <span>itagamificaedu@gmail.com · (88) 9 8841-1890</span>
+    <span>Itapipoca · Ceará · 2026</span>
+  </div>
+</section>
+
+</body>
+</html>

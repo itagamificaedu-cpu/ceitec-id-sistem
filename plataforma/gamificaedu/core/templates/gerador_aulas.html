@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-4">
+        <h1 style="color: #6f42c1; font-weight: bold;">Gerador de Planos de Aula com IA ✨</h1>
+        <p class="lead">Crie aulas engajadoras e gamificadas em segundos. Totalmente gratuito!</p>
+    </div>
+
+    <!-- Formulário -->
+    <div class="card shadow p-4 mx-auto" style="max-width: 600px; border-radius: 15px;">
+        <form method="POST">
+            {% csrf_token %}
+                        <!-- Captura de Lead -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-primary">Seu Nome</label>
+                    <input type="text" name="nome" class="form-control" placeholder="Como quer ser chamado?" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-primary">Seu WhatsApp (com DDD)</label>
+                    <input type="text" name="whatsapp" class="form-control" placeholder="(11) 99999-9999" required>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Qual o tema da aula?</label>
+                <input type="text" name="tema" class="form-control" placeholder="Ex: Frações, Revolução Francesa, Células..." required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Disciplina</label>
+                <input type="text" name="disciplina" class="form-control" placeholder="Ex: Matemática, História, Biologia..." required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Ano Escolar / Turma</label>
+                <input type="text" name="ano" class="form-control" placeholder="Ex: 6º Ano, Ensino Médio..." required>
+            </div>
+            <button type="submit" class="btn btn-glow-purple w-100" style="background-color: #6f42c1; color: white; padding: 12px; font-size: 1.1rem; border-radius: 10px;">
+                Gerar Plano de Aula Mágico
+            </button>
+        </form>
+    </div>
+
+    <!-- Resultado da IA + O Bote de Vendas (Lead Magnet) -->
+    {% if plano_gerado %}
+    <div class="card shadow mt-5 p-5 mx-auto" style="max-width: 800px; border-left: 6px solid #6f42c1; border-radius: 15px;">
+        <h3 class="text-success mb-4">✅ Seu Plano de Aula está pronto!</h3>
+
+        <!-- O filtro |safe permite que o HTML gerado pela IA funcione (negritos, listas, etc) -->
+        <div style="font-size: 1.1rem; line-height: 1.6;">
+            {{ plano_gerado|safe }}
+        </div>
+
+        <hr class="my-5">
+
+        <!-- BANNER DE VENDAS (A ISCA) -->
+        <div class="alert alert-warning text-center p-4" style="border-radius: 15px; background-color: #fff3cd; border: 2px dashed #ffc107;">
+            <h4 class="fw-bold text-dark">🚀 Gostou de economizar 2 horas de planejamento?</h4>
+            <p class="text-dark mb-3">Dar uma aula incrível é ótimo. Corrigir provas no final de semana... nem tanto.</p>
+            <p class="text-dark mb-4">Conheça o <strong>Corretor de Provas do ITA Tecnologia Educacional</strong>. Escaneie gabaritos com o celular e corrija a turma toda em minuto!</p>
+
+            <!-- Troque a barra "/" pelo link da sua página de vendas se precisar -->
+            <a href="/" class="btn btn-dark btn-lg px-5" style="border-radius: 30px;">Conhecer a Plataforma Completa</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

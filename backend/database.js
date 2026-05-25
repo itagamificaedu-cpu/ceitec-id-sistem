@@ -27,6 +27,7 @@ async function initDatabase() {
     `ALTER TABLE justificativas    ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE quiz_resultados   ADD COLUMN IF NOT EXISTS aluno_codigo TEXT`,
     `ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS auto_avancar INTEGER DEFAULT 0`,
+    `ALTER TABLE professores ADD COLUMN IF NOT EXISTS codigo_mestre TEXT`,
     `ALTER TABLE almoco_registros  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS trocar_senha INTEGER DEFAULT 0`,
     // Perfil especial do dono da plataforma ITA (acesso global — não é escola contratante)
@@ -372,6 +373,26 @@ async function initDatabase() {
       action_type TEXT NOT NULL,
       post_id TEXT,
       criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* ===== PROFESSOR GAME — Gamificação dos professores ===== */
+    `CREATE TABLE IF NOT EXISTS prof_gamificacao (
+      usuario_id INTEGER PRIMARY KEY,
+      escola_id  INTEGER,
+      xp_total   INTEGER DEFAULT 0,
+      nivel      INTEGER DEFAULT 1,
+      streak     INTEGER DEFAULT 0,
+      ultimo_login DATE,
+      criado_em  TIMESTAMP DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS prof_xp_historico (
+      id         SERIAL PRIMARY KEY,
+      usuario_id INTEGER NOT NULL,
+      escola_id  INTEGER,
+      tipo       TEXT NOT NULL,
+      descricao  TEXT,
+      xp_ganho   INTEGER DEFAULT 0,
+      criado_em  TIMESTAMP DEFAULT NOW()
     )`,
   ];
 

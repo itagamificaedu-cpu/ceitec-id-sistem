@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Tracker GPS — Guia de Ativação</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap');
+
+  :root {
+    --verde:   #00c896;
+    --laranja: #f5a623;
+    --azul:    #3b82f6;
+    --roxo:    #8b5cf6;
+    --fundo:   #0a0f1e;
+    --card:    #141a2e;
+    --borda:   #1e2a45;
+    --texto:   #e2e8f0;
+    --muted:   #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ─── CAPA ─────────────────────────────────── */
+  .capa {
+    background: linear-gradient(135deg, #0a0f1e 0%, #0d1b3e 50%, #0a0f1e 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+
+  .capa::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(0,200,150,.12) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(245,166,35,.08) 0%, transparent 50%);
+  }
+
+  .capa-logo {
+    background: var(--verde);
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    margin-bottom: 50px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .capa-icone {
+    font-size: 100px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 40px rgba(0,200,150,.5));
+  }
+
+  .capa h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    letter-spacing: 4px;
+    line-height: 1;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 60px rgba(0,200,150,.3);
+  }
+
+  .capa h1 span {
+    color: var(--verde);
+    display: block;
+  }
+
+  .capa-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    color: var(--muted);
+    margin-top: 16px;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .capa-linha {
+    width: 120px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--verde), transparent);
+    margin: 30px auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .capa-pills {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .capa-pill {
+    background: rgba(0,200,150,.1);
+    border: 1px solid rgba(0,200,150,.3);
+    color: var(--verde);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .capa-rodape {
+    position: absolute;
+    bottom: 30px;
+    font-size: 13px;
+    color: var(--muted);
+    z-index: 1;
+  }
+
+  /* ─── PÁGINAS INTERNAS ────────────────────── */
+  .pagina {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 50px 40px;
+    page-break-after: always;
+  }
+
+  .pagina:last-child { page-break-after: auto; }
+
+  /* ─── CABEÇALHO DE SEÇÃO ───────────────────── */
+  .secao-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .secao-icone {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+
+  .icone-escola { background: linear-gradient(135deg, #1e3a5f, #0d2137); border: 1px solid #3b82f6; }
+  .icone-aluno  { background: linear-gradient(135deg, #1a3a2a, #0d2119); border: 1px solid #00c896; }
+  .icone-como   { background: linear-gradient(135deg, #3a2a1a, #2a1a09); border: 1px solid #f5a623; }
+
+  .secao-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+
+  .secao-titulo span {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .cor-azul   { color: var(--azul); }
+  .cor-verde  { color: var(--verde); }
+  .cor-laranja{ color: var(--laranja); }
+
+  /* ─── PASSOS ───────────────────────────────── */
+  .passos { display: flex; flex-direction: column; gap: 16px; }
+
+  .passo {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: var(--card);
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .passo::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+  }
+
+  .passo-escola::before { background: var(--azul); }
+  .passo-aluno::before  { background: var(--verde); }
+  .passo-como::before   { background: var(--laranja); }
+
+  .passo-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .num-escola { background: rgba(59,130,246,.2); color: var(--azul); border: 1px solid rgba(59,130,246,.4); }
+  .num-aluno  { background: rgba(0,200,150,.2);  color: var(--verde); border: 1px solid rgba(0,200,150,.4); }
+  .num-como   { background: rgba(245,166,35,.2); color: var(--laranja); border: 1px solid rgba(245,166,35,.4); }
+
+  .passo-conteudo { flex: 1; }
+
+  .passo-titulo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .passo-titulo .emoji { font-size: 18px; }
+
+  .passo-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .passo-desc strong { color: var(--texto); font-weight: 600; }
+
+  .passo-desc code {
+    background: rgba(255,255,255,.07);
+    border: 1px solid var(--borda);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--verde);
+  }
+
+  /* ─── INFO BOXES ──────────────────────────── */
+  .info-box {
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin: 24px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .info-verde  { background: rgba(0,200,150,.08);  border: 1px solid rgba(0,200,150,.25);  }
+  .info-azul   { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.25); }
+  .info-laranja{ background: rgba(245,166,35,.08); border: 1px solid rgba(245,166,35,.25); }
+  .info-roxo   { background: rgba(139,92,246,.08); border: 1px solid rgba(139,92,246,.25); }
+
+  .info-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+
+  .info-texto { font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .info-texto strong { color: var(--texto); }
+  .info-texto p + p { margin-top: 8px; }
+
+  /* ─── GRID 2 COLUNAS ──────────────────────── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .card-mini {
+    background: var(--card);
+    border: 1px solid var(--borda);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+  }
+
+  .card-mini .c-icon { font-size: 36px; margin-bottom: 10px; }
+  .card-mini .c-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card-mini .c-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ─── STATUS BADGES ──────────────────────── */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .status-badge {
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .status-badge .s-icon { font-size: 28px; margin-bottom: 6px; }
+  .status-badge .s-label { font-size: 12px; font-weight: 700; font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
+  .status-badge .s-desc { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .s-escola  { background: rgba(0,200,150,.1);  border: 1px solid rgba(0,200,150,.3);  }
+  .s-caminho { background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); }
+  .s-casa    { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3); }
+
+  /* ─── LGPD ───────────────────────────────── */
+  .lgpd-box {
+    background: linear-gradient(135deg, rgba(139,92,246,.1), rgba(59,130,246,.05));
+    border: 1px solid rgba(139,92,246,.3);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+
+  .lgpd-titulo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #a78bfa;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .lgpd-lista { list-style: none; }
+
+  .lgpd-lista li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    display: flex;
+    gap: 10px;
+  }
+
+  .lgpd-lista li:last-child { border-bottom: none; }
+
+  .lgpd-lista li::before {
+    content: '✓';
+    color: #a78bfa;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ─── RODAPÉ DO DOC ──────────────────────── */
+  .doc-rodape {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--borda);
+    margin-top: 40px;
+  }
+
+  .doc-rodape .logo-footer {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--verde);
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .doc-rodape p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .doc-rodape a {
+    color: var(--verde);
+    text-decoration: none;
+  }
+
+  /* ─── DIVISOR ─────────────────────────────── */
+  .divisor {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--borda), transparent);
+    margin: 32px 0;
+  }
+
+  /* ─── PRINT ──────────────────────────────── */
+  @media print {
+    body { background: #0a0f1e !important; }
+    .capa { page-break-after: always; }
+    .pagina { page-break-after: always; page-break-inside: avoid; }
+    .passo { page-break-inside: avoid; }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     CAPA
+═══════════════════════════════════════════════ -->
+<div class="capa">
+  <div class="capa-logo">ITA TECNOLOGIA EDUCACIONAL</div>
+
+  <div class="capa-icone">📍</div>
+
+  <h1>MOBILE TRACKER<span>GPS</span></h1>
+  <p class="capa-sub">RASTREAMENTO ESCOLAR EM TEMPO REAL</p>
+
+  <div class="capa-linha"></div>
+
+  <div class="capa-pills">
+    <div class="capa-pill">⚡ ATIVAÇÃO EM MINUTOS</div>
+    <div class="capa-pill">🔒 LGPD COMPLIANT</div>
+    <div class="capa-pill">📱 FUNCIONA SEM APP</div>
+    <div class="capa-pill">🔄 OFFLINE AUTOMÁTICO</div>
+  </div>
+
+  <div class="capa-rodape">
+    Guia de Ativação — Plataforma ITA Tecnologia Educacional &nbsp;·&nbsp; itatecnologiaeducacional.tech
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PÁG 1 — O QUE É
+═══════════════════════════════════════════════ -->
+<div class="pagina">
+
+  <div class="secao-header">
+    <div class="secao-icone icone-como">🛰️</div>
+    <div>
+      <div class="secao-titulo cor-laranja">O QUE É<span>Entenda o serviço antes de ativar</span></div>
+    </div>
+  </div>
+
+  <div class="info-box info-laranja">
+    <div class="info-icon">📡</div>
+    <div class="info-texto">
+      <strong>Mobile Tracker GPS</strong> é um serviço da plataforma ITA que permite à escola acompanhar
+      em tempo real onde está cada aluno cadastrado — se está na escola, a caminho ou em casa —
+      durante o horário escolar (06h às 18h).
+      <p>Funciona como um <strong>Progressive Web App (PWA)</strong>: o aluno não precisa baixar nada da loja.
+      Basta abrir um link no celular e ele funciona como se fosse um aplicativo.</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card-mini">
+      <div class="c-icon">🏫</div>
+      <div class="c-title cor-azul">Para a Escola</div>
+      <div class="c-desc">Vê no mapa onde cada aluno está. Recebe alertas de alunos que deveriam estar na escola e não chegaram.</div>
+    </div>
+    <div class="card-mini">
+      <div class="c-icon">👦</div>
+      <div class="c-title cor-verde">Para o Aluno</div>
+      <div class="c-desc">Instala uma vez no celular. O sistema envia a localização automaticamente em segundo plano, sem fazer nada.</div>
+    </div>
+    <div class="card-mini">
+      <div class="c-icon">🔋</div>
+      <div class="c-title cor-laranja">Bateria</div>
+      <div class="c-desc">Envia localização a cada 1–5 minutos. Consume muito pouca bateria. Para automaticamente fora do horário escolar.</div>
+    </div>
+    <div class="card-mini">
+      <div class="c-icon">📶</div>
+      <div class="c-title cor-verde">Offline</div>
+      <div class="c-desc">Se o celular perder sinal, salva as localizações localmente e envia quando reconectar — sem perder dados.</div>
+    </div>
+  </div>
+
+  <div class="divisor"></div>
+
+  <p style="font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--texto);">
+    Status exibidos no mapa
+  </p>
+
+  <div class="status-grid">
+    <div class="status-badge s-escola">
+      <div class="s-icon">🟢</div>
+      <div class="s-label" style="color: var(--verde);">NA ESCOLA</div>
+      <div class="s-desc">GPS dentro do raio de 100m da escola</div>
+    </div>
+    <div class="status-badge s-caminho">
+      <div class="s-icon">🟡</div>
+      <div class="s-label" style="color: var(--laranja);">A CAMINHO</div>
+      <div class="s-desc">Em deslocamento, fora da escola e de casa</div>
+    </div>
+    <div class="status-badge s-casa">
+      <div class="s-icon">🔵</div>
+      <div class="s-label" style="color: var(--azul);">EM CASA</div>
+      <div class="s-desc">GPS dentro do raio de 50m do endereço do aluno</div>
+    </div>
+  </div>
+
+  <div class="info-box info-azul">
+    <div class="info-icon">⏰</div>
+    <div class="info-texto">
+      <strong>Horário de funcionamento:</strong> 06h00 às 18h00 (horário de Brasília). Fora desse horário,
+      o sistema ignora os pings automaticamente — nenhum dado é coletado à noite ou nos fins de semana.
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PÁG 2 — PASSO A PASSO DA ESCOLA
+═══════════════════════════════════════════════ -->
+<div class="pagina">
+
+  <div class="secao-header">
+    <div class="secao-icone icone-escola">🏫</div>
+    <div>
+      <div class="secao-titulo cor-azul">PARA A ESCOLA<span>O que o coordenador precisa fazer — passo a passo</span></div>
+    </div>
+  </div>
+
+  <div class="passos">
+
+    <div class="passo passo-escola">
+      <div class="passo-num num-escola">1</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">🔑</span> Acesse a plataforma ITA</div>
+        <div class="passo-desc">
+          Entre em <strong>itatecnologiaeducacional.tech</strong> com seu e-mail de coordenador.
+          Use o link mágico enviado por e-mail — não precisa de senha.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-escola">
+      <div class="passo-num num-escola">2</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">📍</span> Abra o Mobile Tracker GPS</div>
+        <div class="passo-desc">
+          No menu lateral, procure <strong>MÓDULOS EXTRAS → Mobile Tracker GPS</strong>.
+          Clique para abrir o painel de rastreamento.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-escola">
+      <div class="passo-num num-escola">3</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">👥</span> Escolha os alunos que vão usar</div>
+        <div class="passo-desc">
+          Na aba <strong>Alunos</strong> do tracker, você verá a lista de todos os alunos cadastrados.
+          O serviço é <strong>opt-in</strong> — só participa quem você ativar e o aluno aceitar.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-escola">
+      <div class="passo-num num-escola">4</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">🔗</span> Gere o link do PWA para cada aluno</div>
+        <div class="passo-desc">
+          Clique em <strong>"Gerar Link"</strong> ao lado do nome do aluno.
+          O sistema gera automaticamente um link único e personalizado:<br><br>
+          <code>itatecnologiaeducacional.tech/pwa/tracker/?token=XXX&amp;nome=NomeDoAluno</code><br><br>
+          Esse link é <strong>exclusivo daquele aluno</strong>. Não compartilhe com outros.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-escola">
+      <div class="passo-num num-escola">5</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">📲</span> Envie o link para o aluno</div>
+        <div class="passo-desc">
+          Copie o link e envie para o aluno (WhatsApp, e-mail, impresso em papel ou no dia da entrega da carteirinha).
+          O aluno só precisa abrir esse link <strong>uma única vez</strong> no celular.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-escola">
+      <div class="passo-num num-escola">6</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">🗺️</span> Acesse o mapa em tempo real</div>
+        <div class="passo-desc">
+          No painel do tracker, aba <strong>Mapa</strong>, você vê todos os alunos em tempo real.
+          Clique no nome de um aluno para ver <strong>nome, status e horário da última atualização</strong>.
+          Alunos offline por mais de 15 minutos geram alertas automáticos.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-box info-azul">
+    <div class="info-icon">💡</div>
+    <div class="info-texto">
+      <strong>Dica:</strong> Você pode gerar links em lote imprimindo a lista de turma com os QR Codes de cada link.
+      Os alunos escaneiam o próprio QR Code e instalam o PWA na hora.
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PÁG 3 — PASSO A PASSO DO ALUNO
+═══════════════════════════════════════════════ -->
+<div class="pagina">
+
+  <div class="secao-header">
+    <div class="secao-icone icone-aluno">📱</div>
+    <div>
+      <div class="secao-titulo cor-verde">PARA O ALUNO<span>O que o dono do celular precisa fazer — passo a passo</span></div>
+    </div>
+  </div>
+
+  <div class="info-box info-verde">
+    <div class="info-icon">📋</div>
+    <div class="info-texto">
+      <strong>Requisito:</strong> Um smartphone com acesso à internet e GPS ativado.
+      Funciona em Android e iPhone. <strong>Não precisa baixar nenhum aplicativo</strong> — tudo acontece pelo navegador.
+    </div>
+  </div>
+
+  <div class="passos">
+
+    <div class="passo passo-aluno">
+      <div class="passo-num num-aluno">1</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">🔗</span> Abra o link que a escola enviou</div>
+        <div class="passo-desc">
+          Quando a escola te enviar o link, abra-o no navegador do celular
+          (<strong>Chrome</strong> no Android ou <strong>Safari</strong> no iPhone).
+          Se recebeu por WhatsApp, toque no link e escolha "Abrir no Chrome / Safari".
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-aluno">
+      <div class="passo-num num-aluno">2</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">📲</span> Instale o app (PWA)</div>
+        <div class="passo-desc">
+          O celular vai perguntar se você quer <strong>"Adicionar à tela inicial"</strong>.
+          Confirme — isso instala o rastreador como se fosse um app, sem precisar da loja.<br><br>
+          <strong>Android (Chrome):</strong> aparece um banner embaixo da tela ou no menu ⋮ → "Adicionar à tela inicial"<br>
+          <strong>iPhone (Safari):</strong> toque no ícone compartilhar <strong>⬆</strong> → "Adicionar à tela de início"
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-aluno">
+      <div class="passo-num num-aluno">3</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">✅</span> Aceite o termo de consentimento</div>
+        <div class="passo-desc">
+          Na primeira vez que abrir o app, aparece uma tela explicando o que será coletado.
+          Leia com calma e toque em <strong>"Aceitar e Ativar"</strong>.
+          Sem esse aceite, o GPS não funciona — isso protege você.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-aluno">
+      <div class="passo-num num-aluno">4</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">📍</span> Permita o acesso ao GPS</div>
+        <div class="passo-desc">
+          O celular vai pedir permissão para acessar sua localização.
+          Escolha <strong>"Permitir"</strong> ou <strong>"Sempre permitir"</strong>.<br><br>
+          ⚠️ Se escolher "Somente quando o app estiver aberto", o rastreamento pode parar quando você fechar a tela.
+          Prefira sempre a opção <strong>"Sempre permitir"</strong>.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-aluno">
+      <div class="passo-num num-aluno">5</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">🟢</span> Pronto — veja a tela verde "Online"</div>
+        <div class="passo-desc">
+          Quando aparecer <strong style="color: var(--verde);">● Online</strong> na tela, significa que está tudo funcionando
+          e a escola já pode te ver no mapa.
+          Você pode fechar o app — ele continua enviando em segundo plano.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-aluno">
+      <div class="passo-num num-aluno">6</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo"><span class="emoji">🔄</span> Mantenha o app instalado</div>
+        <div class="passo-desc">
+          Não desinstale o app. Nos dias de escola, abra-o pelo menos uma vez pela manhã para garantir
+          que o rastreamento está ativo. Nos fins de semana e fora do horário escolar, ele fica em silêncio automaticamente.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divisor"></div>
+
+  <div class="grid-2">
+    <div class="info-box info-verde" style="margin: 0;">
+      <div class="info-icon">✅</div>
+      <div class="info-texto">
+        <strong>O que o app coleta:</strong><br>
+        Latitude, longitude, horário e nível de bateria.<br>
+        Somente entre 06h e 18h.
+      </div>
+    </div>
+    <div class="info-box info-roxo" style="margin: 0;">
+      <div class="info-icon">🚫</div>
+      <div class="info-texto">
+        <strong>O que NÃO é coletado:</strong><br>
+        Fotos, mensagens, contatos, histórico do celular ou qualquer dado pessoal.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PÁG 4 — LGPD + PERGUNTAS FREQUENTES
+═══════════════════════════════════════════════ -->
+<div class="pagina">
+
+  <div class="secao-header">
+    <div class="secao-icone icone-como">⚖️</div>
+    <div>
+      <div class="secao-titulo cor-laranja">LGPD & PRIVACIDADE<span>Proteção de dados e respostas às dúvidas mais comuns</span></div>
+    </div>
+  </div>
+
+  <div class="lgpd-box">
+    <div class="lgpd-titulo">🔐 Conformidade com a LGPD</div>
+    <ul class="lgpd-lista">
+      <li>O consentimento é coletado explicitamente na primeira abertura do app — sem opt-out implícito</li>
+      <li>O aluno pode revogar o consentimento a qualquer momento acessando o app e desativando o serviço</li>
+      <li>Os dados de localização são armazenados com segurança e não são compartilhados com terceiros</li>
+      <li>O horário de coleta é limitado ao período escolar (06h–18h) — sem monitoramento noturno</li>
+      <li>Cada aluno possui um token único criptografado — sem exposição de dados pessoais na URL</li>
+      <li>A escola tem acesso apenas aos seus próprios alunos — nenhuma outra escola vê seus dados</li>
+      <li>Dados de localização históricos são mantidos por 90 dias e então apagados automaticamente</li>
+    </ul>
+  </div>
+
+  <div class="divisor"></div>
+
+  <p style="font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 20px; color: var(--texto);">
+    ❓ Perguntas Frequentes
+  </p>
+
+  <div class="passos">
+
+    <div class="passo passo-como">
+      <div class="passo-num num-como" style="font-size: 18px;">?</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo">O aluno sabe que está sendo rastreado?</div>
+        <div class="passo-desc">
+          <strong>Sim, sempre.</strong> A tela do app mostra claramente quando o GPS está ativo.
+          Além disso, o consentimento é obrigatório para ativar o serviço.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-como">
+      <div class="passo-num num-como" style="font-size: 18px;">?</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo">O que acontece se o aluno estiver sem internet?</div>
+        <div class="passo-desc">
+          O app salva as localizações internamente e envia tudo automaticamente quando o sinal voltar.
+          Não há perda de dados — o histórico é preservado.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-como">
+      <div class="passo-num num-como" style="font-size: 18px;">?</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo">E se o aluno não quiser participar?</div>
+        <div class="passo-desc">
+          O serviço é totalmente opcional. Se o aluno ou responsável não aceitar o consentimento,
+          o GPS simplesmente não é ativado. O aluno aparece como <strong>"Sem rastreamento"</strong> no mapa.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-como">
+      <div class="passo-num num-como" style="font-size: 18px;">?</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo">Funciona no iPhone?</div>
+        <div class="passo-desc">
+          Sim. No iPhone, use o <strong>Safari</strong> para abrir o link e adicionar à tela de início.
+          O rastreamento em segundo plano no iPhone pode ser menos preciso por limitações do iOS —
+          orientamos que o app fique aberto minimizado durante o trajeto escolar.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo passo-como">
+      <div class="passo-num num-como" style="font-size: 18px;">?</div>
+      <div class="passo-conteudo">
+        <div class="passo-titulo">Quanto gasta de bateria e dados?</div>
+        <div class="passo-desc">
+          Muito pouco. O GPS é consultado a cada 1–5 minutos e cada envio tem menos de 200 bytes.
+          Para comparar: 8 horas de rastreamento usa menos dados que uma única foto enviada por WhatsApp.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Rodapé -->
+  <div class="doc-rodape">
+    <div class="logo-footer">ITA TECNOLOGIA EDUCACIONAL</div>
+    <p>Suporte técnico: <a href="mailto:itagamificaedu@gmail.com">itagamificaedu@gmail.com</a></p>
+    <p>Plataforma: <a href="https://itatecnologiaeducacional.tech">itatecnologiaeducacional.tech</a></p>
+    <p style="margin-top: 12px; font-size: 11px; color: rgba(148,163,184,.5);">
+      Este documento é destinado aos usuários da plataforma ITA Tecnologia Educacional.<br>
+      Mobile Tracker GPS — Guia de Ativação v1.0 &nbsp;·&nbsp; 2026
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

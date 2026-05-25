@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl *)",
+      "Bash(netstat *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(pip *)",
+      "Bash(pip3 *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "Bash(git *)",
+      "Bash(npx *)",
+      "Bash(taskkill *)",
+      "Bash(tasklist *)",
+      "Bash(where *)",
+      "Bash(powershell *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"cd /app && docker compose build django 2>&1 | tail -5\")",
+      "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"cd /app && docker compose up -d django && sleep 8 && docker compose logs django --tail=20\")",
+      "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"cd /app && git pull origin main && docker compose restart django && sleep 6 && docker compose logs django --tail=5\")",
+      "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"cd /app && git pull origin main && docker compose build react 2>&1 | tail -5 && docker compose up -d react && echo PRONTO\")"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}

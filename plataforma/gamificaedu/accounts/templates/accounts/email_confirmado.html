@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% block title %}Email confirmado!{% endblock %}
+{% block content %}
+<section style="min-height:80vh;display:flex;align-items:center;text-align:center">
+<div class="container">
+    <div style="font-size:5rem;margin-bottom:16px">✅</div>
+    <h2 class="section-title">Email confirmado!</h2>
+    <p class="section-subtitle mt-3 mx-auto" style="max-width:480px">
+        Obrigado, {{ professor.first_name }}! Seu email foi confirmado. Agora aguarde a aprovação do administrador — você receberá um aviso em breve.
+    </p>
+    <a href="/accounts/login/" class="btn-glow-purple btn mt-4">Ir para o login</a>
+</div>
+</section>
+{% endblock %}

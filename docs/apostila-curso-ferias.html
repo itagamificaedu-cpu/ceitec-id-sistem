@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Apostila — Alunos Maker Não Tiram Férias</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0E1A; --bg2:#0F1628; --card:#0D1525;
+  --orange:#F5A623; --green:#22C55E; --blue:#3B82F6;
+  --purple:#8B5CF6; --red:#EF4444; --teal:#14B8A6;
+  --text:#F0F4FF; --text2:#C8D0E8; --muted:#8A95B5;
+  --fh:'Bebas Neue',cursive; --fb:'Space Grotesk',sans-serif;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.6;font-size:15px}
+h1,h2,h3,h4{font-family:var(--fh);letter-spacing:1px;line-height:1.1}
+
+/* ── CAPA ── */
+.capa{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:60px 40px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#070b16 0%,#0d1b3e 50%,#070b16 100%);
+  page-break-after:always;
+}
+.capa::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 40%,rgba(245,166,35,.1) 0,transparent 55%),
+             radial-gradient(ellipse at 70% 70%,rgba(59,130,246,.07) 0,transparent 50%);
+}
+.capa-logo{
+  background:var(--orange);color:#000;font-family:var(--fh);
+  font-size:18px;letter-spacing:3px;padding:8px 22px;border-radius:8px;
+  margin-bottom:40px;position:relative;z-index:1;
+}
+.capa-rocket{font-size:90px;margin-bottom:24px;position:relative;z-index:1;
+  filter:drop-shadow(0 0 40px rgba(245,166,35,.5));}
+.capa h1{font-size:clamp(52px,8vw,96px);position:relative;z-index:1;
+  text-shadow:0 0 80px rgba(245,166,35,.2);}
+.capa h1 .outline{-webkit-text-stroke:3px var(--orange);color:transparent;display:block}
+.capa-sub{font-size:18px;color:var(--text2);margin:20px 0 32px;position:relative;z-index:1;letter-spacing:2px}
+.capa-linha{width:100px;height:3px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:0 auto 32px;position:relative;z-index:1}
+.capa-pills{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1;margin-bottom:60px}
+.cpill{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--orange);
+  padding:7px 18px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:1px}
+.capa-footer{position:absolute;bottom:30px;font-size:13px;color:var(--muted);z-index:1}
+
+/* ── PÁGINAS ── */
+.pagina{max-width:860px;margin:0 auto;padding:60px 48px;page-break-after:always}
+.pagina:last-child{page-break-after:auto}
+
+/* ── DIA — HEADER ── */
+.dia-header{
+  border-radius:20px;padding:36px;margin-bottom:36px;position:relative;overflow:hidden;
+  display:flex;align-items:center;gap:28px;
+}
+.dia-header::before{content:'';position:absolute;right:-30px;top:-30px;width:200px;height:200px;
+  border-radius:50%;opacity:.07}
+.dh-azul{background:linear-gradient(135deg,#0d1e40,#0a1628);border:1px solid rgba(59,130,246,.3)}
+.dh-azul::before{background:var(--blue)}
+.dh-verde{background:linear-gradient(135deg,#0d2818,#0a1f12);border:1px solid rgba(34,197,94,.3)}
+.dh-verde::before{background:var(--green)}
+.dh-laranja{background:linear-gradient(135deg,#2a1a06,#1f1305);border:1px solid rgba(245,166,35,.3)}
+.dh-laranja::before{background:var(--orange)}
+.dh-roxo{background:linear-gradient(135deg,#1a0d30,#12091f);border:1px solid rgba(139,92,246,.3)}
+.dh-roxo::before{background:var(--purple)}
+.dh-ouro{background:linear-gradient(135deg,#2a1f00,#1f1600);border:2px solid rgba(245,166,35,.5)}
+.dh-ouro::before{background:var(--orange)}
+
+.dia-num{
+  font-family:var(--fh);font-size:80px;line-height:1;flex-shrink:0;opacity:.25;
+  position:absolute;right:32px;bottom:-10px;
+}
+.dia-badge{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;opacity:.7}
+.dia-icon{font-size:56px;flex-shrink:0}
+.dia-titulo{font-family:var(--fh);font-size:38px;letter-spacing:1px;margin-bottom:8px}
+.dia-sub{font-size:14px;color:var(--text2)}
+
+/* ── SEÇÕES ── */
+.sec{margin-bottom:32px}
+.sec-titulo{
+  font-family:var(--fh);font-size:22px;letter-spacing:1px;
+  margin-bottom:16px;display:flex;align-items:center;gap:10px;
+  padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+/* ── OBJETIVO ── */
+.obj-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.obj-list li{display:flex;gap:12px;align-items:flex-start;
+  background:rgba(255,255,255,.03);border-radius:10px;padding:12px 16px;
+  font-size:14px;color:var(--text2)}
+.obj-list li::before{content:'▶';color:var(--orange);font-size:12px;flex-shrink:0;margin-top:2px}
+
+/* ── TEORIA ── */
+.teoria-box{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:24px;margin-bottom:16px;
+}
+.teoria-box p{color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:12px}
+.teoria-box p:last-child{margin-bottom:0}
+.teoria-box strong{color:var(--text)}
+.analogia{
+  background:rgba(245,166,35,.06);border-left:3px solid var(--orange);
+  border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;
+  font-size:14px;color:var(--text2);font-style:italic;
+}
+.analogia strong{color:var(--orange);font-style:normal}
+
+/* ── COMPONENTES ── */
+.comp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.comp-card{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:16px;text-align:center;
+  transition:border-color .2s;
+}
+.comp-card:hover{border-color:rgba(245,166,35,.3)}
+.comp-icon{font-size:32px;margin-bottom:8px}
+.comp-nome{font-family:var(--fh);font-size:16px;letter-spacing:.5px;margin-bottom:6px}
+.comp-func{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ── PASSO A PASSO ── */
+.passo{
+  display:flex;gap:18px;align-items:flex-start;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);
+  border-radius:14px;padding:18px;margin-bottom:12px;
+}
+.passo-num{
+  width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-size:20px;flex-shrink:0;
+}
+.pn-azul{background:rgba(59,130,246,.2);color:var(--blue);border:1px solid rgba(59,130,246,.4)}
+.pn-verde{background:rgba(34,197,94,.2);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+.pn-laranja{background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)}
+.pn-roxo{background:rgba(139,92,246,.2);color:var(--purple);border:1px solid rgba(139,92,246,.4)}
+.passo-conteudo{flex:1}
+.passo-titulo{font-weight:700;font-size:15px;margin-bottom:4px}
+.passo-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.passo-desc code{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+  padding:1px 7px;border-radius:5px;font-family:monospace;font-size:12px;color:var(--green)
+}
+
+/* ── MISSÃO ── */
+.missao{
+  background:linear-gradient(135deg,rgba(245,166,35,.08),rgba(245,166,35,.02));
+  border:2px solid rgba(245,166,35,.3);border-radius:18px;padding:28px;margin:28px 0;
+}
+.missao-titulo{
+  font-family:var(--fh);font-size:28px;color:var(--orange);
+  margin-bottom:12px;letter-spacing:1px;
+}
+.missao p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.missao ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.missao ul li{display:flex;gap:10px;font-size:13px;color:var(--muted)}
+.missao ul li::before{content:'→';color:var(--orange);flex-shrink:0}
+
+/* ── CURIOSIDADE ── */
+.curiosidade{
+  background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);
+  border-radius:14px;padding:20px;margin:20px 0;
+  display:flex;gap:16px;align-items:flex-start;
+}
+.cur-icon{font-size:28px;flex-shrink:0}
+.cur-texto{font-size:13px;color:var(--text2);line-height:1.7}
+.cur-texto strong{color:var(--blue)}
+
+/* ── CHECKLIST ── */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:8px}
+.checklist li{
+  display:flex;gap:12px;align-items:flex-start;
+  background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15);
+  border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text2);
+}
+.checklist li::before{
+  content:'□';color:var(--green);font-size:16px;flex-shrink:0;line-height:1.2
+}
+
+/* ── DIAGRAMA ── */
+.diagrama-wrap{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:24px;text-align:center;margin:20px 0;
+}
+.diagrama-titulo{font-size:12px;color:var(--muted);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:16px;font-weight:600}
+
+/* ── CODE BLOCK ── */
+.code-block{
+  background:#060b14;border:1px solid rgba(34,197,94,.2);
+  border-radius:12px;padding:20px;font-family:monospace;
+  font-size:13px;line-height:1.8;overflow-x:auto;margin:16px 0;
+}
+.c-comment{color:#4a6060}.c-keyword{color:#c792ea}.c-func{color:#82aaff}
+.c-string{color:#c3e88d}.c-number{color:var(--orange)}.c-type{color:var(--teal)}
+
+/* ── INFO BOX ── */
+.info{border-radius:12px;padding:16px 20px;margin:16px 0;display:flex;gap:14px;font-size:13px;color:var(--text2)}
+.info-laranja{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.25)}
+.info-verde{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25)}
+.info-azul{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25)}
+.info-icon{font-size:22px;flex-shrink:0}
+
+/* ── GLOSSÁRIO ── */
+.gloss-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gloss-item{background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:14px 16px}
+.gloss-termo{font-family:var(--fh);font-size:17px;color:var(--orange);
+  letter-spacing:.5px;margin-bottom:4px}
+.gloss-def{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ── CERTIFICADO ── */
+.cert{
+  border:3px solid var(--orange);border-radius:24px;padding:50px 60px;
+  text-align:center;background:linear-gradient(160deg,#0a0f1e,#0d1b3e,#0a0f1e);
+  position:relative;overflow:hidden;
+}
+.cert::before,.cert::after{
+  content:'';position:absolute;width:300px;height:300px;border-radius:50%;opacity:.04;
+}
+.cert::before{background:var(--orange);top:-100px;left:-100px}
+.cert::after{background:var(--blue);bottom:-100px;right:-100px}
+.cert-logo{font-family:var(--fh);font-size:16px;color:var(--orange);
+  letter-spacing:3px;margin-bottom:20px;position:relative;z-index:1}
+.cert h2{font-family:var(--fh);font-size:14px;letter-spacing:4px;
+  color:var(--muted);margin-bottom:10px;position:relative;z-index:1}
+.cert h1{font-family:var(--fh);font-size:56px;color:var(--text);
+  margin-bottom:8px;position:relative;z-index:1}
+.cert-nome{
+  border-bottom:2px solid var(--orange);min-width:300px;display:inline-block;
+  margin:10px 0 6px;font-size:28px;font-weight:700;color:var(--orange);
+  font-family:var(--fh);letter-spacing:1px;min-height:40px;
+  position:relative;z-index:1;
+}
+.cert p{font-size:14px;color:var(--text2);margin:10px 0;position:relative;z-index:1}
+.cert-data{margin-top:40px;display:flex;justify-content:space-between;
+  padding-top:20px;border-top:1px solid rgba(255,255,255,.1);
+  position:relative;z-index:1}
+.cert-assinatura{text-align:center}
+.cert-linha{width:150px;height:1px;background:rgba(255,255,255,.3);
+  margin:0 auto 6px}
+.cert-cargo{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+
+/* ── ANOTAÇÕES ── */
+.nota-area{
+  border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;
+  min-height:200px;background:rgba(255,255,255,.01);
+}
+.nota-linha{
+  border-bottom:1px dashed rgba(255,255,255,.08);height:32px;margin-bottom:0;
+}
+
+/* ── PRINT ── */
+@media print{
+  body{background:#0a0f1e!important;color:#f0f4ff!important}
+  .pagina{page-break-after:always;page-break-inside:avoid}
+  .passo,.comp-card,.gloss-item{page-break-inside:avoid}
+  @page{size:A4;margin:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ CAPA ══════════════════════════════════════════ -->
+<div class="capa">
+  <div class="capa-logo">ITA TECNOLOGIA EDUCACIONAL</div>
+  <div class="capa-rocket">🚀</div>
+  <h1>
+    ALUNOS MAKER
+    <span class="outline">NÃO TIRAM</span>
+    FÉRIAS
+  </h1>
+  <p class="capa-sub">APOSTILA OFICIAL DO CURSO — JULHO 2026</p>
+  <div class="capa-linha"></div>
+  <div class="capa-pills">
+    <div class="cpill">📅 5 DIAS</div>
+    <div class="cpill">⚡ 25H DE IMERSÃO</div>
+    <div class="cpill">🤖 ROBÓTICA REAL</div>
+    <div class="cpill">🏆 DEMO DAY</div>
+  </div>
+  <div class="capa-footer">Itapipoca, Ceará · itatecnologiaeducacional.tech</div>
+</div>
+
+<!-- ══ APRESENTAÇÃO ════════════════════════════════== -->
+<div class="pagina">
+  <div class="sec">
+    <h2 class="sec-titulo"><span>👋</span> Bem-vindo, Maker!</h2>
+    <div class="teoria-box">
+      <p>Você está segurando nas mãos <strong>mais do que uma apostila</strong> — é o roteiro de 5 dias que vão mudar a forma como você vê o mundo.</p>
+      <p>Durante esta semana você vai aprender a criar coisas que funcionam de verdade: circuitos que acendem, sensores que medem, robôs que se movem e projetos que você vai controlar pelo seu celular. Isso não é ficção científica — é o que engenheiros, makers e criadores fazem todos os dias.</p>
+      <p>Cada dia desta apostila tem teoria, atividades passo a passo e um <strong style="color:var(--orange)">desafio (missão)</strong> para você resolver sozinho. Escreva nela, rabisque, anote suas dúvidas e conquistas. Ela é sua.</p>
+    </div>
+    <div class="info info-laranja">
+      <div class="info-icon">💡</div>
+      <div><strong style="color:var(--orange)">Como usar esta apostila:</strong><br>
+      Leia a teoria antes de começar a montagem. Siga os passos numerados com calma. Se travar, pergunte — não existe pergunta boba aqui. Ao final de cada dia, preencha o checklist e registre o que aprendeu nas páginas de anotações.</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📅</span> Visão Geral dos 5 Dias</h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="passo">
+        <div class="passo-num pn-azul">1</div>
+        <div class="passo-conteudo">
+          <div class="passo-titulo">🔬 Mundo Maker &amp; Eletrônica Básica</div>
+          <div class="passo-desc">Componentes, protoboard, LEDs, resistores, multímetro. Primeiro circuito funcionando.</div>
+        </div>
+      </div>
+      <div class="passo">
+        <div class="passo-num pn-verde">2</div>
+        <div class="passo-conteudo">
+          <div class="passo-titulo">⚡ Arduino na Prática</div>
+          <div class="passo-desc">IDE, programação, sensores de temperatura e distância. Protótipo interativo.</div>
+        </div>
+      </div>
+      <div class="passo">
+        <div class="passo-num pn-laranja">3</div>
+        <div class="passo-conteudo">
+          <div class="passo-titulo">🤖 Robótica e Movimento</div>
+          <div class="passo-desc">Motores, chassi, driver L298N. Robô que desvia de obstáculos sozinho.</div>
+        </div>
+      </div>
+      <div class="passo">
+        <div class="passo-num pn-roxo">4</div>
+        <div class="passo-conteudo">
+          <div class="passo-titulo">📡 ESP32 &amp; Controle Sem Fio</div>
+          <div class="passo-desc">WiFi, dashboard web, controle pelo celular. Robô wireless!</div>
+        </div>
+      </div>
+      <div class="passo">
+        <div class="passo-num" style="background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)">5</div>
+        <div class="passo-conteudo">
+          <div class="passo-titulo">🏆 Demo Day — Mostra Maker</div>
+          <div class="passo-desc">Apresentação do projeto, campeonato estoura balão, certificados!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>⚠️</span> Regras do Lab</h2>
+    <ul class="checklist">
+      <li>Nunca conecte componentes à energia sem conferir o circuito com o instrutor</li>
+      <li>Use óculos de proteção ao trabalhar com solda ou cortes</li>
+      <li>Nunca deixe cabos soltos conectados ao computador sem supervisão</li>
+      <li>Trate os equipamentos com cuidado — eles são de todos</li>
+      <li>Se algo pegar fogo ou cheirar queimado: desconecte imediatamente e avise</li>
+      <li>Organize seu espaço ao final de cada atividade</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ DIA 1 ══════════════════════════════════════════ -->
+<div class="pagina">
+  <div class="dia-header dh-azul">
+    <div class="dia-icon">🔬</div>
+    <div>
+      <div class="dia-badge" style="color:var(--blue)">DIA 1 · ELETRÔNICA</div>
+      <div class="dia-titulo">MUNDO MAKER &amp;<br>ELETRÔNICA BÁSICA</div>
+      <div class="dia-sub">Do zero ao primeiro circuito em 4 horas</div>
+    </div>
+    <div class="dia-num" style="color:var(--blue)">01</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--blue)"><span>🎯</span> Objetivos de Hoje</h2>
+    <ul class="obj-list">
+      <li>Entender o que é cultura maker e por que ela importa</li>
+      <li>Identificar os principais componentes eletrônicos (LED, resistor, capacitor)</li>
+      <li>Usar a protoboard para montar circuitos sem solda</li>
+      <li>Montar e fazer funcionar seu primeiro circuito com LED</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> Teoria — Eletrônica para Quem Nunca Viu</h2>
+    <div class="teoria-box">
+      <p><strong>O que é eletricidade?</strong> É o fluxo de elétrons (partículas minúsculas) por dentro de materiais condutores, como fios de cobre. Pense nela como água em um cano: a tensão (voltagem) é a pressão da água, a corrente é a quantidade que passa, e a resistência é o quanto o cano dificulta a passagem.</p>
+      <p><strong>Componentes eletrônicos</strong> são peças que controlam esse fluxo. Cada um tem uma função específica, assim como válvulas, bombas e filtros em uma tubulação.</p>
+    </div>
+    <div class="analogia">
+      <strong>🚰 Analogia do cano:</strong> Tensão = pressão da bomba d'água · Corrente = litros por segundo · Resistência = tubo mais fino que dificulta a passagem
+    </div>
+    <div class="teoria-box">
+      <p><strong>Protoboard</strong> é uma placa plástica com furos conectados internamente. Serve para montar circuitos temporários sem precisar soldar — encaixa, testa, ajusta. As colunas do meio são conectadas verticalmente; as fileiras das bordas (+ e –) são trilhos de energia horizontal.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🔧</span> Componentes do Dia</h2>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-icon">💡</div>
+        <div class="comp-nome">LED</div>
+        <div class="comp-func">Light Emitting Diode — emite luz quando corrente passa. Tem polaridade: perna longa (+), perna curta (–)</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">〰️</div>
+        <div class="comp-nome">RESISTOR</div>
+        <div class="comp-func">Limita a corrente. Sem ele o LED queima. As faixas coloridas indicam o valor em Ohms (Ω)</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">⚡</div>
+        <div class="comp-nome">PROTOBOARD</div>
+        <div class="comp-func">Placa para montar circuitos sem solda. 830 furos. Ideal para testes e protótipos</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🔋</div>
+        <div class="comp-nome">BATERIA 9V</div>
+        <div class="comp-func">Fornece energia ao circuito. Tem terminal positivo (+) e negativo (–). Não inverta!</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🔴</div>
+        <div class="comp-nome">JUMPER</div>
+        <div class="comp-func">Cabos de conexão para a protoboard. Macho-Macho (M-M), Macho-Fêmea (M-F)</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">📏</div>
+        <div class="comp-nome">MULTÍMETRO</div>
+        <div class="comp-func">Mede tensão, corrente e resistência. Essencial para diagnosticar problemas no circuito</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIA 1 — ATIVIDADE -->
+<div class="pagina">
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--blue)"><span>🛠️</span> Atividade — Circuito LED na Protoboard</h2>
+
+    <div class="diagrama-wrap">
+      <div class="diagrama-titulo">Diagrama do Circuito — LED + Resistor + Bateria 9V</div>
+      <svg width="500" height="200" viewBox="0 0 500 200" style="max-width:100%">
+        <!-- Fio + -->
+        <line x1="60" y1="80" x2="160" y2="80" stroke="#f5a623" stroke-width="3"/>
+        <!-- Resistor -->
+        <rect x="160" y="68" width="60" height="24" rx="4" fill="none" stroke="#f5a623" stroke-width="2.5" stroke-dasharray="4"/>
+        <text x="190" y="84" fill="#f5a623" font-size="11" text-anchor="middle" font-family="monospace">330Ω</text>
+        <!-- Fio resistor→LED -->
+        <line x1="220" y1="80" x2="290" y2="80" stroke="#f5a623" stroke-width="3"/>
+        <!-- LED -->
+        <polygon points="290,65 290,95 325,80" fill="rgba(245,166,35,.3)" stroke="#f5a623" stroke-width="2.5"/>
+        <line x1="325" y1="65" x2="325" y2="95" stroke="#f5a623" stroke-width="2.5"/>
+        <!-- Brilho LED -->
+        <line x1="335" y1="65" x2="348" y2="55" stroke="#f5a623" stroke-width="1.5" opacity=".6"/>
+        <line x1="338" y1="72" x2="353" y2="66" stroke="#f5a623" stroke-width="1.5" opacity=".6"/>
+        <!-- Fio GND -->
+        <line x1="325" y1="80" x2="400" y2="80" stroke="#3b82f6" stroke-width="3"/>
+        <line x1="400" y1="80" x2="400" y2="140" stroke="#3b82f6" stroke-width="3"/>
+        <line x1="60" y1="80" x2="60" y2="140" stroke="#f5a623" stroke-width="3"/>
+        <!-- Bateria -->
+        <rect x="60" y="130" width="340" height="40" rx="8" fill="#0d1525" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
+        <text x="100" y="154" fill="#f5a623" font-size="12" font-family="monospace">+</text>
+        <text x="380" y="154" fill="#3b82f6" font-size="12" font-family="monospace">–</text>
+        <text x="230" y="155" fill="#8a95b5" font-size="11" text-anchor="middle" font-family="monospace">BATERIA 9V</text>
+        <!-- Labels -->
+        <text x="190" y="58" fill="#8a95b5" font-size="10" text-anchor="middle">Resistor</text>
+        <text x="307" y="58" fill="#8a95b5" font-size="10" text-anchor="middle">LED</text>
+      </svg>
+    </div>
+
+    <div class="passo"><div class="passo-num pn-azul">1</div><div class="passo-conteudo"><div class="passo-titulo">Pegue a protoboard e os componentes</div><div class="passo-desc">1 LED vermelho, 1 resistor 330Ω (faixas laranja-laranja-marrom), 2 jumpers, 1 bateria 9V com adaptador</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">2</div><div class="passo-conteudo"><div class="passo-titulo">Encaixe o LED na protoboard</div><div class="passo-desc">Coloque a perna longa (+) na coluna E5 e a perna curta (–) na coluna E6. As pernas devem ficar em colunas diferentes.</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">3</div><div class="passo-conteudo"><div class="passo-titulo">Conecte o resistor em série</div><div class="passo-desc">Uma perna do resistor na coluna D5 (mesma linha do LED +), outra perna na coluna A5. O resistor não tem polaridade — pode virar dos dois lados.</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">4</div><div class="passo-conteudo"><div class="passo-titulo">Ligue o trilho positivo ao resistor</div><div class="passo-desc">Jumper do trilho + (vermelho) da protoboard até a coluna onde está a outra perna do resistor (A5).</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">5</div><div class="passo-conteudo"><div class="passo-titulo">Ligue o trilho negativo ao LED</div><div class="passo-desc">Jumper do trilho – (preto) até a coluna da perna curta do LED (E6).</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">6</div><div class="passo-conteudo"><div class="passo-titulo">Conecte a bateria e confira o resultado</div><div class="passo-desc">Plugue o adaptador da bateria 9V nos trilhos da protoboard (+vermelho, –preto). O LED deve acender! Se não acender, verifique a polaridade do LED.</div></div></div>
+  </div>
+
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 1</div>
+    <p>Você fez um LED acender. Agora o desafio: <strong>faça um semáforo com 3 LEDs</strong> (vermelho, amarelo, verde) usando a mesma protoboard. Cada LED precisa de um resistor próprio.</p>
+    <ul>
+      <li>Use 3 LEDs de cores diferentes</li>
+      <li>Cada LED precisa de um resistor 330Ω em série</li>
+      <li>Todos os negativos vão para o trilho GND</li>
+      <li>Todos os positivos ao trilho +5V</li>
+    </ul>
+  </div>
+
+  <div class="curiosidade">
+    <div class="cur-icon">💡</div>
+    <div class="cur-texto"><strong>Sabia que?</strong> O LED foi inventado em 1962 pelo físico Nick Holonyak Jr., mas o LED azul — que permite criar LEDs brancos e telas modernas — só foi criado em 1993. Os inventores do LED azul ganharam o Prêmio Nobel de Física em 2014. Cada vez que você vê uma tela de celular ou uma lâmpada LED, está usando essa tecnologia!</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist do Dia 1</h2>
+    <ul class="checklist">
+      <li>Identifiquei os componentes: LED, resistor, protoboard, jumper, bateria</li>
+      <li>Entendi para que serve cada componente</li>
+      <li>Montei o circuito com LED acendendo</li>
+      <li>Completei a Missão (semáforo com 3 LEDs)</li>
+      <li>Guardei os componentes no kit corretamente</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ DIA 2 ══════════════════════════════════════════ -->
+<div class="pagina">
+  <div class="dia-header dh-verde">
+    <div class="dia-icon">⚡</div>
+    <div>
+      <div class="dia-badge" style="color:var(--green)">DIA 2 · PROGRAMAÇÃO</div>
+      <div class="dia-titulo">ARDUINO<br>NA PRÁTICA</div>
+      <div class="dia-sub">Quando o hardware começa a obedecer você</div>
+    </div>
+    <div class="dia-num" style="color:var(--green)">02</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>🎯</span> Objetivos de Hoje</h2>
+    <ul class="obj-list">
+      <li>Entender o que é um microcontrolador e para que serve o Arduino</li>
+      <li>Escrever e carregar seu primeiro código (sketch) na placa</li>
+      <li>Usar sensor de temperatura DHT11 e sensor ultrassônico HC-SR04</li>
+      <li>Exibir dados no Serial Monitor e controlar LEDs por programação</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> O Que é o Arduino?</h2>
+    <div class="teoria-box">
+      <p><strong>Arduino</strong> é uma placa com um microcontrolador — um computador minúsculo que executa um programa repetidamente. Ele tem pinos de entrada e saída (I/O) que permitem ler sensores e controlar componentes.</p>
+      <p>Você programa ele usando a <strong>IDE Arduino</strong> (software gratuito no computador). Escreve o código em C++ simplificado, clica em "Carregar" e ele começa a executar na placa imediatamente.</p>
+    </div>
+    <div class="analogia">
+      <strong>🧠 Analogia:</strong> O Arduino é o cérebro. Os sensores são os olhos e ouvidos. Os LEDs, motores e buzzers são os músculos. O código que você escreve é o que diz ao cérebro o que fazer com as informações dos sentidos.
+    </div>
+    <div class="teoria-box">
+      <p>Todo sketch Arduino tem dois blocos obrigatórios:<br>
+      <strong>setup()</strong> — executado uma vez ao ligar (configurações iniciais)<br>
+      <strong>loop()</strong> — executado para sempre em repetição (lógica principal)</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>💻</span> Seu Primeiro Código — LED Piscando</h2>
+    <div class="code-block">
+<span class="c-comment">// LED Piscando — o "Hello World" do Arduino</span>
+<span class="c-type">void</span> <span class="c-func">setup</span>() {
+  <span class="c-func">pinMode</span>(<span class="c-number">13</span>, OUTPUT);  <span class="c-comment">// Pino 13 como saída</span>
+}
+
+<span class="c-type">void</span> <span class="c-func">loop</span>() {
+  <span class="c-func">digitalWrite</span>(<span class="c-number">13</span>, HIGH);  <span class="c-comment">// Liga o LED</span>
+  <span class="c-func">delay</span>(<span class="c-number">1000</span>);               <span class="c-comment">// Espera 1 segundo</span>
+  <span class="c-func">digitalWrite</span>(<span class="c-number">13</span>, LOW);   <span class="c-comment">// Desliga o LED</span>
+  <span class="c-func">delay</span>(<span class="c-number">1000</span>);               <span class="c-comment">// Espera 1 segundo</span>
+}
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🌡️</span> Sensor de Temperatura DHT11</h2>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-icon">🌡️</div>
+        <div class="comp-nome">DHT11</div>
+        <div class="comp-func">Mede temperatura (0-50°C) e umidade (20-80%). 3 pinos: VCC (+), GND (–), DATA (sinal)</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">📡</div>
+        <div class="comp-nome">HC-SR04</div>
+        <div class="comp-func">Sensor ultrassônico. Mede distância de 2cm a 400cm. 4 pinos: VCC, GND, TRIG, ECHO</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🖥️</div>
+        <div class="comp-nome">SERIAL MONITOR</div>
+        <div class="comp-func">Janela na IDE que mostra dados enviados pelo Arduino via USB. Use Serial.println() para imprimir</div>
+      </div>
+    </div>
+
+    <div class="code-block" style="margin-top:16px">
+<span class="c-comment">// Lendo distância com HC-SR04</span>
+<span class="c-type">const int</span> trigPin = <span class="c-number">9</span>;
+<span class="c-type">const int</span> echoPin = <span class="c-number">10</span>;
+
+<span class="c-type">void</span> <span class="c-func">setup</span>() {
+  Serial.<span class="c-func">begin</span>(<span class="c-number">9600</span>);
+  <span class="c-func">pinMode</span>(trigPin, OUTPUT);
+  <span class="c-func">pinMode</span>(echoPin, INPUT);
+}
+
+<span class="c-type">void</span> <span class="c-func">loop</span>() {
+  <span class="c-func">digitalWrite</span>(trigPin, LOW);   <span class="c-func">delayMicroseconds</span>(<span class="c-number">2</span>);
+  <span class="c-func">digitalWrite</span>(trigPin, HIGH);  <span class="c-func">delayMicroseconds</span>(<span class="c-number">10</span>);
+  <span class="c-func">digitalWrite</span>(trigPin, LOW);
+  <span class="c-type">long</span> duracao = <span class="c-func">pulseIn</span>(echoPin, HIGH);
+  <span class="c-type">float</span> distancia = duracao * <span class="c-number">0.034</span> / <span class="c-number">2</span>;
+  Serial.<span class="c-func">print</span>(<span class="c-string">"Distância: "</span>);
+  Serial.<span class="c-func">println</span>(distancia);
+  <span class="c-func">delay</span>(<span class="c-number">500</span>);
+}
+    </div>
+  </div>
+
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 2</div>
+    <p>Crie um <strong>alarme de proximidade</strong>: quando alguém se aproximar a menos de 20cm do sensor HC-SR04, o LED vermelho acende e o Serial Monitor exibe "⚠️ ALERTA!".</p>
+    <ul>
+      <li>Quando distância &lt; 20cm → LED vermelho ON + mensagem "ALERTA!"</li>
+      <li>Quando distância ≥ 20cm → LED verde ON + mensagem "OK"</li>
+      <li>Bônus: adicione um buzzer que apita quando alerta</li>
+    </ul>
+  </div>
+
+  <div class="curiosidade">
+    <div class="cur-icon">🦇</div>
+    <div class="cur-texto"><strong>Sabia que?</strong> O sensor HC-SR04 funciona como o eco dos morcegos! Ele emite um pulso ultrassônico (som acima da frequência que ouvimos) e mede quanto tempo leva para o eco retornar. Dividindo pela velocidade do som (343 m/s) e por 2 (ida e volta), você tem a distância exata.</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist do Dia 2</h2>
+    <ul class="checklist">
+      <li>Entendi a diferença entre setup() e loop()</li>
+      <li>Carreguei meu primeiro sketch no Arduino</li>
+      <li>Conectei e li o sensor DHT11 (temperatura/umidade)</li>
+      <li>Conectei e li o sensor HC-SR04 (distância)</li>
+      <li>Completei a Missão (alarme de proximidade)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ DIA 3 ══════════════════════════════════════════ -->
+<div class="pagina">
+  <div class="dia-header dh-laranja">
+    <div class="dia-icon">🤖</div>
+    <div>
+      <div class="dia-badge" style="color:var(--orange)">DIA 3 · ROBÓTICA</div>
+      <div class="dia-titulo">ROBÓTICA<br>E MOVIMENTO</div>
+      <div class="dia-sub">Faça seu robô ganhar vida — e autonomia</div>
+    </div>
+    <div class="dia-num" style="color:var(--orange)">03</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--orange)"><span>🎯</span> Objetivos de Hoje</h2>
+    <ul class="obj-list">
+      <li>Entender como motores DC funcionam e por que precisam de driver</li>
+      <li>Montar um chassi de robô 2WD completo</li>
+      <li>Programar movimentos: frente, ré, curva direita, curva esquerda</li>
+      <li>Usar o HC-SR04 para criar desvio autônomo de obstáculos</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> Motores e o Driver L298N</h2>
+    <div class="teoria-box">
+      <p><strong>Motor DC</strong> gira quando recebe corrente elétrica. Inverta a polaridade e ele gira ao contrário. O problema: motores precisam de mais corrente do que o Arduino consegue fornecer (Arduino: 40mA por pino; motor: até 2A).</p>
+      <p>Por isso usamos o <strong>Driver L298N</strong> — uma ponte H. Ele recebe o sinal de controle (baixa corrente) do Arduino e usa energia de uma fonte separada (bateria) para alimentar os motores com a corrente necessária.</p>
+    </div>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-icon">⚙️</div>
+        <div class="comp-nome">MOTOR DC</div>
+        <div class="comp-func">Converte eletricidade em rotação. Com caixa de redução ganha torque. Sentido de rotação muda com a polaridade</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🔌</div>
+        <div class="comp-nome">DRIVER L298N</div>
+        <div class="comp-func">Ponte H dupla. Controla 2 motores DC. Pinos IN1-IN4 recebem sinal do Arduino. Pinos OUT1-OUT4 vão para os motores</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🚗</div>
+        <div class="comp-nome">CHASSI 2WD</div>
+        <div class="comp-func">Plataforma com 2 motores + 2 rodas traseiras + roda boba dianteira. Base do robô</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🛠️</span> Montagem do Robô</h2>
+    <div class="passo"><div class="passo-num pn-laranja">1</div><div class="passo-conteudo"><div class="passo-titulo">Monte o chassi</div><div class="passo-desc">Fixe os 2 motores DC nas laterais do chassi com os parafusos. Encaixe as rodas nos eixos dos motores. Parafuse a roda boba na frente.</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">2</div><div class="passo-conteudo"><div class="passo-titulo">Fixe o Arduino e o driver L298N</div><div class="passo-desc">Use fita dupla face ou parafusos. Coloque o Arduino no centro-superior e o L298N atrás. Deixe os conectores acessíveis.</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">3</div><div class="passo-conteudo"><div class="passo-titulo">Conecte os motores ao L298N</div><div class="passo-desc">Motor esquerdo → OUT1 e OUT2. Motor direito → OUT3 e OUT4. A polaridade define sentido — ajuste depois se necessário.</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">4</div><div class="passo-conteudo"><div class="passo-titulo">Conecte L298N ao Arduino</div><div class="passo-desc">IN1→pino 2, IN2→pino 3, IN3→pino 4, IN4→pino 5. ENA e ENB em HIGH (ou ligue ao 5V para velocidade máxima).</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">5</div><div class="passo-conteudo"><div class="passo-titulo">Monte o sensor HC-SR04 na frente</div><div class="passo-desc">Fixe o sensor apontando para frente com fita dupla face. TRIG→pino 9, ECHO→pino 10, VCC→5V, GND→GND.</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">6</div><div class="passo-conteudo"><div class="passo-titulo">Ligue as baterias e teste</div><div class="passo-desc">Pack de 4 pilhas AA (6V) no L298N para os motores. Arduino alimentado pelo USB do computador durante programação.</div></div></div>
+  </div>
+
+  <div class="code-block">
+<span class="c-comment">// Robô autônomo — desvia de obstáculos</span>
+<span class="c-type">const int</span> IN1=<span class="c-number">2</span>, IN2=<span class="c-number">3</span>, IN3=<span class="c-number">4</span>, IN4=<span class="c-number">5</span>;
+<span class="c-type">const int</span> TRIG=<span class="c-number">9</span>, ECHO=<span class="c-number">10</span>;
+
+<span class="c-type">float</span> <span class="c-func">medirDistancia</span>() {
+  <span class="c-func">digitalWrite</span>(TRIG, LOW);  <span class="c-func">delayMicroseconds</span>(<span class="c-number">2</span>);
+  <span class="c-func">digitalWrite</span>(TRIG, HIGH); <span class="c-func">delayMicroseconds</span>(<span class="c-number">10</span>);
+  <span class="c-func">digitalWrite</span>(TRIG, LOW);
+  <span class="c-keyword">return</span> <span class="c-func">pulseIn</span>(ECHO, HIGH) * <span class="c-number">0.034</span> / <span class="c-number">2</span>;
+}
+
+<span class="c-type">void</span> <span class="c-func">frente</span>()  { <span class="c-func">digitalWrite</span>(IN1,HIGH); <span class="c-func">digitalWrite</span>(IN2,LOW);  <span class="c-func">digitalWrite</span>(IN3,HIGH); <span class="c-func">digitalWrite</span>(IN4,LOW); }
+<span class="c-type">void</span> <span class="c-func">re</span>()     { <span class="c-func">digitalWrite</span>(IN1,LOW);  <span class="c-func">digitalWrite</span>(IN2,HIGH); <span class="c-func">digitalWrite</span>(IN3,LOW);  <span class="c-func">digitalWrite</span>(IN4,HIGH); }
+<span class="c-type">void</span> <span class="c-func">direita</span>(){ <span class="c-func">digitalWrite</span>(IN1,LOW);  <span class="c-func">digitalWrite</span>(IN2,HIGH); <span class="c-func">digitalWrite</span>(IN3,HIGH); <span class="c-func">digitalWrite</span>(IN4,LOW); }
+<span class="c-type">void</span> <span class="c-func">parar</span>()  { <span class="c-func">digitalWrite</span>(IN1,LOW);  <span class="c-func">digitalWrite</span>(IN2,LOW);  <span class="c-func">digitalWrite</span>(IN3,LOW);  <span class="c-func">digitalWrite</span>(IN4,LOW); }
+
+<span class="c-type">void</span> <span class="c-func">loop</span>() {
+  <span class="c-type">float</span> dist = <span class="c-func">medirDistancia</span>();
+  <span class="c-keyword">if</span> (dist &lt; <span class="c-number">20</span>) {   <span class="c-comment">// Obstáculo a menos de 20cm</span>
+    <span class="c-func">parar</span>(); <span class="c-func">delay</span>(<span class="c-number">300</span>);
+    <span class="c-func">re</span>();    <span class="c-func">delay</span>(<span class="c-number">500</span>);
+    <span class="c-func">direita</span>(); <span class="c-func">delay</span>(<span class="c-number">400</span>);
+  } <span class="c-keyword">else</span> { <span class="c-func">frente</span>(); }
+  <span class="c-func">delay</span>(<span class="c-number">100</span>);
+}
+  </div>
+
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 3</div>
+    <p>Seu robô já desvia de obstáculos. Agora: <strong>programe uma dança de 10 segundos</strong> — uma sequência de movimentos que acontece quando o robô é ligado antes de entrar no modo autônomo.</p>
+    <ul>
+      <li>Ao ligar: 10 segundos de coreografia (frente, ré, girar, etc.)</li>
+      <li>Depois dos 10 segundos: entra no modo autônomo normalmente</li>
+      <li>Bônus: adicione um LED que pisca durante a dança</li>
+    </ul>
+  </div>
+
+  <div class="curiosidade">
+    <div class="cur-icon">🏭</div>
+    <div class="cur-texto"><strong>Sabia que?</strong> O mesmo princípio do seu robô é usado em robôs industriais como o Roomba (aspirador robô) e em veículos autônomos da Tesla e Waymo. A diferença é que eles usam câmeras e LIDAR (radar a laser) em vez do HC-SR04. Mas a lógica fundamental — "detectou obstáculo → desvia" — é exatamente a mesma que você programou hoje!</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist do Dia 3</h2>
+    <ul class="checklist">
+      <li>Montei o chassi com os 2 motores e roda boba</li>
+      <li>Conectei o driver L298N corretamente</li>
+      <li>Programei frente, ré, direita, esquerda e parar</li>
+      <li>O robô desvia de obstáculos automaticamente</li>
+      <li>Completei a Missão (dança de 10 segundos)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ DIA 4 ══════════════════════════════════════════ -->
+<div class="pagina">
+  <div class="dia-header dh-roxo">
+    <div class="dia-icon">📡</div>
+    <div>
+      <div class="dia-badge" style="color:var(--purple)">DIA 4 · WIRELESS</div>
+      <div class="dia-titulo">ESP32 &amp;<br>CONTROLE SEM FIO</div>
+      <div class="dia-sub">Seu robô agora obedece ao seu celular</div>
+    </div>
+    <div class="dia-num" style="color:var(--purple)">04</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--purple)"><span>🎯</span> Objetivos de Hoje</h2>
+    <ul class="obj-list">
+      <li>Entender o ESP32 e suas vantagens sobre o Arduino</li>
+      <li>Criar um servidor web local com o ESP32</li>
+      <li>Controlar os motores do robô pelo celular via WiFi</li>
+      <li>Construir uma interface HTML de controle no próprio ESP32</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> ESP32 — O Arduino com Superpoderes</h2>
+    <div class="teoria-box">
+      <p><strong>ESP32</strong> é um microcontrolador criado pela Espressif com <strong>WiFi e Bluetooth integrados</strong>. É mais poderoso que o Arduino Uno (dual core, 240MHz, 520KB RAM), mais barato e ainda tem muito mais pinos.</p>
+      <p>O mais incrível: ele pode funcionar como um <strong>servidor web</strong> — ou seja, criar um site acessível por qualquer celular na mesma rede WiFi. Você acessa pelo navegador do celular e controla o robô em tempo real!</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+      <div class="teoria-box">
+        <p><strong style="color:var(--muted)">Arduino Uno</strong></p>
+        <p>CPU: 16 MHz · RAM: 2KB · Sem WiFi · ~R$45</p>
+      </div>
+      <div class="teoria-box" style="border-color:rgba(139,92,246,.3)">
+        <p><strong style="color:var(--purple)">ESP32 DevKit</strong></p>
+        <p>CPU: 240 MHz · RAM: 520KB · WiFi+BT · ~R$35</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>💻</span> Servidor Web no ESP32</h2>
+    <div class="code-block">
+<span class="c-comment">// Robô controlado por WiFi via ESP32</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;WiFi.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;WebServer.h&gt;</span>
+
+<span class="c-type">const char*</span> ssid = <span class="c-string">"NomeDaSuaRede"</span>;
+<span class="c-type">const char*</span> password = <span class="c-string">"SenhaDaRede"</span>;
+WebServer server(<span class="c-number">80</span>);
+
+<span class="c-type">const int</span> IN1=<span class="c-number">26</span>, IN2=<span class="c-number">27</span>, IN3=<span class="c-number">14</span>, IN4=<span class="c-number">12</span>;
+
+<span class="c-type">String</span> pagina = <span class="c-string">"&lt;!DOCTYPE html&gt;&lt;html&gt;"</span>
+  <span class="c-string">"&lt;body style='background:#111;color:#fff;font-family:sans-serif;text-align:center'&gt;"</span>
+  <span class="c-string">"&lt;h1&gt;🤖 Controle do Robô&lt;/h1&gt;"</span>
+  <span class="c-string">"&lt;a href='/frente'&gt;&lt;button&gt;▲ FRENTE&lt;/button&gt;&lt;/a&gt;&lt;br&gt;"</span>
+  <span class="c-string">"&lt;a href='/re'&gt;&lt;button&gt;▼ RÉ&lt;/button&gt;&lt;/a&gt;"</span>
+  <span class="c-string">"&lt;/body&gt;&lt;/html&gt;"</span>;
+
+<span class="c-type">void</span> <span class="c-func">setup</span>() {
+  <span class="c-func">WiFi.begin</span>(ssid, password);
+  <span class="c-keyword">while</span> (<span class="c-func">WiFi.status</span>() != WL_CONNECTED) <span class="c-func">delay</span>(<span class="c-number">500</span>);
+  server.<span class="c-func">on</span>(<span class="c-string">"/"</span>,      [](){ server.<span class="c-func">send</span>(<span class="c-number">200</span>, <span class="c-string">"text/html"</span>, pagina); });
+  server.<span class="c-func">on</span>(<span class="c-string">"/frente"</span>,[](){ <span class="c-comment">/* ligar motores frente */</span> server.<span class="c-func">sendHeader</span>(<span class="c-string">"Location"</span>,<span class="c-string">"/"</span>); server.<span class="c-func">send</span>(<span class="c-number">303</span>); });
+  server.<span class="c-func">begin</span>();
+}
+
+<span class="c-type">void</span> <span class="c-func">loop</span>() { server.<span class="c-func">handleClient</span>(); }
+    </div>
+
+    <div class="info info-azul">
+      <div class="info-icon">📱</div>
+      <div>Após carregar o código, abra o Serial Monitor e veja o IP do ESP32 (ex: <code style="color:var(--green)">192.168.1.105</code>). Digite esse endereço no navegador do celular (na mesma rede WiFi) e o painel de controle aparece!</div>
+    </div>
+  </div>
+
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 4</div>
+    <p>Melhore a interface de controle do seu robô: <strong>crie botões para todas as direções</strong> (frente, ré, esquerda, direita, parar) com visual bonito, e adicione um indicador de status que mostra o que o robô está fazendo.</p>
+    <ul>
+      <li>5 botões de controle com emojis: ▲ ▼ ◀ ▶ ⏹</li>
+      <li>Cor de fundo do botão muda quando ativo</li>
+      <li>Texto na página mostra o último comando enviado</li>
+      <li>Bônus: adicione velocidade ajustável com PWM</li>
+    </ul>
+  </div>
+
+  <div class="curiosidade">
+    <div class="cur-icon">🌐</div>
+    <div class="cur-texto"><strong>Sabia que?</strong> O ESP32 que você usou hoje é o mesmo chip que está na maioria dos dispositivos de automação residencial barata — fechaduras inteligentes, tomadas WiFi, câmeras de segurança. A Espressif (empresa criadora) já vendeu mais de 1 bilhão de unidades. Você está usando tecnologia de IoT real!</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist do Dia 4</h2>
+    <ul class="checklist">
+      <li>Entendi as diferenças entre ESP32 e Arduino</li>
+      <li>Conectei o ESP32 ao WiFi com sucesso</li>
+      <li>Acessei o painel de controle pelo celular</li>
+      <li>Controlei o robô sem fio pelo navegador</li>
+      <li>Completei a Missão (interface completa com 5 botões)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ DIA 5 ══════════════════════════════════════════ -->
+<div class="pagina">
+  <div class="dia-header dh-ouro">
+    <div class="dia-icon">🏆</div>
+    <div>
+      <div class="dia-badge" style="color:var(--orange)">DIA 5 · DEMO DAY</div>
+      <div class="dia-titulo">MOSTRA<br>MAKER</div>
+      <div class="dia-sub">Apresente seu projeto. Mostre o que você aprendeu.</div>
+    </div>
+    <div class="dia-num" style="color:var(--orange)">05</div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--orange)"><span>🎯</span> Objetivos de Hoje</h2>
+    <ul class="obj-list">
+      <li>Finalizar e testar o projeto integrado (robô WiFi + sensores)</li>
+      <li>Apresentar o projeto para a turma, família e convidados</li>
+      <li>Participar do Campeonato Estoura Balão</li>
+      <li>Receber o certificado de conclusão</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🛠️</span> Manhã — Finalização do Projeto</h2>
+    <div class="passo"><div class="passo-num" style="background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)">1</div><div class="passo-conteudo"><div class="passo-titulo">Teste todos os modos do seu robô</div><div class="passo-desc">Modo autônomo (HC-SR04), modo WiFi (ESP32), animação de ligar. Anote qualquer bug para corrigir.</div></div></div>
+    <div class="passo"><div class="passo-num" style="background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)">2</div><div class="passo-conteudo"><div class="passo-titulo">Organize os cabos</div><div class="passo-desc">Use abraçadeiras ou fita para deixar os cabos organizados. Um projeto bem organizado transmite mais profissionalismo.</div></div></div>
+    <div class="passo"><div class="passo-num" style="background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)">3</div><div class="passo-conteudo"><div class="passo-titulo">Prepare sua apresentação oral (2 minutos)</div><div class="passo-desc">O que o projeto faz? Como funciona? O que foi mais difícil? O que você aprendeu? Ensaie uma vez antes.</div></div></div>
+    <div class="passo"><div class="passo-num" style="background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)">4</div><div class="passo-conteudo"><div class="passo-titulo">Personalize seu robô</div><div class="passo-desc">Dê um nome para ele! Você pode decorar o chassi, adicionar olhos de EVA, bandeiras — seja criativo.</div></div></div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🏅</span> Campeonato Estoura Balão</h2>
+    <div class="teoria-box">
+      <p><strong>Regras:</strong> Cada robô recebe um balão amarrado na parte traseira. Você controla pelo celular. O objetivo é estourar o balão dos outros enquanto protege o seu. O último robô com balão intacto vence!</p>
+      <p><strong>Arena:</strong> 2m × 2m marcada no chão. Robôs começam nos cantos. Sinal do instrutor para começar.</p>
+    </div>
+    <div class="info info-laranja">
+      <div class="info-icon">🏆</div>
+      <div><strong>Troféu do campeão:</strong> O vencedor do estoura balão recebe o Troféu Maker e fica na galeria de campeões do ITA Tecnologia Educacional!</div>
+    </div>
+  </div>
+
+  <div class="missao" style="border-color:rgba(245,166,35,.6);background:linear-gradient(135deg,rgba(245,166,35,.1),rgba(245,166,35,.03))">
+    <div class="missao-titulo" style="font-size:34px">🎤 SUA APRESENTAÇÃO</div>
+    <p>Use este espaço para anotar os pontos principais da sua fala (2 minutos):</p>
+    <div class="nota-area" style="min-height:120px">
+      <div class="nota-linha"></div><div class="nota-linha"></div>
+      <div class="nota-linha"></div><div class="nota-linha"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist Final do Curso</h2>
+    <ul class="checklist">
+      <li>Robô montado e funcionando nos dois modos (autônomo e WiFi)</li>
+      <li>Projeto apresentado para a turma</li>
+      <li>Participei do campeonato estoura balão</li>
+      <li>Recebi meu certificado de conclusão</li>
+      <li>Tirei foto com meu projeto para o portfólio</li>
+      <li>Entrei para o Clube de Robótica ITA Tecnologia Educacional</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ GLOSSÁRIO ═════════════════════════════════════ -->
+<div class="pagina">
+  <div style="text-align:center;margin-bottom:40px">
+    <div style="font-size:48px;margin-bottom:12px">📚</div>
+    <h1 style="font-family:var(--fh);font-size:52px;color:var(--orange)">GLOSSÁRIO MAKER</h1>
+    <p style="color:var(--muted);font-size:14px">20 termos essenciais que todo maker precisa conhecer</p>
+  </div>
+
+  <div class="gloss-grid">
+    <div class="gloss-item"><div class="gloss-termo">ARDUINO</div><div class="gloss-def">Plataforma de hardware e software de código aberto para criar projetos interativos. Fácil de programar e muito usada em protótipos.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">ESP32</div><div class="gloss-def">Microcontrolador com WiFi e Bluetooth integrados. Mais poderoso e barato que o Arduino Uno.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">MICROCONTROLADOR</div><div class="gloss-def">Computador completo em um único chip: processador, memória e I/O. O "cérebro" dos projetos eletrônicos.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">PROTOBOARD</div><div class="gloss-def">Placa para montar circuitos sem solda. Fácil para testes e ajustes rápidos.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">GPIO</div><div class="gloss-def">General Purpose Input/Output — pinos que podem ler sensores (entrada) ou acionar componentes (saída).</div></div>
+    <div class="gloss-item"><div class="gloss-termo">PWM</div><div class="gloss-def">Pulse Width Modulation — técnica para simular saída analógica com sinal digital. Usado para controlar velocidade de motores e brilho de LEDs.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">I2C / SPI</div><div class="gloss-def">Protocolos de comunicação serial entre componentes. Permitem conectar vários dispositivos usando apenas 2 fios.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">SENSOR</div><div class="gloss-def">Componente que converte grandezas físicas (temperatura, distância, luz) em sinais elétricos que o microcontrolador pode ler.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">ATUADOR</div><div class="gloss-def">Componente que converte sinal elétrico em ação física. Exemplos: motor, servo, buzzer, display, relé.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">DRIVER</div><div class="gloss-def">Circuito intermediário entre o microcontrolador e um atuador que precisa de mais potência (ex: L298N para motores DC).</div></div>
+    <div class="gloss-item"><div class="gloss-termo">SKETCH</div><div class="gloss-def">Nome dado ao programa escrito na IDE Arduino. Todo sketch tem as funções setup() e loop().</div></div>
+    <div class="gloss-item"><div class="gloss-termo">COMPILAR</div><div class="gloss-def">Transformar o código que você escreveu em linguagem de máquina que o microcontrolador entende. A IDE faz isso automaticamente.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">BIBLIOTECA</div><div class="gloss-def">Conjunto de funções prontas para usar com um componente específico. Ex: biblioteca DHT para o sensor de temperatura.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">SERIAL MONITOR</div><div class="gloss-def">Ferramenta da IDE para comunicar com o Arduino via USB e ver dados em tempo real. Essencial para depuração.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">IoT</div><div class="gloss-def">Internet of Things (Internet das Coisas) — conectar objetos físicos à internet para monitorar e controlar remotamente.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">MAKER</div><div class="gloss-def">Cultura de criar, hackear e compartilhar. Makers acreditam que qualquer pessoa pode construir qualquer coisa com as ferramentas certas.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">PROTOTIPAGEM</div><div class="gloss-def">Processo de construir uma versão inicial de um produto para testar e aprimorar antes da versão final.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">RESISTOR</div><div class="gloss-def">Componente que limita a passagem de corrente elétrica. Medido em Ohms (Ω). Código de cores nas faixas indica o valor.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">GND</div><div class="gloss-def">Ground (terra) — referência de 0V do circuito. Todo componente precisa de uma conexão ao GND para funcionar.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">OPEN SOURCE</div><div class="gloss-def">Software ou hardware com código/projeto aberto para qualquer um usar, modificar e distribuir. Arduino é open source.</div></div>
+  </div>
+</div>
+
+<!-- ══ ANOTAÇÕES ══════════════════════════════════════ -->
+<div class="pagina">
+  <div style="text-align:center;margin-bottom:36px">
+    <div style="font-size:40px;margin-bottom:10px">✏️</div>
+    <h1 style="font-family:var(--fh);font-size:48px">MEU PROJETO</h1>
+    <p style="color:var(--muted);font-size:13px">Registre aqui suas ideias, erros, descobertas e próximos passos</p>
+  </div>
+
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--orange);margin-bottom:12px">💡 IDEIAS PARA O FUTURO</h3>
+    <div class="nota-area">
+      <div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div>
+      <div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--blue);margin-bottom:12px">🐛 BUGS QUE ENCONTREI E COMO RESOLVI</h3>
+    <div class="nota-area">
+      <div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div>
+      <div class="nota-linha"></div><div class="nota-linha"></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--green);margin-bottom:12px">🏆 O QUE EU APRENDI NESSA SEMANA</h3>
+    <div class="nota-area">
+      <div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div>
+      <div class="nota-linha"></div><div class="nota-linha"></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--purple);margin-bottom:12px">🚀 MEU PRÓXIMO PROJETO (IDEIA)</h3>
+    <div class="nota-area">
+      <div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div>
+      <div class="nota-linha"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CERTIFICADO ════════════════════════════════════ -->
+<div class="pagina">
+  <div class="cert">
+    <div class="cert-logo">⚡ ITA TECNOLOGIA EDUCACIONAL ⚡</div>
+    <h2>CERTIFICADO DE CONCLUSÃO</h2>
+    <h1>Certificamos que</h1>
+    <div class="cert-nome">&nbsp;</div>
+    <p>concluiu com êxito o curso intensivo</p>
+    <p style="font-family:var(--fh);font-size:32px;color:var(--orange);margin:10px 0">ALUNOS MAKER NÃO TIRAM FÉRIAS</p>
+    <p style="color:var(--muted);font-size:13px">5 dias · 25 horas · Robótica, Arduino, ESP32 e Eletrônica</p>
+    <p style="margin:20px 0 0;font-size:13px">desenvolvendo habilidades em eletrônica, programação, robótica e cultura maker,<br>apresentando projeto funcional no Demo Day de conclusão.</p>
+    <div class="cert-data">
+      <div class="cert-assinatura">
+        <div class="cert-linha"></div>
+        <div style="font-size:13px;font-weight:600">Instrutor ITA Tecnologia</div>
+        <div class="cert-cargo">ITA Tecnologia Educacional</div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:var(--muted)">
+        <div style="font-family:var(--fh);font-size:32px;color:var(--orange)">2026</div>
+        Itapipoca · Ceará
+      </div>
+      <div class="cert-assinatura">
+        <div class="cert-linha"></div>
+        <div style="font-size:13px;font-weight:600">Direção ITA Tecnologia</div>
+        <div class="cert-cargo">itatecnologiaeducacional.tech</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

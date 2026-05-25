@@ -18,6 +18,9 @@ export default function TrocarSenha() {
     setSalvando(true)
     try {
       await api.post('/usuarios/trocar-senha', { senha_nova: senha })
+      // Remove o flag trocar_senha do localStorage para liberar o acesso
+      const u = JSON.parse(localStorage.getItem('usuario') || '{}')
+      localStorage.setItem('usuario', JSON.stringify({ ...u, trocar_senha: false }))
       navigate('/dashboard')
     } catch (err) {
       setErro(err.response?.data?.erro || 'Erro ao salvar senha.')

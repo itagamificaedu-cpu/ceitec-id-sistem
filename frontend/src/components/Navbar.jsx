@@ -44,6 +44,7 @@ const SECOES_ESTATICAS = [
       { path: '/desempenho',          label: 'Desempenho Acadêmico',            icon: '📊' },
       { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',      icon: '🔬' },
       { path: '/ocorrencias',         label: 'Ocorrências',                     icon: '⚠️' },
+      { path: '/professor-game',      label: 'Professor Game',                  icon: '🏆' },
     ]
   },
   {
@@ -204,6 +205,7 @@ export default function Navbar() {
             { path: '/desempenho',          label: 'Desempenho Acadêmico',      icon: '📊' },
             { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',icon: '🔬' },
             { path: '/ocorrencias',         label: 'Ocorrências',               icon: '⚠️' },
+            { path: '/professor-game',      label: 'Professor Game',            icon: '🏆' },
           ]
         },
         {

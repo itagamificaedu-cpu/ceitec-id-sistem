@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard do Professor</title>
+</head>
+<body>
+    <h1>Olá, {{ request.user.username }}</h1>
+    <p>Escolha uma ferramenta:</p>
+
+    <ul>
+        <li><a href="{% url 'itagame' %}">Itagame</a></li>
+        <li><a href="https://correcaoonlineita.pythonanywhere.com/login-magico/?email={{ request.user.email|urlencode }}&nome={{ request.user.get_full_name|urlencode }}&chave=gamificaedu_secreto_2026&next=/home/" target="_blank">Corretor de Provas com QR Code</a></li>
+        <li><a href="{% url 'repositorio' %}">Repositório de Arquivos</a></li>
+    </ul>
+
+    <p><a href="{% url 'logout' %}">Sair</a></p>
+</body>
+</html>

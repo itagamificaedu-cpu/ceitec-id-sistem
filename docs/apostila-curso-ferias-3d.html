@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Apostila 3D — Alunos Maker Não Tiram Férias</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0E1A;--card:#0D1525;
+  --orange:#F5A623;--green:#22C55E;--blue:#3B82F6;
+  --purple:#8B5CF6;--red:#EF4444;
+  --text:#F0F4FF;--text2:#C8D0E8;--muted:#8A95B5;
+  --fh:'Bebas Neue',cursive;--fb:'Space Grotesk',sans-serif;
+}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.6;font-size:15px}
+h1,h2,h3,h4{font-family:var(--fh);letter-spacing:1px;line-height:1.1}
+
+.capa{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:60px 40px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#070b16 0%,#0d1b3e 50%,#070b16 100%)}
+.capa-logo{background:var(--orange);color:#000;font-family:var(--fh);
+  font-size:18px;letter-spacing:3px;padding:8px 22px;border-radius:8px;margin-bottom:40px;position:relative;z-index:1}
+.capa h1{font-size:clamp(52px,8vw,96px);position:relative;z-index:1}
+.capa h1 .outline{-webkit-text-stroke:3px var(--orange);color:transparent;display:block}
+.capa-sub{font-size:18px;color:var(--text2);margin:20px 0 32px;position:relative;z-index:1;letter-spacing:2px}
+.capa-linha{width:100px;height:3px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:0 auto 32px;position:relative;z-index:1}
+.capa-pills{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1;margin-bottom:32px}
+.cpill{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--orange);
+  padding:7px 18px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:1px}
+.capa-footer{position:absolute;bottom:30px;font-size:13px;color:var(--muted);z-index:1}
+
+.pagina{max-width:860px;margin:0 auto;padding:60px 48px}
+.dia-header{border-radius:20px;padding:36px;margin-bottom:36px;position:relative;overflow:hidden;display:flex;align-items:center;gap:28px}
+.dh-azul{background:linear-gradient(135deg,#0d1e40,#0a1628);border:1px solid rgba(59,130,246,.3)}
+.dh-verde{background:linear-gradient(135deg,#0d2818,#0a1f12);border:1px solid rgba(34,197,94,.3)}
+.dh-laranja{background:linear-gradient(135deg,#2a1a06,#1f1305);border:1px solid rgba(245,166,35,.3)}
+.dh-roxo{background:linear-gradient(135deg,#1a0d30,#12091f);border:1px solid rgba(139,92,246,.3)}
+.dh-ouro{background:linear-gradient(135deg,#2a1f00,#1f1600);border:2px solid rgba(245,166,35,.5)}
+.dia-num{font-family:var(--fh);font-size:80px;line-height:1;opacity:.2;position:absolute;right:32px;bottom:-10px}
+.dia-badge{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;opacity:.7}
+.dia-icon{font-size:56px;flex-shrink:0}
+.dia-titulo{font-family:var(--fh);font-size:38px;letter-spacing:1px;margin-bottom:8px}
+.dia-sub{font-size:14px;color:var(--text2)}
+
+.sec{margin-bottom:32px}
+.sec-titulo{font-family:var(--fh);font-size:22px;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.obj-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.obj-list li{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.03);border-radius:10px;padding:12px 16px;font-size:14px;color:var(--text2)}
+.obj-list li::before{content:'▶';color:var(--orange);font-size:12px;flex-shrink:0;margin-top:2px}
+.teoria-box{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:24px;margin-bottom:16px}
+.teoria-box p{color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:12px}
+.teoria-box p:last-child{margin-bottom:0}
+.teoria-box strong{color:var(--text)}
+.analogia{background:rgba(245,166,35,.06);border-left:3px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;color:var(--text2);font-style:italic}
+.analogia strong{color:var(--orange);font-style:normal}
+.comp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.comp-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;text-align:center}
+.comp-icon{font-size:32px;margin-bottom:8px}
+.comp-nome{font-family:var(--fh);font-size:16px;letter-spacing:.5px;margin-bottom:6px}
+.comp-func{font-size:12px;color:var(--muted);line-height:1.5}
+.passo{display:flex;gap:18px;align-items:flex-start;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:18px;margin-bottom:12px}
+.passo-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:20px;flex-shrink:0}
+.pn-azul{background:rgba(59,130,246,.2);color:var(--blue);border:1px solid rgba(59,130,246,.4)}
+.pn-verde{background:rgba(34,197,94,.2);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+.pn-laranja{background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)}
+.pn-roxo{background:rgba(139,92,246,.2);color:var(--purple);border:1px solid rgba(139,92,246,.4)}
+.pn-ouro{background:rgba(245,166,35,.2);color:var(--orange);border:1px solid rgba(245,166,35,.4)}
+.passo-conteudo{flex:1}
+.passo-titulo{font-weight:700;font-size:15px;margin-bottom:4px}
+.passo-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.missao{background:linear-gradient(135deg,rgba(245,166,35,.08),rgba(245,166,35,.02));border:2px solid rgba(245,166,35,.3);border-radius:18px;padding:28px;margin:28px 0}
+.missao-titulo{font-family:var(--fh);font-size:28px;color:var(--orange);margin-bottom:12px}
+.missao p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.missao ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.missao ul li{display:flex;gap:10px;font-size:13px;color:var(--muted)}
+.missao ul li::before{content:'→';color:var(--orange);flex-shrink:0}
+.curiosidade{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:14px;padding:20px;margin:20px 0;display:flex;gap:16px;align-items:flex-start}
+.cur-icon{font-size:28px;flex-shrink:0}
+.cur-texto{font-size:13px;color:var(--text2);line-height:1.7}
+.cur-texto strong{color:var(--blue)}
+.checklist{list-style:none;display:flex;flex-direction:column;gap:8px}
+.checklist li{display:flex;gap:12px;align-items:flex-start;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text2)}
+.checklist li::before{content:'□';color:var(--green);font-size:16px;flex-shrink:0;line-height:1.2}
+.code-block{background:#060b14;border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:20px;font-family:monospace;font-size:13px;line-height:1.8;overflow-x:auto;margin:16px 0}
+.c-comment{color:#4a6060}.c-keyword{color:#c792ea}.c-func{color:#82aaff}
+.c-string{color:#c3e88d}.c-number{color:var(--orange)}.c-type{color:#14B8A6}
+.info{border-radius:12px;padding:16px 20px;margin:16px 0;display:flex;gap:14px;font-size:13px;color:var(--text2)}
+.info-laranja{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.25)}
+.info-azul{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25)}
+.info-icon{font-size:22px;flex-shrink:0}
+.gloss-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gloss-item{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px}
+.gloss-termo{font-family:var(--fh);font-size:17px;color:var(--orange);letter-spacing:.5px;margin-bottom:4px}
+.gloss-def{font-size:12px;color:var(--muted);line-height:1.5}
+.cert{border:3px solid var(--orange);border-radius:24px;padding:50px 60px;text-align:center;background:linear-gradient(160deg,#0a0f1e,#0d1b3e,#0a0f1e);position:relative;overflow:hidden}
+.cert-logo{font-family:var(--fh);font-size:16px;color:var(--orange);letter-spacing:3px;margin-bottom:20px}
+.cert h2{font-family:var(--fh);font-size:14px;letter-spacing:4px;color:var(--muted);margin-bottom:10px}
+.cert h1{font-family:var(--fh);font-size:56px;color:var(--text);margin-bottom:8px}
+.cert-nome{border-bottom:2px solid var(--orange);min-width:300px;display:inline-block;margin:10px 0 6px;font-size:28px;font-weight:700;color:var(--orange);font-family:var(--fh);min-height:40px}
+.cert p{font-size:14px;color:var(--text2);margin:10px 0}
+.cert-data{margin-top:40px;display:flex;justify-content:space-between;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)}
+.cert-assinatura{text-align:center}
+.cert-linha{width:150px;height:1px;background:rgba(255,255,255,.3);margin:0 auto 6px}
+.cert-cargo{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.nota-area{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;min-height:200px;background:rgba(255,255,255,.01)}
+.nota-linha{border-bottom:1px dashed rgba(255,255,255,.08);height:32px}
+
+/* ── 3D SCENES ── */
+.scene-wrap{
+  width:100%;height:320px;border-radius:18px;overflow:hidden;
+  background:#060c18;border:1px solid rgba(255,255,255,.1);
+  margin:28px 0;cursor:grab;position:relative;
+}
+.scene-wrap:active{cursor:grabbing}
+.scene-label{position:absolute;bottom:10px;right:14px;font-size:11px;color:rgba(255,255,255,.4);pointer-events:none;z-index:2}
+.scene-title{position:absolute;top:12px;left:14px;font-family:var(--fh);font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.35);pointer-events:none;z-index:2}
+.scene-capa{height:360px;max-width:600px;margin:0 auto 32px}
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="capa">
+  <div class="capa-logo">ITA TECNOLOGIA EDUCACIONAL</div>
+  <h1>ALUNOS MAKER<span class="outline">NÃO TIRAM</span>FÉRIAS</h1>
+  <p class="capa-sub">APOSTILA OFICIAL DO CURSO — JULHO 2026</p>
+  <div class="capa-linha"></div>
+  <div class="capa-pills">
+    <div class="cpill">📅 5 DIAS</div>
+    <div class="cpill">⚡ 25H DE IMERSÃO</div>
+    <div class="cpill">🤖 ROBÓTICA REAL</div>
+    <div class="cpill">🏆 DEMO DAY</div>
+  </div>
+  <div class="scene-wrap scene-capa" id="s-capa" style="z-index:1">
+    <div class="scene-label">🖱️ Arraste para girar</div>
+  </div>
+  <div class="capa-footer">Itapipoca, Ceará · itatecnologiaeducacional.tech</div>
+</div>
+
+<!-- APRESENTAÇÃO -->
+<div class="pagina">
+  <div class="sec">
+    <h2 class="sec-titulo"><span>👋</span> Bem-vindo, Maker!</h2>
+    <div class="teoria-box">
+      <p>Você está segurando nas mãos <strong>mais do que uma apostila</strong> — é o roteiro de 5 dias que vão mudar a forma como você vê o mundo.</p>
+      <p>Durante esta semana você vai criar coisas reais: circuitos que acendem, sensores que medem, robôs que se movem e projetos controlados pelo celular.</p>
+      <p>Cada dia tem teoria, atividades passo a passo e um <strong style="color:var(--orange)">desafio (missão)</strong> para resolver.</p>
+    </div>
+    <div class="info info-laranja"><div class="info-icon">💡</div><div><strong style="color:var(--orange)">Como usar:</strong> Leia a teoria, siga os passos, pergunte sem medo. Preencha o checklist ao final de cada dia.</div></div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📅</span> Visão Geral dos 5 Dias</h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="passo"><div class="passo-num pn-azul">1</div><div class="passo-conteudo"><div class="passo-titulo">🔬 Mundo Maker &amp; Eletrônica Básica</div><div class="passo-desc">Componentes, protoboard, LEDs, resistores, multímetro. Primeiro circuito funcionando.</div></div></div>
+      <div class="passo"><div class="passo-num pn-verde">2</div><div class="passo-conteudo"><div class="passo-titulo">⚡ Arduino na Prática</div><div class="passo-desc">IDE, programação, sensores de temperatura e distância. Protótipo interativo.</div></div></div>
+      <div class="passo"><div class="passo-num pn-laranja">3</div><div class="passo-conteudo"><div class="passo-titulo">🤖 Robótica e Movimento</div><div class="passo-desc">Motores, chassi, driver L298N. Robô que desvia de obstáculos.</div></div></div>
+      <div class="passo"><div class="passo-num pn-roxo">4</div><div class="passo-conteudo"><div class="passo-titulo">📡 ESP32 &amp; Controle Sem Fio</div><div class="passo-desc">WiFi, dashboard web, controle pelo celular. Robô wireless!</div></div></div>
+      <div class="passo"><div class="passo-num pn-ouro">5</div><div class="passo-conteudo"><div class="passo-titulo">🏆 Demo Day — Mostra Maker</div><div class="passo-desc">Apresentação, campeonato estoura balão, certificados!</div></div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>⚠️</span> Regras do Lab</h2>
+    <ul class="checklist">
+      <li>Nunca conecte componentes sem conferir o circuito com o instrutor</li>
+      <li>Use óculos de proteção ao trabalhar com solda ou cortes</li>
+      <li>Se cheirar queimado: desconecte imediatamente e avise</li>
+      <li>Trate os equipamentos com cuidado — são de todos</li>
+      <li>Organize seu espaço ao final de cada atividade</li>
+    </ul>
+  </div>
+</div>
+
+<!-- DIA 1 -->
+<div class="pagina">
+  <div class="dia-header dh-azul">
+    <div class="dia-icon">🔬</div>
+    <div>
+      <div class="dia-badge" style="color:var(--blue)">DIA 1 · ELETRÔNICA</div>
+      <div class="dia-titulo">MUNDO MAKER &amp;<br>ELETRÔNICA BÁSICA</div>
+      <div class="dia-sub">Do zero ao primeiro circuito em 4 horas</div>
+    </div>
+    <div class="dia-num" style="color:var(--blue)">01</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--blue)"><span>🎯</span> Objetivos</h2>
+    <ul class="obj-list">
+      <li>Entender o que é cultura maker e por que ela importa</li>
+      <li>Identificar os principais componentes eletrônicos</li>
+      <li>Usar a protoboard para montar circuitos sem solda</li>
+      <li>Montar e fazer funcionar seu primeiro circuito com LED</li>
+    </ul>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> Teoria</h2>
+    <div class="teoria-box">
+      <p><strong>Eletricidade</strong> é o fluxo de elétrons por condutores. Tensão = pressão, Corrente = fluxo, Resistência = obstáculo.</p>
+      <p><strong>Protoboard</strong> é uma placa com furos conectados internamente — encaixa, testa, ajusta. Sem solda!</p>
+    </div>
+    <div class="analogia"><strong>🚰 Analogia:</strong> Tensão = pressão da bomba · Corrente = litros por segundo · Resistência = tubo mais fino</div>
+  </div>
+  <div class="scene-wrap" id="s-dia1">
+    <div class="scene-title">CIRCUITO LED + RESISTOR + BATERIA 9V</div>
+    <div class="scene-label">🖱️ Arraste para girar</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🔧</span> Componentes</h2>
+    <div class="comp-grid">
+      <div class="comp-card"><div class="comp-icon">💡</div><div class="comp-nome">LED</div><div class="comp-func">Emite luz. Perna longa (+), perna curta (–)</div></div>
+      <div class="comp-card"><div class="comp-icon">〰️</div><div class="comp-nome">RESISTOR</div><div class="comp-func">Limita a corrente. Faixas coloridas = valor em Ω</div></div>
+      <div class="comp-card"><div class="comp-icon">⚡</div><div class="comp-nome">PROTOBOARD</div><div class="comp-func">830 furos. Circuitos sem solda</div></div>
+      <div class="comp-card"><div class="comp-icon">🔋</div><div class="comp-nome">BATERIA 9V</div><div class="comp-func">Fornece energia. + vermelho, – preto</div></div>
+      <div class="comp-card"><div class="comp-icon">🔴</div><div class="comp-nome">JUMPER</div><div class="comp-func">Cabos de conexão M-M, M-F</div></div>
+      <div class="comp-card"><div class="comp-icon">📏</div><div class="comp-nome">MULTÍMETRO</div><div class="comp-func">Mede tensão, corrente e resistência</div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--blue)"><span>🛠️</span> Atividade — Circuito LED</h2>
+    <div class="passo"><div class="passo-num pn-azul">1</div><div class="passo-conteudo"><div class="passo-titulo">Pegue os componentes</div><div class="passo-desc">1 LED vermelho, 1 resistor 330Ω (laranja-laranja-marrom), 2 jumpers, 1 bateria 9V</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">2</div><div class="passo-conteudo"><div class="passo-titulo">Encaixe o LED na protoboard</div><div class="passo-desc">Perna longa (+) na coluna E5, perna curta (–) na coluna E6</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">3</div><div class="passo-conteudo"><div class="passo-titulo">Conecte o resistor em série</div><div class="passo-desc">Uma perna em D5 (mesmo lado do LED +), outra em A5</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">4</div><div class="passo-conteudo"><div class="passo-titulo">Ligue os trilhos</div><div class="passo-desc">Jumper vermelho: trilho + até A5. Jumper preto: trilho – até E6</div></div></div>
+    <div class="passo"><div class="passo-num pn-azul">5</div><div class="passo-conteudo"><div class="passo-titulo">Conecte a bateria — LED acende!</div><div class="passo-desc">Adaptador 9V nos trilhos (+ vermelho, – preto). Se não acender, verifique a polaridade do LED.</div></div></div>
+  </div>
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 1</div>
+    <p>Faça um <strong>semáforo com 3 LEDs</strong> (vermelho, amarelo, verde).</p>
+    <ul><li>3 LEDs de cores diferentes</li><li>Cada LED com resistor 330Ω em série</li><li>Todos os negativos no trilho GND</li><li>Todos os positivos no trilho +</li></ul>
+  </div>
+  <div class="curiosidade"><div class="cur-icon">💡</div><div class="cur-texto"><strong>Sabia que?</strong> O LED azul — que permite criar LEDs brancos e telas modernas — só foi criado em 1993. Os inventores ganharam o Prêmio Nobel de Física em 2014!</div></div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist Dia 1</h2>
+    <ul class="checklist">
+      <li>Identifiquei os componentes: LED, resistor, protoboard, jumper, bateria</li>
+      <li>Montei o circuito com LED acendendo</li>
+      <li>Completei a Missão (semáforo com 3 LEDs)</li>
+      <li>Guardei os componentes no kit</li>
+    </ul>
+  </div>
+</div>
+
+<!-- DIA 2 -->
+<div class="pagina">
+  <div class="dia-header dh-verde">
+    <div class="dia-icon">⚡</div>
+    <div>
+      <div class="dia-badge" style="color:var(--green)">DIA 2 · PROGRAMAÇÃO</div>
+      <div class="dia-titulo">ARDUINO<br>NA PRÁTICA</div>
+      <div class="dia-sub">Quando o hardware começa a obedecer você</div>
+    </div>
+    <div class="dia-num" style="color:var(--green)">02</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>🎯</span> Objetivos</h2>
+    <ul class="obj-list">
+      <li>Entender o que é um microcontrolador</li>
+      <li>Escrever e carregar seu primeiro sketch no Arduino</li>
+      <li>Usar o sensor DHT11 (temperatura) e HC-SR04 (distância)</li>
+      <li>Controlar LEDs por programação</li>
+    </ul>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> O Que é o Arduino?</h2>
+    <div class="teoria-box">
+      <p><strong>Arduino</strong> é uma placa com um microcontrolador — um computador minúsculo que executa seu programa repetidamente.</p>
+      <p>Todo sketch tem dois blocos: <strong>setup()</strong> — roda uma vez ao ligar; <strong>loop()</strong> — roda para sempre.</p>
+    </div>
+    <div class="analogia"><strong>🧠 Analogia:</strong> Arduino = cérebro · Sensores = olhos e ouvidos · LEDs e motores = músculos</div>
+  </div>
+  <div class="scene-wrap" id="s-dia2">
+    <div class="scene-title">ARDUINO UNO + DHT11 + HC-SR04</div>
+    <div class="scene-label">🖱️ Arraste para girar</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>💻</span> Primeiro Código — LED Piscando</h2>
+    <div class="code-block">
+<span class="c-comment">// Hello World do Arduino</span>
+<span class="c-type">void</span> <span class="c-func">setup</span>() { <span class="c-func">pinMode</span>(<span class="c-number">13</span>, OUTPUT); }
+
+<span class="c-type">void</span> <span class="c-func">loop</span>() {
+  <span class="c-func">digitalWrite</span>(<span class="c-number">13</span>, HIGH);  <span class="c-func">delay</span>(<span class="c-number">1000</span>);
+  <span class="c-func">digitalWrite</span>(<span class="c-number">13</span>, LOW);   <span class="c-func">delay</span>(<span class="c-number">1000</span>);
+}</div>
+  </div>
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 2</div>
+    <p><strong>Alarme de proximidade:</strong> quando alguém se aproximar a menos de 20cm do HC-SR04, LED vermelho acende.</p>
+    <ul><li>Dist. &lt; 20cm → LED vermelho + "ALERTA!" no monitor</li><li>Dist. ≥ 20cm → LED verde + "OK"</li><li>Bônus: buzzer apita no alerta</li></ul>
+  </div>
+  <div class="curiosidade"><div class="cur-icon">🦇</div><div class="cur-texto"><strong>Sabia que?</strong> O HC-SR04 funciona como o eco dos morcegos — emite ultrassom e mede o tempo do eco. Com a velocidade do som (343 m/s) ÷ 2, você tem a distância!</div></div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist Dia 2</h2>
+    <ul class="checklist">
+      <li>Entendi setup() e loop()</li>
+      <li>Carreguei meu primeiro sketch</li>
+      <li>Li DHT11 e HC-SR04</li>
+      <li>Completei a Missão (alarme de proximidade)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- DIA 3 -->
+<div class="pagina">
+  <div class="dia-header dh-laranja">
+    <div class="dia-icon">🤖</div>
+    <div>
+      <div class="dia-badge" style="color:var(--orange)">DIA 3 · ROBÓTICA</div>
+      <div class="dia-titulo">ROBÓTICA<br>E MOVIMENTO</div>
+      <div class="dia-sub">Faça seu robô ganhar vida e autonomia</div>
+    </div>
+    <div class="dia-num" style="color:var(--orange)">03</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--orange)"><span>🎯</span> Objetivos</h2>
+    <ul class="obj-list">
+      <li>Entender como motores DC funcionam</li>
+      <li>Montar um chassi 2WD completo</li>
+      <li>Programar frente, ré, direita, esquerda</li>
+      <li>Desvio autônomo de obstáculos com HC-SR04</li>
+    </ul>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> Motores e o Driver L298N</h2>
+    <div class="teoria-box">
+      <p><strong>Motor DC</strong> gira com corrente. Inverta a polaridade e gira ao contrário. Precisam de mais corrente do que o Arduino fornece.</p>
+      <p><strong>Driver L298N</strong> (Ponte H) recebe o sinal do Arduino e usa bateria separada para alimentar os motores com a corrente necessária.</p>
+    </div>
+  </div>
+  <div class="scene-wrap" id="s-dia3">
+    <div class="scene-title">ROBÔ 2WD — CHASSI + MOTORES + L298N + HC-SR04</div>
+    <div class="scene-label">🖱️ Arraste para girar · Rodas girando</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🛠️</span> Montagem</h2>
+    <div class="passo"><div class="passo-num pn-laranja">1</div><div class="passo-conteudo"><div class="passo-titulo">Monte o chassi</div><div class="passo-desc">Fixe os 2 motores nas laterais, encaixe as rodas, parafuse a roda boba na frente</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">2</div><div class="passo-conteudo"><div class="passo-titulo">Fixe Arduino e L298N</div><div class="passo-desc">Arduino no centro-superior, L298N atrás com fita dupla face</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">3</div><div class="passo-conteudo"><div class="passo-titulo">Conecte motores ao L298N</div><div class="passo-desc">Motor esq. → OUT1/OUT2. Motor dir. → OUT3/OUT4</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">4</div><div class="passo-conteudo"><div class="passo-titulo">Conecte L298N ao Arduino</div><div class="passo-desc">IN1→2, IN2→3, IN3→4, IN4→5</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">5</div><div class="passo-conteudo"><div class="passo-titulo">HC-SR04 na frente</div><div class="passo-desc">TRIG→9, ECHO→10, VCC→5V, GND→GND</div></div></div>
+    <div class="passo"><div class="passo-num pn-laranja">6</div><div class="passo-conteudo"><div class="passo-titulo">Baterias e teste!</div><div class="passo-desc">Pack 4 pilhas AA (6V) no L298N. Arduino via USB.</div></div></div>
+  </div>
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 3</div>
+    <p>Programe uma <strong>dança de 10 segundos</strong> ao ligar antes do modo autônomo.</p>
+    <ul><li>10 segundos de coreografia (frente, ré, girar...)</li><li>Depois entra no modo autônomo</li><li>Bônus: LED piscando durante a dança</li></ul>
+  </div>
+  <div class="curiosidade"><div class="cur-icon">🏭</div><div class="cur-texto"><strong>Sabia que?</strong> O mesmo princípio do seu robô é usado no Roomba e na Tesla! A lógica "detectou obstáculo → desvia" é exatamente a que você programou hoje!</div></div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist Dia 3</h2>
+    <ul class="checklist">
+      <li>Montei o chassi com 2 motores e roda boba</li>
+      <li>Conectei o driver L298N</li>
+      <li>Programei frente, ré, direita, esquerda e parar</li>
+      <li>Robô desvia de obstáculos automaticamente</li>
+      <li>Completei a Missão (dança de 10 segundos)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- DIA 4 -->
+<div class="pagina">
+  <div class="dia-header dh-roxo">
+    <div class="dia-icon">📡</div>
+    <div>
+      <div class="dia-badge" style="color:var(--purple)">DIA 4 · WIRELESS</div>
+      <div class="dia-titulo">ESP32 &amp;<br>CONTROLE SEM FIO</div>
+      <div class="dia-sub">Seu robô agora obedece ao seu celular</div>
+    </div>
+    <div class="dia-num" style="color:var(--purple)">04</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--purple)"><span>🎯</span> Objetivos</h2>
+    <ul class="obj-list">
+      <li>Entender o ESP32 e suas vantagens sobre o Arduino</li>
+      <li>Criar um servidor web local com o ESP32</li>
+      <li>Controlar os motores pelo celular via WiFi</li>
+      <li>Construir uma interface HTML de controle</li>
+    </ul>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>📖</span> ESP32 — O Arduino com Superpoderes</h2>
+    <div class="teoria-box">
+      <p><strong>ESP32</strong> tem <strong>WiFi e Bluetooth integrados</strong>, dual core 240MHz, 520KB RAM — mais poderoso e mais barato que o Arduino Uno.</p>
+      <p>Pode funcionar como <strong>servidor web</strong>: cria um site acessível por qualquer celular na mesma rede WiFi!</p>
+    </div>
+  </div>
+  <div class="scene-wrap" id="s-dia4">
+    <div class="scene-title">ESP32 + ONDAS WiFi + PAINEL CELULAR</div>
+    <div class="scene-label">🖱️ Arraste para girar · WiFi animado</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>💻</span> Servidor Web</h2>
+    <div class="code-block">
+<span class="c-keyword">#include</span> <span class="c-string">&lt;WiFi.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;WebServer.h&gt;</span>
+WebServer server(<span class="c-number">80</span>);
+
+<span class="c-type">void</span> <span class="c-func">setup</span>() {
+  <span class="c-func">WiFi.begin</span>(<span class="c-string">"SuaRede"</span>, <span class="c-string">"SuaSenha"</span>);
+  <span class="c-keyword">while</span> (<span class="c-func">WiFi.status</span>() != WL_CONNECTED) <span class="c-func">delay</span>(<span class="c-number">500</span>);
+  server.<span class="c-func">on</span>(<span class="c-string">"/"</span>, []()&#123; server.<span class="c-func">send</span>(<span class="c-number">200</span>, <span class="c-string">"text/html"</span>, pagina); &#125;);
+  server.<span class="c-func">begin</span>();
+}
+<span class="c-type">void</span> <span class="c-func">loop</span>() &#123; server.<span class="c-func">handleClient</span>(); &#125;</div>
+    <div class="info info-azul"><div class="info-icon">📱</div><div>Abra o Serial Monitor, anote o IP do ESP32 (ex: 192.168.1.105) e acesse pelo navegador do celular na mesma rede!</div></div>
+  </div>
+  <div class="missao">
+    <div class="missao-titulo">🎯 MISSÃO DO DIA 4</div>
+    <p>Interface completa: <strong>5 botões de controle</strong> (▲ ▼ ◀ ▶ ⏹) com visual bonito.</p>
+    <ul><li>Cor do botão muda quando ativo</li><li>Texto mostra o último comando</li><li>Bônus: velocidade ajustável com PWM</li></ul>
+  </div>
+  <div class="curiosidade"><div class="cur-icon">🌐</div><div class="cur-texto"><strong>Sabia que?</strong> O ESP32 é o mesmo chip de fechaduras inteligentes, tomadas WiFi e câmeras de segurança baratas. A Espressif já vendeu mais de 1 bilhão de unidades!</div></div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist Dia 4</h2>
+    <ul class="checklist">
+      <li>Conectei o ESP32 ao WiFi</li>
+      <li>Acessei o painel pelo celular</li>
+      <li>Controlei o robô sem fio</li>
+      <li>Completei a Missão (5 botões)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- DIA 5 -->
+<div class="pagina">
+  <div class="dia-header dh-ouro">
+    <div class="dia-icon">🏆</div>
+    <div>
+      <div class="dia-badge" style="color:var(--orange)">DIA 5 · DEMO DAY</div>
+      <div class="dia-titulo">MOSTRA<br>MAKER</div>
+      <div class="dia-sub">Apresente. Mostre. Ganhe.</div>
+    </div>
+    <div class="dia-num" style="color:var(--orange)">05</div>
+  </div>
+  <div class="scene-wrap" id="s-dia5">
+    <div class="scene-title">ARENA DEMO DAY — CAMPEONATO ESTOURA BALÃO 🏆</div>
+    <div class="scene-label">🖱️ Arraste para girar · Confetes ao vivo</div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🛠️</span> Manhã — Finalização</h2>
+    <div class="passo"><div class="passo-num pn-ouro">1</div><div class="passo-conteudo"><div class="passo-titulo">Teste todos os modos</div><div class="passo-desc">Autônomo, WiFi, animação de ligar. Anote bugs e corrija.</div></div></div>
+    <div class="passo"><div class="passo-num pn-ouro">2</div><div class="passo-conteudo"><div class="passo-titulo">Organize os cabos</div><div class="passo-desc">Abraçadeiras. Projeto organizado = profissionalismo.</div></div></div>
+    <div class="passo"><div class="passo-num pn-ouro">3</div><div class="passo-conteudo"><div class="passo-titulo">Prepare sua fala (2 minutos)</div><div class="passo-desc">O que faz? Como funciona? O que foi difícil? O que aprendeu?</div></div></div>
+    <div class="passo"><div class="passo-num pn-ouro">4</div><div class="passo-conteudo"><div class="passo-titulo">Personalize seu robô!</div><div class="passo-desc">Dê um nome. Decore o chassi. Seja criativo!</div></div></div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo"><span>🏅</span> Campeonato Estoura Balão</h2>
+    <div class="teoria-box">
+      <p><strong>Regras:</strong> Cada robô tem um balão amarrado na traseira. Controle pelo celular. Objetivo: estourar o balão dos outros, proteger o seu. Último com balão intacto vence!</p>
+    </div>
+    <div class="info info-laranja"><div class="info-icon">🏆</div><div>O vencedor recebe o <strong>Troféu Maker</strong> e fica na galeria de campeões do ITA Tecnologia Educacional!</div></div>
+  </div>
+  <div class="sec">
+    <h2 class="sec-titulo" style="color:var(--green)"><span>✅</span> Checklist Final</h2>
+    <ul class="checklist">
+      <li>Robô montado e funcionando (autônomo e WiFi)</li>
+      <li>Projeto apresentado para a turma</li>
+      <li>Participei do campeonato estoura balão</li>
+      <li>Recebi meu certificado</li>
+      <li>Tirei foto com meu projeto</li>
+    </ul>
+  </div>
+</div>
+
+<!-- GLOSSÁRIO -->
+<div class="pagina">
+  <div style="text-align:center;margin-bottom:40px">
+    <div style="font-size:48px;margin-bottom:12px">📚</div>
+    <h1 style="font-family:var(--fh);font-size:52px;color:var(--orange)">GLOSSÁRIO MAKER</h1>
+    <p style="color:var(--muted);font-size:14px">20 termos que todo maker precisa conhecer</p>
+  </div>
+  <div class="gloss-grid">
+    <div class="gloss-item"><div class="gloss-termo">ARDUINO</div><div class="gloss-def">Plataforma open source para criar projetos interativos. Fácil de programar.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">ESP32</div><div class="gloss-def">Microcontrolador com WiFi e Bluetooth. Mais poderoso e barato que o Arduino Uno.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">MICROCONTROLADOR</div><div class="gloss-def">Computador em um chip: processador, memória e I/O. O "cérebro" dos projetos.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">PROTOBOARD</div><div class="gloss-def">Placa para montar circuitos sem solda. Ideal para testes rápidos.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">GPIO</div><div class="gloss-def">Pinos que leem sensores (entrada) ou acionam componentes (saída).</div></div>
+    <div class="gloss-item"><div class="gloss-termo">PWM</div><div class="gloss-def">Simula saída analógica com sinal digital. Controla velocidade e brilho.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">SENSOR</div><div class="gloss-def">Converte grandezas físicas em sinais elétricos que o microcontrolador lê.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">ATUADOR</div><div class="gloss-def">Converte sinal elétrico em ação física. Ex: motor, buzzer, display.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">DRIVER</div><div class="gloss-def">Circuito intermediário entre microcontrolador e atuador de alta potência.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">SKETCH</div><div class="gloss-def">Nome do programa Arduino. Sempre tem setup() e loop().</div></div>
+    <div class="gloss-item"><div class="gloss-termo">BIBLIOTECA</div><div class="gloss-def">Funções prontas para um componente específico. Ex: lib DHT para temperatura.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">SERIAL MONITOR</div><div class="gloss-def">Ferramenta da IDE para ver dados do Arduino em tempo real.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">IoT</div><div class="gloss-def">Internet das Coisas — conectar objetos físicos à internet.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">MAKER</div><div class="gloss-def">Cultura de criar, hackear e compartilhar. Qualquer um pode construir qualquer coisa.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">RESISTOR</div><div class="gloss-def">Limita corrente. Medido em Ohms (Ω). Faixas coloridas indicam o valor.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">GND</div><div class="gloss-def">Ground — referência 0V. Todo componente precisa de conexão ao GND.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">COMPILAR</div><div class="gloss-def">Transformar seu código em linguagem de máquina. A IDE faz automaticamente.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">OPEN SOURCE</div><div class="gloss-def">Código/projeto aberto para usar, modificar e distribuir. Arduino é open source.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">PROTOTIPAGEM</div><div class="gloss-def">Construir versão inicial para testar antes da versão final.</div></div>
+    <div class="gloss-item"><div class="gloss-termo">I2C / SPI</div><div class="gloss-def">Protocolos de comunicação serial entre componentes usando apenas 2 fios.</div></div>
+  </div>
+</div>
+
+<!-- ANOTAÇÕES -->
+<div class="pagina">
+  <div style="text-align:center;margin-bottom:36px">
+    <div style="font-size:40px;margin-bottom:10px">✏️</div>
+    <h1 style="font-family:var(--fh);font-size:48px">MEU PROJETO</h1>
+    <p style="color:var(--muted);font-size:13px">Ideias, erros, descobertas e próximos passos</p>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--orange);margin-bottom:12px">💡 IDEIAS PARA O FUTURO</h3>
+    <div class="nota-area"><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div></div>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--blue);margin-bottom:12px">🐛 BUGS E COMO RESOLVI</h3>
+    <div class="nota-area"><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div></div>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--green);margin-bottom:12px">🏆 O QUE EU APRENDI</h3>
+    <div class="nota-area"><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div></div>
+  </div>
+  <div class="sec">
+    <h3 style="font-family:var(--fh);font-size:20px;color:var(--purple);margin-bottom:12px">🚀 MEU PRÓXIMO PROJETO</h3>
+    <div class="nota-area"><div class="nota-linha"></div><div class="nota-linha"></div><div class="nota-linha"></div></div>
+  </div>
+</div>
+
+<!-- CERTIFICADO -->
+<div class="pagina">
+  <div class="cert">
+    <div class="cert-logo">⚡ ITA TECNOLOGIA EDUCACIONAL ⚡</div>
+    <h2>CERTIFICADO DE CONCLUSÃO</h2>
+    <h1>Certificamos que</h1>
+    <div class="cert-nome">&nbsp;</div>
+    <p>concluiu com êxito o curso intensivo</p>
+    <p style="font-family:var(--fh);font-size:32px;color:var(--orange);margin:10px 0">ALUNOS MAKER NÃO TIRAM FÉRIAS</p>
+    <p style="color:var(--muted);font-size:13px">5 dias · 25 horas · Robótica, Arduino, ESP32 e Eletrônica</p>
+    <div class="cert-data">
+      <div class="cert-assinatura"><div class="cert-linha"></div><div style="font-size:13px;font-weight:600">Instrutor ITA Tecnologia</div><div class="cert-cargo">ITA Tecnologia Educacional</div></div>
+      <div style="text-align:center;font-size:13px;color:var(--muted)"><div style="font-family:var(--fh);font-size:32px;color:var(--orange)">2026</div>Itapipoca · Ceará</div>
+      <div class="cert-assinatura"><div class="cert-linha"></div><div style="font-size:13px;font-weight:600">Direção ITA Tecnologia</div><div class="cert-cargo">itatecnologiaeducacional.tech</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+window.addEventListener('load', function() {
+
+  // ── HELPERS ────────────────────────────────────────
+  function mat(color, emissive, ei) {
+    var opts = { color: color };
+    if (emissive !== undefined) { opts.emissive = emissive; opts.emissiveIntensity = ei || 0.5; }
+    return new THREE.MeshPhongMaterial(opts);
+  }
+  function matT(color, opacity) {
+    return new THREE.MeshPhongMaterial({ color: color, transparent: true, opacity: opacity });
+  }
+  function box(w,h,d) { return new THREE.BoxGeometry(w,h,d); }
+  function cyl(rt,rb,h,s) { return new THREE.CylinderGeometry(rt,rb,h,s||12); }
+  function sph(r,s) { return new THREE.SphereGeometry(r,s||12,s||12); }
+  function tor(r,t,rs,ts) { return new THREE.TorusGeometry(r,t,rs||8,ts||24); }
+  function mesh(geo, material) { return new THREE.Mesh(geo, material); }
+
+  function mkWire(pts, color, thick) {
+    var curve = new THREE.CatmullRomCurve3(pts.map(function(p){ return new THREE.Vector3(p[0],p[1],p[2]); }));
+    return new THREE.Mesh(new THREE.TubeGeometry(curve,20,thick||0.025,6), new THREE.MeshPhongMaterial({color:color}));
+  }
+
+  function initScene(id, camDist, camElev) {
+    var wrap = document.getElementById(id);
+    if (!wrap) return null;
+    var W = wrap.offsetWidth;
+    var H = wrap.offsetHeight;
+    if (W < 10) W = 800;
+    if (H < 10) H = 320;
+
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x060c18, 1);
+    renderer.setSize(W, H);
+    wrap.appendChild(renderer.domElement);
+
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(45, W/H, 0.1, 500);
+    cam.position.set(0, camElev||3.5, camDist||8);
+    cam.lookAt(new THREE.Vector3(0,0,0));
+
+    scene.add(new THREE.AmbientLight(0x445566, 1.1));
+    var dl = new THREE.DirectionalLight(0xffffff, 1.0);
+    dl.position.set(5, 10, 7);
+    scene.add(dl);
+    var dl2 = new THREE.DirectionalLight(0x8899cc, 0.4);
+    dl2.position.set(-5, 2, -5);
+    scene.add(dl2);
+
+    var root = new THREE.Group();
+    scene.add(root);
+
+    var drag = false, lx = 0, ly = 0;
+    wrap.addEventListener('mousedown', function(e){ drag=true; lx=e.clientX; ly=e.clientY; });
+    wrap.addEventListener('touchstart', function(e){ e.preventDefault(); drag=true; lx=e.touches[0].clientX; ly=e.touches[0].clientY; }, {passive:false});
+    document.addEventListener('mouseup', function(){ drag=false; });
+    document.addEventListener('touchend', function(){ drag=false; });
+    document.addEventListener('mousemove', function(e){
+      if(!drag) return;
+      root.rotation.y += (e.clientX-lx)*0.009;
+      root.rotation.x = Math.max(-0.8, Math.min(0.8, root.rotation.x+(e.clientY-ly)*0.009));
+      lx=e.clientX; ly=e.clientY;
+    });
+    document.addEventListener('touchmove', function(e){
+      if(!drag) return;
+      var tx=e.touches[0].clientX, ty=e.touches[0].clientY;
+      root.rotation.y += (tx-lx)*0.009;
+      root.rotation.x = Math.max(-0.8, Math.min(0.8, root.rotation.x+(ty-ly)*0.009));
+      lx=tx; ly=ty;
+    });
+    window.addEventListener('resize', function(){
+      var w=wrap.offsetWidth, h=wrap.offsetHeight;
+      if(w<10||h<10) return;
+      renderer.setSize(w,h);
+      cam.aspect=w/h;
+      cam.updateProjectionMatrix();
+    });
+
+    return { renderer:renderer, scene:scene, cam:cam, root:root, isDrag:function(){return drag;} };
+  }
+
+  // ── CAPA: ROCKET ───────────────────────────────────
+  (function(){
+    var s = initScene('s-capa', 10, 2.5);
+    if(!s) return;
+    var renderer=s.renderer, scene=s.scene, cam=s.cam, root=s.root;
+
+    // Stars background
+    var sPos=[];
+    for(var i=0;i<500;i++) sPos.push((Math.random()-.5)*80,(Math.random()-.5)*60,(Math.random()-.5)*30-8);
+    var sGeo=new THREE.BufferGeometry();
+    sGeo.setAttribute('position',new THREE.Float32BufferAttribute(sPos,3));
+    scene.add(new THREE.Points(sGeo,new THREE.PointsMaterial({color:0xffffff,size:0.18})));
+
+    var rkt = new THREE.Group();
+    // Body
+    rkt.add(mesh(cyl(0.55,0.68,3.2,16), mat(0xd8dde8)));
+    // Nose
+    var nose = mesh(cyl(0,0.55,1.5,16), mat(0xF5A623,0xaa5500,0.3));
+    nose.position.y = 2.35; rkt.add(nose);
+    // Window
+    var win = mesh(sph(0.22,14), mat(0x3B82F6,0x3B82F6,0.6));
+    win.position.set(0,0.5,0.57); rkt.add(win);
+    // Fins (3)
+    for(var i=0;i<3;i++){
+      var fin = mesh(box(0.08,1.0,0.65), mat(0xF5A623));
+      var ang = i*(Math.PI*2/3);
+      fin.position.set(Math.sin(ang)*0.62,-1.15,Math.cos(ang)*0.62);
+      fin.rotation.y = ang; rkt.add(fin);
+    }
+    // Nozzle
+    var noz = mesh(cyl(0.28,0.5,0.42,12), mat(0x777777));
+    noz.position.y=-1.82; rkt.add(noz);
+    // Flame
+    var flameMat = new THREE.MeshPhongMaterial({color:0xff8800,emissive:0xff6600,emissiveIntensity:1.0,transparent:true,opacity:0.92});
+    var flame = mesh(cyl(0,0.28,1.4,10), flameMat);
+    flame.position.y=-2.5; rkt.add(flame);
+    var flamePL = new THREE.PointLight(0xff8800,3.0,5);
+    flamePL.position.y=-2.5; rkt.add(flamePL);
+    rkt.rotation.x=-0.12;
+    root.add(rkt);
+
+    // Spark particles
+    var sparkP=[];
+    for(var i=0;i<60;i++) sparkP.push((Math.random()-.5)*5,(Math.random()-.5)*5,(Math.random()-.5)*2);
+    var spGeo=new THREE.BufferGeometry();
+    spGeo.setAttribute('position',new THREE.Float32BufferAttribute(sparkP,3));
+    root.add(new THREE.Points(spGeo,new THREE.PointsMaterial({color:0xF5A623,size:0.08})));
+
+    var t=0;
+    (function animate(){
+      requestAnimationFrame(animate);
+      t+=0.016;
+      if(!s.isDrag()) root.rotation.y+=0.004;
+      rkt.position.y = Math.sin(t*0.9)*0.18;
+      var fp=0.75+0.25*Math.sin(t*9);
+      flame.scale.set(fp, 0.8+0.45*Math.sin(t*7), fp);
+      flamePL.intensity = 2.5+1.5*Math.sin(t*8);
+      renderer.render(scene,cam);
+    })();
+  })();
+
+  // ── DIA 1: PROTOBOARD ──────────────────────────────
+  (function(){
+    var s = initScene('s-dia1', 8, 4.2);
+    if(!s) return;
+    var renderer=s.renderer, scene=s.scene, cam=s.cam, root=s.root;
+
+    // Protoboard
+    root.add(mesh(box(7,0.13,4.4), mat(0xf0ebb8)));
+
+    // Power rails top/bottom
+    var rails = [[-1.9,0xff3333],[-2.05,0x3355ee],[1.9,0xff3333],[2.05,0x3355ee]];
+    rails.forEach(function(r){
+      var m = mesh(box(6.8,0.14,0.12), matT(r[1],0.75));
+      m.position.set(0,0.005,r[0]); root.add(m);
+    });
+
+    // Center divider
+    var div = mesh(box(6.8,0.14,0.07), mat(0xc8c18a));
+    div.position.set(0,0.07,0); root.add(div);
+
+    // Holes (InstancedMesh)
+    var hGeo = cyl(0.032,0.032,0.15,6);
+    var hMat = new THREE.MeshPhongMaterial({color:0x888866});
+    var hInst = new THREE.InstancedMesh(hGeo, hMat, 400);
+    var d = new THREE.Object3D(); var idx=0;
+    for(var c=-13;c<=13;c++){
+      for(var r=-6;r<=6;r++){
+        if(r===-1||r===0) continue;
+        if(idx>=400) break;
+        d.position.set(c*0.245, 0.065, r*0.31);
+        d.updateMatrix(); hInst.setMatrixAt(idx++,d.matrix);
+      }
+    }
+    hInst.count=idx; hInst.instanceMatrix.needsUpdate=true;
+    root.add(hInst);
+
+    // LED
+    var ledMat = new THREE.MeshPhongMaterial({color:0xff2200,emissive:0xff2200,emissiveIntensity:0.6,transparent:true,opacity:0.88});
+    var ledG = new THREE.Group();
+    ledG.add(mesh(cyl(0.1,0.13,0.22,12), ledMat));
+    var dome = mesh(new THREE.SphereGeometry(0.1,12,6,0,Math.PI*2,0,Math.PI/2), ledMat);
+    dome.position.y=0.11; ledG.add(dome);
+    var legM = mat(0xbbbbbb);
+    [-0.055,0.055].forEach(function(x){
+      var leg=mesh(cyl(0.012,0.012,0.38,6),legM); leg.position.set(x,-0.3,0); ledG.add(leg);
+    });
+    ledG.position.set(0.8,0.22,0.32); root.add(ledG);
+    var ledPL = new THREE.PointLight(0xff4400,2.5,4);
+    ledPL.position.set(0.8,0.55,0.32); root.add(ledPL);
+
+    // Resistor
+    var resG = new THREE.Group();
+    resG.add(mesh(cyl(0.07,0.07,0.52,10), mat(0xd4a76a)));
+    [[-0.13,0xf56000],[0,0xf56000],[0.13,0x8B4513]].forEach(function(b){
+      var bm=mesh(cyl(0.085,0.085,0.065,10),mat(b[1])); bm.position.y=b[0]; resG.add(bm);
+    });
+    [0.36,-0.36].forEach(function(y){ var l=mesh(cyl(0.012,0.012,0.3,6),legM); l.position.y=y; resG.add(l); });
+    resG.rotation.x=Math.PI/2; resG.position.set(-1.4,0.2,-0.32); root.add(resG);
+
+    // Battery 9V
+    var batG = new THREE.Group();
+    batG.add(mesh(box(0.68,1.1,0.44), mat(0x111111)));
+    var tP=mesh(cyl(0.07,0.07,0.1,10),mat(0xff3333)); tP.position.set(-0.16,0.65,0); batG.add(tP);
+    var tN=mesh(cyl(0.05,0.05,0.1,10),mat(0x333333)); tN.position.set(0.16,0.65,0); batG.add(tN);
+    batG.position.set(-2.8,0.65,0); root.add(batG);
+
+    // Wires
+    root.add(mkWire([[-1.4,0.25,-0.32],[-1.0,0.55,0.0],[0.5,0.55,0.1],[0.75,0.27,0.32]],0xF5A623));
+    root.add(mkWire([[0.85,0.22,0.32],[0.85,0.45,-0.9],[0.0,0.45,-1.85],[-3.1,0.45,-1.85]],0x111111));
+    root.add(mkWire([[-1.4,0.25,-0.32],[-2.0,0.55,-1.6],[-3.1,0.55,-1.7]],0xff3333));
+    root.add(mkWire([[-2.64,1.32,0],[-2.64,1.7,0],[-0.05,1.7,-1.85],[-0.05,0.45,-1.85]],0xff3333));
+    root.add(mkWire([[-2.96,1.32,0],[-2.96,1.8,0],[0.2,1.8,-1.7],[0.2,0.45,-1.7]],0x111111));
+
+    var t=0;
+    (function animate(){
+      requestAnimationFrame(animate);
+      t+=0.016;
+      if(!s.isDrag()) root.rotation.y+=0.004;
+      var pulse=0.5+0.5*Math.sin(t*4);
+      ledPL.intensity=1.5+pulse*2;
+      ledMat.emissiveIntensity=0.4+pulse*0.5;
+      renderer.render(scene,cam);
+    })();
+  })();
+
+  // ── DIA 2: ARDUINO + SENSORS ───────────────────────
+  (function(){
+    var s = initScene('s-dia2', 11, 4.5);
+    if(!s) return;
+    var renderer=s.renderer, scene=s.scene, cam=s.cam, root=s.root;
+
+    // Arduino PCB
+    root.add(mesh(box(7.0,0.15,5.4), mat(0x1a5c1a)));
+    // USB
+    var usb=mesh(box(0.6,0.38,0.55),mat(0x888888)); usb.position.set(-3.8,0.27,0.2); root.add(usb);
+    // Power jack
+    var jack=mesh(cyl(0.25,0.25,0.55,10),mat(0x222222)); jack.rotation.z=Math.PI/2; jack.position.set(-3.8,0.27,-1.2); root.add(jack);
+    // ATmega chip
+    var chip=mesh(box(1.0,0.22,1.3),mat(0x111111)); chip.position.set(0.5,0.19,-0.2); root.add(chip);
+    // Chip legs
+    for(var i=-2;i<=2;i++){
+      [-0.73,0.73].forEach(function(z){
+        var cl=mesh(box(0.08,0.06,0.2),mat(0xccaa44)); cl.position.set(0.5+i*0.2,0.08,z); root.add(cl);
+      });
+    }
+    // Crystal
+    var xtal=mesh(cyl(0.07,0.07,0.38,8),mat(0xcccccc)); xtal.rotation.z=Math.PI/2; xtal.position.set(-0.5,0.19,0.8); root.add(xtal);
+    // On-board LEDs
+    [[0xffaa00,-1.5,2.5],[0x00ff44,-1.0,2.5],[0x3B82F6,-0.5,2.5]].forEach(function(c){
+      var bl=mesh(sph(0.1,8),mat(c[0],c[0],0.8)); bl.position.set(c[1],0.18,c[2]); root.add(bl);
+    });
+    // Pins row (InstancedMesh)
+    var pGeo=cyl(0.033,0.033,0.3,6);
+    var pMat=new THREE.MeshPhongMaterial({color:0xccaa44});
+    var pInst=new THREE.InstancedMesh(pGeo,pMat,40);
+    var d2=new THREE.Object3D(); var pi=0;
+    for(var i=0;i<14;i++){ d2.position.set(i*0.45-3.0,0.22,2.85); d2.updateMatrix(); pInst.setMatrixAt(pi++,d2.matrix); }
+    for(var i=0;i<6;i++){ d2.position.set(i*0.45-1.1,0.22,-2.85); d2.updateMatrix(); pInst.setMatrixAt(pi++,d2.matrix); }
+    pInst.count=pi; pInst.instanceMatrix.needsUpdate=true; root.add(pInst);
+    // Reset button
+    var btn=mesh(cyl(0.14,0.14,0.17,10),mat(0xff3333)); btn.position.set(-2.2,0.17,2.0); root.add(btn);
+
+    // DHT11 sensor
+    var dG=new THREE.Group();
+    dG.add(mesh(box(0.9,0.17,1.2),mat(0x1155aa)));
+    for(var i=0;i<3;i++){
+      var p=mesh(cyl(0.025,0.025,0.45,6),mat(0xccaa44)); p.position.set(-0.2+i*0.2,0,-0.73); p.rotation.x=Math.PI/2; dG.add(p);
+    }
+    dG.position.set(5.0,1.0,-1.5); root.add(dG);
+
+    // HC-SR04
+    var hG=new THREE.Group();
+    hG.add(mesh(box(2.0,0.17,1.0),mat(0x228822)));
+    [-0.55,0.55].forEach(function(x){
+      var tr=mesh(cyl(0.22,0.22,0.24,14),mat(0x222222)); tr.position.set(x,0.2,0); hG.add(tr);
+      var fc=mesh(cyl(0.17,0.17,0.04,14),mat(0xd4a76a)); fc.position.set(x,0.33,0); hG.add(fc);
+    });
+    for(var i=0;i<4;i++){
+      var p=mesh(cyl(0.025,0.025,0.4,6),mat(0xccaa44)); p.position.set(-0.45+i*0.3,0,-0.62); p.rotation.x=Math.PI/2; hG.add(p);
+    }
+    hG.position.set(4.8,1.8,1.2); root.add(hG);
+
+    // Wires
+    root.add(mkWire([[5.0,1.0,-1.5],[4.2,0.5,-1.5],[2.5,0.5,-2.5],[0.8,0.3,-2.7]],0x22C55E,0.022));
+    root.add(mkWire([[4.8,1.8,1.2],[3.8,0.9,1.2],[2.0,0.5,2.3],[-0.3,0.3,2.6]],0x3B82F6,0.022));
+
+    // Sonic pulse rings
+    var rings=[];
+    for(var i=0;i<4;i++){
+      var rm=mesh(tor(0.25+i*0.22,0.025,8,20),matT(0x3B82F6,0.0));
+      rm.rotation.x=Math.PI/2; rm.position.set(5.7+i*0.35,1.8,1.2); root.add(rm); rings.push({m:rm,ph:i*0.6});
+    }
+
+    var t=0;
+    (function animate(){
+      requestAnimationFrame(animate);
+      t+=0.016;
+      if(!s.isDrag()) root.rotation.y+=0.003;
+      rings.forEach(function(r){
+        var prog=((t+r.ph)%2.0)/2.0;
+        r.m.scale.set(1+prog*2,1,1+prog*2);
+        r.m.material.opacity=Math.max(0,(1-prog)*0.55);
+      });
+      renderer.render(scene,cam);
+    })();
+  })();
+
+  // ── DIA 3: ROBOT ───────────────────────────────────
+  (function(){
+    var s = initScene('s-dia3', 13, 5.5);
+    if(!s) return;
+    var renderer=s.renderer, scene=s.scene, cam=s.cam, root=s.root;
+
+    // Chassis
+    root.add(mesh(box(7.5,0.22,5.0),mat(0x111111)));
+
+    // Wheels helper
+    var wheels=[];
+    function addWheel(x,z){
+      var wg=new THREE.Group();
+      var tire=mesh(cyl(0.9,0.9,0.35,20),mat(0x222222)); tire.rotation.z=Math.PI/2; wg.add(tire);
+      var rim=mesh(cyl(0.62,0.62,0.37,20),mat(0x444444)); rim.rotation.z=Math.PI/2; wg.add(rim);
+      for(var sp=0;sp<4;sp++){
+        var spoke=mesh(box(0.35,0.08,0.08),mat(0x666666)); spoke.rotation.x=sp*Math.PI/4; wg.add(spoke);
+      }
+      wg.position.set(x,0,z); root.add(wg); wheels.push(wg); return wg;
+    }
+    addWheel(-3.8,1.7); addWheel(-3.8,-1.7); addWheel(3.8,1.7); addWheel(3.8,-1.7);
+
+    // Caster ball
+    var casterG=new THREE.Group();
+    casterG.add(mesh(sph(0.35,12),mat(0x888888)));
+    var cPole=mesh(cyl(0.06,0.06,0.22,8),mat(0x555555)); cPole.position.y=0.28; casterG.add(cPole);
+    casterG.position.set(-4.4,-0.28,0); root.add(casterG);
+
+    // DC Motors
+    [1.7,-1.7].forEach(function(z){
+      var mot=mesh(cyl(0.45,0.45,1.2,10),mat(0x333333)); mot.rotation.x=Math.PI/2; mot.position.set(0,-0.04,z*0.85); root.add(mot);
+      var shaft=mesh(cyl(0.1,0.1,0.8,8),mat(0xcccccc)); shaft.rotation.x=Math.PI/2; shaft.position.set(0,-0.04,z*1.45); root.add(shaft);
+    });
+
+    // Arduino mini on chassis
+    var ardG=new THREE.Group();
+    ardG.add(mesh(box(2.7,0.12,2.1),mat(0x1a5c1a)));
+    var ac=mesh(box(0.55,0.14,0.7),mat(0x111111)); ac.position.set(0.2,0.13,0); ardG.add(ac);
+    ardG.position.set(-1.0,0.18,-0.8); root.add(ardG);
+
+    // L298N Driver (red)
+    var drv=mesh(box(2.4,0.18,1.8),mat(0xcc2222)); drv.position.set(1.6,0.2,0.6); root.add(drv);
+    var dchip=mesh(box(0.7,0.28,0.7),mat(0x111111)); dchip.position.set(1.6,0.33,0.6); root.add(dchip);
+    var hs=mesh(box(0.5,0.32,0.5),mat(0x888888)); hs.position.set(0.9,0.31,0.6); root.add(hs);
+
+    // Battery pack
+    root.add(mesh(box(2.0,0.55,1.6),mat(0x222266))).position;
+    var bp=mesh(box(2.0,0.55,1.6),mat(0x222266)); bp.position.set(1.5,0.2,-1.1); root.add(bp);
+
+    // HC-SR04 on front
+    var hcG=new THREE.Group();
+    hcG.add(mesh(box(1.2,0.15,0.7),mat(0x228822)));
+    [-0.33,0.33].forEach(function(z){
+      var t2=mesh(cyl(0.15,0.15,0.2,12),mat(0x222222)); t2.position.set(0.1,0.18,z); hcG.add(t2);
+    });
+    hcG.rotation.y=Math.PI/2; hcG.position.set(-4.1,0.22,0); root.add(hcG);
+
+    // Wires
+    root.add(mkWire([[1.6,0.32,0.6],[-1.0,0.32,-0.4],[-1.5,0.32,-0.8]],0xF5A623,0.03));
+    root.add(mkWire([[-4.1,0.3,0],[-3.0,0.3,0],[-1.5,0.3,-0.6]],0x3B82F6,0.02));
+
+    // Sonic pings from front
+    var pings=[];
+    for(var i=0;i<4;i++){
+      var pm=mesh(tor(0.2+i*0.18,0.022,8,18),matT(0x22C55E,0.0));
+      pm.rotation.y=Math.PI/2; pm.position.set(-5.1,0.22,0); root.add(pm); pings.push({m:pm,ph:i*0.45});
+    }
+
+    var t=0;
+    (function animate(){
+      requestAnimationFrame(animate);
+      t+=0.016;
+      if(!s.isDrag()) root.rotation.y+=0.004;
+      wheels.forEach(function(w){ w.children[0].rotation.x+=0.06; });
+      pings.forEach(function(p){
+        var prog=((t+p.ph)%2.0)/2.0;
+        p.m.scale.set(1+prog*3.5,1,1+prog*3.5);
+        p.m.material.opacity=Math.max(0,(1-prog)*0.5);
+      });
+      renderer.render(scene,cam);
+    })();
+  })();
+
+  // ── DIA 4: ESP32 + WIFI ────────────────────────────
+  (function(){
+    var s = initScene('s-dia4', 10, 3.5);
+    if(!s) return;
+    var renderer=s.renderer, scene=s.scene, cam=s.cam, root=s.root;
+
+    // ESP32 DevKit PCB
+    root.add(mesh(box(4.2,0.13,2.0),mat(0x1a1a55)));
+    // Chip
+    var chip=mesh(box(1.4,0.22,1.2),mat(0x111111)); chip.position.set(0,0.18,0); root.add(chip);
+    var chipLbl=mesh(box(1.3,0.04,0.08),mat(0xF5A623,0xF5A623,0.5)); chipLbl.position.set(0,0.30,-0.1); root.add(chipLbl);
+    // Antenna trace
+    var ant1=mesh(box(0.55,0.07,0.05),mat(0xccaa44)); ant1.position.set(2.2,0.1,0); root.add(ant1);
+    var ant2=mesh(box(0.05,0.07,0.38),mat(0xccaa44)); ant2.position.set(2.45,0.1,0.19); root.add(ant2);
+    var ant3=mesh(box(0.28,0.07,0.05),mat(0xccaa44)); ant3.position.set(2.32,0.1,0.38); root.add(ant3);
+    // USB
+    var usb=mesh(box(0.34,0.21,0.44),mat(0x888888)); usb.position.set(-2.3,0.17,0); root.add(usb);
+    // Pins
+    var pinG=cyl(0.03,0.03,0.25,6), pinM2=new THREE.MeshPhongMaterial({color:0xccaa44});
+    var pI=new THREE.InstancedMesh(pinG,pinM2,24); var d3=new THREE.Object3D(); var pi2=0;
+    for(var i=0;i<10;i++){
+      [0.93,-0.93].forEach(function(z){ d3.position.set(-2.0+i*0.42,0.19,z); d3.updateMatrix(); pI.setMatrixAt(pi2++,d3.matrix); });
+    }
+    pI.count=pi2; pI.instanceMatrix.needsUpdate=true; root.add(pI);
+    // LED
+    var led=mesh(sph(0.09,8),mat(0x3B82F6,0x3B82F6,0.9)); led.position.set(-1.2,0.17,-0.72); root.add(led);
+    var ledPL2=new THREE.PointLight(0x3B82F6,1.5,2.5); ledPL2.position.set(-1.2,0.3,-0.72); root.add(ledPL2);
+
+    // WiFi rings
+    var wRings=[];
+    for(var i=0;i<6;i++){
+      var wr=mesh(tor(0.5+i*0.45,0.035,8,28),new THREE.MeshPhongMaterial({color:0x3B82F6,emissive:0x3B82F6,emissiveIntensity:0.5,transparent:true,opacity:0.0,side:THREE.DoubleSide}));
+      wr.rotation.x=Math.PI/2; wr.position.set(0,0.8,0); root.add(wr); wRings.push({m:wr,ph:i*0.5});
+    }
+
+    // Data packets orbiting
+    var pkts=[];
+    for(var i=0;i<10;i++){
+      var pk=mesh(box(0.13,0.07,0.07),mat(0xF5A623,0xF5A623,0.5));
+      var ang=i*(Math.PI*2/10);
+      pk.position.set(Math.cos(ang)*3.0,0.5,Math.sin(ang)*1.5);
+      root.add(pk); pkts.push({m:pk,ang:ang,spd:0.3+Math.random()*0.3});
+    }
+
+    // Phone
+    var phoneG=new THREE.Group();
+    phoneG.add(mesh(box(1.2,0.1,2.1),mat(0x111133)));
+    var scr=mesh(box(1.0,0.07,1.8),mat(0x1a3a6a,0x3B82F6,0.12)); scr.position.y=0.085; phoneG.add(scr);
+    [[0,0.1,0.3],[0,0.1,-0.3],[-0.3,0.1,0],[0.3,0.1,0]].forEach(function(p){
+      var btn=mesh(box(0.24,0.05,0.24),mat(0x3B82F6,0x3B82F6,0.45)); btn.position.set(p[0],p[1],p[2]); phoneG.add(btn);
+    });
+    phoneG.position.set(-4.5,0.5,0); phoneG.rotation.y=0.45; root.add(phoneG);
+    root.add(mkWire([[-4.5,0.6,0],[-3.5,1.5,0],[-2.5,1.2,0],[-1.5,0.5,0]],0x3B82F6,0.03));
+
+    var t=0;
+    (function animate(){
+      requestAnimationFrame(animate);
+      t+=0.016;
+      if(!s.isDrag()) root.rotation.y+=0.004;
+      wRings.forEach(function(r){
+        var prog=((t*0.7+r.ph)%2.2)/2.2;
+        var sc=0.5+prog*1.8; r.m.scale.set(sc,1,sc);
+        r.m.material.opacity=Math.max(0,(1-prog)*0.55);
+      });
+      pkts.forEach(function(p){
+        p.ang+=p.spd*0.016;
+        p.m.position.x=Math.cos(p.ang)*3.0;
+        p.m.position.z=Math.sin(p.ang)*1.5;
+        p.m.position.y=Math.sin(t*1.3+p.ang)*0.5+0.5;
+        p.m.rotation.y+=0.05;
+      });
+      var bl=Math.sin(t*5)>0.5?1.2:0.25;
+      ledPL2.intensity=bl; led.material.emissiveIntensity=bl*0.8;
+      renderer.render(scene,cam);
+    })();
+  })();
+
+  // ── DIA 5: DEMO DAY ────────────────────────────────
+  (function(){
+    var s = initScene('s-dia5', 15, 7);
+    if(!s) return;
+    var renderer=s.renderer, scene=s.scene, cam=s.cam, root=s.root;
+
+    // Arena floor
+    var fl=mesh(new THREE.CircleGeometry(7.5,36),mat(0x0d1a2a));
+    fl.rotation.x=-Math.PI/2; fl.position.y=-0.05; root.add(fl);
+    var brd=mesh(tor(7.5,0.15,8,36),mat(0xF5A623,0xF5A623,0.3));
+    brd.rotation.x=-Math.PI/2; brd.position.y=0.1; root.add(brd);
+    for(var i=-6;i<=6;i+=2){
+      var g1=mesh(box(15,0.01,0.03),mat(0x1a2a3a)); g1.position.z=i; root.add(g1);
+      var g2=mesh(box(0.03,0.01,15),mat(0x1a2a3a)); g2.position.x=i; root.add(g2);
+    }
+
+    // Mini robot builder
+    function miniBot(x,z,color,ballColor){
+      var bg=new THREE.Group();
+      bg.add(mesh(box(1.8,0.15,1.2),mat(0x111111)));
+      [[-0.9,0,0.65],[0.9,0,0.65],[-0.9,0,-0.65],[0.9,0,-0.65]].forEach(function(w){
+        var wh=mesh(cyl(0.3,0.3,0.15,12),mat(0x222222)); wh.rotation.z=Math.PI/2; wh.position.set(w[0],w[1],w[2]); bg.add(wh);
+      });
+      bg.add(mesh(box(0.7,0.1,0.55),mat(0x1a5c1a))).position.set(0,0.13,0);
+      var ard=mesh(box(0.7,0.1,0.55),mat(0x1a5c1a)); ard.position.set(0,0.13,0); bg.add(ard);
+      var ci=mesh(box(0.3,0.15,0.3),mat(color,color,0.6)); ci.position.set(0,0.23,0); bg.add(ci);
+      // Balloon
+      var bl=mesh(sph(0.38,12),new THREE.MeshPhongMaterial({color:ballColor,emissive:ballColor,emissiveIntensity:0.25,transparent:true,opacity:0.82}));
+      bl.position.set(0.95,0.6,-0.45); bg.add(bl);
+      bg.position.set(x,0.18,z); root.add(bg); return bg;
+    }
+
+    var bot1=miniBot(-4.5,0,0x3B82F6,0xEF4444);
+    var bot2=miniBot(4.5,0,0x22C55E,0xF5A623);
+
+    // Trophy
+    var tG=new THREE.Group();
+    var tb=mesh(box(1.0,0.18,0.72),mat(0xF5A623)); tG.add(tb);
+    var tb2=mesh(box(0.6,0.12,0.42),mat(0xF5A623)); tb2.position.y=0.15; tG.add(tb2);
+    var stem=mesh(cyl(0.12,0.14,0.8,10),mat(0xF5A623)); stem.position.y=0.55; tG.add(stem);
+    var cup=mesh(cyl(0.55,0.25,0.7,12),mat(0xF5A623,0xaa6600,0.3)); cup.position.y=1.3; tG.add(cup);
+    [-0.56,0.56].forEach(function(x){
+      var h=mesh(tor(0.2,0.04,6,14),mat(0xF5A623)); h.rotation.x=Math.PI/2; h.position.set(x,1.3,0); tG.add(h);
+    });
+    var star=mesh(sph(0.22,8),mat(0xffee00,0xffee00,1.0)); star.position.y=1.78; tG.add(star);
+    var starPL=new THREE.PointLight(0xffee00,2.0,4); starPL.position.y=1.78; tG.add(starPL);
+    root.add(tG);
+
+    // Confetti
+    var confetti=[];
+    var cc=[0xF5A623,0x22C55E,0x3B82F6,0x8B5CF6,0xEF4444,0xffee00,0xff88cc];
+    for(var i=0;i<55;i++){
+      var cm=mesh(box(0.12,0.04,0.08),mat(cc[i%cc.length]));
+      var sy=Math.random()*5+0.5;
+      cm.position.set((Math.random()-.5)*13,sy,(Math.random()-.5)*8);
+      cm.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+      root.add(cm);
+      confetti.push({m:cm,vy:-(0.5+Math.random()*0.6),vr:(Math.random()-.5)*0.08,sy:sy});
+    }
+
+    var t=0;
+    (function animate(){
+      requestAnimationFrame(animate);
+      t+=0.016;
+      if(!s.isDrag()) root.rotation.y+=0.003;
+      bot1.position.x=-4.5+Math.sin(t*0.5)*0.55;
+      bot2.position.x=4.5-Math.sin(t*0.5)*0.55;
+      starPL.intensity=1.5+Math.sin(t*4)*1.0;
+      tG.rotation.y+=0.01;
+      confetti.forEach(function(c){
+        c.m.position.y+=c.vy*0.016;
+        c.m.rotation.z+=c.vr;
+        if(c.m.position.y<-0.5) c.m.position.y=c.sy;
+      });
+      renderer.render(scene,cam);
+    })();
+  })();
+
+}); // window.load
+</script>
+</body>
+</html>
