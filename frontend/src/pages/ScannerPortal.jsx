@@ -1,11 +1,13 @@
 /**
- * Scanner de Portal do Aluno
+ * Scanner Game Aluno
  * Professor escaneia a carteirinha → abre o portal ItagGame do aluno na tela
  */
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import api from '../api'
+
+const HISTORICO_KEY = 'scanner_game_historico'
 
 // Beep de sucesso
 function tocarBeep() {
@@ -17,8 +19,7 @@ function tocarBeep() {
     osc.frequency.value = 880
     gain.gain.setValueAtTime(0.3, ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.4)
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4)
   } catch {}
 }
 
@@ -28,25 +29,34 @@ function tocarBeepErro() {
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.connect(gain); gain.connect(ctx.destination)
-    osc.type = 'sawtooth'
-    osc.frequency.value = 220
+    osc.type = 'sawtooth'; osc.frequency.value = 220
     gain.gain.setValueAtTime(0.3, ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.5)
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5)
   } catch {}
 }
 
-export default function ScannerPortal() {
+export default function ScannerGameAluno() {
   const navigate = useNavigate()
   const html5QrRef = useRef(null)
   const timeoutRef = useRef(null)
 
-  // estado: 'scanning' | 'carregando' | 'confirmado' | 'erro'
-  const [estado, setEstado] = useState('scanning')
+  const [estado, setEstado] = useState('scanning') // scanning | carregando | confirmado | erro
   const [aluno, setAluno] = useState(null)
   const [mensagemErro, setMensagemErro] = useState('')
-  const [historico, setHistorico] = useState([]) // lista de quem acessou hoje
+
+  // Histórico persistido em sessionStorage — sobrevive à navegação de ida e volta
+  const [historico, setHistorico] = useState(() => {
+    try {
+      const salvo = sessionStorage.getItem(HISTORICO_KEY)
+      return salvo ? JSON.parse(salvo) : []
+    } catch { return [] }
+  })
+
+  // Salva histórico sempre que mudar
+  useEffect(() => {
+    try { sessionStorage.setItem(HISTORICO_KEY, JSON.stringify(historico)) } catch {}
+  }, [historico])
 
   useEffect(() => {
     iniciarScanner()
@@ -66,14 +76,9 @@ export default function ScannerPortal() {
         aspectRatio: 1.0,
         showTorchButtonIfSupported: true,
       }, false)
-      scanner.render(
-        (decodedText) => onScanSuccess(decodedText),
-        () => {}
-      )
+      scanner.render((decodedText) => onScanSuccess(decodedText), () => {})
       html5QrRef.current = scanner
-    } catch (err) {
-      console.error('Erro ao iniciar scanner:', err)
-    }
+    } catch (err) { console.error('Erro ao iniciar scanner:', err) }
   }
 
   async function pararScanner() {
@@ -87,24 +92,25 @@ export default function ScannerPortal() {
     await pararScanner()
     const codigo = codigoRaw.trim().toUpperCase()
     setEstado('carregando')
-
     try {
       const { data } = await api.get(`/alunos/qr/${encodeURIComponent(codigo)}`)
       tocarBeep()
       setAluno(data)
       setEstado('confirmado')
 
-      // Registra no histórico da sessão
+      // Atualiza histórico (persistido em sessionStorage)
+      const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       setHistorico(prev => {
-        const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         const jaExiste = prev.find(h => h.codigo === data.codigo)
         if (jaExiste) {
-          return prev.map(h => h.codigo === data.codigo ? { ...h, hora, acessos: (h.acessos || 1) + 1 } : h)
+          return prev.map(h => h.codigo === data.codigo
+            ? { ...h, hora, acessos: (h.acessos || 1) + 1 }
+            : h)
         }
         return [{ id: data.id, nome: data.nome, codigo: data.codigo, turma: data.turma, foto: data.foto_path, hora, acessos: 1 }, ...prev]
       })
 
-      // Abre o portal do aluno após 1.8s
+      // Navega ao portal após 1.8s
       timeoutRef.current = setTimeout(() => {
         navigate(`/itagame/aluno?codigo=${encodeURIComponent(data.codigo)}&origem=scanner`)
       }, 1800)
@@ -114,18 +120,14 @@ export default function ScannerPortal() {
       setEstado('erro')
       setMensagemErro('Carteirinha não encontrada. Tente novamente.')
       timeoutRef.current = setTimeout(() => {
-        setEstado('scanning')
-        setMensagemErro('')
-        iniciarScanner()
+        setEstado('scanning'); setMensagemErro(''); iniciarScanner()
       }, 2500)
     }
   }
 
   function voltarScanner() {
     clearTimeout(timeoutRef.current)
-    setEstado('scanning')
-    setAluno(null)
-    iniciarScanner()
+    setEstado('scanning'); setAluno(null); iniciarScanner()
   }
 
   return (
@@ -138,10 +140,34 @@ export default function ScannerPortal() {
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-xl">📲</div>
             <div>
-              <h1 className="text-xl font-bold text-textMain">Scanner de Portal do Aluno</h1>
-              <p className="text-sm text-gray-500">Aluno escaneia a carteirinha → portal abre na tela</p>
+              <h1 className="text-xl font-bold text-textMain">Scanner Game Aluno</h1>
+              <p className="text-sm text-gray-500">Aluno escaneia a carteirinha → portal ItagGame abre na tela</p>
             </div>
           </div>
+
+          {/* Histórico sempre visível no topo em mobile */}
+          {historico.length > 0 && (
+            <div className="lg:hidden mb-4 bg-white rounded-2xl shadow-md overflow-hidden">
+              <div className="bg-gray-50 border-b px-4 py-2 flex items-center justify-between">
+                <div className="font-bold text-gray-700 text-sm">📋 Acessos desta sessão</div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">{historico.length}</span>
+                  <button onClick={() => setHistorico([])} className="text-xs text-gray-400 hover:text-red-500">🗑️</button>
+                </div>
+              </div>
+              <div className="flex gap-2 overflow-x-auto px-3 py-2">
+                {historico.map(h => (
+                  <div key={h.codigo} className="flex-shrink-0 flex flex-col items-center gap-1 w-14">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/30 overflow-hidden flex items-center justify-center">
+                      {h.foto ? <img src={h.foto} alt={h.nome} className="w-full h-full object-cover" /> : <span>👤</span>}
+                    </div>
+                    <div className="text-xs text-center text-gray-600 leading-tight font-semibold truncate w-full">{h.nome.split(' ')[0]}</div>
+                    <div className="text-xs text-gray-400">{h.hora}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -149,7 +175,7 @@ export default function ScannerPortal() {
             <div>
               <div className="bg-white rounded-2xl shadow-md overflow-hidden">
 
-                {/* Estado: SCANNING — câmera aberta */}
+                {/* SCANNING */}
                 {estado === 'scanning' && (
                   <div>
                     <div className="bg-primary text-white text-center py-3 px-4">
@@ -162,7 +188,7 @@ export default function ScannerPortal() {
                   </div>
                 )}
 
-                {/* Estado: CARREGANDO */}
+                {/* CARREGANDO */}
                 {estado === 'carregando' && (
                   <div className="flex flex-col items-center justify-center py-16 px-6 gap-4">
                     <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -170,56 +196,55 @@ export default function ScannerPortal() {
                   </div>
                 )}
 
-                {/* Estado: CONFIRMADO */}
+                {/* CONFIRMADO */}
                 {estado === 'confirmado' && aluno && (
-                  <div className="flex flex-col items-center py-10 px-6 gap-4 text-center">
-                    <div className="w-20 h-20 rounded-full bg-green-100 border-4 border-green-500 overflow-hidden flex items-center justify-center">
-                      {aluno.foto_path
-                        ? <img src={aluno.foto_path} alt={aluno.nome} className="w-full h-full object-cover" />
-                        : <span className="text-4xl">👤</span>}
+                  <div className="flex flex-col items-center py-10 px-6 gap-3 text-center">
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-full bg-green-100 border-4 border-green-500 overflow-hidden flex items-center justify-center">
+                        {aluno.foto_path
+                          ? <img src={aluno.foto_path} alt={aluno.nome} className="w-full h-full object-cover" />
+                          : <span className="text-4xl">👤</span>}
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-green-500 flex items-center justify-center border-2 border-white">
+                        <span className="text-white text-sm font-bold">✓</span>
+                      </div>
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center -mt-8 ml-12 border-2 border-white z-10">
-                      <span className="text-white text-xl font-bold">✓</span>
-                    </div>
-                    <div className="font-bold text-xl text-gray-800 -mt-2">{aluno.nome}</div>
+                    <div className="font-bold text-xl text-gray-800">{aluno.nome}</div>
                     <div className="font-mono text-primary font-bold text-lg">{aluno.codigo}</div>
                     <div className="text-gray-500 text-sm">{aluno.turma}</div>
                     <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-2 text-green-700 text-sm font-semibold">
                       🚀 Abrindo portal em instantes...
                     </div>
-                    <button
-                      onClick={voltarScanner}
-                      className="text-xs text-gray-400 hover:text-gray-600 underline mt-1"
-                    >
+                    <button onClick={voltarScanner} className="text-xs text-gray-400 hover:text-gray-600 underline mt-1">
                       Cancelar e voltar ao scanner
                     </button>
                   </div>
                 )}
 
-                {/* Estado: ERRO */}
+                {/* ERRO */}
                 {estado === 'erro' && (
                   <div className="flex flex-col items-center py-12 px-6 gap-4 text-center">
                     <div className="text-5xl">❌</div>
                     <div className="text-red-600 font-bold text-lg">{mensagemErro}</div>
-                    <div className="text-gray-400 text-sm">O scanner vai reiniciar automaticamente...</div>
+                    <div className="text-gray-400 text-sm">Reiniciando scanner automaticamente...</div>
                   </div>
                 )}
               </div>
 
-              {/* Instrução para o aluno */}
+              {/* Instrução */}
               <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
                 <div className="font-bold mb-1">📋 Como usar:</div>
                 <ol className="list-decimal list-inside space-y-1 text-blue-700">
-                  <li>Aluno pega a carteirinha e aponta o QR Code para a câmera</li>
-                  <li>O portal abre automaticamente na tela</li>
+                  <li>Aluno aponta o QR da carteirinha para a câmera</li>
+                  <li>Portal ItagGame abre automaticamente na tela</li>
                   <li>Aluno acessa atividades, quizzes e seu desempenho</li>
-                  <li>Ao terminar, pressione <strong>Voltar</strong> no navegador para o próximo</li>
+                  <li>Ao terminar, clica em <strong>← Scanner</strong> no portal</li>
                 </ol>
               </div>
             </div>
 
-            {/* Coluna direita — Histórico da sessão */}
-            <div>
+            {/* Coluna direita — Histórico (desktop) */}
+            <div className="hidden lg:block">
               <div className="bg-white rounded-2xl shadow-md overflow-hidden">
                 <div className="bg-gray-50 border-b px-4 py-3 flex items-center justify-between">
                   <div className="font-bold text-gray-700">📋 Acessos desta sessão</div>
@@ -232,9 +257,10 @@ export default function ScannerPortal() {
                   <div className="flex flex-col items-center justify-center py-12 text-gray-300 gap-2">
                     <div className="text-4xl">📂</div>
                     <div className="text-sm">Nenhum aluno acessou ainda</div>
+                    <div className="text-xs text-gray-200">Escaneie a primeira carteirinha</div>
                   </div>
                 ) : (
-                  <div className="divide-y max-h-96 overflow-y-auto">
+                  <div className="divide-y max-h-[480px] overflow-y-auto">
                     {historico.map((h) => (
                       <div key={h.codigo} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
                         <div className="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary/30 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -249,7 +275,7 @@ export default function ScannerPortal() {
                         <div className="text-right flex-shrink-0">
                           <div className="text-xs font-bold text-primary">{h.hora}</div>
                           {h.acessos > 1 && (
-                            <div className="text-xs text-orange-500">{h.acessos}x</div>
+                            <div className="text-xs text-orange-500 font-bold">{h.acessos}x</div>
                           )}
                         </div>
                       </div>
@@ -259,11 +285,8 @@ export default function ScannerPortal() {
 
                 {historico.length > 0 && (
                   <div className="px-4 py-3 border-t bg-gray-50">
-                    <button
-                      onClick={() => setHistorico([])}
-                      className="text-xs text-gray-400 hover:text-red-500"
-                    >
-                      🗑️ Limpar histórico
+                    <button onClick={() => setHistorico([])} className="text-xs text-gray-400 hover:text-red-500">
+                      🗑️ Limpar histórico da sessão
                     </button>
                   </div>
                 )}

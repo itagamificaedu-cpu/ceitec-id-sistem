@@ -11,7 +11,7 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/dashboard',          label: 'Dashboard Geral',        icon: '🏠' },
       { path: '/scanner',            label: 'Scanner de Presença',    icon: '📷' },
-      { path: '/scanner/portal',     label: 'Scanner de Portal',       icon: '📲' },
+      { path: '/scanner/portal',     label: 'Scanner Game Aluno',      icon: '📲' },
       { path: '/saida-sala',         label: 'Saída de Sala (Scanner)', icon: '🚪' },
       { path: '/saida-sala/painel', label: 'Saída de Sala (Painel)',  icon: '📊' },
       { path: '/almoco/scanner',     label: 'Scanner de Almoço',      icon: '🍽️' },
