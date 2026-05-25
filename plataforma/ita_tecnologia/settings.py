@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'monitoramento.apps.MonitoramentoConfig',
     # Sistema de inscrições — Curso de Férias Maker
     'inscricoes.apps.InscricoesConfig',
+    # Dia do Desafio — Evento esportivo CEITEC
+    'desafio.apps.DesafioConfig',
 ]
 
 MIDDLEWARE = [

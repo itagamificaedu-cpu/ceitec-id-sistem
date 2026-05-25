@@ -340,6 +340,15 @@
       <span class="nav-icon">📊</span> Relatórios
     </a>
 
+    {# Dia do Desafio — visível apenas para staff/admin #}
+    {% if usuario and usuario.is_staff or usuario and usuario.type_user == 'admin' %}
+    <div class="nav-section-label">Eventos</div>
+    <a href="/desafio/admin/" class="nav-item {% if '/desafio/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🏆</span> Dia do Desafio
+      <span class="nav-badge novo">NOVO</span>
+    </a>
+    {% endif %}
+
     {% if usuario and usuario.type_user == 'admin' %}
     <div class="nav-section-label">ITA Admin</div>
     <a href="/ita/dashboard/" class="nav-item {% if '/ita/dashboard/' in request.path %}ativo{% endif %}">
