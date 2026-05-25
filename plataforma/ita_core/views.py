@@ -207,18 +207,19 @@ def portal_login(request):
 @require_POST
 def criar_sessao_django(request):
     """
-    Cria sessão Django a partir do JWT do React.
-    Lê o token do header Authorization: Bearer <token> (enviado pelo axios automaticamente).
-    Fallback: lê do body JSON se não vier no header.
+    Cria sessão Django a partir do JWT gerado pelo Node.js.
+    O token é lido do header Authorization: Bearer <token>.
+    Usa PyJWT com JWT_SECRET (mesmo segredo do Node.js) para validar.
+    Após validar, busca o usuário Django pelo email e cria a sessão.
     """
     try:
-        # 1) Tenta ler do header Authorization: Bearer <token>
+        # Lê o token do header Authorization: Bearer <token>
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         token = ''
         if auth_header.startswith('Bearer '):
             token = auth_header[7:].strip()
 
-        # 2) Fallback: lê do body JSON
+        # Fallback: lê do body JSON
         if not token:
             try:
                 data = json.loads(request.body)
@@ -229,29 +230,36 @@ def criar_sessao_django(request):
         if not token:
             return JsonResponse({'ok': False, 'erro': 'Token não informado.'}, status=400)
 
-        # Valida o JWT do SimpleJWT (mesmo usado pela API React)
-        from rest_framework_simplejwt.tokens import AccessToken, TokenError
+        # Valida com PyJWT usando o mesmo segredo do Node.js
+        import jwt as pyjwt
+        jwt_secret = os.environ.get('JWT_SECRET', 'ita-tecnologia-secret-jwt-2026-ceitec')
         try:
-            at = AccessToken(token)
-        except TokenError:
-            return JsonResponse({'ok': False, 'erro': 'Token inválido ou expirado.'}, status=401)
+            payload = pyjwt.decode(token, jwt_secret, algorithms=['HS256'])
+        except pyjwt.ExpiredSignatureError:
+            return JsonResponse({'ok': False, 'erro': 'Token expirado.'}, status=401)
+        except pyjwt.InvalidTokenError as e:
+            return JsonResponse({'ok': False, 'erro': f'Token inválido: {e}'}, status=401)
 
-        user_id = at.get('user_id')
-        if not user_id:
-            return JsonResponse({'ok': False, 'erro': 'Token sem user_id.'}, status=401)
+        email = payload.get('email', '')
+        if not email:
+            return JsonResponse({'ok': False, 'erro': 'Token sem email.'}, status=401)
 
+        # Busca o usuário Django pelo email
         from django.contrib.auth import get_user_model
         User = get_user_model()
-        usuario = User.objects.get(pk=user_id)
+        try:
+            usuario = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse({'ok': False, 'erro': 'Usuário não encontrado no Django.'}, status=401)
 
         # Cria a sessão Django (assim @require_tipo passa)
         auth_login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
-        _log(request, 'portal', 'sessao_criada_jwt', {'user_id': user_id})
+        _log(request, 'portal', 'sessao_criada_jwt', {'email': email})
 
         return JsonResponse({'ok': True, 'tipo': getattr(usuario, 'type_user', 'prof')})
 
     except Exception as e:
-        return JsonResponse({'ok': False, 'erro': str(e)}, status=401)
+        return JsonResponse({'ok': False, 'erro': str(e)}, status=500)
 
 
 def portal_logout(request):
