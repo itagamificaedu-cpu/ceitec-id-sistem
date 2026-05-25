@@ -58,6 +58,13 @@ const SECOES_ESTATICAS = [
     ]
   },
   {
+    titulo: 'EVENTOS',
+    itens: [
+      { href: '/desafio/admin/', label: 'Dia do Desafio 🏆', icon: '🚴', itaAdmin: true },
+      { href: '/desafio/',       label: 'Inscrição Pública',  icon: '📋', itaAdmin: true },
+    ]
+  },
+  {
     titulo: 'RELATÓRIOS',
     itens: [
       { path: '/relatorios',    label: 'Relatórios Gerais',     icon: '📈' },
