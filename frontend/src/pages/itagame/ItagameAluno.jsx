@@ -107,8 +107,10 @@ export default function ItagameAluno() {
     window.location.href = `/quiz-copa/?${p}`
   }
 
+  const origemScanner = searchParams.get('origem') === 'scanner'
+
   if (!dados) return <TelaLogin codigo={codigo} setCodigo={setCodigo} erro={erro} carregando={carregando} onSubmit={entrar} />
-  return <Portal dados={dados} aba={aba} setAba={setAba} onSair={sair} onItagame={abrirItagame} onCopaSaber={abrirCopaSaber} />
+  return <Portal dados={dados} aba={aba} setAba={setAba} onSair={sair} onItagame={abrirItagame} onCopaSaber={abrirCopaSaber} origemScanner={origemScanner} />
 }
 
 /* ══════════════════════════════════════════
@@ -194,7 +196,7 @@ function TelaLogin({ codigo, setCodigo, erro, carregando, onSubmit }) {
 /* ══════════════════════════════════════════
    PORTAL PRINCIPAL
 ══════════════════════════════════════════ */
-function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
+function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScanner = false }) {
   const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [], startup = null } = dados
   const nivel = itagame.nivel
   const presentes = presencas.filter(p => p.status === 'presente').length
@@ -226,6 +228,14 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber }) {
             <div style={{ background: `${nc}22`, border: `1px solid ${nc}66`, borderRadius: 20, padding: '5px 14px', fontSize: 13, fontWeight: 900, color: nc, letterSpacing: 0.5, textShadow: `0 0 10px ${nc}` }}>
               {nivel.emoji} {nivel.nome.toUpperCase()}
             </div>
+            {origemScanner && (
+              <button
+                onClick={() => window.history.back()}
+                style={{ background: '#1e3a5f', border: '1px solid #2d5a9e', color: '#7eb8f7', borderRadius: 10, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                ← Scanner
+              </button>
+            )}
             <button onClick={onSair} style={{ background: 'transparent', border: `1px solid ${N.borda}`, color: N.cinza, borderRadius: 10, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
               Sair
             </button>

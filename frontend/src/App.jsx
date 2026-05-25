@@ -7,6 +7,7 @@ import Alunos from './pages/Alunos'
 import CadastroAluno from './pages/CadastroAluno'
 import Carteirinha from './pages/Carteirinha'
 import Scanner from './pages/Scanner'
+import ScannerPortal from './pages/ScannerPortal'
 import ScannerAlmoco from './pages/ScannerAlmoco'
 import RelatorioAlmoco from './pages/RelatorioAlmoco'
 import Relatorios from './pages/Relatorios'
@@ -115,6 +116,7 @@ export default function App() {
         <Route path="/alunos/:id/carteirinha" element={<P><Carteirinha /></P>} />
         <Route path="/alunos/:id/perfil" element={<P><PerfilAluno /></P>} />
         <Route path="/scanner" element={<P><Scanner /></P>} />
+        <Route path="/scanner/portal" element={<P><ScannerPortal /></P>} />
         <Route path="/saida-sala" element={<P><SaidaSala /></P>} />
         <Route path="/saida-sala/painel" element={<P><PainelSaidaSala /></P>} />
         <Route path="/almoco/scanner" element={<Admin><ScannerAlmoco /></Admin>} />
