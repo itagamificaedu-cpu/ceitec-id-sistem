@@ -7,6 +7,9 @@ urlpatterns = [
     path('logout/',  views.portal_logout,  name='portal_logout'),
     path('portal/',  views.portal_home,    name='portal_home'),
 
+    # ── Troca JWT do React por sessão Django (usado pelo navbar para links Django) ──
+    path('api/auth/set-session/', views.criar_sessao_django, name='set_session'),
+
     # ── Página sem acesso ──────────────────────────────────────────
     path('sem-acesso/', views.sem_acesso, name='sem_acesso'),
 
