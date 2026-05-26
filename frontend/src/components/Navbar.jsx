@@ -83,8 +83,8 @@ const SECOES_ESTATICAS = [
   {
     titulo: 'EVENTOS',
     itens: [
-      { onClick: () => navegarDjango('/desafio/admin/'), label: 'Dia do Desafio 🏆', icon: '🚴', itaAdmin: true },
-      { onClick: () => navegarDjango('/desafio/'),       label: 'Inscrição Pública',  icon: '📋', itaAdmin: true },
+      { onClick: () => navegarDjango('/desafio/admin/'), label: 'Dia do Desafio 🏆', icon: '🚴' },
+      { onClick: () => navegarDjango('/desafio/'),       label: 'Inscrição Pública',  icon: '📋' },
     ]
   },
   {
@@ -257,6 +257,12 @@ export default function Navbar() {
           itens: [
             { path: '/sala-maker',               label: 'Sala Maker',               icon: '🔬' },
             { path: '/empreendedorismo-digital',  label: 'Empreendedorismo Digital', icon: '💼' },
+          ]
+        },
+        {
+          titulo: 'EVENTOS',
+          itens: [
+            { onClick: () => navegarDjango('/desafio/'), label: 'Dia do Desafio 🏆', icon: '🚴' },
           ]
         },
         {
