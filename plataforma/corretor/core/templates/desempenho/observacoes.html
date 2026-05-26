@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Observações — {{ aluno_nome }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard_desempenho' %}">Desempenho</a></li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'turma_resultados' turma_encoded %}">Turma {{ turma }}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'aluno_perfil' turma_encoded aluno_encoded %}">{{ aluno_nome }}</a>
+    </li>
+    <li class="breadcrumb-item active">Observações</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h4 class="mb-0">📝 Observações de {{ aluno_nome }}</h4>
+  <div class="d-flex gap-2">
+    <a href="{% url 'observacao_nova' turma_encoded aluno_encoded %}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus me-1"></i> Nova Observação
+    </a>
+    <a href="{% url 'aluno_perfil' turma_encoded aluno_encoded %}"
+       class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Voltar ao Perfil
+    </a>
+  </div>
+</div>
+
+<!-- Filtro por tipo -->
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <a href="?" class="btn btn-sm {% if not filtro_tipo %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+    Todos
+  </a>
+  {% for val, label in tipos %}
+  <a href="?tipo={{ val }}"
+     class="btn btn-sm {% if filtro_tipo == val %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+{% if observacoes %}
+  {% for obs in observacoes %}
+  <div class="card mb-2">
+    <div class="card-body py-3">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <span class="badge
+            {% if obs.tipo == 'elogio' %}bg-success
+            {% elif obs.tipo == 'atencao' %}bg-warning text-dark
+            {% elif obs.tipo == 'encaminhamento' %}bg-info
+            {% else %}bg-secondary{% endif %} me-2 mb-1">{{ obs.get_tipo_display }}</span>
+          <small class="text-muted">
+            {{ obs.professor.get_full_name|default:obs.professor.username }}
+            &middot; {{ obs.criado_em|date:"d/m/Y H:i" }}
+          </small>
+        </div>
+        {% if obs.professor == request.user or request.user.type_user != 'prof' %}
+        <div class="d-flex gap-1">
+          <a href="{% url 'observacao_editar' obs.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-edit"></i>
+          </a>
+          <a href="{% url 'observacao_excluir' obs.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="fas fa-trash"></i>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      <p class="mb-0 mt-2">{{ obs.conteudo }}</p>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    Nenhuma observação encontrada
+    {% if filtro_tipo %}para o tipo "{{ filtro_tipo }}"{% endif %}.
+  </div>
+{% endif %}
+{% endblock %}

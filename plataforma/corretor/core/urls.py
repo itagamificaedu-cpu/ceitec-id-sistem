@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_desempenho
 
 urlpatterns = [
     path('', views.dashboard, name='corretor_home'),
@@ -55,4 +56,17 @@ urlpatterns = [
 
     # Sync de alunos do sistema ITA → corretor
     path('api/sync-alunos/', views.api_sync_alunos, name='api_sync_alunos'),
+
+    # ── Módulo de Análise de Desempenho do Aluno ─────────────────────────────
+    path('desempenho/', views_desempenho.dashboard_desempenho, name='dashboard_desempenho'),
+    path('desempenho/turma/<str:turma>/', views_desempenho.turma_resultados, name='turma_resultados'),
+    path('desempenho/aluno/<str:turma>/<str:aluno_nome>/', views_desempenho.aluno_perfil, name='aluno_perfil'),
+    path('desempenho/observacoes/<str:turma>/<str:aluno_nome>/', views_desempenho.observacoes_lista, name='observacoes_lista'),
+    path('desempenho/observacao/nova/<str:turma>/<str:aluno_nome>/', views_desempenho.observacao_form, name='observacao_nova'),
+    path('desempenho/observacao/<int:pk>/editar/', views_desempenho.observacao_form, name='observacao_editar'),
+    path('desempenho/observacao/<int:pk>/excluir/', views_desempenho.observacao_excluir, name='observacao_excluir'),
+    path('desempenho/exportar/', views_desempenho.exportar_xlsx, name='exportar_desempenho'),
+    # APIs JSON
+    path('api/desempenho/turma/<str:turma>/', views_desempenho.api_desempenho_turma, name='api_desempenho_turma'),
+    path('api/desempenho/recalcular/', views_desempenho.api_recalcular, name='api_recalcular'),
 ]

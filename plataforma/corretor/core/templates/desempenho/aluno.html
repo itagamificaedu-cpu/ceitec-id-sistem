@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}{{ aluno_nome }} — Perfil de Desempenho{% endblock %}
+{% block extra_css %}
+<style>
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:1rem; }
+  .stat-item { background:#fff; border-radius:12px; padding:1rem; text-align:center;
+               box-shadow:0 2px 10px rgba(0,0,0,.07); border-left:4px solid; }
+  .stat-item.azul   { border-color:#1a237e; }
+  .stat-item.verde  { border-color:#43a047; }
+  .stat-item.laranja{ border-color:#fb8c00; }
+  .stat-item.roxo   { border-color:#7b1fa2; }
+  .stat-item.cinza  { border-color:#607d8b; }
+  .obs-card { border-left:4px solid; border-radius:8px; padding:.75rem 1rem;
+              background:#fff; margin-bottom:.75rem; box-shadow:0 1px 6px rgba(0,0,0,.06); }
+  .obs-card.elogio         { border-color:#43a047; }
+  .obs-card.atencao        { border-color:#fb8c00; }
+  .obs-card.encaminhamento { border-color:#1565c0; }
+  .obs-card.informativo    { border-color:#607d8b; }
+  .cl-banner { border-radius:12px; padding:1rem 1.5rem; display:flex; align-items:center; gap:1rem; }
+  .cl-banner.excelente          { background:#d1fae5; }
+  .cl-banner.satisfatorio       { background:#dbeafe; }
+  .cl-banner.em_desenvolvimento { background:#fef3c7; }
+  .cl-banner.critico            { background:#fee2e2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard_desempenho' %}">Desempenho</a></li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'turma_resultados' turma_encoded %}">Turma {{ turma }}</a>
+    </li>
+    <li class="breadcrumb-item active">{{ aluno_nome }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h3 class="mb-0">👤 {{ aluno_nome }}</h3>
+    <div class="text-muted">Turma {{ turma }} &middot; {{ stats.total_avaliacoes }} avaliação(ões)</div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'observacao_nova' turma_encoded aluno_encoded %}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus me-1"></i> Nova Observação
+    </a>
+    <a href="{% url 'exportar_desempenho' %}?turma={{ turma_encoded }}&aluno={{ aluno_encoded }}"
+       class="btn btn-success btn-sm">
+      <i class="fas fa-file-excel me-1"></i> Exportar
+    </a>
+    <a href="{% url 'turma_resultados' turma_encoded %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+</div>
+
+<!-- Banner de classificação -->
+<div class="cl-banner {{ stats.classificacao }} mb-4">
+  <div style="font-size:2.5rem">{{ info.emoji }}</div>
+  <div>
+    <div class="fw-bold fs-5">{{ info.label }}</div>
+    <div class="text-muted small">Classificação baseada na média geral das avaliações</div>
+  </div>
+</div>
+
+<!-- Métricas -->
+<div class="stats-grid mb-4">
+  <div class="stat-item azul">
+    <div class="text-muted small">Média Geral</div>
+    <div class="fs-2 fw-bold">{{ stats.media }}</div>
+  </div>
+  <div class="stat-item verde">
+    <div class="text-muted small">Maior Nota</div>
+    <div class="fs-2 fw-bold">{{ stats.maior_nota }}</div>
+  </div>
+  <div class="stat-item laranja">
+    <div class="text-muted small">Menor Nota</div>
+    <div class="fs-2 fw-bold">{{ stats.menor_nota }}</div>
+  </div>
+  <div class="stat-item roxo">
+    <div class="text-muted small">Aprovação</div>
+    <div class="fs-2 fw-bold">{{ stats.taxa_aprovacao }}%</div>
+  </div>
+  <div class="stat-item cinza">
+    <div class="text-muted small">Evolução</div>
+    <div class="fs-2 fw-bold
+      {% if stats.evolucao > 0 %}text-success
+      {% elif stats.evolucao < 0 %}text-danger
+      {% endif %}">
+      {% if stats.evolucao > 0 %}+{% endif %}{{ stats.evolucao }}
+    </div>
+  </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4 mb-4">
+  <div class="col-md-7">
+    <div class="card h-100">
+      <div class="card-header">📈 Evolução das Notas</div>
+      <div class="card-body" style="height:260px">
+        <canvas id="chartEvo"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card h-100">
+      <div class="card-header">📚 Média por Disciplina</div>
+      <div class="card-body" style="height:260px">
+        <canvas id="chartDisc"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Histórico de resultados -->
+<div class="card mb-4">
+  <div class="card-header">📋 Histórico de Avaliações</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 table-sm">
+      <thead>
+        <tr><th>Data</th><th>Avaliação</th><th>Disciplina</th><th>Acertos</th><th>Nota</th></tr>
+      </thead>
+      <tbody>
+        {% for r in resultados %}
+        <tr>
+          <td>{{ r.data }}</td>
+          <td>{{ r.avaliacao }}</td>
+          <td>{{ r.disciplina }}</td>
+          <td>{{ r.acertos }}/{{ r.total_questoes }}</td>
+          <td class="fw-bold
+            {% if r.nota >= 8.5 %}text-success
+            {% elif r.nota >= 6.5 %}text-primary
+            {% elif r.nota >= 4.5 %}text-warning
+            {% else %}text-danger{% endif %}">{{ r.nota }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Observações pedagógicas -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h5 class="mb-0">📝 Observações Pedagógicas</h5>
+  <a href="{% url 'observacoes_lista' turma_encoded aluno_encoded %}"
+     class="btn btn-sm btn-outline-primary">Ver todas</a>
+</div>
+
+{% if observacoes %}
+  {% for obs in observacoes %}
+  <div class="obs-card {{ obs.tipo }}">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <span class="badge
+          {% if obs.tipo == 'elogio' %}bg-success
+          {% elif obs.tipo == 'atencao' %}bg-warning text-dark
+          {% elif obs.tipo == 'encaminhamento' %}bg-info
+          {% else %}bg-secondary{% endif %} me-2">{{ obs.get_tipo_display }}</span>
+        <small class="text-muted">
+          {{ obs.professor.get_full_name|default:obs.professor.username }}
+          &middot; {{ obs.criado_em|date:"d/m/Y H:i" }}
+        </small>
+      </div>
+      {% if obs.professor == request.user or request.user.type_user != 'prof' %}
+      <div class="d-flex gap-1">
+        <a href="{% url 'observacao_editar' obs.pk %}" class="btn btn-sm btn-outline-secondary py-0">✏️</a>
+        <a href="{% url 'observacao_excluir' obs.pk %}" class="btn btn-sm btn-outline-danger py-0">🗑</a>
+      </div>
+      {% endif %}
+    </div>
+    <p class="mb-0 mt-2">{{ obs.conteudo }}</p>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-light border">
+    Nenhuma observação registrada.
+    <a href="{% url 'observacao_nova' turma_encoded aluno_encoded %}">Registrar a primeira</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Gráfico de evolução temporal (linha)
+new Chart(document.getElementById("chartEvo").getContext("2d"), {
+  type: "line",
+  data: {
+    labels: {{ chart_evo_labels|safe }},
+    datasets: [{
+      label: "Nota",
+      data: {{ chart_evo_notas|safe }},
+      borderColor: "#1a237e",
+      backgroundColor: "rgba(26,35,126,.1)",
+      fill: true, tension: .3, pointRadius: 5, pointBackgroundColor: "#1a237e"
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          afterLabel: (ctx) => {
+            const d = {{ chart_evo_disc|safe }};
+            return d[ctx.dataIndex] || "";
+          }
+        }
+      },
+      legend: { display: false }
+    },
+    scales: { y: { min: 0, max: 10, ticks: { stepSize: 2 } } }
+  }
+});
+
+// Gráfico por disciplina (barra horizontal)
+new Chart(document.getElementById("chartDisc").getContext("2d"), {
+  type: "bar",
+  data: {
+    labels: {{ chart_disc_labels|safe }},
+    datasets: [{
+      label: "Média",
+      data: {{ chart_disc_notas|safe }},
+      backgroundColor: "rgba(67,160,71,.7)",
+      borderRadius: 5
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: "y",
+    plugins: { legend: { display: false } },
+    scales: { x: { min: 0, max: 10 } }
+  }
+});
+</script>
+{% endblock %}
