@@ -1,6 +1,7 @@
 /**
  * Scanner Game Aluno
  * Professor escaneia a carteirinha → abre o portal ItagGame do aluno na tela
+ * QR Code na tela → aluno aponta o celular e vai direto ao portal ItagGame
  */
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +9,9 @@ import Navbar from '../components/Navbar'
 import api from '../api'
 
 const HISTORICO_KEY = 'scanner_game_historico'
+
+// URL do portal ItagGame para os alunos acessarem pelo celular
+const URL_PORTAL_ALUNO = 'https://itatecnologiaeducacional.tech/itagame/aluno'
 
 // Beep de sucesso
 function tocarBeep() {
@@ -40,6 +44,7 @@ export default function ScannerGameAluno() {
   const navigate = useNavigate()
   const html5QrRef = useRef(null)
   const timeoutRef = useRef(null)
+  const qrCanvasRef = useRef(null)   // canvas onde o QR Code do portal é desenhado
 
   const [estado, setEstado] = useState('scanning') // scanning | carregando | confirmado | erro
   const [aluno, setAluno] = useState(null)
@@ -58,32 +63,76 @@ export default function ScannerGameAluno() {
     try { sessionStorage.setItem(HISTORICO_KEY, JSON.stringify(historico)) } catch {}
   }, [historico])
 
+  // Inicia o scanner e gera o QR Code do portal ao montar o componente
   useEffect(() => {
     iniciarScanner()
+    gerarQrCodePortal()
     return () => {
       pararScanner()
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
   }, [])
 
+  /**
+   * Gera o QR Code do portal ItagGame no canvas da tela.
+   * O aluno aponta o celular para este QR Code e vai direto ao portal.
+   */
+  async function gerarQrCodePortal() {
+    try {
+      const QRCode = (await import('qrcode')).default
+      if (qrCanvasRef.current) {
+        await QRCode.toCanvas(qrCanvasRef.current, URL_PORTAL_ALUNO, {
+          width: 180,
+          margin: 2,
+          color: { dark: '#1e3a5f', light: '#ffffff' },
+        })
+      }
+    } catch (err) { console.error('Erro ao gerar QR Code do portal:', err) }
+  }
+
+  /**
+   * Inicia o scanner de câmera usando Html5Qrcode diretamente.
+   * Usa .start() com facingMode: 'environment' para abrir a câmera traseira
+   * automaticamente, sem mostrar o seletor de arquivo ou câmera.
+   */
   async function iniciarScanner() {
     if (html5QrRef.current) return
     try {
-      const { Html5QrcodeScanner } = await import('html5-qrcode')
-      const scanner = new Html5QrcodeScanner('qr-portal-reader', {
-        fps: 12,
-        qrbox: { width: 260, height: 260 },
-        aspectRatio: 1.0,
-        showTorchButtonIfSupported: true,
-      }, false)
-      scanner.render((decodedText) => onScanSuccess(decodedText), () => {})
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const scanner = new Html5Qrcode('qr-portal-reader')
+
+      await scanner.start(
+        { facingMode: 'environment' },   // câmera traseira automaticamente
+        {
+          fps: 12,
+          qrbox: { width: 260, height: 260 },
+          aspectRatio: 1.0,
+        },
+        (decodedText) => onScanSuccess(decodedText),
+        () => {}   // ignora erros de leitura parcial (normal durante scan)
+      )
+
       html5QrRef.current = scanner
-    } catch (err) { console.error('Erro ao iniciar scanner:', err) }
+    } catch (err) {
+      console.error('Erro ao iniciar scanner:', err)
+      // Tenta câmera frontal como fallback se traseira não disponível
+      try {
+        const { Html5Qrcode } = await import('html5-qrcode')
+        const scanner = new Html5Qrcode('qr-portal-reader')
+        await scanner.start(
+          { facingMode: 'user' },
+          { fps: 12, qrbox: { width: 260, height: 260 } },
+          (decodedText) => onScanSuccess(decodedText),
+          () => {}
+        )
+        html5QrRef.current = scanner
+      } catch (err2) { console.error('Fallback câmera frontal falhou:', err2) }
+    }
   }
 
   async function pararScanner() {
     if (html5QrRef.current) {
-      try { await html5QrRef.current.clear() } catch {}
+      try { await html5QrRef.current.stop() } catch {}
       html5QrRef.current = null
     }
   }
@@ -134,14 +183,14 @@ export default function ScannerGameAluno() {
     <div className="flex min-h-screen bg-background">
       <Navbar />
       <main className="flex-1 lg:ml-64 p-4 pt-20 lg:pt-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
 
           {/* Título */}
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-xl">📲</div>
             <div>
               <h1 className="text-xl font-bold text-textMain">Scanner Game Aluno</h1>
-              <p className="text-sm text-gray-500">Aluno escaneia a carteirinha → portal ItagGame abre na tela</p>
+              <p className="text-sm text-gray-500">Escaneia a carteirinha → portal ItagGame abre na tela</p>
             </div>
           </div>
 
@@ -169,10 +218,10 @@ export default function ScannerGameAluno() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Coluna esquerda — Scanner / Feedback */}
-            <div>
+            <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow-md overflow-hidden">
 
                 {/* SCANNING */}
@@ -181,6 +230,7 @@ export default function ScannerGameAluno() {
                     <div className="bg-primary text-white text-center py-3 px-4">
                       <div className="text-sm font-bold tracking-wide">📷 APONTE A CÂMERA PARA A CARTEIRINHA</div>
                     </div>
+                    {/* O div abaixo é onde o Html5Qrcode renderiza o vídeo da câmera */}
                     <div id="qr-portal-reader" className="w-full" />
                     <div className="px-4 pb-4 pt-2 text-center text-xs text-gray-400">
                       O QR Code fica no centro da carteirinha do aluno
@@ -243,24 +293,47 @@ export default function ScannerGameAluno() {
               </div>
             </div>
 
-            {/* Coluna direita — Histórico (desktop) */}
-            <div className="hidden lg:block">
+            {/* Coluna direita — QR Code do portal + Histórico (desktop) */}
+            <div className="flex flex-col gap-6">
+
+              {/* QR Code do portal ItagGame para os alunos */}
               <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-600 to-primary text-white text-center py-3 px-4">
+                  <div className="text-sm font-bold tracking-wide">📱 ACESSE PELO CELULAR</div>
+                </div>
+                <div className="flex flex-col items-center py-5 px-4 gap-3">
+                  {/* Canvas onde o QR Code é renderizado pela biblioteca qrcode */}
+                  <canvas
+                    ref={qrCanvasRef}
+                    className="rounded-xl border-4 border-indigo-100 shadow"
+                  />
+                  <div className="text-center">
+                    <div className="font-bold text-gray-800 text-sm">Portal ItagGame</div>
+                    <div className="text-xs text-gray-400 mt-0.5">Aponte seu celular para este QR Code</div>
+                  </div>
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2 text-xs text-indigo-700 text-center w-full">
+                    📲 Aluno escaneia com o celular e acessa seu portal de jogos diretamente
+                  </div>
+                </div>
+              </div>
+
+              {/* Histórico da sessão (desktop) */}
+              <div className="hidden lg:block bg-white rounded-2xl shadow-md overflow-hidden flex-1">
                 <div className="bg-gray-50 border-b px-4 py-3 flex items-center justify-between">
-                  <div className="font-bold text-gray-700">📋 Acessos desta sessão</div>
+                  <div className="font-bold text-gray-700">📋 Sessão</div>
                   <div className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
                     {historico.length} aluno{historico.length !== 1 ? 's' : ''}
                   </div>
                 </div>
 
                 {historico.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-gray-300 gap-2">
+                  <div className="flex flex-col items-center justify-center py-10 text-gray-300 gap-2">
                     <div className="text-4xl">📂</div>
-                    <div className="text-sm">Nenhum aluno acessou ainda</div>
+                    <div className="text-sm">Nenhum aluno ainda</div>
                     <div className="text-xs text-gray-200">Escaneie a primeira carteirinha</div>
                   </div>
                 ) : (
-                  <div className="divide-y max-h-[480px] overflow-y-auto">
+                  <div className="divide-y max-h-[300px] overflow-y-auto">
                     {historico.map((h) => (
                       <div key={h.codigo} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
                         <div className="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary/30 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -286,7 +359,7 @@ export default function ScannerGameAluno() {
                 {historico.length > 0 && (
                   <div className="px-4 py-3 border-t bg-gray-50">
                     <button onClick={() => setHistorico([])} className="text-xs text-gray-400 hover:text-red-500">
-                      🗑️ Limpar histórico da sessão
+                      🗑️ Limpar histórico
                     </button>
                   </div>
                 )}
