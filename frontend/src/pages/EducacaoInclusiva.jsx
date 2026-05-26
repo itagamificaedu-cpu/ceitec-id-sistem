@@ -934,7 +934,7 @@ export default function EducacaoInclusiva() {
     <div style={{ display: 'flex', minHeight: '100vh', background: C.navy }}>
       <Navbar />
 
-      <main style={{ flex: 1, marginLeft: 0, padding: '24px', paddingTop: '80px' }}
+      <main style={{ flex: 1, padding: '24px', paddingTop: '80px' }}
         className="lg:ml-64 lg:pt-6">
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
