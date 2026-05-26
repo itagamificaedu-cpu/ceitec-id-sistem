@@ -13,6 +13,7 @@ import RelatorioAlmoco from './pages/RelatorioAlmoco'
 import Relatorios from './pages/Relatorios'
 import Justificativas from './pages/Justificativas'
 import Desempenho from './pages/Desempenho'
+import EducacaoInclusiva from './pages/EducacaoInclusiva'
 import ListaTurmas from './pages/turmas/ListaTurmas'
 import DetalheTurma from './pages/turmas/DetalheTurma'
 import PerfilAluno from './pages/turmas/PerfilAluno'
@@ -140,6 +141,7 @@ export default function App() {
         <Route path="/relatorios" element={<Admin><Relatorios /></Admin>} />
         <Route path="/justificativas" element={<P><Justificativas /></P>} />
         <Route path="/desempenho" element={<P><Desempenho /></P>} />
+        <Route path="/educacao-inclusiva" element={<P><EducacaoInclusiva /></P>} />
 
         {/* Turmas */}
         <Route path="/turmas" element={<Admin><ListaTurmas /></Admin>} />

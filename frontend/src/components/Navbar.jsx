@@ -68,6 +68,7 @@ const SECOES_ESTATICAS = [
       { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',      icon: '🔬' },
       { path: '/ocorrencias',         label: 'Ocorrências',                     icon: '⚠️' },
       { path: '/professor-game',      label: 'Professor Game',                  icon: '🏆' },
+      { path: '/educacao-inclusiva',  label: 'Educação Inclusiva',              icon: '♿' },
     ]
   },
   {
@@ -250,6 +251,7 @@ export default function Navbar() {
             { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',icon: '🔬' },
             { path: '/ocorrencias',         label: 'Ocorrências',               icon: '⚠️' },
             { path: '/professor-game',      label: 'Professor Game',            icon: '🏆' },
+            { path: '/educacao-inclusiva',  label: 'Educação Inclusiva',        icon: '♿' },
           ]
         },
         {
