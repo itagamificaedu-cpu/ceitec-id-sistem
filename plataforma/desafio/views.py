@@ -334,20 +334,23 @@ def banner_instagram(request):
     draw.ellipse([-100, 1680, 260, 2020], fill='#0a1f16')
     draw.ellipse([-40,  1720, 200, 1980], fill='#0d2b1c')
 
-    # ── Fontes ────────────────────────────────────────────────────────────
+    # ── Fontes: usa Vera (ReportLab) que estão sempre disponíveis no container
+    import os as _os
+    _rl = '/usr/local/lib/python3.11/site-packages/reportlab/fonts'
+    B = _os.path.join(_rl, 'VeraBd.ttf')   # negrito
+    R = _os.path.join(_rl, 'Vera.ttf')     # regular
     try:
-        B = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-        R = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
         f_tag    = ImageFont.truetype(B, 32)
-        f_titulo = ImageFont.truetype(B, 160)   # DIA DO
-        f_des    = ImageFont.truetype(B, 160)   # DESAFIO
+        f_titulo = ImageFont.truetype(B, 160)
+        f_des    = ImageFont.truetype(B, 160)
         f_sub    = ImageFont.truetype(R, 42)
         f_pill   = ImageFont.truetype(B, 44)
         f_cta    = ImageFont.truetype(B, 54)
         f_link   = ImageFont.truetype(B, 38)
         f_small  = ImageFont.truetype(R, 30)
+        f_card   = ImageFont.truetype(B, 52)
     except OSError:
-        f_tag = f_titulo = f_des = f_sub = f_pill = f_cta = f_link = f_small = ImageFont.load_default()
+        f_tag = f_titulo = f_des = f_sub = f_pill = f_cta = f_link = f_small = f_card = ImageFont.load_default()
 
     def text_w(txt, fnt):
         bb = draw.textbbox((0, 0), txt, font=fnt)
@@ -403,10 +406,7 @@ def banner_instagram(request):
     # ══════════════════════════════════════════════════════════════════════
     # BLOCO 5 — Cards "Sou Aluno" e "Comunidade" (igual à página)
     # ══════════════════════════════════════════════════════════════════════
-    f_card_label = f_pill
-    f_card_title = ImageFont.truetype(
-        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 52
-    ) if True else f_cta
+    f_card_title = f_card
 
     draw.text((W // 2, 990), 'Como você vai participar?',
               font=f_cta, fill='#FFFFFF', anchor='mm')
