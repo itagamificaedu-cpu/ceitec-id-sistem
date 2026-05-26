@@ -5,6 +5,92 @@ const { autenticar } = require('../middleware/auth');
 const router = express.Router();
 router.use(autenticar);
 
+// URL interna do Django no Docker (mesmo host da rede app)
+const DJANGO_INTERNO = process.env.DJANGO_INTERNAL_URL || 'http://django:8000';
+const CHAVE_CORRETOR  = 'gamificaedu_secreto_2026';
+
+/**
+ * Busca resultados do Corretor de Provas (Django/PostgreSQL)
+ * e os transforma no mesmo formato que o /geral usa,
+ * mais uma lista completa de avaliações para exibir na tabela.
+ * GET /api/desempenho/corretor
+ */
+router.get('/corretor', async (req, res) => {
+  try {
+    const email = req.usuario.email;
+    const url   = `${DJANGO_INTERNO}/corretor/api/resultados-json/?chave=${CHAVE_CORRETOR}&email=${encodeURIComponent(email)}`;
+
+    const respDjango = await fetch(url, { signal: AbortSignal.timeout(8000) });
+
+    if (!respDjango.ok) {
+      // Django retornou erro (professor não cadastrado no Corretor, etc.)
+      return res.json({
+        total_alunos: 0, media_geral: null, aprovados: 0, em_risco: 0,
+        por_turma: [], por_disciplina: [], alunos_risco: [], avaliacoes: [],
+        aviso: 'Nenhum resultado encontrado no Corretor para este professor.',
+      });
+    }
+
+    // dados = array de avaliações com 'resultados' internos
+    const dados = await respDjango.json();
+
+    // ── Agrega por aluno, turma e disciplina ───────────────────────────────
+    const turmaMap  = {};
+    const discMap   = {};
+    const alunoMap  = {}; // chave = "aluno||turma"
+
+    for (const av of dados) {
+      for (const r of av.resultados) {
+        const turma = r.turma || av.turmas || 'Sem turma';
+        const nota  = Number(r.nota) || 0;
+
+        // por turma
+        if (!turmaMap[turma]) turmaMap[turma] = [];
+        turmaMap[turma].push(nota);
+
+        // por disciplina
+        const disc = av.disciplina || 'Sem disciplina';
+        if (!discMap[disc]) discMap[disc] = [];
+        discMap[disc].push(nota);
+
+        // por aluno
+        const chaveAluno = `${r.aluno}||${turma}`;
+        if (!alunoMap[chaveAluno]) alunoMap[chaveAluno] = { nome: r.aluno, turma, notas: [] };
+        alunoMap[chaveAluno].notas.push(nota);
+      }
+    }
+
+    const media = (ns) =>
+      ns.length ? Math.round((ns.reduce((s, v) => s + v, 0) / ns.length) * 10) / 10 : null;
+
+    const mediasAlunos = Object.values(alunoMap).map(a => ({
+      nome:        a.nome,
+      turma:       a.turma,
+      media_geral: media(a.notas),
+    }));
+
+    const todasNotas = mediasAlunos.map(a => a.media_geral).filter(v => v !== null);
+
+    res.json({
+      total_alunos:  mediasAlunos.length,
+      media_geral:   media(todasNotas),
+      aprovados:     mediasAlunos.filter(a => a.media_geral >= 7).length,
+      em_risco:      mediasAlunos.filter(a => a.media_geral < 5).length,
+      por_turma:     Object.entries(turmaMap)
+                       .map(([turma, ns]) => ({ turma, media: media(ns) }))
+                       .sort((a, b) => b.media - a.media),
+      por_disciplina: Object.entries(discMap)
+                       .map(([disciplina, ns]) => ({ disciplina, media: media(ns) }))
+                       .sort((a, b) => a.media - b.media),
+      alunos_risco:  mediasAlunos.filter(a => a.media_geral < 5).slice(0, 10),
+      avaliacoes:    dados, // lista bruta de provas para a tabela de detalhes
+    });
+  } catch (err) {
+    console.error('[desempenho/corretor]', err.message);
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { turma_id, disciplina } = req.query;
