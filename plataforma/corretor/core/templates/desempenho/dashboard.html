@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Análise de Desempenho — Corretor ITA{% endblock %}
+{% block extra_css %}
+<style>
+  .stat-box { border-left: 4px solid; border-radius: 10px; padding: 1rem 1.25rem; background: #fff; }
+  .stat-box.azul  { border-color: #1a237e; }
+  .stat-box.verde { border-color: #43a047; }
+  .stat-box.laranja { border-color: #fb8c00; }
+  .stat-box.vermelho { border-color: #e53935; }
+  .class-pill { display: inline-block; padding: .2rem .7rem; border-radius: 20px; font-size:.8rem; font-weight:700; }
+  .class-pill.excelente   { background:#d1fae5; color:#065f46; }
+  .class-pill.satisfatorio{ background:#dbeafe; color:#1e40af; }
+  .class-pill.em_desenvolvimento{ background:#fef3c7; color:#92400e; }
+  .class-pill.critico     { background:#fee2e2; color:#991b1b; }
+  .turma-card { transition: transform .15s; }
+  .turma-card:hover { transform: translateY(-3px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="mb-0"><i class="fas fa-chart-line me-2 text-primary"></i> Análise de Desempenho</h2>
+    <small class="text-muted">Visão geral por turma · dados em tempo real dos Resultados</small>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'exportar_desempenho' %}" class="btn btn-success btn-sm">
+      <i class="fas fa-file-excel me-1"></i> Exportar XLSX
+    </a>
+    <button onclick="recalcular()" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-sync me-1"></i> Recalcular Cache
+    </button>
+  </div>
+</div>
+
+<!-- Totalizadores -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-box azul">
+      <div class="text-muted small">Turmas</div>
+      <div class="fs-3 fw-bold">{{ total_turmas }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-box verde">
+      <div class="text-muted small">Alunos</div>
+      <div class="fs-3 fw-bold">{{ total_alunos }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-box laranja">
+      <div class="text-muted small">Média Geral</div>
+      <div class="fs-3 fw-bold">{{ media_geral }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-box vermelho">
+      <div class="text-muted small">Em Atenção (Crítico)</div>
+      <div class="fs-3 fw-bold">{{ totais_classificacao.critico }}</div>
+    </div>
+  </div>
+</div>
+
+{% if resumo_turmas %}
+<!-- Gráfico de médias por turma -->
+<div class="card mb-4">
+  <div class="card-header">📊 Média por Turma</div>
+  <div class="card-body" style="height:280px">
+    <canvas id="chartTurmas"></canvas>
+  </div>
+</div>
+
+<!-- Cards por turma -->
+<div class="row g-3">
+  {% for t in resumo_turmas %}
+  <div class="col-sm-6 col-lg-4">
+    <a href="{% url 'turma_resultados' t.turma_encoded %}" class="text-decoration-none">
+      <div class="card turma-card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">🎓 {{ t.turma }}</h5>
+            <span class="badge bg-primary rounded-pill">{{ t.total_alunos }} alunos</span>
+          </div>
+          <div class="mb-2">
+            <span class="fs-4 fw-bold">{{ t.media_turma }}</span>
+            <span class="text-muted small"> / 10</span>
+          </div>
+          <!-- Barra de progresso da média -->
+          <div class="progress mb-3" style="height:8px">
+            <div class="progress-bar
+              {% if t.media_turma >= 8.5 %}bg-success
+              {% elif t.media_turma >= 6.5 %}bg-primary
+              {% elif t.media_turma >= 4.5 %}bg-warning
+              {% else %}bg-danger{% endif %}"
+              style="width:{{ t.media_turma|floatformat:0 }}0%"></div>
+          </div>
+          <!-- Pílulas de classificação -->
+          <div class="d-flex flex-wrap gap-1">
+            {% if t.classificacoes.excelente %}
+              <span class="class-pill excelente">🏆 {{ t.classificacoes.excelente }}</span>
+            {% endif %}
+            {% if t.classificacoes.satisfatorio %}
+              <span class="class-pill satisfatorio">✅ {{ t.classificacoes.satisfatorio }}</span>
+            {% endif %}
+            {% if t.classificacoes.em_desenvolvimento %}
+              <span class="class-pill em_desenvolvimento">📈 {{ t.classificacoes.em_desenvolvimento }}</span>
+            {% endif %}
+            {% if t.classificacoes.critico %}
+              <span class="class-pill critico">⚠️ {{ t.classificacoes.critico }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="alert alert-info mt-4">
+  <i class="fas fa-info-circle me-2"></i>
+  Nenhum resultado com nota encontrado ainda. Corrija algumas provas para ver os dados de desempenho.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+{% if resumo_turmas %}
+const ctx = document.getElementById('chartTurmas').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Média',
+      data: {{ chart_medias|safe }},
+      backgroundColor: {{ chart_medias|safe }}.map(v =>
+        v >= 8.5 ? 'rgba(67,160,71,.7)' :
+        v >= 6.5 ? 'rgba(26,35,126,.7)' :
+        v >= 4.5 ? 'rgba(251,140,0,.7)' :
+                   'rgba(229,57,53,.7)'
+      ),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 10, ticks: { stepSize: 2 } }
+    }
+  }
+});
+{% endif %}
+
+async function recalcular() {
+  if (!confirm('Recalcular o cache de desempenho de todos os alunos?')) return;
+  const btn = event.target.closest('button');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Calculando…';
+  try {
+    const resp = await fetch('{% url "api_recalcular" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    });
+    const data = await resp.json();
+    alert(`✅ ${data.total_recalculados} desempenhos recalculados com sucesso!`);
+    location.reload();
+  } catch (e) {
+    alert('Erro ao recalcular. Verifique o console.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sync me-1"></i> Recalcular Cache';
+  }
+}
+</script>
+{% endblock %}

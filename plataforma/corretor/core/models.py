@@ -263,3 +263,117 @@ class Tentativa(models.Model):
         elif self.iniciado_em:
             return (timezone.now() - self.iniciado_em).total_seconds()
         return 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Módulo de Análise de Desempenho do Aluno
+# Adicionado para suportar relatórios pedagógicos e acompanhamento individual
+# ─────────────────────────────────────────────────────────────────────────────
+
+class DesempenhoAluno(models.Model):
+    """
+    Cache de desempenho calculado por aluno/turma/escola.
+    Populado pelo comando de gestão 'recalcular_desempenhos' ou via API.
+    Os dados são derivados dos Resultados existentes no Corretor de Provas.
+    """
+
+    CLASSIFICACOES = [
+        ('excelente',         'Excelente'),
+        ('satisfatorio',      'Satisfatório'),
+        ('em_desenvolvimento','Em Desenvolvimento'),
+        ('critico',           'Crítico'),
+    ]
+
+    aluno_nome       = models.CharField('Nome do Aluno', max_length=200, db_index=True)
+    turma            = models.CharField('Turma', max_length=100, db_index=True)
+    escola_id        = models.IntegerField('ID da Escola (Tenant)', default=0, db_index=True)
+
+    # Métricas calculadas
+    total_avaliacoes = models.PositiveIntegerField('Total de Avaliações', default=0)
+    media_geral      = models.FloatField('Média Geral', default=0)
+    maior_nota       = models.FloatField('Maior Nota', default=0)
+    menor_nota       = models.FloatField('Menor Nota', default=0)
+    taxa_aprovacao   = models.FloatField('Taxa de Aprovação (%)', default=0)
+    evolucao         = models.FloatField('Evolução (última − média inicial)', default=0)
+    classificacao    = models.CharField(
+        'Classificação', max_length=20, choices=CLASSIFICACOES, default='em_desenvolvimento'
+    )
+
+    # Dados detalhados em JSON
+    notas_por_disciplina = models.JSONField('Notas por Disciplina', default=dict)
+    historico_notas      = models.JSONField('Histórico de Notas', default=list)
+
+    atualizado_em = models.DateTimeField('Atualizado em', auto_now=True)
+
+    class Meta:
+        verbose_name        = 'Desempenho do Aluno'
+        verbose_name_plural = 'Desempenhos dos Alunos'
+        unique_together     = [['aluno_nome', 'turma', 'escola_id']]
+        ordering            = ['turma', 'aluno_nome']
+        indexes = [
+            models.Index(fields=['escola_id', 'turma']),
+            models.Index(fields=['classificacao']),
+        ]
+
+    def __str__(self):
+        return f"{self.aluno_nome} ({self.turma}) — {self.get_classificacao_display()}"
+
+    def cor_classificacao(self):
+        """Retorna o nome da classe Bootstrap correspondente à classificação."""
+        mapa = {
+            'excelente':          'success',
+            'satisfatorio':       'primary',
+            'em_desenvolvimento': 'warning',
+            'critico':            'danger',
+        }
+        return mapa.get(self.classificacao, 'secondary')
+
+
+class ObservacaoPedagogica(models.Model):
+    """
+    Observação pedagógica registrada por um professor sobre um aluno específico.
+    Vinculada por nome/turma/escola (sem FK para Aluno, compatível com o esquema atual).
+    """
+
+    TIPOS = [
+        ('elogio',         '🌟 Elogio'),
+        ('atencao',        '⚠️ Atenção'),
+        ('encaminhamento', '📋 Encaminhamento'),
+        ('informativo',    'ℹ️ Informativo'),
+    ]
+
+    aluno_nome = models.CharField('Nome do Aluno', max_length=200, db_index=True)
+    turma      = models.CharField('Turma', max_length=100)
+    escola_id  = models.IntegerField('ID da Escola (Tenant)', default=0, db_index=True)
+    professor  = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='observacoes_pedagogicas',
+        verbose_name='Professor',
+    )
+    tipo     = models.CharField('Tipo', max_length=20, choices=TIPOS, default='informativo')
+    conteudo = models.TextField('Observação')
+
+    criado_em  = models.DateTimeField('Criado em', auto_now_add=True)
+    editado_em = models.DateTimeField('Editado em', auto_now=True)
+
+    class Meta:
+        verbose_name        = 'Observação Pedagógica'
+        verbose_name_plural = 'Observações Pedagógicas'
+        ordering            = ['-criado_em']
+        indexes = [
+            models.Index(fields=['escola_id', 'aluno_nome', 'turma']),
+        ]
+
+    def __str__(self):
+        return f"Obs. {self.get_tipo_display()} — {self.aluno_nome} ({self.turma})"
+
+    def cor_tipo(self):
+        """Retorna o nome da classe Bootstrap para o tipo de observação."""
+        mapa = {
+            'elogio':         'success',
+            'atencao':        'warning',
+            'encaminhamento': 'info',
+            'informativo':    'secondary',
+        }
+        return mapa.get(self.tipo, 'secondary')

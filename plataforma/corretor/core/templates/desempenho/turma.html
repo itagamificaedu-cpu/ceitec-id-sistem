@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Turma {{ turma }} — Desempenho{% endblock %}
+{% block extra_css %}
+<style>
+  .aluno-row:hover { background: #f0f4ff !important; cursor: pointer; }
+  .class-badge { padding:.25rem .7rem; border-radius:20px; font-size:.78rem; font-weight:700; }
+  .class-badge.excelente   { background:#d1fae5; color:#065f46; }
+  .class-badge.satisfatorio{ background:#dbeafe; color:#1e40af; }
+  .class-badge.em_desenvolvimento{ background:#fef3c7; color:#92400e; }
+  .class-badge.critico     { background:#fee2e2; color:#991b1b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard_desempenho' %}">Desempenho</a></li>
+    <li class="breadcrumb-item active">Turma {{ turma }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">🎓 Turma {{ turma }}</h3>
+  <div class="d-flex gap-2">
+    <a href="{% url 'exportar_desempenho' %}?turma={{ turma_encoded }}"
+       class="btn btn-success btn-sm">
+      <i class="fas fa-file-excel me-1"></i> Exportar Turma
+    </a>
+    <a href="{% url 'dashboard_desempenho' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+</div>
+
+<!-- Totalizadores rápidos -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card text-center py-3">
+      <div class="text-muted small">Total Alunos</div>
+      <div class="fs-3 fw-bold">{{ total_alunos }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center py-3">
+      <div class="text-muted small">Média da Turma</div>
+      <div class="fs-3 fw-bold
+        {% if media_turma >= 8.5 %}text-success
+        {% elif media_turma >= 6.5 %}text-primary
+        {% elif media_turma >= 4.5 %}text-warning
+        {% else %}text-danger{% endif %}">{{ media_turma }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center py-3">
+      <div class="text-muted small">🏆 Excelente</div>
+      <div class="fs-3 fw-bold text-success">
+        {{ alunos|length }}<!-- contagem feita via template tag abaixo -->
+        {% with excelente=0 %}{% endwith %}
+        {% regroup alunos by classificacao as grupos_c %}
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center py-3">
+      <div class="text-muted small">⚠️ Em Atenção</div>
+      <div class="fs-3 fw-bold text-danger">
+        {% for a in alunos %}{% if a.classificacao == 'critico' %}{% endif %}{% endfor %}
+        {{ alunos|length }}
+        &nbsp;
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gráfico de barras -->
+<div class="card mb-4">
+  <div class="card-header">📊 Médias dos Alunos</div>
+  <div class="card-body" style="height:240px; overflow-x:auto">
+    <canvas id="chartAlunos"></canvas>
+  </div>
+</div>
+
+<!-- Busca -->
+<form method="get" class="mb-3 d-flex gap-2">
+  <input type="text" name="q" value="{{ q_nome }}" placeholder="Buscar aluno…"
+         class="form-control form-control-sm" style="max-width:280px">
+  <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+  {% if q_nome %}<a href="?" class="btn btn-outline-secondary btn-sm">Limpar</a>{% endif %}
+</form>
+
+<!-- Tabela de alunos -->
+{% if alunos %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Aluno</th>
+          <th>Avaliações</th>
+          <th>Média</th>
+          <th>Maior</th>
+          <th>Menor</th>
+          <th>Aprovação</th>
+          <th>Evolução</th>
+          <th>Classificação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in alunos %}
+        <tr class="aluno-row"
+            onclick="location.href='{% url "aluno_perfil" turma_encoded a.nome_encoded %}'">
+          <td class="text-muted">{{ forloop.counter }}</td>
+          <td class="fw-bold">{{ a.nome }}</td>
+          <td>{{ a.total_avaliacoes }}</td>
+          <td class="fw-bold
+            {% if a.media >= 8.5 %}text-success
+            {% elif a.media >= 6.5 %}text-primary
+            {% elif a.media >= 4.5 %}text-warning
+            {% else %}text-danger{% endif %}">{{ a.media }}</td>
+          <td>{{ a.maior_nota }}</td>
+          <td>{{ a.menor_nota }}</td>
+          <td>{{ a.taxa_aprovacao }}%</td>
+          <td>
+            {% if a.evolucao > 0 %}
+              <span class="text-success fw-bold">▲ {{ a.evolucao }}</span>
+            {% elif a.evolucao < 0 %}
+              <span class="text-danger fw-bold">▼ {{ a.evolucao }}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="class-badge {{ a.classificacao }}">
+              {{ a.emoji }} {{ a.label }}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'aluno_perfil' turma_encoded a.nome_encoded %}"
+               class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">
+              Ver Perfil
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">Nenhum aluno encontrado com os filtros atuais.</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('chartAlunos').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ chart_nomes|safe }},
+    datasets: [{
+      label: 'Média',
+      data: {{ chart_medias|safe }},
+      backgroundColor: {{ chart_medias|safe }}.map(v =>
+        v >= 8.5 ? 'rgba(67,160,71,.7)' :
+        v >= 6.5 ? 'rgba(26,35,126,.7)' :
+        v >= 4.5 ? 'rgba(251,140,0,.7)' :
+                   'rgba(229,57,53,.7)'
+      ),
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { min: 0, max: 10, ticks: { stepSize: 2 } } }
+  }
+});
+</script>
+{% endblock %}
