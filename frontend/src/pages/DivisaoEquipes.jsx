@@ -29,12 +29,10 @@ function embaralhar(arr) {
   return a
 }
 
-// Divide array em grupos de tamanho N
-function dividirEmGrupos(arr, tamanho) {
-  const grupos = []
-  for (let i = 0; i < arr.length; i += tamanho) {
-    grupos.push(arr.slice(i, i + tamanho))
-  }
+// Divide array em N grupos (distribui um por um em cada equipe)
+function dividirEmNGrupos(arr, n) {
+  const grupos = Array.from({ length: n }, () => [])
+  arr.forEach((item, i) => grupos[i % n].push(item))
   return grupos
 }
 
@@ -51,7 +49,7 @@ export default function DivisaoEquipes() {
   const [alunos, setAlunos]           = useState([])
   const [atividade, setAtividade]     = useState('')
   const [assunto, setAssunto]         = useState('')
-  const [porEquipe, setPorEquipe]     = useState(3)
+  const [numEquipes, setNumEquipes]   = useState(4)
   const [equipes, setEquipes]         = useState([])
   const [carregando, setCarregando]   = useState(false)
   const [animando, setAnimando]       = useState(false)
@@ -83,7 +81,8 @@ export default function DivisaoEquipes() {
     if (!turmaSel)    return setErro('Selecione uma turma.')
     if (!atividade.trim()) return setErro('Informe o nome da atividade.')
     if (alunos.length === 0) return setErro('Nenhum aluno encontrado nesta turma.')
-    if (porEquipe < 1) return setErro('Mínimo de 1 aluno por equipe.')
+    if (numEquipes < 1) return setErro('Mínimo de 1 equipe.')
+    if (numEquipes > alunos.length) return setErro(`Não é possível criar ${numEquipes} equipes com apenas ${alunos.length} alunos.`)
 
     setAnimando(true)
     setEquipes([])
@@ -91,7 +90,7 @@ export default function DivisaoEquipes() {
     // Pequena animação antes de mostrar resultado
     setTimeout(() => {
       const embaralhados = embaralhar(alunos)
-      const grupos = dividirEmGrupos(embaralhados, Number(porEquipe))
+      const grupos = dividirEmNGrupos(embaralhados, Number(numEquipes))
       setEquipes(grupos)
       setAnimando(false)
       setTimeout(() => resultadoRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
@@ -102,7 +101,7 @@ export default function DivisaoEquipes() {
     setEquipes([])
     setAtividade('')
     setAssunto('')
-    setPorEquipe(3)
+    setNumEquipes(4)
     setTurmaSel('')
     setErro('')
   }
@@ -206,17 +205,17 @@ export default function DivisaoEquipes() {
                 </select>
               </div>
 
-              {/* Alunos por equipe */}
+              {/* Número de equipes */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Alunos por equipe <span className="text-red-400">*</span>
+                  Número de equipes <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="number"
                   min={1}
-                  max={50}
-                  value={porEquipe}
-                  onChange={e => setPorEquipe(Number(e.target.value))}
+                  max={alunos.length || 50}
+                  value={numEquipes}
+                  onChange={e => setNumEquipes(Number(e.target.value))}
                   className="input-field w-full"
                 />
               </div>
@@ -228,9 +227,9 @@ export default function DivisaoEquipes() {
                 <span className="bg-primary/10 text-primary font-medium px-3 py-1 rounded-full">
                   {alunos.length} alunos encontrados
                 </span>
-                {alunos.length > 0 && porEquipe > 0 && (
+                {alunos.length > 0 && numEquipes > 0 && (
                   <span className="bg-gray-100 px-3 py-1 rounded-full">
-                    ≈ {Math.ceil(alunos.length / porEquipe)} equipes
+                    ≈ {Math.ceil(alunos.length / numEquipes)} alunos/equipe
                   </span>
                 )}
               </div>
@@ -352,10 +351,10 @@ export default function DivisaoEquipes() {
                 })}
               </div>
 
-              {/* Nota sobre resto */}
-              {alunos.length % porEquipe !== 0 && (
+              {/* Nota sobre distribuição desigual */}
+              {alunos.length % numEquipes !== 0 && (
                 <p className="text-center text-xs text-gray-400 mt-4">
-                  * A última equipe tem {alunos.length % porEquipe} {alunos.length % porEquipe === 1 ? 'aluno' : 'alunos'} (resto do sorteio)
+                  * {alunos.length % numEquipes} {alunos.length % numEquipes === 1 ? 'equipe tem' : 'equipes têm'} 1 aluno a mais para completar a divisão
                 </p>
               )}
             </div>
