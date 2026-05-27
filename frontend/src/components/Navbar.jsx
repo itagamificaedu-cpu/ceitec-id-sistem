@@ -273,6 +273,7 @@ export default function Navbar() {
             { onClick: abrirMestre,   label: 'Horário do Dia',               icon: '📅' },
             { path: '/itagame',       label: 'ItagGame — Painel do Professor', icon: '🎮' },
             { onClick: abrirCorretor, label: 'Corretor de Provas',             icon: '✅' },
+            { path: '/divisao-equipes', label: 'Divisão de Equipes',          icon: '🎲' },
           ]
         }
       ]
@@ -286,8 +287,9 @@ export default function Navbar() {
           titulo: 'FERRAMENTAS ITA',
           itens: [
             { onClick: () => abrirUrl('/mestre?code=ADMIN-MASTER'), label: 'Horário do Dia', icon: '📅' },
-            { path: '/itagame',       label: 'ItagGame — Painel',  icon: '🎮' },
-            { onClick: abrirCorretor, label: 'Corretor de Provas', icon: '📋' },
+            { path: '/itagame',         label: 'ItagGame — Painel',  icon: '🎮' },
+            { onClick: abrirCorretor,   label: 'Corretor de Provas', icon: '📋' },
+            { path: '/divisao-equipes', label: 'Divisão de Equipes', icon: '🎲' },
           ]
         },
       ]
