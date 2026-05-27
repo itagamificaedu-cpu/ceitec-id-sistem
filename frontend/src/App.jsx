@@ -15,6 +15,8 @@ import Justificativas from './pages/Justificativas'
 import Desempenho from './pages/Desempenho'
 import EducacaoInclusiva from './pages/EducacaoInclusiva'
 import DivisaoEquipes from './pages/DivisaoEquipes'
+import ComunicacaoPais from './pages/ComunicacaoPais'
+import CalendarioEscolar from './pages/CalendarioEscolar'
 import ListaTurmas from './pages/turmas/ListaTurmas'
 import DetalheTurma from './pages/turmas/DetalheTurma'
 import PerfilAluno from './pages/turmas/PerfilAluno'
@@ -144,6 +146,8 @@ export default function App() {
         <Route path="/desempenho" element={<P><Desempenho /></P>} />
         <Route path="/educacao-inclusiva" element={<P><EducacaoInclusiva /></P>} />
         <Route path="/divisao-equipes" element={<P><DivisaoEquipes /></P>} />
+        <Route path="/comunicacao-pais" element={<P><ComunicacaoPais /></P>} />
+        <Route path="/calendario" element={<P><CalendarioEscolar /></P>} />
 
         {/* Turmas */}
         <Route path="/turmas" element={<Admin><ListaTurmas /></Admin>} />

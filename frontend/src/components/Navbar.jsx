@@ -41,6 +41,8 @@ const SECOES_ESTATICAS = [
       { path: '/almoco/relatorio',   label: 'Relatório de Almoço',    icon: '📋' },
       { path: '/usuarios',           label: 'Gerenciar Usuários',     icon: '🔑' },
       { path: '/atividade-usuarios', label: 'Atividade dos Usuários', icon: '📡', itaAdmin: true },
+      { path: '/comunicacao-pais',   label: 'Comunicação com Pais',   icon: '📢' },
+      { path: '/calendario',         label: 'Calendário Escolar',     icon: '📅' },
     ]
   },
   {
@@ -233,11 +235,13 @@ export default function Navbar() {
         {
           titulo: 'MINHAS TURMAS',
           itens: [
-            { path: '/dashboard',      label: 'Painel do Professor',  icon: '🏫' },
-            { path: '/scanner',        label: 'Scanner de Presença',  icon: '📷' },
-            { path: '/saida-sala',         label: 'Saída de Sala (Scanner)', icon: '🚪' },
-            { path: '/saida-sala/painel', label: 'Saída de Sala (Painel)',  icon: '📊' },
-            { path: '/justificativas', label: 'Justificativas',       icon: '📋' },
+            { path: '/dashboard',         label: 'Painel do Professor',      icon: '🏫' },
+            { path: '/scanner',           label: 'Scanner de Presença',      icon: '📷' },
+            { path: '/saida-sala',        label: 'Saída de Sala (Scanner)',  icon: '🚪' },
+            { path: '/saida-sala/painel', label: 'Saída de Sala (Painel)',   icon: '📊' },
+            { path: '/justificativas',    label: 'Justificativas',           icon: '📋' },
+            { path: '/comunicacao-pais',  label: 'Comunicação com Pais',     icon: '📢' },
+            { path: '/calendario',        label: 'Calendário Escolar',       icon: '📅' },
           ]
         },
         {
