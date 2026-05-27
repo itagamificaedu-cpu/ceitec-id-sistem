@@ -417,6 +417,51 @@ async function initDatabase() {
       PRIMARY KEY (aviso_id, usuario_id)
     )`,
 
+    /* ========== COMUNICAÇÃO COM PAIS ========== */
+
+    `CREATE TABLE IF NOT EXISTS comunicados (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      criado_por_id INTEGER,
+      criado_por_nome TEXT DEFAULT '',
+      titulo TEXT NOT NULL,
+      mensagem TEXT NOT NULL,
+      canal TEXT NOT NULL DEFAULT 'email',
+      turma_id INTEGER,
+      turma_nome TEXT,
+      total_destinatarios INTEGER DEFAULT 0,
+      enviados INTEGER DEFAULT 0,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS comunicado_envios (
+      id SERIAL PRIMARY KEY,
+      comunicado_id INTEGER NOT NULL,
+      aluno_id INTEGER NOT NULL,
+      aluno_nome TEXT,
+      email TEXT,
+      telefone TEXT,
+      status_email TEXT DEFAULT 'nao_enviado',
+      erro_email TEXT,
+      enviado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* ========== CALENDÁRIO ESCOLAR ========== */
+
+    `CREATE TABLE IF NOT EXISTS eventos_calendario (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      titulo TEXT NOT NULL,
+      descricao TEXT DEFAULT '',
+      data_inicio DATE NOT NULL,
+      data_fim DATE,
+      tipo TEXT NOT NULL DEFAULT 'evento',
+      turma_id INTEGER,
+      turma_nome TEXT,
+      criado_por_id INTEGER,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
   ];
 
   for (const sql of tabelas) {
