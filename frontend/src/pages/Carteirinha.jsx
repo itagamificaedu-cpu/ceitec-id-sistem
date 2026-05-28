@@ -19,7 +19,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
   return (
     <div style={{
       width: '204px',
-      height: '322px',
+      minHeight: '380px',       /* altura mínima generosa — conteúdo nunca estoura */
       background: '#ffffff',
       borderRadius: '12px',
       border: '2px solid #1e3a5f',
@@ -29,7 +29,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
       fontFamily: 'Segoe UI, Arial, sans-serif',
       flexShrink: 0,
       boxSizing: 'border-box',
-      overflow: 'hidden',
+      overflow: 'visible',      /* sem corte: todo conteúdo aparece */
     }}>
 
       {/* Cabeçalho navy */}
@@ -330,22 +330,21 @@ export default function Carteirinha() {
         }
 
         @media print {
-          /* A4 retrato, 8 mm de margem */
-          @page { size: A4 portrait; margin: 8mm; }
+          /* ─── PÁGINA A4 RETRATO ─── */
+          @page { size: A4 portrait; margin: 5mm; }
 
-          /* Força cores e fundos na impressão */
+          /* Força cores e fundos */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
 
-          /* Esconde tudo exceto a grade */
+          /* Esconde a interface, mostra só a grade */
           body * { visibility: hidden; }
-          .print-grid,
-          .print-grid * { visibility: visible !important; }
+          .print-grid, .print-grid * { visibility: visible !important; }
           .tela-normal { display: none !important; }
 
-          /* Contêiner geral */
+          /* Container da grade */
           .print-grid {
             display: block !important;
             position: absolute !important;
@@ -357,10 +356,10 @@ export default function Carteirinha() {
 
           /*
            * Cada página: 3 colunas × 2 linhas
-           * Card natural: 204px ≈ 54mm × 322px ≈ 85mm
-           * 3 × 54mm = 162mm + 2 gaps → cabe em 194mm ✓
-           * 2 × 85mm = 170mm + 1 gap  → cabe em 281mm ✓
-           * NÃO sobrescreve tamanho do card — sem esticar, sem cortar
+           * Card: 204px ≈ 54mm × mínimo 380px ≈ 100mm
+           * A4 útil (5mm margem): 200mm × 287mm
+           * 3×54mm + 2×5mm gap = 172mm < 200mm ✓
+           * 2×100mm + 1×5mm gap = 205mm < 287mm ✓
            */
           .print-page {
             display: grid !important;
@@ -368,8 +367,8 @@ export default function Carteirinha() {
             grid-template-rows: repeat(2, auto) !important;
             justify-content: center !important;
             align-items: start !important;
-            gap: 6mm !important;
-            width: 194mm !important;
+            gap: 5mm !important;
+            width: 200mm !important;
             margin: 0 auto !important;
             padding: 0 !important;
             break-after: page !important;
@@ -381,15 +380,20 @@ export default function Carteirinha() {
             page-break-after: avoid !important;
           }
 
-          /* Slot: só evita quebra dentro do card */
+          /* Slot: não quebra o card no meio da página */
           .print-card-slot {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
           }
 
-          /* Card: ZERO overrides de tamanho.
-             Os estilos inline (width:204px, height:322px) prevalecem.
-             Todos idênticos, proporcional, sem cortar. */
+          /* ─── CARD: APÓS ─────────────────────────────────────
+           * ANTES: height:322px  + overflow:hidden  → conteúdo cortado
+           * DEPOIS: min-height:380px + overflow:visible → tudo visível
+           * ─────────────────────────────────────────────────── */
+          .print-card-slot > div {
+            min-height: 380px !important;   /* altura mínima suficiente */
+            overflow: visible !important;   /* NUNCA cortar conteúdo */
+          }
         }
       `}</style>
     </>
