@@ -9,12 +9,6 @@ const CREDS = [
   { perfil: 'Aluno',      icon: '🎓', email: null,                 senha: null },
 ]
 
-const FEATURES = [
-  { icon: '🎮', titulo: 'ItagGame',       desc: 'XP, badges e rankings em tempo real',  num: '247',  label: 'missões concluídas' },
-  { icon: '🤖', titulo: 'IA Educacional', desc: 'Questões e planos de aula por IA',     num: '1.2k', label: 'questões criadas' },
-  { icon: '📊', titulo: 'Diagnóstico',    desc: 'Desempenho detalhado por aluno',        num: '98%',  label: 'precisão de análise' },
-  { icon: '👥', titulo: 'Gestão Escolar', desc: 'Alunos, turmas, presença e ocorrências',num: '500+', label: 'alunos gerenciados' },
-]
 
 export default function Login() {
   const navigate = useNavigate()
@@ -182,37 +176,6 @@ export default function Login() {
           font-weight: 700; color: #c4b5fd; letter-spacing: .5px;
         }
 
-        /* — Cards de módulos — */
-        .lg-feat-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          width: 100%; max-width: 560px;
-          position: relative; z-index: 1;
-        }
-        .lg-feat {
-          background: rgba(255,255,255,.04);
-          border: 1px solid rgba(255,255,255,.08);
-          border-radius: 14px; padding: 16px 18px;
-          display: flex; flex-direction: column; gap: 5px;
-          transition: border-color .2s, background .2s, transform .2s;
-          cursor: default;
-        }
-        .lg-feat:hover {
-          background: rgba(245,166,35,.06);
-          border-color: rgba(245,166,35,.35);
-          transform: translateY(-3px);
-        }
-        .lg-feat:nth-child(1) { animation: cardIn .5s ease both .1s; }
-        .lg-feat:nth-child(2) { animation: cardIn .5s ease both .2s; }
-        .lg-feat:nth-child(3) { animation: cardIn .5s ease both .3s; }
-        .lg-feat:nth-child(4) { animation: cardIn .5s ease both .4s; }
-        .lg-feat-head { display: flex; align-items: center; gap: 8px; }
-        .lg-feat-head span:first-child { font-size: 20px; line-height: 1; }
-        .lg-feat-title { font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 700; color: #fff; }
-        .lg-feat-desc  { font-size: 11px; color: rgba(255,255,255,.38); line-height: 1.4; }
-        .lg-feat-num   { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: #f5a623; line-height: 1; margin-top: 4px; }
-        .lg-feat-label { font-size: 10px; color: rgba(255,255,255,.3); }
 
         /* ════════════════════════════════════════
            PAINEL DIREITO
@@ -442,10 +405,8 @@ export default function Login() {
           .lg-feat-grid { grid-template-columns: 1fr 1fr; }
         }
 
-        /* Tablet portrait — esconde cards de módulos */
         @media (max-width: 900px) {
           .lg-root { grid-template-columns: 1fr 400px; }
-          .lg-feat-grid { display: none; }
           .lg-left { gap: 24px; padding: 32px 5%; }
         }
 
@@ -500,20 +461,6 @@ export default function Login() {
               <span>Sistema v2.0 — IA + Gamificação</span>
             </div>
 
-            {/* Cards módulos */}
-            <div className="lg-feat-grid">
-              {FEATURES.map(f => (
-                <div key={f.titulo} className="lg-feat">
-                  <div className="lg-feat-head">
-                    <span>{f.icon}</span>
-                    <span className="lg-feat-title">{f.titulo}</span>
-                  </div>
-                  <div className="lg-feat-desc">{f.desc}</div>
-                  <div className="lg-feat-num">{f.num}</div>
-                  <div className="lg-feat-label">{f.label}</div>
-                </div>
-              ))}
-            </div>
 
           </div>
 
