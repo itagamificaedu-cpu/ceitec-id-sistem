@@ -382,25 +382,25 @@ export default function Carteirinha() {
             page-break-after: avoid !important;
           }
 
-          /* Slot: centraliza o card horizontalmente, alinha no topo */
+          /* Slot: largura fixa, altura automática pelo card interno */
           .print-card-slot {
             width: 62mm !important;
+            height: auto !important;
             display: flex !important;
             align-items: flex-start !important;
             justify-content: center !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             break-inside: avoid !important;
             page-break-inside: avoid !important;
             box-sizing: border-box !important;
           }
 
-          /* Card: mantém proporção natural — SEM esticar altura.
-             Só ajustamos a largura para caber nas 3 colunas. */
+          /* Card: NÃO sobrescrever altura — deixa o inline height:322px vencer.
+             Todos os cards ficam exatamente 322px = ~85mm, igual e proporcional. */
           .print-card-slot > div {
             width: 62mm !important;
-            height: auto !important;
+            /* height: NÃO setar aqui — inline style height:322px prevalece */
             min-height: unset !important;
-            max-height: unset !important;
             flex-shrink: 0 !important;
             box-sizing: border-box !important;
             border-radius: 8px !important;
