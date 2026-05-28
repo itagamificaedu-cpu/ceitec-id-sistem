@@ -89,8 +89,8 @@ export default function Login() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 32px;
-          padding: 48px 6%;
+          gap: 48px;
+          padding: 60px 8%;
           background: #050d19;
           background-image: radial-gradient(rgba(245,166,35,.09) 1px, transparent 1px);
           background-size: 26px 26px;
@@ -113,66 +113,66 @@ export default function Login() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 10px;
+          gap: 14px;
           text-align: center;
           position: relative;
           z-index: 1;
         }
         .lg-icon {
-          width: 72px; height: 72px;
+          width: 100px; height: 100px;
           background: linear-gradient(135deg, #f5a623, #e08000);
-          border-radius: 16px;
+          border-radius: 22px;
           display: flex; align-items: center; justify-content: center;
-          font-size: 36px;
+          font-size: 52px;
           animation: glowPulse 2.8s ease-in-out infinite;
           flex-shrink: 0;
         }
         .lg-ita-name {
           font-family: 'Orbitron', sans-serif;
-          font-weight: 900; font-size: clamp(18px, 2vw, 24px);
-          color: #f5a623; letter-spacing: 3px;
-          text-shadow: 0 0 18px rgba(245,166,35,.7), 0 0 40px rgba(245,166,35,.3);
+          font-weight: 900; font-size: clamp(26px, 3vw, 36px);
+          color: #f5a623; letter-spacing: 4px;
+          text-shadow: 0 0 22px rgba(245,166,35,.7), 0 0 50px rgba(245,166,35,.3);
         }
         .lg-ita-sub {
           font-family: 'Orbitron', sans-serif;
-          font-weight: 700; font-size: 11px;
-          color: #cbd5e1; letter-spacing: 7px;
+          font-weight: 700; font-size: clamp(12px, 1.2vw, 15px);
+          color: #cbd5e1; letter-spacing: 9px;
         }
 
         /* — CEITECGAME — */
         .lg-ceitec-wrap { text-align: center; position: relative; z-index: 1; }
         .lg-ceitec {
           font-family: 'Orbitron', sans-serif;
-          font-weight: 900; font-size: clamp(22px, 3vw, 30px);
-          letter-spacing: 2px; line-height: 1;
+          font-weight: 900; font-size: clamp(36px, 5vw, 54px);
+          letter-spacing: 3px; line-height: 1;
         }
         .lg-c-gold  { color: #f5a623; text-shadow: 0 0 18px rgba(245,166,35,.8), 0 0 40px rgba(245,166,35,.3); }
         .lg-c-green { color: #22c55e; text-shadow: 0 0 18px rgba(34,197,94,.8),  0 0 40px rgba(34,197,94,.3); }
         .lg-tagline {
           font-family: 'Exo 2', sans-serif;
-          font-weight: 700; font-size: clamp(11px, 1.2vw, 13px);
-          text-align: center; line-height: 1.7; margin-top: 10px;
+          font-weight: 700; font-size: clamp(15px, 1.6vw, 20px);
+          text-align: center; line-height: 1.8; margin-top: 14px;
         }
         .lg-tg-gold  { color: #f5a623; text-shadow: 0 0 10px rgba(245,166,35,.4); }
         .lg-tg-green { color: #22c55e; text-shadow: 0 0 10px rgba(34,197,94,.4); }
 
         /* — Badge roxo — */
         .lg-badge-roxo {
-          display: inline-flex; align-items: center; gap: 8px;
+          display: inline-flex; align-items: center; gap: 10px;
           background: rgba(124,58,237,.2);
           border: 1px solid rgba(124,58,237,.5);
-          border-radius: 20px; padding: 7px 18px;
+          border-radius: 30px; padding: 10px 24px;
           position: relative; z-index: 1;
         }
         .lg-badge-dot {
-          width: 7px; height: 7px;
+          width: 9px; height: 9px;
           background: #a78bfa; border-radius: 50%;
           animation: pulse 1.4s ease-in-out infinite;
-          box-shadow: 0 0 8px #a78bfa; flex-shrink: 0;
+          box-shadow: 0 0 10px #a78bfa; flex-shrink: 0;
         }
         .lg-badge-roxo span:last-child {
           font-family: 'Exo 2', sans-serif;
-          font-size: clamp(11px, 1.1vw, 13px);
+          font-size: clamp(13px, 1.3vw, 16px);
           font-weight: 700; color: #c4b5fd; letter-spacing: .5px;
         }
 
