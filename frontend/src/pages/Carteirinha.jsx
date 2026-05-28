@@ -330,10 +330,10 @@ export default function Carteirinha() {
         }
 
         @media print {
-          /* A4 retrato, 8 mm de margem em todos os lados */
+          /* A4 retrato, 8 mm de margem */
           @page { size: A4 portrait; margin: 8mm; }
 
-          /* Força cores e fundos coloridos na impressão */
+          /* Força cores e fundos na impressão */
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -356,55 +356,40 @@ export default function Carteirinha() {
           }
 
           /*
-           * Cada página: grid 3×2
-           * Área útil A4 com 8mm de margem: 194mm × 281mm
-           * 3 colunas: (194 - 2×4mm gap) / 3 ≈ 62mm
-           * 2 linhas: espaço reservado de 138mm mas o card
-           *           NÃO é esticado — fica proporcional
+           * Cada página: 3 colunas × 2 linhas
+           * Card natural: 204px ≈ 54mm × 322px ≈ 85mm
+           * 3 × 54mm = 162mm + 2 gaps → cabe em 194mm ✓
+           * 2 × 85mm = 170mm + 1 gap  → cabe em 281mm ✓
+           * NÃO sobrescreve tamanho do card — sem esticar, sem cortar
            */
           .print-page {
             display: grid !important;
-            grid-template-columns: repeat(3, 62mm) !important;
+            grid-template-columns: repeat(3, auto) !important;
             grid-template-rows: repeat(2, auto) !important;
+            justify-content: center !important;
             align-items: start !important;
             gap: 6mm !important;
             width: 194mm !important;
             margin: 0 auto !important;
             padding: 0 !important;
-            /* Quebra de página após cada grupo de 6 */
             break-after: page !important;
             page-break-after: always !important;
           }
 
-          /* Última página não precisa de quebra */
           .print-page:last-child {
             break-after: avoid !important;
             page-break-after: avoid !important;
           }
 
-          /* Slot: largura fixa, altura automática pelo card interno */
+          /* Slot: só evita quebra dentro do card */
           .print-card-slot {
-            width: 62mm !important;
-            height: auto !important;
-            display: flex !important;
-            align-items: flex-start !important;
-            justify-content: center !important;
-            overflow: hidden !important;
             break-inside: avoid !important;
             page-break-inside: avoid !important;
-            box-sizing: border-box !important;
           }
 
-          /* Card: NÃO sobrescrever altura — deixa o inline height:322px vencer.
-             Todos os cards ficam exatamente 322px = ~85mm, igual e proporcional. */
-          .print-card-slot > div {
-            width: 62mm !important;
-            /* height: NÃO setar aqui — inline style height:322px prevalece */
-            min-height: unset !important;
-            flex-shrink: 0 !important;
-            box-sizing: border-box !important;
-            border-radius: 8px !important;
-          }
+          /* Card: ZERO overrides de tamanho.
+             Os estilos inline (width:204px, height:322px) prevalecem.
+             Todos idênticos, proporcional, sem cortar. */
         }
       `}</style>
     </>
