@@ -356,21 +356,21 @@ export default function Carteirinha() {
           }
 
           /*
-           * Cada página: grid 3×2 com dimensões A4 exatas
+           * Cada página: grid 3×2
            * Área útil A4 com 8mm de margem: 194mm × 281mm
-           * 3 colunas: (194 - 2×4mm gap) / 3 = 62mm por carteirinha
-           * 2 linhas:  (281 - 1×4mm gap) / 2 = 138,5mm por carteirinha
+           * 3 colunas: (194 - 2×4mm gap) / 3 ≈ 62mm
+           * 2 linhas: espaço reservado de 138mm mas o card
+           *           NÃO é esticado — fica proporcional
            */
           .print-page {
             display: grid !important;
             grid-template-columns: repeat(3, 62mm) !important;
-            grid-template-rows: repeat(2, 138mm) !important;
-            gap: 4mm !important;
+            grid-template-rows: repeat(2, auto) !important;
+            align-items: start !important;
+            gap: 6mm !important;
             width: 194mm !important;
-            height: 281mm !important;
             margin: 0 auto !important;
             padding: 0 !important;
-            overflow: hidden !important;
             /* Quebra de página após cada grupo de 6 */
             break-after: page !important;
             page-break-after: always !important;
@@ -382,24 +382,26 @@ export default function Carteirinha() {
             page-break-after: avoid !important;
           }
 
-          /* Slot de cada carteirinha: tamanho fixo, nunca corta na quebra */
+          /* Slot: centraliza o card horizontalmente, alinha no topo */
           .print-card-slot {
             width: 62mm !important;
-            height: 138mm !important;
-            overflow: hidden !important;
+            display: flex !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
+            overflow: visible !important;
             break-inside: avoid !important;
             page-break-inside: avoid !important;
-            display: block !important;
             box-sizing: border-box !important;
           }
 
-          /* Sobrescreve os estilos inline do CardCarteirinha —
-             força todas as carteirinhas ao mesmo tamanho fixo */
+          /* Card: mantém proporção natural — SEM esticar altura.
+             Só ajustamos a largura para caber nas 3 colunas. */
           .print-card-slot > div {
             width: 62mm !important;
-            height: 138mm !important;
+            height: auto !important;
             min-height: unset !important;
-            max-height: 138mm !important;
+            max-height: unset !important;
+            flex-shrink: 0 !important;
             box-sizing: border-box !important;
             border-radius: 8px !important;
           }
