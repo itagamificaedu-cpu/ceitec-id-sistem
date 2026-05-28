@@ -19,7 +19,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
   return (
     <div style={{
       width: '204px',
-      minHeight: '322px',
+      height: '322px',
       background: '#ffffff',
       borderRadius: '12px',
       border: '2px solid #1e3a5f',
@@ -301,18 +301,25 @@ export default function Carteirinha() {
                 </a>
               </div>
               <div className="col-span-2 text-xs text-gray-400">
-                Ao clicar em Imprimir, serão impressas as carteirinhas de todos os {turmaAlunos.length} alunos da turma {aluno.turma}, 8 por folha A4.
+                Ao clicar em Imprimir, serão impressas as carteirinhas de todos os {turmaAlunos.length} alunos da turma {aluno.turma}, 6 por folha A4 (3 colunas × 2 linhas), todas do mesmo tamanho.
               </div>
             </div>
           </div>
         </main>
       </div>
 
-      {/* Grade de impressão — 1 card por aluno da turma, 8 por folha */}
+      {/* Grade de impressão — 6 por folha A4 (3 colunas × 2 linhas), tamanho idêntico */}
       <div className="print-grid">
-        {turmaAlunos.map(a => (
-          <div key={a.id} className="print-card-slot">
-            <CardCarteirinha aluno={a} qrcode={turmaQrcodes[a.id] || ''} equipe={turmaEquipes[a.id] || null} />
+        {/* Agrupa em páginas de 6 */}
+        {Array.from({ length: Math.ceil(turmaAlunos.length / 6) }, (_, pi) =>
+          turmaAlunos.slice(pi * 6, pi * 6 + 6)
+        ).map((pagina, pi) => (
+          <div key={pi} className="print-page">
+            {pagina.map(a => (
+              <div key={a.id} className="print-card-slot">
+                <CardCarteirinha aluno={a} qrcode={turmaQrcodes[a.id] || ''} equipe={turmaEquipes[a.id] || null} />
+              </div>
+            ))}
           </div>
         ))}
       </div>
@@ -323,38 +330,78 @@ export default function Carteirinha() {
         }
 
         @media print {
-          @page { size: A4 portrait; margin: 10mm; }
+          /* A4 retrato, 8 mm de margem em todos os lados */
+          @page { size: A4 portrait; margin: 8mm; }
 
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-
-          /* Esconde TUDO — inclusive elementos position:fixed do Navbar */
-          body * { visibility: hidden; }
-
-          /* Mostra apenas a grade de carteirinhas */
-          .print-grid,
-          .print-grid * { visibility: visible !important; }
-
-          .tela-normal { display: none !important; }
-
-          .print-grid {
-            display: grid !important;
-            grid-template-columns: repeat(3, auto);
-            gap: 5mm;
-            justify-content: center;
-            align-content: start;
-          }
-
-          .print-card-slot {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            display: block !important;
-            overflow: visible !important;
-          }
-
-          .print-card-slot * {
+          /* Força cores e fundos coloridos na impressão */
+          * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+          }
+
+          /* Esconde tudo exceto a grade */
+          body * { visibility: hidden; }
+          .print-grid,
+          .print-grid * { visibility: visible !important; }
+          .tela-normal { display: none !important; }
+
+          /* Contêiner geral */
+          .print-grid {
+            display: block !important;
+            position: absolute !important;
+            top: 0; left: 0;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          /*
+           * Cada página: grid 3×2 com dimensões A4 exatas
+           * Área útil A4 com 8mm de margem: 194mm × 281mm
+           * 3 colunas: (194 - 2×4mm gap) / 3 = 62mm por carteirinha
+           * 2 linhas:  (281 - 1×4mm gap) / 2 = 138,5mm por carteirinha
+           */
+          .print-page {
+            display: grid !important;
+            grid-template-columns: repeat(3, 62mm) !important;
+            grid-template-rows: repeat(2, 138mm) !important;
+            gap: 4mm !important;
+            width: 194mm !important;
+            height: 281mm !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            /* Quebra de página após cada grupo de 6 */
+            break-after: page !important;
+            page-break-after: always !important;
+          }
+
+          /* Última página não precisa de quebra */
+          .print-page:last-child {
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+          }
+
+          /* Slot de cada carteirinha: tamanho fixo, nunca corta na quebra */
+          .print-card-slot {
+            width: 62mm !important;
+            height: 138mm !important;
+            overflow: hidden !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            display: block !important;
+            box-sizing: border-box !important;
+          }
+
+          /* Sobrescreve os estilos inline do CardCarteirinha —
+             força todas as carteirinhas ao mesmo tamanho fixo */
+          .print-card-slot > div {
+            width: 62mm !important;
+            height: 138mm !important;
+            min-height: unset !important;
+            max-height: 138mm !important;
+            box-sizing: border-box !important;
+            border-radius: 8px !important;
           }
         }
       `}</style>
