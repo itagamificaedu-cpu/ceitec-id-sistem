@@ -318,23 +318,23 @@ router.get('/portal/:codigo', async (req, res) => {
     )
     if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado.' })
 
-    const escola_id = aluno.escola_id
-    const aluno_id  = aluno.id
+    const aluno_id = aluno.id
+    const eid      = await resolverEscolaFigs(aluno.escola_id)
 
-    // Todas as figurinhas da escola
+    // Todas as figurinhas (usa eid com fallback para escola 1)
     const todas = await db.all(
       `SELECT f.*, c.nome AS colecao_nome, c.icone AS colecao_icone, c.cor AS colecao_cor
        FROM album_figurinhas f
        LEFT JOIN album_colecoes c ON c.id = f.colecao_id
        WHERE f.escola_id = ? AND f.ativo = 1
        ORDER BY f.numero ASC`,
-      [escola_id]
+      [eid]
     )
 
-    // Figurinhas do aluno
+    // Figurinhas que o aluno já ganhou
     const minhas = await db.all(
       'SELECT figurinha_id, quantidade, obtida_em FROM album_aluno WHERE aluno_id = ? AND escola_id = ?',
-      [aluno_id, escola_id]
+      [aluno_id, eid]
     )
     const map = {}
     for (const m of minhas) map[m.figurinha_id] = m
