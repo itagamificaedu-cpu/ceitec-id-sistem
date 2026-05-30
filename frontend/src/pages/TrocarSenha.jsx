@@ -10,6 +10,12 @@ export default function TrocarSenha() {
   const navigate = useNavigate()
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
+  // Liga Jovem não pode trocar senha — redireciona direto para o dashboard
+  if (usuario.perfil === 'liga_jovem') {
+    navigate('/dashboard')
+    return null
+  }
+
   async function salvar(e) {
     e.preventDefault()
     setErro('')
