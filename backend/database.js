@@ -575,18 +575,28 @@ async function initDatabase() {
     );
   }
 
-  // ── Seed do Álbum dos Craques — só insere se vazio ──────────
+  // ── Seed do Álbum da Copa do Mundo 2026 ─────────────────────
   const adminId = await db.get(`SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1`);
   if (adminId) {
+    // Se ainda tem os personagens antigos, limpa e re-seed com Copa
+    const figAntiga = await db.get(`SELECT id FROM album_figurinhas WHERE escola_id = ? AND classe = 'robotica' LIMIT 1`, [adminId.id]);
+    if (figAntiga) {
+      await db.exec(`DELETE FROM album_figurinhas WHERE escola_id = ${adminId.id}`);
+      await db.exec(`DELETE FROM album_colecoes   WHERE escola_id = ${adminId.id}`);
+      console.log('Álbum: personagens CEITEC removidos, re-seed Copa do Mundo.');
+    }
     const jaTemCol = await db.get(`SELECT id FROM album_colecoes WHERE escola_id = ? LIMIT 1`, [adminId.id]);
     if (!jaTemCol) {
-      // Coleções — db.run() já appenda RETURNING id automaticamente
+      // ── Seleções (coleções) da Copa do Mundo 2026 ───────────────
       const colecoes = [
-        { nome: 'Robótica',                icone: '🤖', cor: '#06b6d4', ordem: 1 },
-        { nome: 'Programação',              icone: '💻', cor: '#8b5cf6', ordem: 2 },
-        { nome: 'Fabricação Digital',       icone: '🖨️', cor: '#f59e0b', ordem: 3 },
-        { nome: 'Corte a Laser',            icone: '🔥', cor: '#ef4444', ordem: 4 },
-        { nome: 'Empreendedorismo Digital', icone: '🚀', cor: '#22c55e', ordem: 5 },
+        { nome: '🇧🇷 Brasil',     icone: '🇧🇷', cor: '#009C3B', ordem: 1 },
+        { nome: '🇦🇷 Argentina',  icone: '🇦🇷', cor: '#74ACDF', ordem: 2 },
+        { nome: '🇫🇷 França',     icone: '🇫🇷', cor: '#002395', ordem: 3 },
+        { nome: '🇵🇹 Portugal',   icone: '🇵🇹', cor: '#006600', ordem: 4 },
+        { nome: '🇪🇸 Espanha',    icone: '🇪🇸', cor: '#c60b1e', ordem: 5 },
+        { nome: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', icone: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', cor: '#cf081f', ordem: 6 },
+        { nome: '🇩🇪 Alemanha',   icone: '🇩🇪', cor: '#DD0000', ordem: 7 },
+        { nome: '🌟 Especiais',   icone: '🏆', cor: '#f5a623', ordem: 8 },
       ];
       const colIds = {};
       for (const c of colecoes) {
@@ -597,82 +607,92 @@ async function initDatabase() {
         colIds[c.nome] = r.lastInsertRowid;
       }
 
-      // 50 Figurinhas
+      // ── 50 Jogadores Copa do Mundo 2026 ─────────────────────────
+      // poder = desafio educacional (matemática com stats de futebol)
       const figs = [
-        // ── ROBÓTICA (001-010) ────────────────────────────────────
-        { n:'001', nome:'Tobi Maker',          classe:'robotica', rar:'comum',   poder:'Criatividade Maker',        emoji:'🤖', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
-        { n:'002', nome:'Mecabot X1',          classe:'robotica', rar:'comum',   poder:'Movimento Inteligente',     emoji:'⚙️', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
-        { n:'003', nome:'Droid Explorer',      classe:'robotica', rar:'comum',   poder:'Navegação Autônoma',        emoji:'🛸', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
-        { n:'004', nome:'RoboSpark',           classe:'robotica', rar:'comum',   poder:'Circuitos Energizados',     emoji:'⚡', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
-        { n:'005', nome:'TechRunner',          classe:'robotica', rar:'comum',   poder:'Velocidade Robótica',       emoji:'🏃', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
-        { n:'006', nome:'NanoBot',             classe:'robotica', rar:'rara',    poder:'Reparação Instantânea',     emoji:'🔬', cp:'#0891b2', cs:'#0c4a6e', col:'Robótica', xp:25 },
-        { n:'007', nome:'CyberMaker',          classe:'robotica', rar:'rara',    poder:'Construção Avançada',       emoji:'🔧', cp:'#0891b2', cs:'#0c4a6e', col:'Robótica', xp:25 },
-        { n:'008', nome:'TitanBot',            classe:'robotica', rar:'epica',   poder:'Força Mecânica',            emoji:'💪', cp:'#0369a1', cs:'#1e3a5f', col:'Robótica', xp:50 },
-        { n:'009', nome:'Mega Droid',          classe:'robotica', rar:'epica',   poder:'Defesa Suprema',            emoji:'🛡️', cp:'#0369a1', cs:'#1e3a5f', col:'Robótica', xp:50 },
-        { n:'010', nome:'Comandante Robotech', classe:'robotica', rar:'lendaria',poder:'Controla todos os robôs',   emoji:'👑', cp:'#f5a623', cs:'#e08000', col:'Robótica', xp:100 },
+        // ── 🇧🇷 BRASIL ───────────────────────────────────────────
+        { n:'001', nome:'Vinicius Jr.',  pos:'Atacante', rar:'lendaria', emoji:'⭐', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Um jogador marca gols em 60% dos jogos. Em 30 jogos, quantos gols marcou?',         xp:100 },
+        { n:'002', nome:'Rodrygo',       pos:'Atacante', rar:'epica',    emoji:'🔥', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Se o time marca 2,5 gols por jogo, em 8 jogos quantos gols marca no total?',         xp:50  },
+        { n:'003', nome:'Endrick',       pos:'Atacante', rar:'rara',     emoji:'⚡', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Endrick tem 18 anos. Daqui a 7 anos, quantos anos terá?',                             xp:25  },
+        { n:'004', nome:'Raphinha',      pos:'Ponta',    rar:'rara',     emoji:'🎯', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Um ponta deu 15 assistências em 20 jogos. Qual a média por jogo?',                   xp:25  },
+        { n:'005', nome:'Paquetá',       pos:'Meia',     rar:'rara',     emoji:'🎨', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'O campo tem 105m de comprimento. Quantos campos cabem em 1km?',                     xp:25  },
+        { n:'006', nome:'Casemiro',      pos:'Volante',  rar:'epica',    emoji:'🛡️', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Um volante intercepta 3 bolas por jogo. Em 12 jogos, quantas interceptações?',      xp:50  },
+        { n:'007', nome:'Marquinhos',    pos:'Zagueiro', rar:'epica',    emoji:'🧱', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'O Brasil sofreu 5 gols em 10 jogos. Qual a média de gols sofridos por jogo?',       xp:50  },
+        { n:'008', nome:'Alisson',       pos:'Goleiro',  rar:'epica',    emoji:'🥅', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Um goleiro defendeu 80% dos chutes. De 25 chutes, quantos defendeu?',              xp:50  },
+        { n:'009', nome:'Militão',       pos:'Zagueiro', rar:'rara',     emoji:'💪', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Se o Brasil ganhou 7 de 10 jogos, qual o percentual de vitórias?',                 xp:25  },
+        { n:'010', nome:'Neymar Jr.',    pos:'Atacante', rar:'epica',    emoji:'🌟', cp:'#009C3B', cs:'#FFDF00', col:'🇧🇷 Brasil',    poder:'Neymar marcou 79 gols em 120 jogos. Qual sua média de gols por jogo?',             xp:50  },
 
-        // ── PROGRAMAÇÃO (011-020) ─────────────────────────────────
-        { n:'011', nome:'Capitão Scratch',          classe:'programacao', rar:'comum',   poder:'Blocos Mágicos',          emoji:'🎮', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
-        { n:'012', nome:'Byte Kid',                 classe:'programacao', rar:'comum',   poder:'Lógica Rápida',           emoji:'💡', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
-        { n:'013', nome:'Pixel Master',             classe:'programacao', rar:'comum',   poder:'Criação de Jogos',        emoji:'🕹️', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
-        { n:'014', nome:'Coder Boy',                classe:'programacao', rar:'comum',   poder:'Programação Básica',      emoji:'👾', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
-        { n:'015', nome:'Bug Hunter',               classe:'programacao', rar:'rara',    poder:'Eliminação de Erros',     emoji:'🐛', cp:'#7c3aed', cs:'#4c1d95', col:'Programação', xp:25 },
-        { n:'016', nome:'Lady Python',              classe:'programacao', rar:'rara',    poder:'Código Inteligente',      emoji:'🐍', cp:'#7c3aed', cs:'#4c1d95', col:'Programação', xp:25 },
-        { n:'017', nome:'Java Hero',                classe:'programacao', rar:'epica',   poder:'Sistemas Poderosos',      emoji:'☕', cp:'#5b21b6', cs:'#2e1065', col:'Programação', xp:50 },
-        { n:'018', nome:'JS Guardian',              classe:'programacao', rar:'epica',   poder:'Apps Interativos',        emoji:'⚡', cp:'#5b21b6', cs:'#2e1065', col:'Programação', xp:50 },
-        { n:'019', nome:'Mestre dos Algoritmos',    classe:'programacao', rar:'epica',   poder:'Solução Perfeita',        emoji:'🧮', cp:'#5b21b6', cs:'#2e1065', col:'Programação', xp:50 },
-        { n:'020', nome:'Imperador do Código',      classe:'programacao', rar:'lendaria',poder:'Domina todas as linguagens',emoji:'👑',cp:'#f5a623', cs:'#e08000', col:'Programação', xp:100 },
+        // ── 🇦🇷 ARGENTINA ─────────────────────────────────────────
+        { n:'011', nome:'Lionel Messi',      pos:'Atacante', rar:'lendaria', emoji:'🐐', cp:'#74ACDF', cs:'#FFFFFF', col:'🇦🇷 Argentina', poder:'Messi marcou 800 gols. Se marcar mais 50, quantos terá?',                           xp:100 },
+        { n:'012', nome:'Julián Álvarez',    pos:'Atacante', rar:'epica',    emoji:'🦁', cp:'#74ACDF', cs:'#FFFFFF', col:'🇦🇷 Argentina', poder:'Álvarez marcou 4 gols na Copa 2022 em 7 jogos. Qual a média?',                      xp:50  },
+        { n:'013', nome:'De Paul',           pos:'Meia',     rar:'rara',     emoji:'⚙️', cp:'#74ACDF', cs:'#FFFFFF', col:'🇦🇷 Argentina', poder:'O campo tem 68m de largura. Qual a área se o comprimento for 105m?',               xp:25  },
+        { n:'014', nome:'Mac Allister',      pos:'Meia',     rar:'rara',     emoji:'🎯', cp:'#74ACDF', cs:'#FFFFFF', col:'🇦🇷 Argentina', poder:'A Argentina ganhou a Copa em 2022 depois de 36 anos. Em que ano foi a anterior?',  xp:25  },
+        { n:'015', nome:'Romero',            pos:'Zagueiro', rar:'comum',    emoji:'🛡️', cp:'#74ACDF', cs:'#FFFFFF', col:'🇦🇷 Argentina', poder:'Se um zagueiro disputa 90 duelos e vence 63, qual o percentual de vitórias?',     xp:10  },
+        { n:'016', nome:'Di María',          pos:'Ponta',    rar:'epica',    emoji:'🦅', cp:'#74ACDF', cs:'#FFFFFF', col:'🇦🇷 Argentina', poder:'Di María tem 130 jogos pela Argentina. Se jogou 10 mais, quantos tem?',            xp:50  },
 
-        // ── FABRICAÇÃO DIGITAL (021-030) ──────────────────────────
-        { n:'021', nome:'Guardião 3D',         classe:'fabricacao', rar:'comum',   poder:'Impressão Perfeita',    emoji:'🖨️', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
-        { n:'022', nome:'Printer Kid',         classe:'fabricacao', rar:'comum',   poder:'Modelos Rápidos',       emoji:'📦', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
-        { n:'023', nome:'Modelador X',         classe:'fabricacao', rar:'comum',   poder:'Formas 3D',             emoji:'📐', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
-        { n:'024', nome:'Proto Maker',         classe:'fabricacao', rar:'comum',   poder:'Protótipos Ágeis',      emoji:'🔩', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
-        { n:'025', nome:'Inventora 3D',        classe:'fabricacao', rar:'rara',    poder:'Invenção em Minutos',   emoji:'💎', cp:'#d97706', cs:'#92400e', col:'Fabricação Digital', xp:25 },
-        { n:'026', nome:'Mestre Fusion',       classe:'fabricacao', rar:'rara',    poder:'Fusão de Materiais',    emoji:'🔮', cp:'#d97706', cs:'#92400e', col:'Fabricação Digital', xp:25 },
-        { n:'027', nome:'Engenheiro Maker',    classe:'fabricacao', rar:'epica',   poder:'Engenharia Precisa',    emoji:'🏗️', cp:'#b45309', cs:'#78350f', col:'Fabricação Digital', xp:50 },
-        { n:'028', nome:'Arquiteto Digital',   classe:'fabricacao', rar:'epica',   poder:'Projetos Épicos',       emoji:'🏛️', cp:'#b45309', cs:'#78350f', col:'Fabricação Digital', xp:50 },
-        { n:'029', nome:'Construtor Supremo',  classe:'fabricacao', rar:'epica',   poder:'Constrói o Impossível', emoji:'🔨', cp:'#b45309', cs:'#78350f', col:'Fabricação Digital', xp:50 },
-        { n:'030', nome:'Rei da Fabricação',   classe:'fabricacao', rar:'lendaria',poder:'Materializa Sonhos',    emoji:'👑', cp:'#f5a623', cs:'#e08000', col:'Fabricação Digital', xp:100 },
+        // ── 🇫🇷 FRANÇA ───────────────────────────────────────────
+        { n:'017', nome:'Kylian Mbappé',    pos:'Atacante', rar:'lendaria', emoji:'💨', cp:'#002395', cs:'#ED2939', col:'🇫🇷 França',    poder:'Mbappé corre 36 km/h. Em 10 segundos, quantos metros percorre?',                  xp:100 },
+        { n:'018', nome:'Camavinga',         pos:'Meia',     rar:'rara',     emoji:'🌊', cp:'#002395', cs:'#ED2939', col:'🇫🇷 França',    poder:'Camavinga nasceu em 2002. Quantos anos tem em 2026?',                              xp:25  },
+        { n:'019', nome:'Tchouaméni',        pos:'Volante',  rar:'rara',     emoji:'⚓', cp:'#002395', cs:'#ED2939', col:'🇫🇷 França',    poder:'A França tem 22 jogadores convocados. Se 11 jogam, quantos ficam na reserva?',   xp:25  },
+        { n:'020', nome:'Ousmane Dembélé',  pos:'Ponta',    rar:'rara',     emoji:'🏃', cp:'#002395', cs:'#ED2939', col:'🇫🇷 França',    poder:'Dembélé fez 8 assistências em 16 jogos. Qual a média?',                           xp:25  },
+        { n:'021', nome:'William Saliba',    pos:'Zagueiro', rar:'rara',     emoji:'🗼', cp:'#002395', cs:'#ED2939', col:'🇫🇷 França',    poder:'A França ganhou a Copa em 1998 e 2018. Quantos anos entre as duas?',              xp:25  },
+        { n:'022', nome:'Antoine Griezmann',pos:'Meia',     rar:'epica',    emoji:'🎭', cp:'#002395', cs:'#ED2939', col:'🇫🇷 França',    poder:'Griezmann tem 50 gols em 120 jogos. Qual o percentual de jogos em que marcou?', xp:50  },
 
-        // ── CORTE A LASER (031-040) ───────────────────────────────
-        { n:'031', nome:'Mestre Laser',         classe:'laser', rar:'comum',   poder:'Corte Preciso',          emoji:'🔥', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
-        { n:'032', nome:'Laser Kid',            classe:'laser', rar:'comum',   poder:'Luz Cortante',           emoji:'✂️', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
-        { n:'033', nome:'Light Cutter',         classe:'laser', rar:'comum',   poder:'Velocidade da Luz',      emoji:'💫', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
-        { n:'034', nome:'Beam Hero',            classe:'laser', rar:'comum',   poder:'Raio Certeiro',          emoji:'⚡', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
-        { n:'035', nome:'Precision Maker',      classe:'laser', rar:'rara',    poder:'Milímetro Perfeito',     emoji:'🎯', cp:'#dc2626', cs:'#7f1d1d', col:'Corte a Laser', xp:25 },
-        { n:'036', nome:'Lady Laser',           classe:'laser', rar:'rara',    poder:'Arte em Luz',            emoji:'🌟', cp:'#dc2626', cs:'#7f1d1d', col:'Corte a Laser', xp:25 },
-        { n:'037', nome:'Guardião da Luz',      classe:'laser', rar:'epica',   poder:'Luz Intocável',          emoji:'🔆', cp:'#b91c1c', cs:'#450a0a', col:'Corte a Laser', xp:50 },
-        { n:'038', nome:'Samurai Laser',        classe:'laser', rar:'epica',   poder:'Golpe de Laser',         emoji:'⚔️', cp:'#b91c1c', cs:'#450a0a', col:'Corte a Laser', xp:50 },
-        { n:'039', nome:'Mestre da Precisão',   classe:'laser', rar:'epica',   poder:'Zero Erro',              emoji:'🏹', cp:'#b91c1c', cs:'#450a0a', col:'Corte a Laser', xp:50 },
-        { n:'040', nome:'Imperador Laser',      classe:'laser', rar:'lendaria',poder:'Corta a Realidade',      emoji:'👑', cp:'#f5a623', cs:'#e08000', col:'Corte a Laser', xp:100 },
+        // ── 🇵🇹 PORTUGAL ─────────────────────────────────────────
+        { n:'023', nome:'Cristiano Ronaldo', pos:'Atacante', rar:'lendaria', emoji:'🐉', cp:'#006600', cs:'#FF0000', col:'🇵🇹 Portugal',  poder:'CR7 marcou 130 gols em Copas e Europeus. Se marcar mais 10, quantos terá?',      xp:100 },
+        { n:'024', nome:'Bruno Fernandes',   pos:'Meia',     rar:'epica',    emoji:'🎩', cp:'#006600', cs:'#FF0000', col:'🇵🇹 Portugal',  poder:'Bruno deu 20 assistências e marcou 15 gols. Quantas participações em gol?',      xp:50  },
+        { n:'025', nome:'Bernardo Silva',    pos:'Meia',     rar:'epica',    emoji:'🔮', cp:'#006600', cs:'#FF0000', col:'🇵🇹 Portugal',  poder:'Se Portugal marcou 3 gols em cada um de 4 jogos, quantos gols no total?',        xp:50  },
+        { n:'026', nome:'Rafael Leão',       pos:'Atacante', rar:'rara',     emoji:'⚡', cp:'#006600', cs:'#FF0000', col:'🇵🇹 Portugal',  poder:'Leão tem velocidade de 34 km/h. Em 5 segundos, quantos metros percorre?',       xp:25  },
+        { n:'027', nome:'Rúben Dias',        pos:'Zagueiro', rar:'rara',     emoji:'🏰', cp:'#006600', cs:'#FF0000', col:'🇵🇹 Portugal',  poder:'Portugal sofreu 2 gols em 8 jogos. Qual a média de gols sofridos?',             xp:25  },
 
-        // ── EMPREENDEDORISMO (041-050) ────────────────────────────
-        { n:'041', nome:'Startup Kid',         classe:'empreendedorismo', rar:'comum',   poder:'Ideia que Voa',         emoji:'💡', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
-        { n:'042', nome:'Visionário Júnior',   classe:'empreendedorismo', rar:'comum',   poder:'Visão do Futuro',       emoji:'👀', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
-        { n:'043', nome:'Criador Digital',     classe:'empreendedorismo', rar:'comum',   poder:'Cria do Zero',          emoji:'✨', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
-        { n:'044', nome:'Inventor Maker',      classe:'empreendedorismo', rar:'comum',   poder:'Inventa Soluções',      emoji:'🔭', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
-        { n:'045', nome:'Mestre dos Negócios', classe:'empreendedorismo', rar:'rara',    poder:'Negociação Épica',      emoji:'🤝', cp:'#16a34a', cs:'#14532d', col:'Empreendedorismo Digital', xp:25 },
-        { n:'046', nome:'CEO Jovem',           classe:'empreendedorismo', rar:'rara',    poder:'Lidera com Visão',      emoji:'💼', cp:'#16a34a', cs:'#14532d', col:'Empreendedorismo Digital', xp:25 },
-        { n:'047', nome:'Estrategista Digital',classe:'empreendedorismo', rar:'epica',   poder:'Plano Perfeito',        emoji:'♟️', cp:'#15803d', cs:'#052e16', col:'Empreendedorismo Digital', xp:50 },
-        { n:'048', nome:'Líder Inovador',      classe:'empreendedorismo', rar:'epica',   poder:'Inspira Multidões',     emoji:'🎖️', cp:'#15803d', cs:'#052e16', col:'Empreendedorismo Digital', xp:50 },
-        { n:'049', nome:'Magnata Maker',       classe:'empreendedorismo', rar:'epica',   poder:'Transforma o Mercado',  emoji:'💰', cp:'#15803d', cs:'#052e16', col:'Empreendedorismo Digital', xp:50 },
-        { n:'050', nome:'Supremo CEITEC',      classe:'empreendedorismo', rar:'lendaria',poder:'Reúne todo o conhecimento da Liga',emoji:'🏆',cp:'#f5a623',cs:'#e08000', col:'Empreendedorismo Digital', xp:200 },
+        // ── 🇪🇸 ESPANHA ───────────────────────────────────────────
+        { n:'028', nome:'Rodri',             pos:'Volante',  rar:'lendaria', emoji:'🧠', cp:'#c60b1e', cs:'#ffc400', col:'🇪🇸 Espanha',   poder:'Rodri ganhou a Bola de Ouro em 2024. Quantos anos depois de Iniesta (2010)?',   xp:100 },
+        { n:'029', nome:'Pedri',             pos:'Meia',     rar:'epica',    emoji:'🎵', cp:'#c60b1e', cs:'#ffc400', col:'🇪🇸 Espanha',   poder:'Pedri completou 95% dos passes. De 200 passes, quantos completou?',             xp:50  },
+        { n:'030', nome:'Lamine Yamal',      pos:'Ponta',    rar:'epica',    emoji:'🌟', cp:'#c60b1e', cs:'#ffc400', col:'🇪🇸 Espanha',   poder:'Yamal tem 17 anos em 2026. Em que ano nasceu?',                                 xp:50  },
+        { n:'031', nome:'Álvaro Morata',     pos:'Atacante', rar:'rara',     emoji:'🦅', cp:'#c60b1e', cs:'#ffc400', col:'🇪🇸 Espanha',   poder:'Morata marcou em 40% dos jogos. Em 15 jogos, em quantos marcou?',              xp:25  },
+        { n:'032', nome:'Dani Carvajal',     pos:'Lateral',  rar:'rara',     emoji:'⚙️', cp:'#c60b1e', cs:'#ffc400', col:'🇪🇸 Espanha',   poder:'A Espanha ganhou a Euro 2024. Quantos anos após a Copa de 2010?',              xp:25  },
+
+        // ── 🏴󠁧󠁢󠁥󠁮󠁧󠁿 INGLATERRA ──────────────────────────────────────
+        { n:'033', nome:'Jude Bellingham', pos:'Meia',     rar:'epica',    emoji:'👑', cp:'#cf081f', cs:'#FFFFFF', col:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', poder:'Bellingham marcou 23 gols em 32 jogos pelo Real Madrid. Qual a média?',          xp:50  },
+        { n:'034', nome:'Harry Kane',      pos:'Atacante', rar:'epica',    emoji:'🎯', cp:'#cf081f', cs:'#FFFFFF', col:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', poder:'Kane marcou 63 gols em 90 jogos pela seleção. Qual a média?',                   xp:50  },
+        { n:'035', nome:'Bukayo Saka',     pos:'Ponta',    rar:'rara',     emoji:'🔱', cp:'#cf081f', cs:'#FFFFFF', col:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', poder:'Saka tem 22 anos. Daqui a 8 anos terá quantos?',                                 xp:25  },
+        { n:'036', nome:'Phil Foden',      pos:'Meia',     rar:'rara',     emoji:'🌊', cp:'#cf081f', cs:'#FFFFFF', col:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', poder:'Se o time fez 18 gols em 6 jogos, qual a média por jogo?',                    xp:25  },
+        { n:'037', nome:'Declan Rice',     pos:'Volante',  rar:'rara',     emoji:'🏰', cp:'#cf081f', cs:'#FFFFFF', col:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', poder:'Rice disputou 72 duelos e venceu 45. Qual o percentual de duelos vencidos?',  xp:25  },
+
+        // ── 🇩🇪 ALEMANHA ─────────────────────────────────────────
+        { n:'038', nome:'Toni Kroos',        pos:'Meia',     rar:'epica',    emoji:'⚙️', cp:'#DD0000', cs:'#FFCC00', col:'🇩🇪 Alemanha',  poder:'Kroos completa 94% dos passes. De 150 passes, quantos completa?',              xp:50  },
+        { n:'039', nome:'Florian Wirtz',     pos:'Meia',     rar:'epica',    emoji:'🌟', cp:'#DD0000', cs:'#FFCC00', col:'🇩🇪 Alemanha',  poder:'Wirtz tem 22 anos. Qual será sua idade na Copa de 2030?',                       xp:50  },
+        { n:'040', nome:'Thomas Müller',     pos:'Meia',     rar:'rara',     emoji:'🦊', cp:'#DD0000', cs:'#FFCC00', col:'🇩🇪 Alemanha',  poder:'Müller fez 10 gols em 2 Copas. Qual a média por Copa?',                        xp:25  },
+        { n:'041', nome:'Manuel Neuer',      pos:'Goleiro',  rar:'rara',     emoji:'🧤', cp:'#DD0000', cs:'#FFCC00', col:'🇩🇪 Alemanha',  poder:'Neuer jogou 4 Copas. Se cada Copa tem 7 jogos, quantos jogos disputou?',      xp:25  },
+        { n:'042', nome:'İlkay Gündoğan',   pos:'Meia',     rar:'rara',     emoji:'🎯', cp:'#DD0000', cs:'#FFCC00', col:'🇩🇪 Alemanha',  poder:'A Alemanha ganhou 4 Copas. Quantos títulos terá se vencer mais 1?',           xp:25  },
+
+        // ── 🌟 ESPECIAIS ──────────────────────────────────────────
+        { n:'043', nome:'Erling Haaland',   pos:'Atacante', rar:'epica',    emoji:'🚀', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'Haaland marcou 52 gols em 50 jogos. Quantos a mais que o número de jogos?',   xp:50  },
+        { n:'044', nome:'Kevin De Bruyne',  pos:'Meia',     rar:'epica',    emoji:'🎨', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'De Bruyne deu 200 assistências na carreira. Quantas daqui a 50 mais?',         xp:50  },
+        { n:'045', nome:'Robert Lewandowski',pos:'Atacante',rar:'epica',    emoji:'🦅', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'Lewandowski marcou 76 gols em Liga dos Campeões. Quantos com mais 24?',       xp:50  },
+        { n:'046', nome:'Mohamed Salah',    pos:'Atacante', rar:'epica',    emoji:'⚡', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'Salah corre 100m em 10 segundos. Qual a velocidade em m/s?',                  xp:50  },
+        { n:'047', nome:'Son Heung-min',    pos:'Atacante', rar:'rara',     emoji:'🌺', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'Son marcou 15 gols em 30 jogos na temporada. Qual a média por jogo?',         xp:25  },
+        { n:'048', nome:'Lautaro Martínez', pos:'Atacante', rar:'epica',    emoji:'🐂', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'Martínez marcou 3 gols num jogo que durou 90 minutos. Um gol a cada quantos minutos?', xp:50 },
+        { n:'049', nome:'Taça da Copa 2026',pos:'Troféu',   rar:'lendaria', emoji:'🏆', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'A Copa 2026 terá 48 seleções. Quantas a mais que em 2022 que teve 32?',      xp:200 },
+        { n:'050', nome:'Bola de Ouro 2026',pos:'Prêmio',   rar:'lendaria', emoji:'⭐', cp:'#f5a623', cs:'#e08000', col:'🌟 Especiais',  poder:'O jogador que ganhou a Bola de Ouro recebe troféu de 24 quilates. Se pesa 450g, quantos gramas de ouro tem?', xp:200 },
       ];
 
       for (const f of figs) {
         const cid = colIds[f.col] || null;
+        const pos = f.pos.replace(/'/g, "''");
+        const poder = f.poder.replace(/'/g, "''");
+        const nome = f.nome.replace(/'/g, "''");
         await db.exec(
           `INSERT INTO album_figurinhas
              (escola_id, numero, nome, colecao_id, classe, raridade, poder,
               historia, curiosidade, xp_bonus, icone_emoji, cor_primaria, cor_secundaria)
-           VALUES (${adminId.id}, '${f.n}', '${f.nome.replace(/'/g, "''")}', ${cid},
-                   '${f.classe}', '${f.rar}', '${f.poder.replace(/'/g,"''")}',
+           VALUES (${adminId.id}, '${f.n}', '${nome}', ${cid},
+                   '${pos}', '${f.rar}', '${poder}',
                    '', '', ${f.xp}, '${f.emoji}', '${f.cp}', '${f.cs}')
            ON CONFLICT DO NOTHING`
         );
       }
-      console.log('Álbum dos Craques: 50 figurinhas inseridas.');
+      console.log('Álbum Copa do Mundo 2026: 50 jogadores inseridos.');
     }
   }
 

@@ -65,6 +65,13 @@ function CardFigurinha({ fig, onClick }) {
         {fig.desbloqueada ? fig.nome : '???'}
       </div>
 
+      {/* Posição */}
+      {fig.desbloqueada && fig.classe && (
+        <div style={{ fontSize:8, color:'rgba(255,255,255,.45)', fontWeight:600 }}>
+          {fig.classe}
+        </div>
+      )}
+
       {/* Badge raridade */}
       <div style={{
         fontSize: 9, fontWeight: 700, padding: '2px 8px',
@@ -106,15 +113,19 @@ function ModalFigurinha({ fig, onClose }) {
           <div style={{ fontSize:20, fontWeight:900, color:'#fff' }}>{fig.nome}</div>
           <div style={{ fontSize:12, color:'rgba(255,255,255,.5)', marginTop:4 }}>{fig.colecao_nome}</div>
         </div>
-        <div style={{ background:r.bg, border:`1px solid ${r.cor}44`, borderRadius:12, padding:'12px 16px', marginBottom:12 }}>
-          <div style={{ fontSize:10, color:r.cor, fontWeight:700, letterSpacing:1, marginBottom:4 }}>⚡ PODER ESPECIAL</div>
-          <div style={{ fontSize:14, color:'#fff', fontWeight:700 }}>{fig.poder}</div>
-        </div>
-        {fig.historia && (
-          <div style={{ fontSize:12, color:'rgba(255,255,255,.65)', lineHeight:1.6, marginBottom:12 }}>{fig.historia}</div>
+        {/* Posição do jogador */}
+        {fig.classe && (
+          <div style={{ display:'inline-block', background:'rgba(255,255,255,.08)', borderRadius:8, padding:'4px 14px', fontSize:11, color:'rgba(255,255,255,.6)', fontWeight:700, marginBottom:12, letterSpacing:1 }}>
+            {fig.classe}
+          </div>
         )}
+        {/* Desafio educacional */}
+        <div style={{ background:r.bg, border:`1px solid ${r.cor}44`, borderRadius:12, padding:'12px 16px', marginBottom:12 }}>
+          <div style={{ fontSize:10, color:r.cor, fontWeight:700, letterSpacing:1, marginBottom:6 }}>🧠 DESAFIO EDUCACIONAL</div>
+          <div style={{ fontSize:13, color:'#fff', lineHeight:1.6 }}>{fig.poder}</div>
+        </div>
         {fig.xp_bonus > 0 && (
-          <div style={{ fontSize:12, color:'#22c55e', fontWeight:700 }}>+{fig.xp_bonus} XP bônus desbloqueado</div>
+          <div style={{ fontSize:12, color:'#22c55e', fontWeight:700 }}>+{fig.xp_bonus} XP ao responder corretamente</div>
         )}
         <button onClick={onClose} style={{ width:'100%', marginTop:16, padding:'10px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:10, color:'rgba(255,255,255,.7)', cursor:'pointer', fontSize:13, fontWeight:700 }}>
           Fechar
