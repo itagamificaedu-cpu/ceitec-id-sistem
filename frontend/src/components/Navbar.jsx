@@ -74,6 +74,12 @@ const SECOES_ESTATICAS = [
     ]
   },
   {
+    titulo: 'GAMIFICAÇÃO',
+    itens: [
+      { path: '/album', label: 'Álbum dos Craques 🃏', icon: '🏆' },
+    ]
+  },
+  {
     titulo: 'MÓDULOS EXTRAS',
     itens: [
       { path: '/sala-maker',               label: 'Sala Maker',                icon: '🔧' },
@@ -276,6 +282,7 @@ export default function Navbar() {
           itens: [
             { onClick: abrirMestre,   label: 'Horário do Dia',               icon: '📅' },
             { path: '/itagame',       label: 'ItagGame — Painel do Professor', icon: '🎮' },
+            { path: '/album',         label: 'Álbum dos Craques',              icon: '🃏' },
             { onClick: abrirCorretor, label: 'Corretor de Provas',             icon: '✅' },
             { path: '/divisao-equipes', label: 'Divisão de Equipes',          icon: '🎲' },
           ]
@@ -292,6 +299,7 @@ export default function Navbar() {
           itens: [
             { onClick: () => abrirUrl('/mestre?code=ADMIN-MASTER'), label: 'Horário do Dia', icon: '📅' },
             { path: '/itagame',         label: 'ItagGame — Painel',  icon: '🎮' },
+            { path: '/album',           label: 'Álbum dos Craques',  icon: '🃏' },
             { onClick: abrirCorretor,   label: 'Corretor de Provas', icon: '📋' },
             { path: '/divisao-equipes', label: 'Divisão de Equipes', icon: '🎲' },
           ]
