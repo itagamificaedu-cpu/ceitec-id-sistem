@@ -1323,13 +1323,13 @@ function AbaRepositorio({ repositorio }) {
 }
 
 /* ══════════════════════════════════════════
-   ABA ÁLBUM DOS CRAQUES
+   ABA ÁLBUM COPA DO MUNDO 2026
 ══════════════════════════════════════════ */
 const RAR_INFO = {
-  comum:    { label: 'Comum',    cor: '#64748b', bg: 'rgba(100,116,139,.15)' },
-  rara:     { label: 'Rara',     cor: '#3b82f6', bg: 'rgba(59,130,246,.15)'  },
-  epica:    { label: 'Épica',    cor: '#a855f7', bg: 'rgba(168,85,247,.15)'  },
-  lendaria: { label: 'Lendária', cor: '#FFE600', bg: 'rgba(255,230,0,.15)'   },
+  comum:    { label: 'Comum',    cor: '#94a3b8', bg: 'rgba(148,163,184,.15)' },
+  rara:     { label: 'Rara',     cor: '#38bdf8', bg: 'rgba(56,189,248,.15)'  },
+  epica:    { label: 'Épica',    cor: '#c084fc', bg: 'rgba(192,132,252,.15)' },
+  lendaria: { label: 'Lendária', cor: '#fbbf24', bg: 'rgba(251,191,36,.18)'  },
 }
 
 function AbaAlbum({ codigoAluno }) {
@@ -1411,37 +1411,70 @@ function AbaAlbum({ codigoAluno }) {
       </div>
 
       {/* Grid de figurinhas */}
+      <style>{`
+        @keyframes shimmerCopa2{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        @keyframes glowLend{0%,100%{box-shadow:0 0 14px rgba(251,191,36,.6)}50%{box-shadow:0 0 28px rgba(251,191,36,1)}}
+      `}</style>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(85px,1fr))', gap:8 }}>
-        {figs.map(f => (
-          <div key={f.id} onClick={() => f.desbloqueada && setFigSel(f)} style={{
-            background: f.desbloqueada ? rar(f.raridade).bg : 'rgba(255,255,255,.03)',
-            border:`2px solid ${f.desbloqueada ? rar(f.raridade).cor : 'rgba(255,255,255,.07)'}`,
-            borderRadius:12, padding:'12px 6px',
-            display:'flex', flexDirection:'column', alignItems:'center', gap:5,
-            cursor: f.desbloqueada ? 'pointer' : 'default',
-            opacity: f.desbloqueada ? 1 : 0.4,
-            boxShadow: f.desbloqueada ? `0 0 10px ${rar(f.raridade).cor}44` : 'none',
-            transition:'all .2s', position:'relative', minHeight:110,
-          }}>
-            {f.raridade === 'lendaria' && f.desbloqueada && (
-              <div style={{ position:'absolute', top:3, right:4, fontSize:9, color:'#FFE600', fontWeight:900 }}>★</div>
-            )}
-            <div style={{ fontSize:30, filter: f.desbloqueada ? 'none' : 'grayscale(1) brightness(.3)' }}>
-              {f.desbloqueada ? f.icone_emoji : '❓'}
-            </div>
-            <div style={{ fontSize:9, fontWeight:700, textAlign:'center', color: f.desbloqueada ? '#fff' : N.cinza, lineHeight:1.3, padding:'0 2px' }}>
-              {f.desbloqueada ? f.nome : '???'}
-            </div>
-            <div style={{ fontSize:8, fontWeight:700, padding:'2px 6px', borderRadius:8, background:rar(f.raridade).bg, color:rar(f.raridade).cor }}>
-              {rar(f.raridade).label}
-            </div>
-            {f.quantidade > 1 && (
-              <div style={{ position:'absolute', bottom:3, right:5, fontSize:8, color:N.amarelo, fontWeight:900 }}>
-                x{f.quantidade}
+        {figs.map(f => {
+          const ri = rar(f.raridade)
+          if (!f.desbloqueada) return (
+            <div key={f.id} style={{
+              borderRadius:12, padding:'10px 6px',
+              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+              position:'relative', overflow:'hidden', minHeight:110,
+              background:'linear-gradient(160deg,#0a2e0a,#1a5410,#2d7a12,#1a4a0a)',
+              border:'2px solid rgba(45,122,18,.55)',
+              boxShadow:'inset 0 0 16px rgba(0,0,0,.4)',
+            }}>
+              <div style={{ position:'absolute', inset:0, background:'linear-gradient(105deg,transparent 40%,rgba(255,230,0,.15) 50%,transparent 60%)', backgroundSize:'200% 200%', animation:'shimmerCopa2 2.2s ease-in-out infinite', borderRadius:10 }}/>
+              <div style={{ position:'absolute', top:4, left:6, fontSize:8, color:'rgba(255,220,0,.45)', fontWeight:900, fontFamily:'monospace', zIndex:2 }}>#{f.numero}</div>
+              {/* Silhueta SVG */}
+              <div style={{ width:42, height:54, zIndex:2, marginTop:6 }}>
+                <svg viewBox="0 0 80 100" width="100%" height="100%">
+                  <g fill="#FFE600" opacity="0.55">
+                    <circle cx="40" cy="13" r="10"/>
+                    <path d="M28 25 Q40 21 52 25 L55 50 Q40 56 25 50 Z"/>
+                    <line x1="28" y1="30" x2="14" y2="20" stroke="#FFE600" strokeWidth="8" strokeLinecap="round"/>
+                    <line x1="52" y1="30" x2="66" y2="42" stroke="#FFE600" strokeWidth="8" strokeLinecap="round"/>
+                    <path d="M32 50 L26 74 L30 92 L38 90 L36 70 Z"/>
+                    <path d="M48 50 L58 72 L72 78 L74 70 L62 65 L54 48 Z"/>
+                  </g>
+                </svg>
               </div>
-            )}
-          </div>
-        ))}
+              <div style={{ fontSize:8, fontWeight:900, padding:'2px 7px', borderRadius:7, background:'rgba(255,220,0,.1)', color:'rgba(255,220,0,.65)', border:'1px solid rgba(255,220,0,.25)', zIndex:2 }}>
+                {ri.label.toUpperCase()}
+              </div>
+            </div>
+          )
+          return (
+            <div key={f.id} onClick={() => setFigSel(f)} style={{
+              background:`linear-gradient(160deg,${f.cor_primaria}cc,${f.cor_secundaria}ee)`,
+              border:`2px solid ${ri.cor}`,
+              borderRadius:12, padding:'10px 6px',
+              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+              cursor:'pointer', position:'relative', overflow:'hidden', minHeight:110,
+              boxShadow:`0 0 14px ${ri.cor}66`,
+              animation:f.raridade==='lendaria'?'glowLend 2s ease-in-out infinite':'none',
+              transition:'transform .2s',
+            }}
+            onMouseEnter={e=>e.currentTarget.style.transform='translateY(-3px) scale(1.05)'}
+            onMouseLeave={e=>e.currentTarget.style.transform=''}>
+              <div style={{ position:'absolute', top:0, left:0, right:0, height:28, background:'linear-gradient(180deg,rgba(255,255,255,.18),transparent)', borderRadius:'10px 10px 0 0', pointerEvents:'none' }}/>
+              {f.raridade==='lendaria' && <div style={{ position:'absolute', top:3, right:4, fontSize:10, color:'#fbbf24' }}>★</div>}
+              <div style={{ fontSize:8, color:'rgba(255,255,255,.5)', fontFamily:'monospace', alignSelf:'flex-start', marginLeft:3 }}>#{f.numero}</div>
+              <div style={{ fontSize:28, filter:`drop-shadow(0 2px 6px ${ri.cor})` }}>{f.icone_emoji}</div>
+              <div style={{ fontSize:9, fontWeight:900, textAlign:'center', color:'#fff', lineHeight:1.2, padding:'0 2px', textShadow:'0 1px 4px rgba(0,0,0,.5)' }}>
+                {f.nome}
+              </div>
+              <div style={{ fontSize:7, color:'rgba(255,255,255,.6)' }}>{f.classe}</div>
+              <div style={{ fontSize:7, fontWeight:900, padding:'2px 7px', borderRadius:7, background:'rgba(0,0,0,.35)', color:ri.cor, border:`1px solid ${ri.cor}55` }}>
+                {ri.label.toUpperCase()}
+              </div>
+              {f.quantidade>1 && <div style={{ position:'absolute', bottom:3, right:5, fontSize:8, color:'#fbbf24', fontWeight:900 }}>x{f.quantidade}</div>}
+            </div>
+          )
+        })}
       </div>
 
       {figs.length === 0 && <Vazio emoji="🃏" texto="Nenhuma figurinha nesse filtro." />}
