@@ -309,6 +309,129 @@ function ModalPacote({ resultado, onClose }) {
 }
 
 // ── PÁGINA PRINCIPAL ──────────────────────────────────────────
+// ── Banner Copa do Mundo 2026 (tela inicial) ─────────────────
+function BannerCopa() {
+  return (
+    <div style={{
+      borderRadius: 20,
+      overflow: 'hidden',
+      position: 'relative',
+      minHeight: 380,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(160deg, #0a2a0a 0%, #0d3d0d 30%, #0a2e1a 60%, #071a07 100%)',
+      border: '2px solid rgba(0,180,0,.3)',
+      boxShadow: '0 0 60px rgba(0,150,0,.2)',
+    }}>
+      {/* Gramado com faixas */}
+      <div style={{ position:'absolute', inset:0, overflow:'hidden', opacity:.25 }}>
+        {[...Array(8)].map((_,i) => (
+          <div key={i} style={{ position:'absolute', top:0, bottom:0, left:`${i*12.5}%`, width:'12.5%', background: i%2===0 ? 'rgba(0,120,0,.6)' : 'transparent' }}/>
+        ))}
+        {/* Linha central */}
+        <div style={{ position:'absolute', top:'50%', left:0, right:0, height:2, background:'rgba(255,255,255,.4)', transform:'translateY(-50%)' }}/>
+        {/* Círculo central */}
+        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:140, height:140, border:'2px solid rgba(255,255,255,.35)', borderRadius:'50%' }}/>
+        {/* Arcos de gol */}
+        <div style={{ position:'absolute', top:'20%', bottom:'20%', left:8, width:40, border:'2px solid rgba(255,255,255,.3)', borderRadius:4 }}/>
+        <div style={{ position:'absolute', top:'20%', bottom:'20%', right:8, width:40, border:'2px solid rgba(255,255,255,.3)', borderRadius:4 }}/>
+      </div>
+
+      {/* Partículas douradas */}
+      {[...Array(12)].map((_,i) => (
+        <div key={i} style={{
+          position:'absolute',
+          width: 4 + (i%3)*3,
+          height: 4 + (i%3)*3,
+          borderRadius:'50%',
+          background:'#FFD700',
+          top: `${10 + (i * 7.3) % 80}%`,
+          left: `${5 + (i * 8.1) % 90}%`,
+          opacity: .3 + (i%4)*.15,
+          animation:`float ${2 + i%3}s ease-in-out infinite`,
+          animationDelay:`${i * .3}s`,
+        }}/>
+      ))}
+
+      {/* Conteúdo central */}
+      <div style={{ position:'relative', zIndex:2, textAlign:'center', padding:'40px 20px' }}>
+
+        {/* Troféu SVG */}
+        <div style={{ fontSize:72, marginBottom:8, filter:'drop-shadow(0 0 20px rgba(255,210,0,.8))', animation:'float 3s ease-in-out infinite' }}>🏆</div>
+
+        {/* BRASIL */}
+        <div style={{
+          fontFamily:"'Orbitron',sans-serif", fontWeight:900,
+          fontSize:'clamp(38px,7vw,72px)',
+          background:'linear-gradient(180deg,#22c55e 0%,#00ff44 40%,#FFD700 60%,#f5a000 100%)',
+          WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+          backgroundClip:'text',
+          filter:'drop-shadow(0 4px 12px rgba(0,200,0,.5)) drop-shadow(0 0 30px rgba(255,210,0,.4))',
+          lineHeight:1, marginBottom:4, letterSpacing:6,
+          textShadow:'none',
+        }}>
+          BRASIL
+        </div>
+
+        {/* COPA DO MUNDO */}
+        <div style={{
+          fontFamily:"'Orbitron',sans-serif", fontWeight:700,
+          fontSize:'clamp(13px,2.5vw,22px)',
+          color:'#fff',
+          letterSpacing:8, marginBottom:4,
+          textShadow:'0 2px 10px rgba(0,0,0,.8)',
+        }}>
+          COPA DO MUNDO
+        </div>
+
+        {/* 2026 */}
+        <div style={{
+          fontFamily:"'Orbitron',sans-serif", fontWeight:900,
+          fontSize:'clamp(42px,8vw,80px)',
+          background:'linear-gradient(180deg,#FFD700 0%,#f5a000 50%,#cc7700 100%)',
+          WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+          backgroundClip:'text',
+          filter:'drop-shadow(0 4px 16px rgba(255,180,0,.6))',
+          lineHeight:1, letterSpacing:8,
+        }}>
+          2026
+        </div>
+
+        {/* Bola + bandeira */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:16, marginTop:16, marginBottom:20 }}>
+          <div style={{ fontSize:32, animation:'float 2s ease-in-out infinite', animationDelay:'.5s' }}>🇧🇷</div>
+          <div style={{ fontSize:42, filter:'drop-shadow(0 0 10px rgba(255,255,255,.4))', animation:'float 2.5s ease-in-out infinite' }}>⚽</div>
+          <div style={{ fontSize:32, animation:'float 2s ease-in-out infinite', animationDelay:'1s' }}>🏟️</div>
+        </div>
+
+        {/* Instrução */}
+        <div style={{
+          background:'rgba(0,0,0,.5)', backdropFilter:'blur(8px)',
+          border:'1px solid rgba(255,210,0,.4)',
+          borderRadius:12, padding:'10px 24px',
+          fontSize:13, color:'rgba(255,255,255,.8)',
+          fontFamily:"'Exo 2',sans-serif", fontWeight:700,
+          letterSpacing:1,
+        }}>
+          👆 Selecione um aluno para ver o álbum
+        </div>
+
+        {/* Stats */}
+        <div style={{ display:'flex', gap:24, justifyContent:'center', marginTop:18 }}>
+          {[{n:'50',l:'Jogadores'},{n:'8',l:'Seleções'},{n:'4',l:'Raridades'}].map(s => (
+            <div key={s.l} style={{ textAlign:'center' }}>
+              <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:22, fontWeight:900, color:'#FFD700' }}>{s.n}</div>
+              <div style={{ fontSize:10, color:'rgba(255,255,255,.5)', letterSpacing:1, textTransform:'uppercase' }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Premiar alunos por nota em uma avaliação ─────────────────
 function PremiarPorNota() {
   const [avaliacoes, setAvaliacoes] = useState([])
@@ -526,11 +649,7 @@ export default function Album() {
           {/* ABA ÁLBUM */}
           {aba==='album' && (
             <>
-              {!alunoSel && (
-                <div style={{ textAlign:'center', padding:'60px 0', color:'rgba(255,255,255,.3)', fontSize:14 }}>
-                  👆 Selecione um aluno para ver o álbum
-                </div>
-              )}
+              {!alunoSel && <BannerCopa />}
               {alunoSel && loading && (
                 <div style={{ textAlign:'center', padding:'60px 0', color:'rgba(255,255,255,.4)' }}>Carregando...</div>
               )}
