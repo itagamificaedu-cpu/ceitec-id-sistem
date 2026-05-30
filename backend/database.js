@@ -578,9 +578,9 @@ async function initDatabase() {
   // ── Seed do Álbum dos Craques — só insere se vazio ──────────
   const adminId = await db.get(`SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1`);
   if (adminId) {
-    const jaTemCol = await db.get(`SELECT id FROM album_colecoes WHERE escola_id = $1 LIMIT 1`, [adminId.id]);
+    const jaTemCol = await db.get(`SELECT id FROM album_colecoes WHERE escola_id = ? LIMIT 1`, [adminId.id]);
     if (!jaTemCol) {
-      // Coleções
+      // Coleções — db.run() já appenda RETURNING id automaticamente
       const colecoes = [
         { nome: 'Robótica',                icone: '🤖', cor: '#06b6d4', ordem: 1 },
         { nome: 'Programação',              icone: '💻', cor: '#8b5cf6', ordem: 2 },
@@ -591,7 +591,7 @@ async function initDatabase() {
       const colIds = {};
       for (const c of colecoes) {
         const r = await db.run(
-          `INSERT INTO album_colecoes (escola_id, nome, icone, cor, ordem) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+          `INSERT INTO album_colecoes (escola_id, nome, icone, cor, ordem) VALUES (?,?,?,?,?)`,
           [adminId.id, c.nome, c.icone, c.cor, c.ordem]
         );
         colIds[c.nome] = r.lastInsertRowid;
