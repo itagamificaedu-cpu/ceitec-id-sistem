@@ -581,9 +581,11 @@ async function initDatabase() {
     // Se ainda tem os personagens antigos, limpa e re-seed com Copa
     const figAntiga = await db.get(`SELECT id FROM album_figurinhas WHERE escola_id = ? AND classe = 'robotica' LIMIT 1`, [adminId.id]);
     if (figAntiga) {
-      await db.exec(`DELETE FROM album_figurinhas WHERE escola_id = ${adminId.id}`);
-      await db.exec(`DELETE FROM album_colecoes   WHERE escola_id = ${adminId.id}`);
-      console.log('Álbum: personagens CEITEC removidos, re-seed Copa do Mundo.');
+      await db.exec(`DELETE FROM album_aluno       WHERE escola_id = ${adminId.id}`);
+      await db.exec(`DELETE FROM album_pacotes_log WHERE escola_id = ${adminId.id}`);
+      await db.exec(`DELETE FROM album_figurinhas  WHERE escola_id = ${adminId.id}`);
+      await db.exec(`DELETE FROM album_colecoes    WHERE escola_id = ${adminId.id}`);
+      console.log('Álbum: dados antigos removidos, re-seed Copa do Mundo.');
     }
     const jaTemCol = await db.get(`SELECT id FROM album_colecoes WHERE escola_id = ? LIMIT 1`, [adminId.id]);
     if (!jaTemCol) {
