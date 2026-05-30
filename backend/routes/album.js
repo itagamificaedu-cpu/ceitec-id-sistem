@@ -248,11 +248,12 @@ router.post('/distribuir', autenticar, async (req, res) => {
 
     const resultado = []
     for (let i = 0; i < qtd; i++) {
-      const rar  = sortearRaridade(pesos)
-      const pool = todasFigs.filter(f => f.raridade === rar)
+      const rar      = sortearRaridade(pesos)
+      const pool     = todasFigs.filter(f => f.raridade === rar)
       if (!pool.length) { i--; continue }
-      const fig = pool[Math.floor(Math.random() * pool.length)]
-      if (!jaTemSet.has(fig.id)) jaTemSet.add(fig.id)
+      const fig      = pool[Math.floor(Math.random() * pool.length)]
+      const duplicata = jaTemSet.has(fig.id)
+      if (!duplicata) jaTemSet.add(fig.id)
       await db.run(
         `INSERT INTO album_aluno (aluno_id, escola_id, figurinha_id, quantidade)
          VALUES (?, ?, ?, 1)
@@ -260,7 +261,7 @@ router.post('/distribuir', autenticar, async (req, res) => {
          DO UPDATE SET quantidade = album_aluno.quantidade + 1`,
         [aluno_id, escola_id, fig.id]
       )
-      resultado.push(fig)
+      resultado.push({ ...fig, duplicata })
     }
 
     await db.run(
@@ -269,7 +270,13 @@ router.post('/distribuir', autenticar, async (req, res) => {
       [aluno_id, escola_id, JSON.stringify(resultado.map(f => f.id))]
     )
 
-    res.json({ ok: true, pacote: resultado })
+    res.json({
+      ok:         true,
+      pacote:     resultado,
+      custo_xp:   0,
+      novas:      resultado.filter(f => !f.duplicata).length,
+      duplicatas: resultado.filter(f =>  f.duplicata).length,
+    })
   } catch (err) { res.status(500).json({ erro: err.message }) }
 })
 
