@@ -1,92 +1,189 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import api from '../../api'
 
-// ── Cores e labels de raridade ────────────────────────────────
+// ── Raridade ──────────────────────────────────────────────────
 const RAR = {
-  comum:    { label: 'Comum',    cor: '#64748b', brilho: 'rgba(100,116,139,.4)',  bg: 'rgba(100,116,139,.12)' },
-  rara:     { label: 'Rara',     cor: '#3b82f6', brilho: 'rgba(59,130,246,.5)',   bg: 'rgba(59,130,246,.12)'  },
-  epica:    { label: 'Épica',    cor: '#a855f7', brilho: 'rgba(168,85,247,.6)',   bg: 'rgba(168,85,247,.14)'  },
-  lendaria: { label: 'Lendária', cor: '#f5a623', brilho: 'rgba(245,166,35,.7)',   bg: 'rgba(245,166,35,.16)'  },
+  comum:    { label: 'Comum',    cor: '#94a3b8', brilho: 'rgba(148,163,184,.4)', bg: 'rgba(148,163,184,.12)' },
+  rara:     { label: 'Rara',     cor: '#38bdf8', brilho: 'rgba(56,189,248,.5)',  bg: 'rgba(56,189,248,.12)'  },
+  epica:    { label: 'Épica',    cor: '#c084fc', brilho: 'rgba(192,132,252,.6)', bg: 'rgba(192,132,252,.14)' },
+  lendaria: { label: 'Lendária', cor: '#fbbf24', brilho: 'rgba(251,191,36,.8)', bg: 'rgba(251,191,36,.18)'  },
 }
 
-const CUSTO = { comum: 50, premium: 120, especial: 0 }
+// ── SVG silhueta de jogador por posição ───────────────────────
+function PlayerSilhouette({ pose = 'default', cor = '#FFE600', opacity = 0.55 }) {
+  const shapes = {
+    default: ( // correndo
+      <g fill={cor} opacity={opacity}>
+        <circle cx="40" cy="13" r="10"/>
+        <path d="M28 25 Q40 21 52 25 L55 50 Q40 56 25 50 Z"/>
+        <line x1="28" y1="30" x2="14" y2="20" stroke={cor} strokeWidth="8" strokeLinecap="round"/>
+        <line x1="52" y1="30" x2="66" y2="42" stroke={cor} strokeWidth="8" strokeLinecap="round"/>
+        <path d="M32 50 L26 74 L30 92 L38 90 L36 70 Z" stroke={cor} strokeWidth="2" fill={cor}/>
+        <path d="M48 50 L58 72 L72 78 L74 70 L62 65 L54 48 Z" fill={cor}/>
+      </g>
+    ),
+    goleiro: ( // posição de defesa com braços abertos
+      <g fill={cor} opacity={opacity}>
+        <circle cx="40" cy="13" r="10"/>
+        <path d="M28 25 Q40 21 52 25 L54 52 Q40 58 26 52 Z"/>
+        <line x1="28" y1="28" x2="6" y2="20" stroke={cor} strokeWidth="9" strokeLinecap="round"/>
+        <line x1="52" y1="28" x2="74" y2="20" stroke={cor} strokeWidth="9" strokeLinecap="round"/>
+        <path d="M33 52 L30 78 L36 90 L44 90 L40 76 L38 52 Z" fill={cor}/>
+        <path d="M47 52 L50 78 L44 90 L36 90 L40 76 L42 52 Z" fill={cor}/>
+      </g>
+    ),
+    chutando: ( // chute — atacante
+      <g fill={cor} opacity={opacity}>
+        <circle cx="38" cy="12" r="10"/>
+        <path d="M26 24 Q38 20 50 24 L52 48 Q38 54 24 48 Z"/>
+        <line x1="26" y1="28" x2="14" y2="38" stroke={cor} strokeWidth="8" strokeLinecap="round"/>
+        <line x1="50" y1="28" x2="60" y2="18" stroke={cor} strokeWidth="8" strokeLinecap="round"/>
+        <path d="M30 48 L24 72 L28 88 L36 86 L34 68 Z" fill={cor}/>
+        <path d="M46 48 L60 68 L76 72 L78 64 L64 58 L52 44 Z" fill={cor}/>
+        <circle cx="78" cy="74" r="7" fill={cor} opacity={opacity * 0.6}/>
+      </g>
+    ),
+    comemorando: ( // braços levantados — lendária
+      <g fill={cor} opacity={opacity}>
+        <circle cx="40" cy="12" r="11"/>
+        <path d="M27 26 Q40 22 53 26 L56 54 Q40 60 24 54 Z"/>
+        <path d="M27 30 L12 12" stroke={cor} strokeWidth="9" strokeLinecap="round"/>
+        <path d="M53 30 L68 12" stroke={cor} strokeWidth="9" strokeLinecap="round"/>
+        <path d="M33 54 L28 80 L34 92 L42 92 L38 78 Z" fill={cor}/>
+        <path d="M47 54 L52 80 L46 92 L38 92 L42 78 Z" fill={cor}/>
+      </g>
+    ),
+  }
+  const poseToPose = {
+    'Goleiro': 'goleiro',
+    'Atacante': 'chutando',
+    'Ponta': 'chutando',
+    'Lendária': 'comemorando',
+    'lendaria': 'comemorando',
+  }
+  const key = poseToPose[pose] || shapes[pose] ? pose : 'default'
+  return (
+    <svg viewBox="0 0 80 100" width="100%" height="100%" style={{ display:'block' }}>
+      {shapes[key] || shapes.default}
+    </svg>
+  )
+}
 
-// ── Componente de figurinha ───────────────────────────────────
+// ── Card individual ───────────────────────────────────────────
 function CardFigurinha({ fig, onClick }) {
   const r = RAR[fig.raridade] || RAR.comum
+  const isLendaria = fig.raridade === 'lendaria'
+
+  if (!fig.desbloqueada) {
+    // BLOQUEADA — verde/amarelo Copa do Brasil com shimmer
+    return (
+      <div onClick={() => onClick && onClick(fig)} style={{
+        borderRadius: 14,
+        padding: '8px 6px 10px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        cursor: 'default',
+        position: 'relative', overflow: 'hidden',
+        minHeight: 130,
+        background: 'linear-gradient(160deg, #0a2e0a 0%, #1a5410 40%, #2d7a12 70%, #1a4a0a 100%)',
+        border: '2px solid rgba(45,122,18,.6)',
+        boxShadow: 'inset 0 0 20px rgba(0,0,0,.4)',
+      }}>
+        {/* Shimmer animado */}
+        <div style={{
+          position:'absolute', inset:0, zIndex:2,
+          background:'linear-gradient(105deg, transparent 40%, rgba(255,230,0,.18) 50%, transparent 60%)',
+          backgroundSize:'200% 200%',
+          animation:'shimmerCopa 2.2s ease-in-out infinite',
+          borderRadius: 12,
+        }}/>
+        {/* Número */}
+        <div style={{ position:'absolute', top:5, left:7, fontSize:8, color:'rgba(255,230,0,.5)', fontWeight:900, fontFamily:'monospace', zIndex:3 }}>
+          #{fig.numero}
+        </div>
+        {/* Silhueta */}
+        <div style={{ width:52, height:66, opacity:.7, marginTop:8, position:'relative', zIndex:3 }}>
+          <PlayerSilhouette pose={fig.classe} cor="#FFE600" opacity={0.6} />
+        </div>
+        {/* Raridade */}
+        <div style={{
+          fontSize:8, fontWeight:700, padding:'2px 8px', borderRadius:8, zIndex:3,
+          background:'rgba(255,230,0,.12)', color:'rgba(255,230,0,.7)',
+          border:'1px solid rgba(255,230,0,.3)', letterSpacing:1,
+        }}>
+          {r.label.toUpperCase()}
+        </div>
+        {/* Pontos no fundo */}
+        <div style={{ position:'absolute', bottom:4, right:5, fontSize:8, color:'rgba(255,230,0,.3)', fontWeight:900, zIndex:3 }}>
+          ⭐
+        </div>
+      </div>
+    )
+  }
+
+  // DESBLOQUEADA — carta colorida com brilho
   return (
     <div
       onClick={() => onClick && onClick(fig)}
       style={{
-        background: fig.desbloqueada
-          ? `linear-gradient(145deg, ${fig.cor_primaria}22, ${fig.cor_secundaria}44)`
-          : 'rgba(255,255,255,.04)',
-        border: `2px solid ${fig.desbloqueada ? r.cor : 'rgba(255,255,255,.08)'}`,
+        background: `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
+        border: `2px solid ${r.cor}`,
         borderRadius: 14,
-        padding: '14px 10px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-        cursor: 'pointer', transition: 'all .2s',
-        boxShadow: fig.desbloqueada ? `0 0 16px ${r.brilho}` : 'none',
-        opacity: fig.desbloqueada ? 1 : 0.45,
+        padding: '8px 6px 10px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        cursor: 'pointer',
+        boxShadow: `0 0 18px ${r.brilho}, inset 0 1px 0 rgba(255,255,255,.2)`,
         position: 'relative', overflow: 'hidden',
         minHeight: 130,
+        animation: isLendaria ? 'glowLendaria 2s ease-in-out infinite' : 'none',
+        transition: 'transform .2s, box-shadow .2s',
       }}
-      title={fig.nome}
+      onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px) scale(1.04)'; e.currentTarget.style.boxShadow=`0 8px 28px ${r.brilho}` }}
+      onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=`0 0 18px ${r.brilho}, inset 0 1px 0 rgba(255,255,255,.2)` }}
     >
+      {/* Reflexo no topo */}
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:40, background:'linear-gradient(180deg,rgba(255,255,255,.15),transparent)', borderRadius:'12px 12px 0 0', pointerEvents:'none' }}/>
+
       {/* Número */}
-      <div style={{ position:'absolute', top:6, left:8, fontSize:9, color:'rgba(255,255,255,.35)', fontWeight:700, fontFamily:'monospace' }}>
+      <div style={{ position:'absolute', top:5, left:7, fontSize:8, color:'rgba(255,255,255,.6)', fontWeight:900, fontFamily:'monospace' }}>
         #{fig.numero}
       </div>
-
-      {/* Badge raridade lendária */}
-      {fig.raridade === 'lendaria' && fig.desbloqueada && (
-        <div style={{ position:'absolute', top:4, right:4, fontSize:10, background:'rgba(245,166,35,.2)', border:'1px solid #f5a623', borderRadius:6, padding:'1px 5px', color:'#f5a623', fontWeight:900 }}>
-          ★
-        </div>
+      {/* Badge lendária */}
+      {isLendaria && (
+        <div style={{ position:'absolute', top:3, right:4, fontSize:11, filter:'drop-shadow(0 0 4px gold)' }}>★</div>
       )}
 
-      {/* Emoji do personagem */}
-      <div style={{
-        fontSize: fig.desbloqueada ? 36 : 28,
-        filter: fig.desbloqueada ? 'none' : 'grayscale(1) brightness(.4)',
-        transition: 'all .3s',
-        lineHeight: 1,
-      }}>
-        {fig.desbloqueada ? fig.icone_emoji : '❓'}
+      {/* Emoji grande */}
+      <div style={{ fontSize: 34, lineHeight:1, marginTop:8, filter:`drop-shadow(0 2px 6px ${r.brilho})` }}>
+        {fig.icone_emoji}
       </div>
 
       {/* Nome */}
       <div style={{
-        fontSize: 10, fontWeight: 700, textAlign: 'center', lineHeight: 1.3,
-        color: fig.desbloqueada ? '#fff' : 'rgba(255,255,255,.35)',
-        maxWidth: '100%', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
-        padding: '0 4px',
+        fontSize:9, fontWeight:900, textAlign:'center', lineHeight:1.2,
+        color:'#fff', textShadow:'0 1px 4px rgba(0,0,0,.6)',
+        maxWidth:'100%', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+        padding:'0 4px',
       }}>
-        {fig.desbloqueada ? fig.nome : '???'}
+        {fig.nome}
       </div>
 
       {/* Posição */}
-      {fig.desbloqueada && fig.classe && (
-        <div style={{ fontSize:8, color:'rgba(255,255,255,.45)', fontWeight:600 }}>
-          {fig.classe}
-        </div>
-      )}
+      <div style={{ fontSize:8, color:'rgba(255,255,255,.65)', fontWeight:600 }}>
+        {fig.classe}
+      </div>
 
       {/* Badge raridade */}
       <div style={{
-        fontSize: 9, fontWeight: 700, padding: '2px 8px',
-        borderRadius: 10,
-        background: r.bg,
-        color: r.cor,
-        border: `1px solid ${r.cor}44`,
-        letterSpacing: 1,
+        fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:8,
+        background:'rgba(0,0,0,.35)', color:r.cor,
+        border:`1px solid ${r.cor}66`, letterSpacing:1,
       }}>
         {r.label.toUpperCase()}
       </div>
 
-      {/* Quantidade duplicata */}
+      {/* Duplicata */}
       {fig.quantidade > 1 && (
-        <div style={{ position:'absolute', bottom:4, right:6, fontSize:9, color:'#f5a623', fontWeight:900 }}>
+        <div style={{ position:'absolute', bottom:4, right:5, fontSize:9, color:'#fbbf24', fontWeight:900 }}>
           x{fig.quantidade}
         </div>
       )}
@@ -94,40 +191,53 @@ function CardFigurinha({ fig, onClick }) {
   )
 }
 
-// ── Modal de figurinha ────────────────────────────────────────
+// ── Modal figurinha ───────────────────────────────────────────
 function ModalFigurinha({ fig, onClose }) {
   if (!fig) return null
   const r = RAR[fig.raridade] || RAR.comum
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,.75)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={onClose}>
+    <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,.82)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
-        background:'linear-gradient(145deg,#0f1929,#0a0f1e)',
+        background:`linear-gradient(145deg,${fig.cor_primaria}33,#0a0f1e)`,
         border:`2px solid ${r.cor}`,
-        borderRadius:20, padding:28, maxWidth:380, width:'100%',
-        boxShadow:`0 0 40px ${r.brilho}`,
-        animation:'modalIn .3s ease',
+        borderRadius:22, padding:30, maxWidth:380, width:'100%',
+        boxShadow:`0 0 60px ${r.brilho}`,
+        animation:'modalIn .35s cubic-bezier(.175,.885,.32,1.275)',
       }}>
+        {/* Cabeçalho */}
         <div style={{ textAlign:'center', marginBottom:20 }}>
-          <div style={{ fontSize:72, lineHeight:1, marginBottom:12 }}>{fig.icone_emoji}</div>
-          <div style={{ fontSize:11, color:r.cor, fontWeight:700, letterSpacing:2, marginBottom:4 }}>#{fig.numero} · {r.label.toUpperCase()}</div>
-          <div style={{ fontSize:20, fontWeight:900, color:'#fff' }}>{fig.nome}</div>
-          <div style={{ fontSize:12, color:'rgba(255,255,255,.5)', marginTop:4 }}>{fig.colecao_nome}</div>
+          <div style={{ fontSize:80, lineHeight:1, marginBottom:10, filter:`drop-shadow(0 0 16px ${r.brilho})`, animation:'float 3s ease-in-out infinite' }}>
+            {fig.icone_emoji}
+          </div>
+          <div style={{ fontSize:10, color:r.cor, fontWeight:900, letterSpacing:3, marginBottom:4 }}>
+            #{fig.numero} · {r.label.toUpperCase()}
+          </div>
+          <div style={{ fontSize:22, fontWeight:900, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,.5)' }}>{fig.nome}</div>
+          <div style={{ display:'flex', gap:8, justifyContent:'center', marginTop:8 }}>
+            <span style={{ fontSize:11, background:'rgba(255,255,255,.1)', padding:'3px 12px', borderRadius:8, color:'rgba(255,255,255,.7)' }}>{fig.classe}</span>
+            <span style={{ fontSize:11, background:r.bg, padding:'3px 12px', borderRadius:8, color:r.cor, border:`1px solid ${r.cor}44` }}>{fig.colecao_nome}</span>
+          </div>
         </div>
-        {/* Posição do jogador */}
-        {fig.classe && (
-          <div style={{ display:'inline-block', background:'rgba(255,255,255,.08)', borderRadius:8, padding:'4px 14px', fontSize:11, color:'rgba(255,255,255,.6)', fontWeight:700, marginBottom:12, letterSpacing:1 }}>
-            {fig.classe}
+
+        {/* Desafio */}
+        <div style={{ background:'rgba(0,0,0,.35)', border:`1px solid ${r.cor}44`, borderRadius:14, padding:'14px 18px', marginBottom:14 }}>
+          <div style={{ fontSize:9, color:r.cor, fontWeight:900, letterSpacing:2, marginBottom:8 }}>🧠 DESAFIO EDUCACIONAL</div>
+          <div style={{ fontSize:13, color:'#fff', lineHeight:1.7 }}>{fig.poder}</div>
+        </div>
+
+        {fig.xp_bonus > 0 && (
+          <div style={{ fontSize:12, color:'#22c55e', fontWeight:700, textAlign:'center', marginBottom:14 }}>
+            ⭐ +{fig.xp_bonus} XP ao responder corretamente
           </div>
         )}
-        {/* Desafio educacional */}
-        <div style={{ background:r.bg, border:`1px solid ${r.cor}44`, borderRadius:12, padding:'12px 16px', marginBottom:12 }}>
-          <div style={{ fontSize:10, color:r.cor, fontWeight:700, letterSpacing:1, marginBottom:6 }}>🧠 DESAFIO EDUCACIONAL</div>
-          <div style={{ fontSize:13, color:'#fff', lineHeight:1.6 }}>{fig.poder}</div>
-        </div>
-        {fig.xp_bonus > 0 && (
-          <div style={{ fontSize:12, color:'#22c55e', fontWeight:700 }}>+{fig.xp_bonus} XP ao responder corretamente</div>
-        )}
-        <button onClick={onClose} style={{ width:'100%', marginTop:16, padding:'10px', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:10, color:'rgba(255,255,255,.7)', cursor:'pointer', fontSize:13, fontWeight:700 }}>
+
+        <button onClick={onClose} style={{
+          width:'100%', padding:'12px', marginTop:4,
+          background:'rgba(255,255,255,.08)', border:`1px solid rgba(255,255,255,.15)`,
+          borderRadius:12, color:'rgba(255,255,255,.75)', cursor:'pointer', fontSize:13, fontWeight:700,
+          transition:'background .2s',
+        }} onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.15)'}
+           onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}>
           Fechar
         </button>
       </div>
@@ -135,63 +245,62 @@ function ModalFigurinha({ fig, onClose }) {
   )
 }
 
-// ── Modal de abertura de pacote ───────────────────────────────
+// ── Modal abertura de pacote ──────────────────────────────────
 function ModalPacote({ resultado, onClose }) {
   const [revelando, setRevelando] = useState([])
-  const [idx, setIdx]             = useState(0)
 
   useEffect(() => {
     if (!resultado) return
     setRevelando([])
-    setIdx(0)
-    const revelar = (i) => {
-      if (i >= resultado.pacote.length) return
-      setTimeout(() => {
-        setRevelando(prev => [...prev, resultado.pacote[i]])
-        setIdx(i + 1)
-        revelar(i + 1)
-      }, 500)
-    }
-    revelar(0)
+    resultado.pacote.forEach((fig, i) => {
+      setTimeout(() => setRevelando(prev => [...prev, fig]), i * 550)
+    })
   }, [resultado])
 
   if (!resultado) return null
   const r = RAR
 
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,.85)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:16 }}>
-      <div style={{ fontSize:20, fontWeight:900, color:'#f5a623', marginBottom:24, fontFamily:'Orbitron, sans-serif', letterSpacing:2 }}>
-        📦 PACOTE ABERTO!
+    <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,.92)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:16 }}>
+      <div style={{ fontSize:22, fontWeight:900, color:'#fbbf24', marginBottom:24, letterSpacing:3, textShadow:'0 0 20px rgba(251,191,36,.6)' }}>
+        ⚽ PACOTE ABERTO!
       </div>
-      <div style={{ display:'flex', flexWrap:'wrap', gap:12, justifyContent:'center', maxWidth:500 }}>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:14, justifyContent:'center', maxWidth:520 }}>
         {revelando.map((fig, i) => {
           const rar = r[fig.raridade] || r.comum
           return (
             <div key={i} style={{
-              width:100, background:`linear-gradient(145deg,${fig.cor_primaria}33,${fig.cor_secundaria}55)`,
+              width:96, height:134,
+              background: `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
               border:`2px solid ${rar.cor}`,
-              borderRadius:14, padding:'14px 8px', textAlign:'center',
-              boxShadow:`0 0 20px ${rar.brilho}`,
-              animation:'cardReveal .5s cubic-bezier(.175,.885,.32,1.275)',
-              position:'relative',
+              borderRadius:14, padding:'8px 6px',
+              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+              boxShadow:`0 0 24px ${rar.brilho}`,
+              animation:'cardReveal .6s cubic-bezier(.175,.885,.32,1.275)',
+              position:'relative', overflow:'hidden',
             }}>
               {fig.duplicata && (
-                <div style={{ position:'absolute', top:-6, right:-6, background:'#64748b', color:'#fff', fontSize:9, borderRadius:6, padding:'2px 6px', fontWeight:900 }}>DUP</div>
+                <div style={{ position:'absolute', top:-4, right:-4, background:'#64748b', color:'#fff', fontSize:8, borderRadius:6, padding:'2px 6px', fontWeight:900, zIndex:5 }}>DUP</div>
               )}
-              <div style={{ fontSize:36 }}>{fig.icone_emoji}</div>
-              <div style={{ fontSize:9, color:'#fff', fontWeight:700, marginTop:4, lineHeight:1.3 }}>{fig.nome}</div>
-              <div style={{ fontSize:8, color:rar.cor, fontWeight:700, marginTop:3, letterSpacing:1 }}>{rar.label.toUpperCase()}</div>
+              <div style={{ position:'absolute', top:0, left:0, right:0, height:30, background:'linear-gradient(180deg,rgba(255,255,255,.15),transparent)' }}/>
+              <div style={{ fontSize:9, color:'rgba(255,255,255,.5)', fontFamily:'monospace', alignSelf:'flex-start', marginLeft:4 }}>#{fig.numero}</div>
+              <div style={{ fontSize:32, filter:`drop-shadow(0 2px 8px ${rar.brilho})` }}>{fig.icone_emoji}</div>
+              <div style={{ fontSize:9, fontWeight:900, textAlign:'center', color:'#fff', lineHeight:1.2, padding:'0 2px' }}>{fig.nome}</div>
+              <div style={{ fontSize:7, color:'rgba(255,255,255,.6)' }}>{fig.classe}</div>
+              <div style={{ fontSize:7, fontWeight:900, padding:'2px 7px', borderRadius:7, background:'rgba(0,0,0,.35)', color:rar.cor, border:`1px solid ${rar.cor}55` }}>
+                {rar.label.toUpperCase()}
+              </div>
             </div>
           )
         })}
       </div>
       {revelando.length >= resultado.pacote.length && (
-        <div style={{ marginTop:24, textAlign:'center' }}>
-          <div style={{ fontSize:13, color:'rgba(255,255,255,.6)', marginBottom:16 }}>
-            ✅ {resultado.novas} nova{resultado.novas !== 1 ? 's' : ''} · {resultado.duplicatas} duplicata{resultado.duplicatas !== 1 ? 's' : ''}
+        <div style={{ marginTop:28, textAlign:'center' }}>
+          <div style={{ fontSize:13, color:'rgba(255,255,255,.55)', marginBottom:18 }}>
+            ✅ {resultado.novas} nova{resultado.novas !== 1 ? 's' : ''} &nbsp;·&nbsp; {resultado.duplicatas} duplicata{resultado.duplicatas !== 1 ? 's' : ''}
           </div>
-          <button onClick={onClose} style={{ padding:'12px 32px', background:'linear-gradient(135deg,#f5a623,#d97706)', border:'none', borderRadius:12, color:'#0a1628', fontWeight:900, fontSize:14, cursor:'pointer' }}>
-            Ver Álbum
+          <button onClick={onClose} style={{ padding:'13px 36px', background:'linear-gradient(135deg,#f5a623,#d97706)', border:'none', borderRadius:14, color:'#0a1628', fontWeight:900, fontSize:14, cursor:'pointer', boxShadow:'0 4px 20px rgba(245,166,35,.4)' }}>
+            Ver Álbum ⚽
           </button>
         </div>
       )}
@@ -201,7 +310,6 @@ function ModalPacote({ resultado, onClose }) {
 
 // ── PÁGINA PRINCIPAL ──────────────────────────────────────────
 export default function Album() {
-  const usuario    = JSON.parse(localStorage.getItem('usuario') || '{}')
   const [aba, setAba]           = useState('album')
   const [alunos, setAlunos]     = useState([])
   const [alunoSel, setAlunoSel] = useState(null)
@@ -216,322 +324,252 @@ export default function Album() {
   const [ranking, setRanking]   = useState([])
   const [erro, setErro]         = useState('')
 
-  // Carrega lista de alunos
   useEffect(() => {
     api.get('/alunos').then(({ data }) => setAlunos(Array.isArray(data) ? data : data.alunos || [])).catch(() => {})
   }, [])
 
-  // Carrega álbum do aluno selecionado
   const carregarAlbum = useCallback(async (aId) => {
     if (!aId) return
     setLoading(true); setErro('')
-    try {
-      const { data } = await api.get(`/album/meu-album/${aId}`)
-      setDados(data)
-    } catch { setErro('Erro ao carregar o álbum.') }
+    try { const { data } = await api.get(`/album/meu-album/${aId}`); setDados(data) }
+    catch { setErro('Erro ao carregar o álbum.') }
     finally { setLoading(false) }
   }, [])
 
   useEffect(() => { if (alunoSel) carregarAlbum(alunoSel) }, [alunoSel, carregarAlbum])
 
-  // Carrega ranking
   useEffect(() => {
     if (aba !== 'ranking') return
     api.get('/album/ranking').then(({ data }) => setRanking(data.ranking || [])).catch(() => {})
   }, [aba])
 
-  // Abre pacote
   async function abrirPacote() {
     if (!alunoSel) return
     setAbrindo(true); setErro('')
     try {
       const { data } = await api.post('/album/abrir-pacote', { aluno_id: alunoSel, tipo: pacoteTipo })
       setResultado(data)
-    } catch (err) {
-      setErro(err.response?.data?.erro || 'Erro ao abrir pacote.')
-    } finally { setAbrindo(false) }
+      carregarAlbum(alunoSel)
+    } catch (err) { setErro(err.response?.data?.erro || 'Erro ao abrir pacote.') }
+    finally { setAbrindo(false) }
   }
 
-  // Distribuir pacote especial
   async function distribuirPacote() {
     if (!alunoSel) return
     try {
       const { data } = await api.post('/album/distribuir', { aluno_id: alunoSel })
       setResultado(data)
+      carregarAlbum(alunoSel)
     } catch { setErro('Erro ao distribuir pacote.') }
   }
 
-  // Filtra figurinhas
   const figs = dados?.figurinhas?.filter(f => {
     if (filtro === 'desbloqueadas' && !f.desbloqueada) return false
     if (filtro === 'bloqueadas'    &&  f.desbloqueada) return false
-    if (filtro !== 'todos' && !['desbloqueadas','bloqueadas'].includes(filtro) && f.raridade !== filtro) return false
+    if (!['todos','desbloqueadas','bloqueadas'].includes(filtro) && f.raridade !== filtro) return false
     if (busca && !f.nome.toLowerCase().includes(busca.toLowerCase())) return false
     return true
   }) || []
-
-  const abas = [
-    { id:'album',  label:'🎴 Álbum',       },
-    { id:'pacotes',label:'📦 Pacotes',      },
-    { id:'ranking',label:'🏆 Ranking',      },
-  ]
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;700;900&display=swap');
-        @keyframes modalIn    { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
-        @keyframes cardReveal { from{opacity:0;transform:scale(.5) rotate(-10deg)} to{opacity:1;transform:scale(1) rotate(0)} }
-        @keyframes shimmer    { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-        .alb-tab-btn:hover { background:rgba(245,166,35,.08)!important; border-color:rgba(245,166,35,.4)!important; }
-        .alb-aluno-sel:hover { background:rgba(245,166,35,.1)!important; }
-        .alb-filtro-btn:hover { background:rgba(255,255,255,.1)!important; }
+
+        @keyframes shimmerCopa {
+          0%   { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes glowLendaria {
+          0%,100% { box-shadow: 0 0 18px rgba(251,191,36,.7); }
+          50%     { box-shadow: 0 0 36px rgba(251,191,36,1), 0 0 60px rgba(251,191,36,.4); }
+        }
+        @keyframes cardReveal {
+          from { opacity:0; transform:scale(.4) rotate(-15deg); }
+          to   { opacity:1; transform:scale(1) rotate(0); }
+        }
+        @keyframes modalIn {
+          from { opacity:0; transform:scale(.85) translateY(20px); }
+          to   { opacity:1; transform:scale(1) translateY(0); }
+        }
+        @keyframes float {
+          0%,100% { transform:translateY(0); }
+          50%     { transform:translateY(-8px); }
+        }
+        @keyframes pulse {
+          0%,100% { opacity:1; } 50% { opacity:.4; }
+        }
+        .tab-btn:hover  { background:rgba(245,166,35,.1)!important; border-color:rgba(245,166,35,.4)!important; }
+        .filt-btn:hover { background:rgba(255,255,255,.1)!important; }
       `}</style>
 
-      <div style={{ minHeight:'100vh', background:'#07101e', color:'#e8eaf0', fontFamily:"'Exo 2', sans-serif", padding:'20px 16px 60px' }}>
+      <div style={{ minHeight:'100vh', background:'#07101e', color:'#e8eaf0', fontFamily:"'Exo 2',sans-serif", padding:'20px 16px 60px' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto' }}>
 
-        {/* ── Header ── */}
-        <div style={{ maxWidth:1100, margin:'0 auto 24px' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:8 }}>
-            <div style={{ fontSize:40 }}>🃏</div>
+          {/* Header */}
+          <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:20 }}>
+            <div style={{ fontSize:44, filter:'drop-shadow(0 0 10px rgba(251,191,36,.5))', animation:'float 3s ease-in-out infinite' }}>⚽</div>
             <div>
-              <h1 style={{ fontFamily:"'Orbitron',sans-serif", fontSize:'clamp(18px,3vw,26px)', fontWeight:900, color:'#f5a623', textShadow:'0 0 20px rgba(245,166,35,.5)', margin:0 }}>
-                Álbum dos Craques
+              <h1 style={{ fontFamily:"'Orbitron',sans-serif", fontSize:'clamp(18px,3vw,26px)', fontWeight:900, color:'#fbbf24', textShadow:'0 0 24px rgba(251,191,36,.5)', margin:0 }}>
+                Copa do Mundo 2026
               </h1>
-              <p style={{ margin:0, fontSize:12, color:'rgba(255,255,255,.45)', letterSpacing:2, textTransform:'uppercase' }}>
-                Coleção CEITEC GAME · Temporada 2026
+              <p style={{ margin:0, fontSize:11, color:'rgba(255,255,255,.4)', letterSpacing:2, textTransform:'uppercase' }}>
+                Álbum Oficial · 50 Jogadores · 8 Seleções
               </p>
             </div>
           </div>
 
           {/* Abas */}
-          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-            {abas.map(a => (
-              <button key={a.id} className="alb-tab-btn" onClick={() => setAba(a.id)} style={{
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:20 }}>
+            {[{id:'album',label:'🎴 Álbum'},{id:'pacotes',label:'📦 Pacotes'},{id:'ranking',label:'🏆 Ranking'}].map(a => (
+              <button key={a.id} className="tab-btn" onClick={() => setAba(a.id)} style={{
                 padding:'8px 18px', borderRadius:10, cursor:'pointer',
                 fontFamily:"'Exo 2',sans-serif", fontWeight:700, fontSize:13,
-                background: aba===a.id ? 'rgba(245,166,35,.15)' : 'rgba(255,255,255,.04)',
-                border: `1.5px solid ${aba===a.id ? '#f5a623' : 'rgba(255,255,255,.1)'}`,
-                color: aba===a.id ? '#f5a623' : 'rgba(255,255,255,.6)',
-                transition:'all .2s',
-              }}>
-                {a.label}
-              </button>
+                background: aba===a.id ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.04)',
+                border:`1.5px solid ${aba===a.id ? '#fbbf24' : 'rgba(255,255,255,.1)'}`,
+                color: aba===a.id ? '#fbbf24' : 'rgba(255,255,255,.55)', transition:'all .2s',
+              }}>{a.label}</button>
             ))}
           </div>
-        </div>
 
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-
-          {/* ── Seletor de aluno ── */}
-          <div style={{ background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.1)', borderRadius:14, padding:16, marginBottom:20 }}>
-            <label style={{ fontSize:11, color:'#f5a623', fontWeight:700, letterSpacing:2, textTransform:'uppercase', display:'block', marginBottom:8 }}>
+          {/* Seletor aluno */}
+          <div style={{ background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)', borderRadius:14, padding:16, marginBottom:20 }}>
+            <label style={{ fontSize:11, color:'#fbbf24', fontWeight:700, letterSpacing:2, textTransform:'uppercase', display:'block', marginBottom:8 }}>
               Selecionar Aluno
             </label>
-            <select
-              value={alunoSel || ''}
-              onChange={e => setAlunoSel(e.target.value ? parseInt(e.target.value) : null)}
-              style={{ width:'100%', maxWidth:400, padding:'10px 14px', background:'rgba(255,255,255,.07)', border:'1.5px solid rgba(255,255,255,.15)', borderRadius:10, color:'#fff', fontSize:14, outline:'none', fontFamily:"'Exo 2',sans-serif" }}
-            >
+            <select value={alunoSel||''} onChange={e=>setAlunoSel(e.target.value?parseInt(e.target.value):null)} style={{
+              width:'100%', maxWidth:420, padding:'10px 14px',
+              background:'rgba(255,255,255,.07)', border:'1.5px solid rgba(255,255,255,.15)',
+              borderRadius:10, color:'#fff', fontSize:14, outline:'none', fontFamily:"'Exo 2',sans-serif",
+            }}>
               <option value="">— Escolha um aluno —</option>
-              {alunos.map(a => (
-                <option key={a.id} value={a.id}>{a.nome} · {a.turma}</option>
-              ))}
+              {alunos.map(a => <option key={a.id} value={a.id}>{a.nome} · {a.turma}</option>)}
             </select>
           </div>
 
-          {/* ── ABA: ÁLBUM ── */}
-          {aba === 'album' && (
+          {/* ABA ÁLBUM */}
+          {aba==='album' && (
             <>
               {!alunoSel && (
                 <div style={{ textAlign:'center', padding:'60px 0', color:'rgba(255,255,255,.3)', fontSize:14 }}>
                   👆 Selecione um aluno para ver o álbum
                 </div>
               )}
-
               {alunoSel && loading && (
-                <div style={{ textAlign:'center', padding:'60px 0', color:'rgba(255,255,255,.4)' }}>Carregando álbum...</div>
+                <div style={{ textAlign:'center', padding:'60px 0', color:'rgba(255,255,255,.4)' }}>Carregando...</div>
               )}
-
               {alunoSel && dados && !loading && (
                 <>
-                  {/* Progresso geral */}
-                  <div style={{ background:'rgba(245,166,35,.06)', border:'1px solid rgba(245,166,35,.2)', borderRadius:14, padding:16, marginBottom:20 }}>
+                  {/* Progresso */}
+                  <div style={{ background:'linear-gradient(135deg,rgba(0,60,0,.6),rgba(255,210,0,.06))', border:'1px solid rgba(255,210,0,.25)', borderRadius:16, padding:18, marginBottom:20 }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10, flexWrap:'wrap', gap:8 }}>
                       <div>
-                        <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:18, fontWeight:900, color:'#f5a623' }}>
-                          {dados.desbloqueadas} / {dados.total}
+                        <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:20, fontWeight:900, color:'#fbbf24' }}>
+                          {dados.desbloqueadas} <span style={{ fontSize:14, color:'rgba(255,255,255,.4)' }}>/ {dados.total} jogadores</span>
                         </div>
-                        <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', letterSpacing:1 }}>FIGURINHAS COLETADAS</div>
+                        <div style={{ fontSize:10, color:'rgba(255,255,255,.4)', letterSpacing:2, marginTop:2 }}>ÁLBUM COPA 2026</div>
                       </div>
-                      <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
-                        {Object.entries(dados.stats || {}).map(([rar, s]) => (
+                      <div style={{ display:'flex', gap:14, flexWrap:'wrap' }}>
+                        {Object.entries(dados.stats||{}).map(([rar,s]) => (
                           <div key={rar} style={{ textAlign:'center' }}>
-                            <div style={{ fontSize:14, fontWeight:900, color: RAR[rar]?.cor || '#fff' }}>{s.desbloqueadas}/{s.total}</div>
-                            <div style={{ fontSize:9, color:'rgba(255,255,255,.35)', letterSpacing:1 }}>{RAR[rar]?.label || rar}</div>
+                            <div style={{ fontSize:14, fontWeight:900, color:RAR[rar]?.cor||'#fff' }}>{s.desbloqueadas}/{s.total}</div>
+                            <div style={{ fontSize:9, color:'rgba(255,255,255,.3)', letterSpacing:1 }}>{RAR[rar]?.label||rar}</div>
                           </div>
                         ))}
                         <div style={{ textAlign:'center' }}>
                           <div style={{ fontSize:14, fontWeight:900, color:'#22c55e' }}>{dados.xp_disponivel}</div>
-                          <div style={{ fontSize:9, color:'rgba(255,255,255,.35)', letterSpacing:1 }}>XP DISPONÍVEL</div>
+                          <div style={{ fontSize:9, color:'rgba(255,255,255,.3)', letterSpacing:1 }}>XP</div>
                         </div>
                       </div>
                     </div>
-                    <div style={{ background:'rgba(255,255,255,.08)', borderRadius:6, height:10, overflow:'hidden' }}>
-                      <div style={{ height:'100%', width:`${dados.percentual}%`, background:'linear-gradient(90deg,#f5a623,#22c55e)', borderRadius:6, transition:'width .8s ease' }} />
+                    <div style={{ background:'rgba(255,255,255,.07)', borderRadius:8, height:12, overflow:'hidden' }}>
+                      <div style={{ height:'100%', width:`${dados.percentual}%`, background:'linear-gradient(90deg,#009C3B,#FFDF00,#f5a623)', borderRadius:8, transition:'width 1s ease', boxShadow:'0 0 10px rgba(255,220,0,.4)' }}/>
                     </div>
-                    <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', marginTop:6, textAlign:'right' }}>{dados.percentual}% completo</div>
+                    <div style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginTop:6, textAlign:'right' }}>{dados.percentual}% completo</div>
                   </div>
 
                   {/* Filtros */}
-                  <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
+                  <div style={{ display:'flex', gap:7, marginBottom:16, flexWrap:'wrap' }}>
                     {[
-                      { v:'todos',          label:'Todos'         },
-                      { v:'desbloqueadas',  label:'✅ Coletadas'  },
-                      { v:'bloqueadas',     label:'🔒 Faltando'   },
-                      { v:'comum',          label:'⬜ Comuns'      },
-                      { v:'rara',           label:'🔵 Raras'      },
-                      { v:'epica',          label:'🟣 Épicas'     },
-                      { v:'lendaria',       label:'⭐ Lendárias'  },
+                      {v:'todos',l:'Todos'},{v:'desbloqueadas',l:'✅ Coletados'},{v:'bloqueadas',l:'🔒 Faltando'},
+                      {v:'comum',l:'⬜ Comuns'},{v:'rara',l:'🔵 Raras'},{v:'epica',l:'🟣 Épicas'},{v:'lendaria',l:'⭐ Lendárias'},
                     ].map(f => (
-                      <button key={f.v} className="alb-filtro-btn" onClick={() => setFiltro(f.v)} style={{
-                        padding:'6px 14px', borderRadius:8, cursor:'pointer',
+                      <button key={f.v} className="filt-btn" onClick={()=>setFiltro(f.v)} style={{
+                        padding:'6px 13px', borderRadius:8, cursor:'pointer',
                         fontFamily:"'Exo 2',sans-serif", fontWeight:700, fontSize:11,
-                        background: filtro===f.v ? 'rgba(245,166,35,.15)' : 'rgba(255,255,255,.05)',
-                        border:`1px solid ${filtro===f.v ? '#f5a623' : 'rgba(255,255,255,.1)'}`,
-                        color: filtro===f.v ? '#f5a623' : 'rgba(255,255,255,.5)',
-                        transition:'all .15s',
-                      }}>{f.label}</button>
+                        background: filtro===f.v?'rgba(251,191,36,.15)':'rgba(255,255,255,.05)',
+                        border:`1px solid ${filtro===f.v?'#fbbf24':'rgba(255,255,255,.1)'}`,
+                        color: filtro===f.v?'#fbbf24':'rgba(255,255,255,.5)', transition:'all .15s',
+                      }}>{f.l}</button>
                     ))}
-                    <input
-                      placeholder="Buscar..."
-                      value={busca}
-                      onChange={e => setBusca(e.target.value)}
-                      style={{ padding:'6px 12px', background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)', borderRadius:8, color:'#fff', fontSize:12, outline:'none', fontFamily:"'Exo 2',sans-serif" }}
-                    />
+                    <input placeholder="Buscar jogador..." value={busca} onChange={e=>setBusca(e.target.value)} style={{
+                      padding:'6px 12px', background:'rgba(255,255,255,.06)', border:'1px solid rgba(255,255,255,.1)',
+                      borderRadius:8, color:'#fff', fontSize:12, outline:'none', fontFamily:"'Exo 2',sans-serif",
+                    }}/>
                   </div>
 
-                  {/* Grid de figurinhas */}
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(100px,1fr))', gap:10 }}>
-                    {figs.map(f => (
-                      <CardFigurinha key={f.id} fig={f} onClick={f.desbloqueada ? setFigSel : null} />
-                    ))}
+                  {/* Grid */}
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(96px,1fr))', gap:10 }}>
+                    {figs.map(f => <CardFigurinha key={f.id} fig={f} onClick={f.desbloqueada?setFigSel:null}/>)}
                   </div>
-
-                  {figs.length === 0 && (
-                    <div style={{ textAlign:'center', padding:'40px 0', color:'rgba(255,255,255,.3)', fontSize:13 }}>
-                      Nenhuma figurinha encontrada com esses filtros.
-                    </div>
-                  )}
+                  {figs.length===0 && <div style={{ textAlign:'center', padding:'40px 0', color:'rgba(255,255,255,.3)' }}>Nenhum jogador encontrado.</div>}
                 </>
               )}
             </>
           )}
 
-          {/* ── ABA: PACOTES ── */}
-          {aba === 'pacotes' && (
+          {/* ABA PACOTES */}
+          {aba==='pacotes' && (
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:16 }}>
-
-              {/* Pacote Comum */}
               {[
-                { tipo:'comum',   emoji:'📦', nome:'Pacote Comum',   descr:'3 figurinhas · maior chance de comuns', cor:'#64748b', custo:50 },
-                { tipo:'premium', emoji:'💎', nome:'Pacote Premium',  descr:'5 figurinhas · chance de épicas',        cor:'#8b5cf6', custo:120 },
-                { tipo:'especial',emoji:'🏆', nome:'Pacote Especial', descr:'5 figurinhas com garantia de épica+ (professor)', cor:'#f5a623', custo:0 },
+                {tipo:'comum',  emoji:'📦',cor:'#64748b',nome:'Pacote Comum',  desc:'3 cartas · maioria comuns',           custo:50  },
+                {tipo:'premium',emoji:'💎',cor:'#8b5cf6',nome:'Pacote Premium', desc:'5 cartas · chance de épicas',          custo:120 },
+                {tipo:'especial',emoji:'🏆',cor:'#fbbf24',nome:'Pacote Especial',desc:'5 cartas garantidas épica+ (professor)',custo:0   },
               ].map(pk => (
-                <div key={pk.tipo} style={{
-                  background:`linear-gradient(145deg,${pk.cor}18,${pk.cor}08)`,
-                  border:`2px solid ${pk.cor}55`,
-                  borderRadius:18, padding:24, textAlign:'center',
-                  boxShadow:`0 0 20px ${pk.cor}22`,
-                }}>
-                  <div style={{ fontSize:52, marginBottom:12 }}>{pk.emoji}</div>
+                <div key={pk.tipo} style={{ background:`linear-gradient(145deg,${pk.cor}18,${pk.cor}06)`, border:`2px solid ${pk.cor}55`, borderRadius:18, padding:24, textAlign:'center', boxShadow:`0 0 24px ${pk.cor}18` }}>
+                  <div style={{ fontSize:52, marginBottom:12, filter:`drop-shadow(0 0 10px ${pk.cor})`, animation:'float 3s ease-in-out infinite' }}>{pk.emoji}</div>
                   <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:15, fontWeight:900, color:'#fff', marginBottom:6 }}>{pk.nome}</div>
-                  <div style={{ fontSize:12, color:'rgba(255,255,255,.55)', marginBottom:16, lineHeight:1.5 }}>{pk.descr}</div>
-                  {pk.custo > 0 ? (
-                    <div style={{ fontSize:18, fontWeight:900, color:pk.cor, marginBottom:16 }}>{pk.custo} XP</div>
-                  ) : (
-                    <div style={{ fontSize:13, color:pk.cor, fontWeight:700, marginBottom:16 }}>Distribuído pelo professor</div>
-                  )}
-                  {pk.tipo !== 'especial' ? (
-                    <button
-                      disabled={!alunoSel || abrindo}
-                      onClick={() => { setPacoteTipo(pk.tipo); abrirPacote() }}
-                      style={{
-                        width:'100%', padding:'12px', borderRadius:11, border:'none', cursor:'pointer',
-                        background:`linear-gradient(135deg,${pk.cor},${pk.cor}bb)`,
-                        color: pk.tipo==='especial' ? '#0a1628' : '#fff',
-                        fontFamily:"'Exo 2',sans-serif", fontWeight:900, fontSize:13,
-                        opacity: alunoSel ? 1 : .5, transition:'all .2s',
-                      }}
-                    >
-                      {abrindo ? 'Abrindo...' : `Abrir ${pk.nome}`}
-                    </button>
-                  ) : (
-                    <button
-                      disabled={!alunoSel}
-                      onClick={distribuirPacote}
-                      style={{
-                        width:'100%', padding:'12px', borderRadius:11, border:'none', cursor:'pointer',
-                        background:'linear-gradient(135deg,#f5a623,#d97706)',
-                        color:'#0a1628',
-                        fontFamily:"'Exo 2',sans-serif", fontWeight:900, fontSize:13,
-                        opacity: alunoSel ? 1 : .5,
-                      }}
-                    >
-                      Enviar para Aluno
-                    </button>
-                  )}
+                  <div style={{ fontSize:12, color:'rgba(255,255,255,.5)', marginBottom:16, lineHeight:1.5 }}>{pk.desc}</div>
+                  {pk.custo > 0
+                    ? <div style={{ fontSize:20, fontWeight:900, color:pk.cor, marginBottom:16 }}>{pk.custo} XP</div>
+                    : <div style={{ fontSize:13, color:pk.cor, fontWeight:700, marginBottom:16 }}>Sem custo de XP</div>
+                  }
+                  <button disabled={!alunoSel||abrindo} onClick={()=>{setPacoteTipo(pk.tipo);pk.tipo==='especial'?distribuirPacote():abrirPacote()}} style={{
+                    width:'100%', padding:'12px', borderRadius:11, border:'none', cursor:'pointer',
+                    background:`linear-gradient(135deg,${pk.cor},${pk.cor}bb)`,
+                    color:pk.tipo==='especial'?'#0a1628':'#fff',
+                    fontFamily:"'Exo 2',sans-serif", fontWeight:900, fontSize:13,
+                    opacity:alunoSel?1:.5, transition:'all .2s',
+                    boxShadow:alunoSel?`0 4px 18px ${pk.cor}44`:'none',
+                  }}>
+                    {abrindo?'Abrindo...':pk.tipo==='especial'?'Enviar para Aluno':`Abrir ${pk.nome}`}
+                  </button>
                 </div>
               ))}
-
-              {erro && (
-                <div style={{ gridColumn:'1/-1', background:'rgba(231,76,60,.12)', border:'1px solid rgba(231,76,60,.3)', borderRadius:10, padding:'12px 16px', color:'#ff8a8a', fontSize:13 }}>
-                  ⚠️ {erro}
-                </div>
-              )}
-
-              {/* Info XP aluno */}
-              {alunoSel && dados && (
-                <div style={{ gridColumn:'1/-1', background:'rgba(34,197,94,.08)', border:'1px solid rgba(34,197,94,.2)', borderRadius:12, padding:14, fontSize:13, color:'#22c55e', fontWeight:700 }}>
-                  ⭐ XP disponível do aluno: <strong>{dados.xp_disponivel} XP</strong>
-                </div>
-              )}
+              {erro && <div style={{ gridColumn:'1/-1', background:'rgba(231,76,60,.12)', border:'1px solid rgba(231,76,60,.3)', borderRadius:10, padding:'12px 16px', color:'#ff8a8a', fontSize:13 }}>⚠️ {erro}</div>}
+              {alunoSel && dados && <div style={{ gridColumn:'1/-1', background:'rgba(34,197,94,.08)', border:'1px solid rgba(34,197,94,.2)', borderRadius:12, padding:14, fontSize:13, color:'#22c55e', fontWeight:700 }}>⭐ XP disponível: {dados.xp_disponivel} XP</div>}
             </div>
           )}
 
-          {/* ── ABA: RANKING ── */}
-          {aba === 'ranking' && (
+          {/* ABA RANKING */}
+          {aba==='ranking' && (
             <div>
-              <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:16, fontWeight:900, color:'#f5a623', marginBottom:16 }}>
-                🏆 Ranking do Álbum
-              </div>
-              {ranking.length === 0 && (
-                <div style={{ textAlign:'center', padding:'40px 0', color:'rgba(255,255,255,.3)', fontSize:13 }}>
-                  Nenhum aluno coletou figurinhas ainda.
-                </div>
-              )}
+              <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:16, fontWeight:900, color:'#fbbf24', marginBottom:16 }}>🏆 Ranking do Álbum</div>
+              {ranking.length===0 && <div style={{ textAlign:'center', padding:'40px 0', color:'rgba(255,255,255,.3)' }}>Nenhum aluno coletou cartas ainda.</div>}
               <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 {ranking.map(r => (
-                  <div key={r.aluno_id} style={{
-                    display:'flex', alignItems:'center', gap:14,
-                    background: r.posicao <= 3 ? 'rgba(245,166,35,.08)' : 'rgba(255,255,255,.03)',
-                    border:`1px solid ${r.posicao <= 3 ? 'rgba(245,166,35,.3)' : 'rgba(255,255,255,.08)'}`,
-                    borderRadius:12, padding:'12px 16px',
-                  }}>
-                    <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:18, fontWeight:900, width:36, textAlign:'center',
-                      color: r.posicao===1 ? '#f5a623' : r.posicao===2 ? '#94a3b8' : r.posicao===3 ? '#cd7f32' : 'rgba(255,255,255,.3)' }}>
-                      {r.posicao <= 3 ? ['🥇','🥈','🥉'][r.posicao-1] : r.posicao}
+                  <div key={r.aluno_id} style={{ display:'flex', alignItems:'center', gap:14, background:r.posicao<=3?'rgba(251,191,36,.08)':'rgba(255,255,255,.03)', border:`1px solid ${r.posicao<=3?'rgba(251,191,36,.3)':'rgba(255,255,255,.08)'}`, borderRadius:12, padding:'12px 16px' }}>
+                    <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:18, fontWeight:900, width:36, textAlign:'center', color:r.posicao===1?'#fbbf24':r.posicao===2?'#94a3b8':r.posicao===3?'#cd7f32':'rgba(255,255,255,.3)' }}>
+                      {r.posicao<=3?['🥇','🥈','🥉'][r.posicao-1]:r.posicao}
                     </div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:'#fff' }}>{r.nome}</div>
                       <div style={{ fontSize:11, color:'rgba(255,255,255,.4)' }}>{r.turma}</div>
                     </div>
                     <div style={{ textAlign:'right' }}>
-                      <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:16, fontWeight:900, color:'#f5a623' }}>
-                        {r.desbloqueadas}/{r.total}
-                      </div>
+                      <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:16, fontWeight:900, color:'#fbbf24' }}>{r.desbloqueadas}/{r.total}</div>
                       <div style={{ background:'rgba(255,255,255,.08)', borderRadius:4, height:6, width:80, overflow:'hidden', marginTop:4 }}>
-                        <div style={{ height:'100%', width:`${r.percentual}%`, background:'linear-gradient(90deg,#f5a623,#22c55e)' }} />
+                        <div style={{ height:'100%', width:`${r.percentual}%`, background:'linear-gradient(90deg,#009C3B,#FFDF00)' }}/>
                       </div>
                       <div style={{ fontSize:10, color:'rgba(255,255,255,.35)', marginTop:2 }}>{r.percentual}%</div>
                     </div>
@@ -544,9 +582,8 @@ export default function Album() {
         </div>
       </div>
 
-      {/* Modais */}
-      <ModalFigurinha fig={figSel} onClose={() => setFigSel(null)} />
-      <ModalPacote resultado={resultado} onClose={() => { setResultado(null); if (alunoSel) carregarAlbum(alunoSel) }} />
+      <ModalFigurinha fig={figSel} onClose={()=>setFigSel(null)}/>
+      <ModalPacote resultado={resultado} onClose={()=>{setResultado(null);if(alunoSel)carregarAlbum(alunoSel)}}/>
     </>
   )
 }
