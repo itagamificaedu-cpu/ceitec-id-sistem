@@ -83,6 +83,7 @@ const SECOES_ESTATICAS = [
     titulo: '⚽ LIGA JOVEM 2026',
     itens: [
       { path: '/liga-jovem',  label: 'Desafio Liga Jovem 2026', icon: '🏅', itaAdmin: true },
+      { path: '/cubo-magico', label: 'Campeonato Cubo Mágico',  icon: '🧩' },
     ]
   },
   {
