@@ -309,6 +309,82 @@ function ModalPacote({ resultado, onClose }) {
 }
 
 // ── PÁGINA PRINCIPAL ──────────────────────────────────────────
+// ── Premiar alunos por nota em uma avaliação ─────────────────
+function PremiarPorNota() {
+  const [avaliacoes, setAvaliacoes] = useState([])
+  const [avalId, setAvalId]         = useState('')
+  const [notaMin, setNotaMin]       = useState(7)
+  const [tipoPk, setTipoPk]         = useState('comum')
+  const [loading, setLoading]       = useState(false)
+  const [resultado, setResultado]   = useState(null)
+  const [erro, setErro]             = useState('')
+
+  useEffect(() => {
+    api.get('/avaliacoes').then(({ data }) => setAvaliacoes(Array.isArray(data) ? data : data.avaliacoes || [])).catch(() => {})
+  }, [])
+
+  async function premiar() {
+    if (!avalId) return
+    setLoading(true); setErro(''); setResultado(null)
+    try {
+      const { data } = await api.post('/album/premiar-por-nota', {
+        avaliacao_id: parseInt(avalId),
+        nota_minima: parseFloat(notaMin),
+        tipo: tipoPk,
+      })
+      setResultado(data)
+    } catch (err) { setErro(err.response?.data?.erro || 'Erro ao premiar alunos.') }
+    finally { setLoading(false) }
+  }
+
+  return (
+    <div style={{ gridColumn:'1/-1', background:'linear-gradient(145deg,rgba(34,197,94,.08),rgba(251,191,36,.06))', border:'1px solid rgba(34,197,94,.3)', borderRadius:18, padding:22 }}>
+      <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:14, fontWeight:900, color:'#22c55e', marginBottom:14 }}>
+        📝 Premiar Alunos por Nota
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 100px 120px auto', gap:10, alignItems:'end', flexWrap:'wrap' }}>
+        <div>
+          <label style={{ fontSize:10, color:'rgba(255,255,255,.45)', letterSpacing:1, display:'block', marginBottom:5 }}>AVALIAÇÃO</label>
+          <select value={avalId} onChange={e=>setAvalId(e.target.value)} style={{ width:'100%', padding:'9px 12px', background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.15)', borderRadius:9, color:'#fff', fontSize:13, outline:'none' }}>
+            <option value="">— Selecione —</option>
+            {avaliacoes.map(a => <option key={a.id} value={a.id}>{a.titulo} · {a.disciplina}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize:10, color:'rgba(255,255,255,.45)', letterSpacing:1, display:'block', marginBottom:5 }}>NOTA MÍN.</label>
+          <input type="number" min="0" max="10" step="0.5" value={notaMin} onChange={e=>setNotaMin(e.target.value)} style={{ width:'100%', padding:'9px 10px', background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.15)', borderRadius:9, color:'#fff', fontSize:13, outline:'none', textAlign:'center' }}/>
+        </div>
+        <div>
+          <label style={{ fontSize:10, color:'rgba(255,255,255,.45)', letterSpacing:1, display:'block', marginBottom:5 }}>TIPO PACOTE</label>
+          <select value={tipoPk} onChange={e=>setTipoPk(e.target.value)} style={{ width:'100%', padding:'9px 10px', background:'rgba(255,255,255,.07)', border:'1px solid rgba(255,255,255,.15)', borderRadius:9, color:'#fff', fontSize:13, outline:'none' }}>
+            <option value="comum">📦 Comum (3 cartas)</option>
+            <option value="premium">💎 Premium (5 cartas)</option>
+            <option value="especial">🏆 Especial (épicas)</option>
+          </select>
+        </div>
+        <button disabled={!avalId||loading} onClick={premiar} style={{ padding:'9px 18px', background:'linear-gradient(135deg,#22c55e,#15803d)', border:'none', borderRadius:9, color:'#fff', fontWeight:900, fontSize:13, cursor:'pointer', opacity:avalId?1:.5, whiteSpace:'nowrap' }}>
+          {loading ? 'Premiando...' : '⚽ Premiar'}
+        </button>
+      </div>
+      {erro && <div style={{ marginTop:12, color:'#f87171', fontSize:12 }}>⚠️ {erro}</div>}
+      {resultado && (
+        <div style={{ marginTop:14, background:'rgba(34,197,94,.1)', border:'1px solid rgba(34,197,94,.3)', borderRadius:10, padding:'12px 16px' }}>
+          <div style={{ fontSize:13, fontWeight:700, color:'#22c55e', marginBottom:8 }}>
+            ✅ {resultado.premiados} aluno{resultado.premiados!==1?'s':''} premiado{resultado.premiados!==1?'s':''}!
+          </div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {(resultado.resultados||[]).map((r,i) => (
+              <div key={i} style={{ background:'rgba(255,255,255,.06)', borderRadius:7, padding:'4px 10px', fontSize:11, color:'rgba(255,255,255,.7)' }}>
+                {r.aluno} · {r.nota} · +{r.cartas} carta{r.cartas!==1?'s':''}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Album() {
   const [aba, setAba]           = useState('album')
   const [alunos, setAlunos]     = useState([])
@@ -546,8 +622,29 @@ export default function Album() {
                   </button>
                 </div>
               ))}
+              {/* Premiar por Nota */}
+              <PremiarPorNota />
+
               {erro && <div style={{ gridColumn:'1/-1', background:'rgba(231,76,60,.12)', border:'1px solid rgba(231,76,60,.3)', borderRadius:10, padding:'12px 16px', color:'#ff8a8a', fontSize:13 }}>⚠️ {erro}</div>}
               {alunoSel && dados && <div style={{ gridColumn:'1/-1', background:'rgba(34,197,94,.08)', border:'1px solid rgba(34,197,94,.2)', borderRadius:12, padding:14, fontSize:13, color:'#22c55e', fontWeight:700 }}>⭐ XP disponível: {dados.xp_disponivel} XP</div>}
+
+              {/* Info ganhar cartas automaticamente */}
+              <div style={{ gridColumn:'1/-1', background:'rgba(251,191,36,.06)', border:'1px solid rgba(251,191,36,.2)', borderRadius:14, padding:18 }}>
+                <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:13, fontWeight:900, color:'#fbbf24', marginBottom:12 }}>⚽ Como os alunos ganham cartas automaticamente</div>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:10 }}>
+                  {[
+                    { emoji:'🎯', titulo:'Quiz Interativo', desc:'70–89% → Pacote Comum (3 cartas)\n90%+ → Pacote Premium (5 cartas)' },
+                    { emoji:'🎓', titulo:'Missão ItagGame', desc:'Professor aprova missão → aluno recebe Pacote Especial (5 cartas épicas+)' },
+                    { emoji:'📝', titulo:'Por Nota', desc:'Professor define nota mínima → todos que passaram ganham cartas' },
+                  ].map(g => (
+                    <div key={g.titulo} style={{ background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)', borderRadius:10, padding:'12px 14px' }}>
+                      <div style={{ fontSize:22, marginBottom:6 }}>{g.emoji}</div>
+                      <div style={{ fontSize:12, fontWeight:700, color:'#fff', marginBottom:4 }}>{g.titulo}</div>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,.5)', lineHeight:1.5, whiteSpace:'pre-line' }}>{g.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
