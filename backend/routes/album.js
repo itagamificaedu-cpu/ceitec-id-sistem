@@ -285,4 +285,54 @@ router.get('/colecoes', autenticar, async (req, res) => {
   } catch (err) { res.status(500).json({ erro: err.message }) }
 })
 
+// ── GET /node-api/album/portal/:codigo — público, sem JWT ─────
+// Usado pelo portal do aluno (carteirinha / QR Code)
+router.get('/portal/:codigo', async (req, res) => {
+  try {
+    const codigo = req.params.codigo.toUpperCase().trim()
+
+    // Busca aluno pelo código
+    const aluno = await db.get(
+      'SELECT id, nome, turma, escola_id FROM alunos WHERE codigo = ? AND ativo = 1',
+      [codigo]
+    )
+    if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado.' })
+
+    const escola_id = aluno.escola_id
+    const aluno_id  = aluno.id
+
+    // Todas as figurinhas da escola
+    const todas = await db.all(
+      `SELECT f.*, c.nome AS colecao_nome, c.icone AS colecao_icone, c.cor AS colecao_cor
+       FROM album_figurinhas f
+       LEFT JOIN album_colecoes c ON c.id = f.colecao_id
+       WHERE f.escola_id = ? AND f.ativo = 1
+       ORDER BY f.numero ASC`,
+      [escola_id]
+    )
+
+    // Figurinhas do aluno
+    const minhas = await db.all(
+      'SELECT figurinha_id, quantidade, obtida_em FROM album_aluno WHERE aluno_id = ? AND escola_id = ?',
+      [aluno_id, escola_id]
+    )
+    const map = {}
+    for (const m of minhas) map[m.figurinha_id] = m
+
+    const figurinhas = todas.map(f => ({
+      ...f,
+      desbloqueada: !!map[f.id],
+      quantidade:   map[f.id]?.quantidade || 0,
+      obtida_em:    map[f.id]?.obtida_em  || null,
+    }))
+
+    res.json({
+      figurinhas,
+      total:         todas.length,
+      desbloqueadas: minhas.length,
+      percentual:    todas.length ? Math.round((minhas.length / todas.length) * 100) : 0,
+    })
+  } catch (err) { res.status(500).json({ erro: err.message }) }
+})
+
 module.exports = router
