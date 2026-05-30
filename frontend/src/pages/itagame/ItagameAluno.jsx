@@ -8,6 +8,7 @@ const STORAGE_KEY = 'portal_aluno'
 
 const TABS = [
   { id: 'inicio',      label: 'INÍCIO',      emoji: '🏠' },
+  { id: 'album',       label: 'ÁLBUM',       emoji: '🃏' },
   { id: 'missoes',     label: 'MISSÕES',     emoji: '🎯' },
   { id: 'loja',        label: 'LOJA',        emoji: '💰' },
   { id: 'avaliacoes',  label: 'AVALIAÇÕES',  emoji: '🧪' },
@@ -264,6 +265,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScan
       {/* Conteúdo */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '28px 16px' }}>
         {aba === 'inicio'      && <AbaInicio aluno={aluno} itagame={itagame} nivel={nivel} nc={nc} pctPresenca={pctPresenca} totalNotas={notas.length + (itagame.provas || []).filter(p => p.ja_fez).length} onItagame={onItagame} onCopaSaber={onCopaSaber} onIrCorretor={() => setAba('corretor')} />}
+        {aba === 'album'       && <AbaAlbum codigoAluno={aluno.codigo} />}
         {aba === 'missoes'     && <AbaMissoes missoes={itagame.missoes || []} codigoAluno={aluno.codigo} onAtualizar={() => { localStorage.removeItem(STORAGE_KEY) }} />}
         {aba === 'loja'        && <AbaLoja loja={itagame.loja || []} xpTotal={itagame.xp_total} codigoAluno={aluno.codigo} onAtualizar={(novoXP) => { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'); if(d.itagame){ d.itagame.xp_total = novoXP; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } }} />}
         {aba === 'avaliacoes'  && <AbaAvaliacoes avaliacoesProfessor={avaliacoes || []} quizzes={quizzes} codigoAluno={aluno.codigo} nomeAluno={aluno.nome} />}
@@ -1316,6 +1318,174 @@ function AbaRepositorio({ repositorio }) {
           </a>
         )
       })}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   ABA ÁLBUM DOS CRAQUES
+══════════════════════════════════════════ */
+const RAR_INFO = {
+  comum:    { label: 'Comum',    cor: '#64748b', bg: 'rgba(100,116,139,.15)' },
+  rara:     { label: 'Rara',     cor: '#3b82f6', bg: 'rgba(59,130,246,.15)'  },
+  epica:    { label: 'Épica',    cor: '#a855f7', bg: 'rgba(168,85,247,.15)'  },
+  lendaria: { label: 'Lendária', cor: '#FFE600', bg: 'rgba(255,230,0,.15)'   },
+}
+
+function AbaAlbum({ codigoAluno }) {
+  const [dados, setDados]     = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [figSel, setFigSel]   = useState(null)
+  const [filtro, setFiltro]   = useState('todos')
+
+  useEffect(() => {
+    api.get(`/album/portal/${codigoAluno}`)
+      .then(({ data }) => setDados(data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [codigoAluno])
+
+  if (loading) return (
+    <div style={{ textAlign:'center', padding:'40px 0', color:N.cinza }}>
+      Carregando álbum...
+    </div>
+  )
+  if (!dados) return <Vazio emoji="🃏" texto="Álbum não disponível no momento." />
+
+  const figs = dados.figurinhas.filter(f => {
+    if (filtro === 'desbloqueadas' && !f.desbloqueada) return false
+    if (filtro === 'bloqueadas'    &&  f.desbloqueada) return false
+    if (!['todos','desbloqueadas','bloqueadas'].includes(filtro) && f.raridade !== filtro) return false
+    return true
+  })
+
+  const rar = (r) => RAR_INFO[r] || RAR_INFO.comum
+
+  return (
+    <div>
+
+      {/* Barra de progresso do álbum */}
+      <div style={{ background:'rgba(255,230,0,.07)', border:'1px solid rgba(255,230,0,.25)', borderRadius:16, padding:16, marginBottom:20 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10, flexWrap:'wrap', gap:8 }}>
+          <div>
+            <div style={{ fontFamily:'monospace', fontSize:22, fontWeight:900, color:N.amarelo }}>
+              {dados.desbloqueadas}
+              <span style={{ fontSize:14, color:N.cinza }}> / {dados.total} figurinhas</span>
+            </div>
+            <div style={{ fontSize:10, color:N.cinza, letterSpacing:2, marginTop:2 }}>
+              COLEÇÃO CEITEC GAME
+            </div>
+          </div>
+          <div style={{ fontFamily:'monospace', fontSize:32, fontWeight:900, color:N.amarelo }}>
+            {dados.percentual}%
+          </div>
+        </div>
+        <div style={{ background:'rgba(255,255,255,.08)', borderRadius:6, height:10, overflow:'hidden' }}>
+          <div style={{
+            height:'100%', width:`${dados.percentual}%`,
+            background:'linear-gradient(90deg,#FFE600,#00FF88)',
+            borderRadius:6, transition:'width .8s',
+          }} />
+        </div>
+      </div>
+
+      {/* Filtros de raridade */}
+      <div style={{ display:'flex', gap:6, marginBottom:16, flexWrap:'wrap' }}>
+        {[
+          { v:'todos',         l:'Todos'       },
+          { v:'desbloqueadas', l:'✅ Coletadas' },
+          { v:'bloqueadas',    l:'🔒 Faltando'  },
+          { v:'comum',         l:'⬜ Comuns'    },
+          { v:'rara',          l:'🔵 Raras'     },
+          { v:'epica',         l:'🟣 Épicas'    },
+          { v:'lendaria',      l:'⭐ Lendárias' },
+        ].map(f => (
+          <button key={f.v} onClick={() => setFiltro(f.v)} style={{
+            padding:'5px 12px', borderRadius:8, cursor:'pointer',
+            fontWeight:700, fontSize:10,
+            background: filtro===f.v ? 'rgba(255,230,0,.2)' : 'rgba(255,255,255,.05)',
+            border:`1px solid ${filtro===f.v ? '#FFE600' : 'rgba(255,255,255,.1)'}`,
+            color: filtro===f.v ? N.amarelo : N.cinza, transition:'all .15s',
+          }}>{f.l}</button>
+        ))}
+      </div>
+
+      {/* Grid de figurinhas */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(85px,1fr))', gap:8 }}>
+        {figs.map(f => (
+          <div key={f.id} onClick={() => f.desbloqueada && setFigSel(f)} style={{
+            background: f.desbloqueada ? rar(f.raridade).bg : 'rgba(255,255,255,.03)',
+            border:`2px solid ${f.desbloqueada ? rar(f.raridade).cor : 'rgba(255,255,255,.07)'}`,
+            borderRadius:12, padding:'12px 6px',
+            display:'flex', flexDirection:'column', alignItems:'center', gap:5,
+            cursor: f.desbloqueada ? 'pointer' : 'default',
+            opacity: f.desbloqueada ? 1 : 0.4,
+            boxShadow: f.desbloqueada ? `0 0 10px ${rar(f.raridade).cor}44` : 'none',
+            transition:'all .2s', position:'relative', minHeight:110,
+          }}>
+            {f.raridade === 'lendaria' && f.desbloqueada && (
+              <div style={{ position:'absolute', top:3, right:4, fontSize:9, color:'#FFE600', fontWeight:900 }}>★</div>
+            )}
+            <div style={{ fontSize:30, filter: f.desbloqueada ? 'none' : 'grayscale(1) brightness(.3)' }}>
+              {f.desbloqueada ? f.icone_emoji : '❓'}
+            </div>
+            <div style={{ fontSize:9, fontWeight:700, textAlign:'center', color: f.desbloqueada ? '#fff' : N.cinza, lineHeight:1.3, padding:'0 2px' }}>
+              {f.desbloqueada ? f.nome : '???'}
+            </div>
+            <div style={{ fontSize:8, fontWeight:700, padding:'2px 6px', borderRadius:8, background:rar(f.raridade).bg, color:rar(f.raridade).cor }}>
+              {rar(f.raridade).label}
+            </div>
+            {f.quantidade > 1 && (
+              <div style={{ position:'absolute', bottom:3, right:5, fontSize:8, color:N.amarelo, fontWeight:900 }}>
+                x{f.quantidade}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {figs.length === 0 && <Vazio emoji="🃏" texto="Nenhuma figurinha nesse filtro." />}
+
+      {/* Modal detalhe da figurinha */}
+      {figSel && (
+        <div onClick={() => setFigSel(null)} style={{
+          position:'fixed', inset:0, zIndex:9999,
+          background:'rgba(0,0,0,.82)',
+          display:'flex', alignItems:'center', justifyContent:'center', padding:16,
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background:'#12121A',
+            border:`2px solid ${rar(figSel.raridade).cor}`,
+            borderRadius:20, padding:28, maxWidth:320, width:'100%', textAlign:'center',
+            boxShadow:`0 0 40px ${rar(figSel.raridade).cor}44`,
+          }}>
+            <div style={{ fontSize:68, marginBottom:12 }}>{figSel.icone_emoji}</div>
+            <div style={{ fontSize:10, color:rar(figSel.raridade).cor, fontWeight:700, letterSpacing:2, marginBottom:4 }}>
+              #{figSel.numero} · {rar(figSel.raridade).label.toUpperCase()}
+            </div>
+            <div style={{ fontSize:20, fontWeight:900, color:'#fff', marginBottom:4 }}>{figSel.nome}</div>
+            <div style={{ fontSize:11, color:N.cinza, marginBottom:14 }}>{figSel.colecao_nome}</div>
+            {figSel.poder && (
+              <div style={{
+                background:rar(figSel.raridade).bg,
+                border:`1px solid ${rar(figSel.raridade).cor}44`,
+                borderRadius:10, padding:'10px 14px', marginBottom:12,
+              }}>
+                <div style={{ fontSize:9, color:rar(figSel.raridade).cor, fontWeight:700, letterSpacing:1, marginBottom:4 }}>⚡ PODER ESPECIAL</div>
+                <div style={{ fontSize:13, color:'#fff', fontWeight:700 }}>{figSel.poder}</div>
+              </div>
+            )}
+            <button onClick={() => setFigSel(null)} style={{
+              width:'100%', padding:10, marginTop:4,
+              background:'rgba(255,255,255,.08)',
+              border:'1px solid rgba(255,255,255,.15)',
+              borderRadius:10, color:N.cinza, cursor:'pointer', fontSize:12, fontWeight:700,
+            }}>
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
