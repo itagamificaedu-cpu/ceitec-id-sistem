@@ -57,6 +57,7 @@ import PainelSaidaSala from './pages/PainelSaidaSala'
 import EmpreendedorismoDigital from './pages/EmpreendedorismoDigital'
 import Agenda from './pages/Agenda'
 import Album from './pages/album/Album'
+import LigaJovem from './pages/LigaJovem'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -110,6 +111,8 @@ function Admin({ children }) {
   if (!token) return <Navigate to="/login" replace />
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
   if (usuario.perfil === 'professor') return <Navigate to="/dashboard" replace />
+  // Liga Jovem tem acesso de professor a turmas e scanner
+  if (usuario.perfil === 'liga_jovem') return children
   return children
 }
 
@@ -219,6 +222,9 @@ export default function App() {
 
         {/* Álbum dos Craques do Conhecimento — CEITEC GAME */}
         <Route path="/album" element={<P><Album /></P>} />
+
+        {/* Desafio Liga Jovem 2026 — visível só para ita_admin */}
+        <Route path="/liga-jovem" element={<ItaAdmin><LigaJovem /></ItaAdmin>} />
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />

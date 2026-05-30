@@ -76,7 +76,13 @@ const SECOES_ESTATICAS = [
   {
     titulo: 'GAMIFICAÇÃO',
     itens: [
-      { path: '/album', label: 'Álbum dos Craques 🃏', icon: '🏆' },
+      { path: '/album',       label: 'Álbum dos Craques 🃏',    icon: '🏆' },
+    ]
+  },
+  {
+    titulo: '⚽ LIGA JOVEM 2026',
+    itens: [
+      { path: '/liga-jovem',  label: 'Desafio Liga Jovem 2026', icon: '🏅', itaAdmin: true },
     ]
   },
   {
@@ -233,10 +239,40 @@ export default function Navbar() {
     else abrirUrl(url)
   }
 
-  const isProfessor = usuario.perfil === 'professor'
-  const isItaAdmin  = usuario.perfil === 'ita_admin'
+  const isProfessor  = usuario.perfil === 'professor'
+  const isItaAdmin   = usuario.perfil === 'ita_admin'
+  const isLigaJovem  = usuario.perfil === 'liga_jovem'
 
-  const secoes = isProfessor
+  const secoes = isLigaJovem
+    ? [
+        {
+          titulo: '⚽ DESAFIO LIGA JOVEM 2026',
+          itens: [
+            { path: '/dashboard',      label: 'Início',                  icon: '🏠' },
+            { path: '/scanner',        label: 'Scanner de Presença',     icon: '📷' },
+            { path: '/scanner/portal', label: 'Scanner Game Aluno',      icon: '📲' },
+            { path: '/turmas',         label: 'Turmas e Alunos',         icon: '👥' },
+          ]
+        },
+        {
+          titulo: 'FERRAMENTAS',
+          itens: [
+            { path: '/quiz',           label: 'Quiz Interativo',         icon: '🎯' },
+            { path: '/quiz/novo',      label: 'Criar Quiz',              icon: '➕' },
+            { path: '/avaliacoes',     label: 'Avaliações',              icon: '📝' },
+            { path: '/avaliacoes/nova',label: 'Criar Avaliação',         icon: '➕' },
+            { href: '/quiz-copa/',     label: 'Copa do Saber',           icon: '⚽' },
+          ]
+        },
+        {
+          titulo: 'CEITEC GAME',
+          itens: [
+            { path: '/album',          label: 'Álbum dos Craques',       icon: '🏆' },
+            { path: '/itagame',        label: 'ItagGame — Painel',       icon: '🎮' },
+          ]
+        },
+      ]
+    : isProfessor
     ? [
         {
           titulo: 'MINHAS TURMAS',
