@@ -1362,7 +1362,16 @@ function AbaAlbum({ codigoAluno }) {
   const rar = (r) => RAR_INFO[r] || RAR_INFO.comum
 
   return (
-    <div>
+    <div style={{ position:'relative' }}>
+
+      {/* Fundo Copa 2026 fixo no portal do aluno */}
+      <div style={{ position:'fixed', inset:0, zIndex:-1, pointerEvents:'none' }}>
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg,#031a03,#062b06 40%,#041f10 70%,#031508)' }}/>
+        {[...Array(8)].map((_,i) => (
+          <div key={i} style={{ position:'absolute', top:0, bottom:0, left:`${i*12.5}%`, width:'12.5%', background:i%2===0?'rgba(0,80,0,.18)':'transparent' }}/>
+        ))}
+        <div style={{ position:'absolute', top:-60, left:'50%', transform:'translateX(-50%)', width:'60%', height:250, background:'radial-gradient(ellipse,rgba(255,200,0,.1) 0%,transparent 70%)' }}/>
+      </div>
 
       {/* Barra de progresso do álbum */}
       <div style={{ background:'rgba(255,230,0,.07)', border:'1px solid rgba(255,230,0,.25)', borderRadius:16, padding:16, marginBottom:20 }}>

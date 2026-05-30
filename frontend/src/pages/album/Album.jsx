@@ -602,7 +602,25 @@ export default function Album() {
         .filt-btn:hover { background:rgba(255,255,255,.1)!important; }
       `}</style>
 
-      <div style={{ minHeight:'100vh', background:'#07101e', color:'#e8eaf0', fontFamily:"'Exo 2',sans-serif", padding:'20px 16px 60px' }}>
+      {/* Fundo Copa 2026 — gramado escuro com detalhes */}
+      <div style={{ position:'fixed', inset:0, zIndex:0, overflow:'hidden', pointerEvents:'none' }}>
+        {/* Base verde escuro */}
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(160deg,#031a03 0%,#062b06 35%,#041f10 65%,#031508 100%)' }}/>
+        {/* Faixas de gramado */}
+        {[...Array(10)].map((_,i) => (
+          <div key={i} style={{ position:'absolute', top:0, bottom:0, left:`${i*10}%`, width:'10%', background: i%2===0 ? 'rgba(0,80,0,.18)' : 'transparent' }}/>
+        ))}
+        {/* Glow dourado superior */}
+        <div style={{ position:'absolute', top:-80, left:'50%', transform:'translateX(-50%)', width:'60%', height:300, background:'radial-gradient(ellipse,rgba(255,200,0,.12) 0%,transparent 70%)' }}/>
+        {/* Glow verde inferior */}
+        <div style={{ position:'absolute', bottom:-60, left:'50%', transform:'translateX(-50%)', width:'80%', height:200, background:'radial-gradient(ellipse,rgba(0,180,0,.1) 0%,transparent 70%)' }}/>
+        {/* Partículas */}
+        {[...Array(8)].map((_,i) => (
+          <div key={i} style={{ position:'absolute', width:3+i%3*2, height:3+i%3*2, borderRadius:'50%', background:'#FFD700', top:`${8+(i*11.3)%82}%`, left:`${4+(i*12.7)%90}%`, opacity:.12+i%4*.06, animation:`float ${2+i%3}s ease-in-out infinite`, animationDelay:`${i*.4}s` }}/>
+        ))}
+      </div>
+
+      <div style={{ minHeight:'100vh', position:'relative', zIndex:1, color:'#e8eaf0', fontFamily:"'Exo 2',sans-serif", padding:'20px 16px 60px' }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
 
           {/* Header */}
@@ -632,7 +650,7 @@ export default function Album() {
           </div>
 
           {/* Seletor aluno */}
-          <div style={{ background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)', borderRadius:14, padding:16, marginBottom:20 }}>
+          <div style={{ background:'rgba(0,0,0,.45)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,210,0,.2)', borderRadius:14, padding:16, marginBottom:20 }}>
             <label style={{ fontSize:11, color:'#fbbf24', fontWeight:700, letterSpacing:2, textTransform:'uppercase', display:'block', marginBottom:8 }}>
               Selecionar Aluno
             </label>
