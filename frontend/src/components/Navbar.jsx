@@ -265,6 +265,15 @@ export default function Navbar() {
           ]
         },
         {
+          titulo: 'GAMIFICAÇÃO',
+          itens: [
+            { path: '/itagame', label: 'ItagGame — Painel',   icon: '🎮' },
+            { path: '/album',   label: 'Álbum dos Craques',   icon: '🃏' },
+            { href: '/quiz-copa/', label: 'Copa do Saber',    icon: '⚽' },
+            { path: '/divisao-equipes', label: 'Divisão de Equipes', icon: '🎲' },
+          ]
+        },
+        {
           titulo: 'MÓDULOS EXTRAS',
           itens: [
             { path: '/sala-maker',               label: 'Sala Maker',               icon: '🔬' },
@@ -280,11 +289,8 @@ export default function Navbar() {
         {
           titulo: 'FERRAMENTAS ITA',
           itens: [
-            { onClick: abrirMestre,   label: 'Horário do Dia',               icon: '📅' },
-            { path: '/itagame',       label: 'ItagGame — Painel do Professor', icon: '🎮' },
-            { path: '/album',         label: 'Álbum dos Craques',              icon: '🃏' },
-            { onClick: abrirCorretor, label: 'Corretor de Provas',             icon: '✅' },
-            { path: '/divisao-equipes', label: 'Divisão de Equipes',          icon: '🎲' },
+            { onClick: abrirMestre,   label: 'Horário do Dia',   icon: '📅' },
+            { onClick: abrirCorretor, label: 'Corretor de Provas', icon: '✅' },
           ]
         }
       ]
