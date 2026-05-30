@@ -58,6 +58,7 @@ import EmpreendedorismoDigital from './pages/EmpreendedorismoDigital'
 import Agenda from './pages/Agenda'
 import Album from './pages/album/Album'
 import LigaJovem from './pages/LigaJovem'
+import CuboMagico from './pages/CuboMagico'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -225,6 +226,9 @@ export default function App() {
 
         {/* Desafio Liga Jovem 2026 — visível só para ita_admin */}
         <Route path="/liga-jovem" element={<ItaAdmin><LigaJovem /></ItaAdmin>} />
+
+        {/* Campeonato de Cubo Mágico — visível para todos */}
+        <Route path="/cubo-magico" element={<P><CuboMagico /></P>} />
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />
