@@ -55,6 +55,7 @@ app.use('/api/quiz',         require('./routes/quiz'));    // quiz público — 
 app.use('/api/mobile-tracker', require('./routes/mobile-tracker')); // tracker GPS (POST /localizar é público)
 app.use('/api/mestre',        require('./routes/mestre'));          // Mestre da Escola (sem autenticação JWT)
 app.use('/api/agenda',        require('./routes/agenda'));           // Agenda e Avisos (rota /publico não exige auth)
+app.use('/api/album',         require('./routes/album'));            // Álbum dos Craques do Conhecimento
 
 app.get('/api/status', (req, res) => {
   res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });

@@ -56,6 +56,7 @@ import SaidaSala from './pages/SaidaSala'
 import PainelSaidaSala from './pages/PainelSaidaSala'
 import EmpreendedorismoDigital from './pages/EmpreendedorismoDigital'
 import Agenda from './pages/Agenda'
+import Album from './pages/album/Album'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -215,6 +216,9 @@ export default function App() {
 
         {/* Agenda e Avisos — todos os usuários autenticados */}
         <Route path="/agenda" element={<P><Agenda /></P>} />
+
+        {/* Álbum dos Craques do Conhecimento — CEITEC GAME */}
+        <Route path="/album" element={<P><Album /></P>} />
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />

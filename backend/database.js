@@ -462,6 +462,57 @@ async function initDatabase() {
       criado_em TIMESTAMP DEFAULT NOW()
     )`,
 
+    /* ========== ÁLBUM DOS CRAQUES DO CONHECIMENTO ========== */
+
+    `CREATE TABLE IF NOT EXISTS album_colecoes (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      nome TEXT NOT NULL,
+      icone TEXT DEFAULT '🃏',
+      cor TEXT DEFAULT '#6366f1',
+      ordem INTEGER DEFAULT 0,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS album_figurinhas (
+      id SERIAL PRIMARY KEY,
+      escola_id INTEGER NOT NULL,
+      numero TEXT NOT NULL,
+      nome TEXT NOT NULL,
+      colecao_id INTEGER,
+      classe TEXT NOT NULL DEFAULT 'geral',
+      raridade TEXT NOT NULL DEFAULT 'comum',
+      poder TEXT DEFAULT '',
+      historia TEXT DEFAULT '',
+      curiosidade TEXT DEFAULT '',
+      xp_bonus INTEGER DEFAULT 0,
+      icone_emoji TEXT DEFAULT '🤖',
+      cor_primaria TEXT DEFAULT '#6366f1',
+      cor_secundaria TEXT DEFAULT '#8b5cf6',
+      ativo INTEGER DEFAULT 1,
+      criado_em TIMESTAMP DEFAULT NOW()
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS album_aluno (
+      id SERIAL PRIMARY KEY,
+      aluno_id INTEGER NOT NULL,
+      escola_id INTEGER NOT NULL,
+      figurinha_id INTEGER NOT NULL,
+      quantidade INTEGER DEFAULT 1,
+      obtida_em TIMESTAMP DEFAULT NOW(),
+      UNIQUE(aluno_id, figurinha_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS album_pacotes_log (
+      id SERIAL PRIMARY KEY,
+      aluno_id INTEGER NOT NULL,
+      escola_id INTEGER NOT NULL,
+      tipo TEXT DEFAULT 'comum',
+      figurinhas_ids TEXT DEFAULT '[]',
+      custo_xp INTEGER DEFAULT 0,
+      aberto_em TIMESTAMP DEFAULT NOW()
+    )`,
+
   ];
 
   for (const sql of tabelas) {
@@ -522,6 +573,107 @@ async function initDatabase() {
     await db.exec(
       `INSERT INTO alunos (codigo, nome, turma, turma_id, curso, email_responsavel, telefone_responsavel, data_matricula) VALUES ('${a.codigo}', '${a.nome}', '${a.turma}', ${a.turma_id}, '${a.curso}', '${a.email}', '${a.tel}', '${hoje}') ON CONFLICT (codigo) DO NOTHING`
     );
+  }
+
+  // ── Seed do Álbum dos Craques — só insere se vazio ──────────
+  const adminId = await db.get(`SELECT id FROM usuarios WHERE email = 'admin@ita.com' LIMIT 1`);
+  if (adminId) {
+    const jaTemCol = await db.get(`SELECT id FROM album_colecoes WHERE escola_id = $1 LIMIT 1`, [adminId.id]);
+    if (!jaTemCol) {
+      // Coleções
+      const colecoes = [
+        { nome: 'Robótica',                icone: '🤖', cor: '#06b6d4', ordem: 1 },
+        { nome: 'Programação',              icone: '💻', cor: '#8b5cf6', ordem: 2 },
+        { nome: 'Fabricação Digital',       icone: '🖨️', cor: '#f59e0b', ordem: 3 },
+        { nome: 'Corte a Laser',            icone: '🔥', cor: '#ef4444', ordem: 4 },
+        { nome: 'Empreendedorismo Digital', icone: '🚀', cor: '#22c55e', ordem: 5 },
+      ];
+      const colIds = {};
+      for (const c of colecoes) {
+        const r = await db.run(
+          `INSERT INTO album_colecoes (escola_id, nome, icone, cor, ordem) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+          [adminId.id, c.nome, c.icone, c.cor, c.ordem]
+        );
+        colIds[c.nome] = r.lastInsertRowid;
+      }
+
+      // 50 Figurinhas
+      const figs = [
+        // ── ROBÓTICA (001-010) ────────────────────────────────────
+        { n:'001', nome:'Tobi Maker',          classe:'robotica', rar:'comum',   poder:'Criatividade Maker',        emoji:'🤖', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
+        { n:'002', nome:'Mecabot X1',          classe:'robotica', rar:'comum',   poder:'Movimento Inteligente',     emoji:'⚙️', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
+        { n:'003', nome:'Droid Explorer',      classe:'robotica', rar:'comum',   poder:'Navegação Autônoma',        emoji:'🛸', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
+        { n:'004', nome:'RoboSpark',           classe:'robotica', rar:'comum',   poder:'Circuitos Energizados',     emoji:'⚡', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
+        { n:'005', nome:'TechRunner',          classe:'robotica', rar:'comum',   poder:'Velocidade Robótica',       emoji:'🏃', cp:'#06b6d4', cs:'#0284c7', col:'Robótica', xp:10 },
+        { n:'006', nome:'NanoBot',             classe:'robotica', rar:'rara',    poder:'Reparação Instantânea',     emoji:'🔬', cp:'#0891b2', cs:'#0c4a6e', col:'Robótica', xp:25 },
+        { n:'007', nome:'CyberMaker',          classe:'robotica', rar:'rara',    poder:'Construção Avançada',       emoji:'🔧', cp:'#0891b2', cs:'#0c4a6e', col:'Robótica', xp:25 },
+        { n:'008', nome:'TitanBot',            classe:'robotica', rar:'epica',   poder:'Força Mecânica',            emoji:'💪', cp:'#0369a1', cs:'#1e3a5f', col:'Robótica', xp:50 },
+        { n:'009', nome:'Mega Droid',          classe:'robotica', rar:'epica',   poder:'Defesa Suprema',            emoji:'🛡️', cp:'#0369a1', cs:'#1e3a5f', col:'Robótica', xp:50 },
+        { n:'010', nome:'Comandante Robotech', classe:'robotica', rar:'lendaria',poder:'Controla todos os robôs',   emoji:'👑', cp:'#f5a623', cs:'#e08000', col:'Robótica', xp:100 },
+
+        // ── PROGRAMAÇÃO (011-020) ─────────────────────────────────
+        { n:'011', nome:'Capitão Scratch',          classe:'programacao', rar:'comum',   poder:'Blocos Mágicos',          emoji:'🎮', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
+        { n:'012', nome:'Byte Kid',                 classe:'programacao', rar:'comum',   poder:'Lógica Rápida',           emoji:'💡', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
+        { n:'013', nome:'Pixel Master',             classe:'programacao', rar:'comum',   poder:'Criação de Jogos',        emoji:'🕹️', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
+        { n:'014', nome:'Coder Boy',                classe:'programacao', rar:'comum',   poder:'Programação Básica',      emoji:'👾', cp:'#8b5cf6', cs:'#6d28d9', col:'Programação', xp:10 },
+        { n:'015', nome:'Bug Hunter',               classe:'programacao', rar:'rara',    poder:'Eliminação de Erros',     emoji:'🐛', cp:'#7c3aed', cs:'#4c1d95', col:'Programação', xp:25 },
+        { n:'016', nome:'Lady Python',              classe:'programacao', rar:'rara',    poder:'Código Inteligente',      emoji:'🐍', cp:'#7c3aed', cs:'#4c1d95', col:'Programação', xp:25 },
+        { n:'017', nome:'Java Hero',                classe:'programacao', rar:'epica',   poder:'Sistemas Poderosos',      emoji:'☕', cp:'#5b21b6', cs:'#2e1065', col:'Programação', xp:50 },
+        { n:'018', nome:'JS Guardian',              classe:'programacao', rar:'epica',   poder:'Apps Interativos',        emoji:'⚡', cp:'#5b21b6', cs:'#2e1065', col:'Programação', xp:50 },
+        { n:'019', nome:'Mestre dos Algoritmos',    classe:'programacao', rar:'epica',   poder:'Solução Perfeita',        emoji:'🧮', cp:'#5b21b6', cs:'#2e1065', col:'Programação', xp:50 },
+        { n:'020', nome:'Imperador do Código',      classe:'programacao', rar:'lendaria',poder:'Domina todas as linguagens',emoji:'👑',cp:'#f5a623', cs:'#e08000', col:'Programação', xp:100 },
+
+        // ── FABRICAÇÃO DIGITAL (021-030) ──────────────────────────
+        { n:'021', nome:'Guardião 3D',         classe:'fabricacao', rar:'comum',   poder:'Impressão Perfeita',    emoji:'🖨️', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
+        { n:'022', nome:'Printer Kid',         classe:'fabricacao', rar:'comum',   poder:'Modelos Rápidos',       emoji:'📦', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
+        { n:'023', nome:'Modelador X',         classe:'fabricacao', rar:'comum',   poder:'Formas 3D',             emoji:'📐', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
+        { n:'024', nome:'Proto Maker',         classe:'fabricacao', rar:'comum',   poder:'Protótipos Ágeis',      emoji:'🔩', cp:'#f59e0b', cs:'#d97706', col:'Fabricação Digital', xp:10 },
+        { n:'025', nome:'Inventora 3D',        classe:'fabricacao', rar:'rara',    poder:'Invenção em Minutos',   emoji:'💎', cp:'#d97706', cs:'#92400e', col:'Fabricação Digital', xp:25 },
+        { n:'026', nome:'Mestre Fusion',       classe:'fabricacao', rar:'rara',    poder:'Fusão de Materiais',    emoji:'🔮', cp:'#d97706', cs:'#92400e', col:'Fabricação Digital', xp:25 },
+        { n:'027', nome:'Engenheiro Maker',    classe:'fabricacao', rar:'epica',   poder:'Engenharia Precisa',    emoji:'🏗️', cp:'#b45309', cs:'#78350f', col:'Fabricação Digital', xp:50 },
+        { n:'028', nome:'Arquiteto Digital',   classe:'fabricacao', rar:'epica',   poder:'Projetos Épicos',       emoji:'🏛️', cp:'#b45309', cs:'#78350f', col:'Fabricação Digital', xp:50 },
+        { n:'029', nome:'Construtor Supremo',  classe:'fabricacao', rar:'epica',   poder:'Constrói o Impossível', emoji:'🔨', cp:'#b45309', cs:'#78350f', col:'Fabricação Digital', xp:50 },
+        { n:'030', nome:'Rei da Fabricação',   classe:'fabricacao', rar:'lendaria',poder:'Materializa Sonhos',    emoji:'👑', cp:'#f5a623', cs:'#e08000', col:'Fabricação Digital', xp:100 },
+
+        // ── CORTE A LASER (031-040) ───────────────────────────────
+        { n:'031', nome:'Mestre Laser',         classe:'laser', rar:'comum',   poder:'Corte Preciso',          emoji:'🔥', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
+        { n:'032', nome:'Laser Kid',            classe:'laser', rar:'comum',   poder:'Luz Cortante',           emoji:'✂️', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
+        { n:'033', nome:'Light Cutter',         classe:'laser', rar:'comum',   poder:'Velocidade da Luz',      emoji:'💫', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
+        { n:'034', nome:'Beam Hero',            classe:'laser', rar:'comum',   poder:'Raio Certeiro',          emoji:'⚡', cp:'#ef4444', cs:'#b91c1c', col:'Corte a Laser', xp:10 },
+        { n:'035', nome:'Precision Maker',      classe:'laser', rar:'rara',    poder:'Milímetro Perfeito',     emoji:'🎯', cp:'#dc2626', cs:'#7f1d1d', col:'Corte a Laser', xp:25 },
+        { n:'036', nome:'Lady Laser',           classe:'laser', rar:'rara',    poder:'Arte em Luz',            emoji:'🌟', cp:'#dc2626', cs:'#7f1d1d', col:'Corte a Laser', xp:25 },
+        { n:'037', nome:'Guardião da Luz',      classe:'laser', rar:'epica',   poder:'Luz Intocável',          emoji:'🔆', cp:'#b91c1c', cs:'#450a0a', col:'Corte a Laser', xp:50 },
+        { n:'038', nome:'Samurai Laser',        classe:'laser', rar:'epica',   poder:'Golpe de Laser',         emoji:'⚔️', cp:'#b91c1c', cs:'#450a0a', col:'Corte a Laser', xp:50 },
+        { n:'039', nome:'Mestre da Precisão',   classe:'laser', rar:'epica',   poder:'Zero Erro',              emoji:'🏹', cp:'#b91c1c', cs:'#450a0a', col:'Corte a Laser', xp:50 },
+        { n:'040', nome:'Imperador Laser',      classe:'laser', rar:'lendaria',poder:'Corta a Realidade',      emoji:'👑', cp:'#f5a623', cs:'#e08000', col:'Corte a Laser', xp:100 },
+
+        // ── EMPREENDEDORISMO (041-050) ────────────────────────────
+        { n:'041', nome:'Startup Kid',         classe:'empreendedorismo', rar:'comum',   poder:'Ideia que Voa',         emoji:'💡', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
+        { n:'042', nome:'Visionário Júnior',   classe:'empreendedorismo', rar:'comum',   poder:'Visão do Futuro',       emoji:'👀', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
+        { n:'043', nome:'Criador Digital',     classe:'empreendedorismo', rar:'comum',   poder:'Cria do Zero',          emoji:'✨', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
+        { n:'044', nome:'Inventor Maker',      classe:'empreendedorismo', rar:'comum',   poder:'Inventa Soluções',      emoji:'🔭', cp:'#22c55e', cs:'#15803d', col:'Empreendedorismo Digital', xp:10 },
+        { n:'045', nome:'Mestre dos Negócios', classe:'empreendedorismo', rar:'rara',    poder:'Negociação Épica',      emoji:'🤝', cp:'#16a34a', cs:'#14532d', col:'Empreendedorismo Digital', xp:25 },
+        { n:'046', nome:'CEO Jovem',           classe:'empreendedorismo', rar:'rara',    poder:'Lidera com Visão',      emoji:'💼', cp:'#16a34a', cs:'#14532d', col:'Empreendedorismo Digital', xp:25 },
+        { n:'047', nome:'Estrategista Digital',classe:'empreendedorismo', rar:'epica',   poder:'Plano Perfeito',        emoji:'♟️', cp:'#15803d', cs:'#052e16', col:'Empreendedorismo Digital', xp:50 },
+        { n:'048', nome:'Líder Inovador',      classe:'empreendedorismo', rar:'epica',   poder:'Inspira Multidões',     emoji:'🎖️', cp:'#15803d', cs:'#052e16', col:'Empreendedorismo Digital', xp:50 },
+        { n:'049', nome:'Magnata Maker',       classe:'empreendedorismo', rar:'epica',   poder:'Transforma o Mercado',  emoji:'💰', cp:'#15803d', cs:'#052e16', col:'Empreendedorismo Digital', xp:50 },
+        { n:'050', nome:'Supremo CEITEC',      classe:'empreendedorismo', rar:'lendaria',poder:'Reúne todo o conhecimento da Liga',emoji:'🏆',cp:'#f5a623',cs:'#e08000', col:'Empreendedorismo Digital', xp:200 },
+      ];
+
+      for (const f of figs) {
+        const cid = colIds[f.col] || null;
+        await db.exec(
+          `INSERT INTO album_figurinhas
+             (escola_id, numero, nome, colecao_id, classe, raridade, poder,
+              historia, curiosidade, xp_bonus, icone_emoji, cor_primaria, cor_secundaria)
+           VALUES (${adminId.id}, '${f.n}', '${f.nome.replace(/'/g, "''")}', ${cid},
+                   '${f.classe}', '${f.rar}', '${f.poder.replace(/'/g,"''")}',
+                   '', '', ${f.xp}, '${f.emoji}', '${f.cp}', '${f.cs}')
+           ON CONFLICT DO NOTHING`
+        );
+      }
+      console.log('Álbum dos Craques: 50 figurinhas inseridas.');
+    }
   }
 
   console.log('Banco PostgreSQL inicializado');
