@@ -27,17 +27,27 @@ function sortearRaridade(pesos) {
   return 'comum'
 }
 
+// Resolve o escola_id real para figurinhas:
+// Se a escola do usuário não tem figurinhas próprias, usa a escola 1 (plataforma ITA)
+async function resolverEscolaFigs(escola_id) {
+  const tem = await db.get(
+    'SELECT id FROM album_figurinhas WHERE escola_id = ? AND ativo = 1 LIMIT 1',
+    [escola_id]
+  )
+  return tem ? escola_id : 1
+}
+
 // ── GET /node-api/album/figurinhas — lista todas da escola ────
 router.get('/figurinhas', autenticar, async (req, res) => {
   try {
-    const { escola_id } = req.usuario
+    const eid = await resolverEscolaFigs(req.usuario.escola_id)
     const figs = await db.all(
       `SELECT f.*, c.nome AS colecao_nome, c.icone AS colecao_icone, c.cor AS colecao_cor
        FROM album_figurinhas f
        LEFT JOIN album_colecoes c ON c.id = f.colecao_id
        WHERE f.escola_id = ? AND f.ativo = 1
        ORDER BY f.numero ASC`,
-      [escola_id]
+      [eid]
     )
     res.json(figs)
   } catch (err) { res.status(500).json({ erro: err.message }) }
@@ -46,8 +56,9 @@ router.get('/figurinhas', autenticar, async (req, res) => {
 // ── GET /node-api/album/meu-album/:aluno_id ───────────────────
 router.get('/meu-album/:aluno_id', autenticar, async (req, res) => {
   try {
-    const { escola_id } = req.usuario
-    const alunoId = parseInt(req.params.aluno_id)
+    const escola_id = req.usuario.escola_id
+    const eid       = await resolverEscolaFigs(escola_id)
+    const alunoId   = parseInt(req.params.aluno_id)
 
     const todas = await db.all(
       `SELECT f.*, c.nome AS colecao_nome, c.icone AS colecao_icone, c.cor AS colecao_cor
@@ -55,7 +66,7 @@ router.get('/meu-album/:aluno_id', autenticar, async (req, res) => {
        LEFT JOIN album_colecoes c ON c.id = f.colecao_id
        WHERE f.escola_id = ? AND f.ativo = 1
        ORDER BY f.numero ASC`,
-      [escola_id]
+      [eid]
     )
     const minhas = await db.all(
       'SELECT figurinha_id, quantidade, obtida_em FROM album_aluno WHERE aluno_id = ? AND escola_id = ?',
@@ -97,8 +108,9 @@ router.get('/meu-album/:aluno_id', autenticar, async (req, res) => {
 // ── POST /node-api/album/abrir-pacote ────────────────────────
 router.post('/abrir-pacote', autenticar, async (req, res) => {
   try {
-    const { escola_id } = req.usuario
+    const escola_id = req.usuario.escola_id
     const { aluno_id, tipo = 'comum' } = req.body
+    const eid = await resolverEscolaFigs(escola_id)
 
     const custo = CUSTO_XP[tipo] || 50
     const qtd   = QTD_FIGS[tipo] || 3
@@ -112,17 +124,17 @@ router.post('/abrir-pacote', autenticar, async (req, res) => {
       }
     }
 
-    // Todas as figurinhas disponíveis
+    // Todas as figurinhas disponíveis (usa eid = escola resolvida)
     const todasFigs = await db.all(
       'SELECT * FROM album_figurinhas WHERE escola_id = ? AND ativo = 1',
-      [escola_id]
+      [eid]
     )
     if (!todasFigs.length) return res.status(400).json({ erro: 'Nenhuma figurinha cadastrada ainda.' })
 
     // Figurinhas que o aluno já possui
     const jatem = await db.all(
       'SELECT figurinha_id FROM album_aluno WHERE aluno_id = ? AND escola_id = ?',
-      [aluno_id, escola_id]
+      [aluno_id, eid]
     )
     const jaTemSet = new Set(jatem.map(j => j.figurinha_id))
 
@@ -144,7 +156,7 @@ router.post('/abrir-pacote', autenticar, async (req, res) => {
          VALUES (?, ?, ?, 1)
          ON CONFLICT (aluno_id, figurinha_id)
          DO UPDATE SET quantidade = album_aluno.quantidade + 1`,
-        [aluno_id, escola_id, fig.id]
+        [aluno_id, eid, fig.id]
       )
 
       resultado.push({ ...fig, duplicata })
@@ -162,7 +174,7 @@ router.post('/abrir-pacote', autenticar, async (req, res) => {
     await db.run(
       `INSERT INTO album_pacotes_log (aluno_id, escola_id, tipo, figurinhas_ids, custo_xp)
        VALUES (?, ?, ?, ?, ?)`,
-      [aluno_id, escola_id, tipo, JSON.stringify(resultado.map(f => f.id)), custo]
+      [aluno_id, eid, tipo, JSON.stringify(resultado.map(f => f.id)), custo]
     )
 
     res.json({
@@ -177,10 +189,10 @@ router.post('/abrir-pacote', autenticar, async (req, res) => {
 // ── GET /node-api/album/ranking ──────────────────────────────
 router.get('/ranking', autenticar, async (req, res) => {
   try {
-    const { escola_id } = req.usuario
+    const eid = await resolverEscolaFigs(req.usuario.escola_id)
     const total = await db.get(
       'SELECT COUNT(*) AS n FROM album_figurinhas WHERE escola_id = ? AND ativo = 1',
-      [escola_id]
+      [eid]
     )
     const ranking = await db.all(
       `SELECT a.nome, al.aluno_id, a.turma,
@@ -191,7 +203,7 @@ router.get('/ranking', autenticar, async (req, res) => {
        GROUP BY al.aluno_id, a.nome, a.turma
        ORDER BY desbloqueadas DESC
        LIMIT 30`,
-      [escola_id]
+      [eid]
     )
     res.json({
       ranking: ranking.map((r, i) => ({
@@ -228,21 +240,22 @@ router.post('/figurinhas', autenticar, async (req, res) => {
 // ── POST /node-api/album/distribuir — professor dá pacote ────
 router.post('/distribuir', autenticar, async (req, res) => {
   try {
-    const { escola_id } = req.usuario
+    const escola_id = req.usuario.escola_id
     const { aluno_id, tipo = 'especial' } = req.body
+    const eid = await resolverEscolaFigs(escola_id)
 
     // Sorteia figurinhas especiais sem custo XP
     const pesos = PESOS.especial
     const qtd   = 5
     const todasFigs = await db.all(
       'SELECT * FROM album_figurinhas WHERE escola_id = ? AND ativo = 1',
-      [escola_id]
+      [eid]
     )
     if (!todasFigs.length) return res.status(400).json({ erro: 'Sem figurinhas cadastradas.' })
 
     const jatem = await db.all(
       'SELECT figurinha_id FROM album_aluno WHERE aluno_id = ? AND escola_id = ?',
-      [aluno_id, escola_id]
+      [aluno_id, eid]
     )
     const jaTemSet = new Set(jatem.map(j => j.figurinha_id))
 
@@ -259,7 +272,7 @@ router.post('/distribuir', autenticar, async (req, res) => {
          VALUES (?, ?, ?, 1)
          ON CONFLICT (aluno_id, figurinha_id)
          DO UPDATE SET quantidade = album_aluno.quantidade + 1`,
-        [aluno_id, escola_id, fig.id]
+        [aluno_id, eid, fig.id]
       )
       resultado.push({ ...fig, duplicata })
     }
@@ -267,7 +280,7 @@ router.post('/distribuir', autenticar, async (req, res) => {
     await db.run(
       `INSERT INTO album_pacotes_log (aluno_id, escola_id, tipo, figurinhas_ids, custo_xp)
        VALUES (?, ?, 'especial', ?, 0)`,
-      [aluno_id, escola_id, JSON.stringify(resultado.map(f => f.id))]
+      [aluno_id, eid, JSON.stringify(resultado.map(f => f.id))]
     )
 
     res.json({
