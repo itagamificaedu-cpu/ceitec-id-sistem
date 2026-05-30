@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db');
 const { autenticar } = require('../middleware/auth');
 const { addProfXP } = require('./professorGame');
+const { premiacao } = require('./album');
 
 const router = express.Router();
 
@@ -51,6 +52,7 @@ router.post('/jogar/:codigo/responder', async (req, res) => {
 
     // Dar XP ao aluno se código da carteirinha foi informado
     let xp_ganho = 0;
+    let pacote_album = null;
     if (aluno_codigo) {
       const aluno = await db.get('SELECT * FROM alunos WHERE codigo = ? AND ativo = 1', [aluno_codigo.toUpperCase()]);
       if (aluno) {
@@ -65,10 +67,21 @@ router.post('/jogar/:codigo/responder', async (req, res) => {
             [aluno.id, 'quiz', `Quiz: ${quiz.titulo} — ${acertos}/${total} acertos`, xp_ganho]
           );
         }
+
+        // ⚽ ÁLBUM COPA — premia com pacote de cartas por desempenho
+        if (percentual >= 90) {
+          // Nota excelente (90%+) → pacote premium (5 cartas, chance de épicas)
+          pacote_album = await premiacao(aluno.id, aluno.escola_id, 'premium', `Quiz ${quiz.titulo}: ${percentual}%`);
+          pacote_album.tipo_pacote = 'premium';
+        } else if (percentual >= 70) {
+          // Boa nota (70%+) → pacote comum (3 cartas)
+          pacote_album = await premiacao(aluno.id, aluno.escola_id, 'comum', `Quiz ${quiz.titulo}: ${percentual}%`);
+          pacote_album.tipo_pacote = 'comum';
+        }
       }
     }
 
-    res.json({ acertos, total, percentual, xp_ganho });
+    res.json({ acertos, total, percentual, xp_ganho, pacote_album });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }

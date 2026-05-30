@@ -305,6 +305,85 @@ router.get('/colecoes', autenticar, async (req, res) => {
   } catch (err) { res.status(500).json({ erro: err.message }) }
 })
 
+// ══════════════════════════════════════════════════════════════
+// FUNÇÃO AUXILIAR — Premia aluno com pacote (sem autenticação)
+// Chamada internamente por outros módulos (quiz, missão, nota)
+// ══════════════════════════════════════════════════════════════
+async function premiacao(aluno_id, escola_id, tipo = 'comum', motivo = '') {
+  try {
+    const eid   = await resolverEscolaFigs(escola_id)
+    const pesos = PESOS[tipo] || PESOS.comum
+    const qtd   = QTD_FIGS[tipo] || 3
+
+    const todasFigs = await db.all('SELECT * FROM album_figurinhas WHERE escola_id = ? AND ativo = 1', [eid])
+    if (!todasFigs.length) return { ok: false, motivo: 'sem figurinhas' }
+
+    const jatem = await db.all('SELECT figurinha_id FROM album_aluno WHERE aluno_id = ? AND escola_id = ?', [aluno_id, eid])
+    const jaTemSet = new Set(jatem.map(j => j.figurinha_id))
+
+    const resultado = []
+    for (let i = 0; i < qtd; i++) {
+      const rar  = sortearRaridade(pesos)
+      const pool = todasFigs.filter(f => f.raridade === rar)
+      if (!pool.length) { i--; continue }
+      const fig      = pool[Math.floor(Math.random() * pool.length)]
+      const duplicata = jaTemSet.has(fig.id)
+      if (!duplicata) jaTemSet.add(fig.id)
+      await db.run(
+        `INSERT INTO album_aluno (aluno_id, escola_id, figurinha_id, quantidade)
+         VALUES (?, ?, ?, 1)
+         ON CONFLICT (aluno_id, figurinha_id)
+         DO UPDATE SET quantidade = album_aluno.quantidade + 1`,
+        [aluno_id, eid, fig.id]
+      )
+      resultado.push({ ...fig, duplicata })
+    }
+    await db.run(
+      `INSERT INTO album_pacotes_log (aluno_id, escola_id, tipo, figurinhas_ids, custo_xp)
+       VALUES (?, ?, ?, ?, 0)`,
+      [aluno_id, eid, tipo, JSON.stringify(resultado.map(f => f.id))]
+    )
+    return { ok: true, pacote: resultado, novas: resultado.filter(f => !f.duplicata).length }
+  } catch (err) { return { ok: false, erro: err.message } }
+}
+module.exports.premiacao = premiacao
+
+// ── POST /node-api/album/premiar-missao — professor aprova missão ──
+router.post('/premiar-missao', autenticar, async (req, res) => {
+  try {
+    const { escola_id } = req.usuario
+    const { aluno_id, missao_titulo = 'Missão concluída' } = req.body
+    const r = await premiacao(aluno_id, escola_id, 'especial', `Missão: ${missao_titulo}`)
+    res.json(r)
+  } catch (err) { res.status(500).json({ erro: err.message }) }
+})
+
+// ── POST /node-api/album/premiar-por-nota — professor premia por nota ──
+router.post('/premiar-por-nota', autenticar, async (req, res) => {
+  try {
+    const { escola_id } = req.usuario
+    const { avaliacao_id, nota_minima = 7, tipo = 'comum' } = req.body
+
+    // Busca alunos com nota >= nota_minima nessa avaliação
+    const premiados = await db.all(
+      `SELECT n.aluno_id, a.nome, n.nota_final
+       FROM notas n
+       JOIN alunos a ON a.id = n.aluno_id
+       WHERE n.avaliacao_id = ? AND n.nota_final >= ?
+       ORDER BY n.nota_final DESC`,
+      [avaliacao_id, nota_minima]
+    )
+    if (!premiados.length) return res.json({ ok: true, premiados: 0, msg: 'Nenhum aluno atingiu a nota mínima.' })
+
+    const resultados = []
+    for (const aluno of premiados) {
+      const r = await premiacao(aluno.aluno_id, escola_id, tipo, `Nota ${aluno.nota_final} na avaliação`)
+      resultados.push({ aluno: aluno.nome, nota: aluno.nota_final, cartas: r.novas || 0 })
+    }
+    res.json({ ok: true, premiados: premiados.length, resultados })
+  } catch (err) { res.status(500).json({ erro: err.message }) }
+})
+
 // ── GET /node-api/album/portal/:codigo — público, sem JWT ─────
 // Usado pelo portal do aluno (carteirinha / QR Code)
 router.get('/portal/:codigo', async (req, res) => {
