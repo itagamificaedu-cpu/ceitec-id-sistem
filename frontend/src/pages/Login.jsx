@@ -156,24 +156,25 @@ export default function Login() {
         .lg-tg-gold  { color: #1d4ed8; text-shadow: 0 0 10px rgba(29,78,216,.4); }
         .lg-tg-green { color: #22c55e; text-shadow: 0 0 10px rgba(34,197,94,.4); }
 
-        /* — Badge roxo — */
+        /* — Badge azul — */
         .lg-badge-roxo {
           display: inline-flex; align-items: center; gap: 10px;
-          background: rgba(124,58,237,.2);
-          border: 1px solid rgba(124,58,237,.5);
+          background: #1d4ed8;
+          border: 1px solid #1e40af;
           border-radius: 30px; padding: 10px 24px;
           position: relative; z-index: 1;
+          box-shadow: 0 4px 16px rgba(29,78,216,.3);
         }
         .lg-badge-dot {
           width: 9px; height: 9px;
-          background: #a78bfa; border-radius: 50%;
+          background: #22c55e; border-radius: 50%;
           animation: pulse 1.4s ease-in-out infinite;
-          box-shadow: 0 0 10px #a78bfa; flex-shrink: 0;
+          box-shadow: 0 0 8px #22c55e; flex-shrink: 0;
         }
         .lg-badge-roxo span:last-child {
           font-family: 'Exo 2', sans-serif;
           font-size: clamp(13px, 1.3vw, 16px);
-          font-weight: 700; color: #c4b5fd; letter-spacing: .5px;
+          font-weight: 700; color: #ffffff; letter-spacing: .5px;
         }
 
 
@@ -244,7 +245,7 @@ export default function Login() {
           outline: none;
           transition: border-color .2s, background .2s, box-shadow .2s;
         }
-        .lg-input::placeholder { color: #9ca3af; }
+        .lg-input::placeholder { color: #374151; }
         /* Remove estilo de autopreenchimento do browser */
         .lg-input:-webkit-autofill,
         .lg-input:-webkit-autofill:hover,
@@ -340,7 +341,7 @@ export default function Login() {
         .lg-divider span {
           font-family: 'Exo 2', sans-serif;
           font-size: 10px; font-weight: 700;
-          color: #d1d5db;
+          color: #111827;
           letter-spacing: 2px; text-transform: uppercase;
           white-space: nowrap;
         }
@@ -360,12 +361,12 @@ export default function Login() {
         }
         .lg-cred:hover {
           background: #f5f3ff;
-          border-color: #c4b5fd;
+          border-color: #1d4ed8;
           transform: translateY(-2px);
         }
         .lg-cred-icon  { font-size: 20px; line-height: 1; }
         .lg-cred-role  { font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; color: #1d4ed8; }
-        .lg-cred-email { font-family: 'Exo 2', sans-serif; font-size: 10px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .lg-cred-email { font-family: 'Exo 2', sans-serif; font-size: 10px; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
         .lg-tooltip {
           position: absolute; bottom: calc(100% + 8px); right: 0;
@@ -390,7 +391,7 @@ export default function Login() {
 
         .lg-copy {
           font-family: 'Exo 2', sans-serif;
-          font-size: 9px; color: #d1d5db;
+          font-size: 9px; color: #111827;
           text-align: center; margin-top: 20px;
           width: 100%; letter-spacing: .5px;
         }
