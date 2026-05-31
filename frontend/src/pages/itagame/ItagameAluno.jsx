@@ -315,6 +315,28 @@ function Vazio({ emoji, texto }) {
    INÍCIO
 ══════════════════════════════════════════ */
 function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItagame, onCopaSaber, onIrCorretor }) {
+  const [inscCubo,    setInscCubo]    = useState(null) // null | 'ok' | 'erro' | 'ja'
+  const [inscLoading, setInscLoading] = useState(false)
+
+  async function inscreverCubo() {
+    setInscLoading(true)
+    try {
+      // escola_id via localStorage (fallback 1)
+      let escola_id = 1
+      try { escola_id = JSON.parse(localStorage.getItem('usuario') || '{}').escola_id || 1 } catch {}
+      const resp = await fetch('/node-api/cubo/inscricoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: aluno.nome, turma: aluno.turma || 'Sem turma', escola_id }),
+      })
+      const data = await resp.json()
+      if (resp.status === 409) setInscCubo('ja')
+      else if (resp.ok)        setInscCubo('ok')
+      else                     setInscCubo('erro')
+    } catch { setInscCubo('erro') }
+    finally  { setInscLoading(false) }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
@@ -423,6 +445,69 @@ function AbaInicio({ aluno, itagame, nivel, nc, pctPresenca, totalNotas, onItaga
         <span style={{ fontSize: 28 }}>⚽</span>
         <span>COPA DO SABER — QUIZ INTERATIVO</span>
       </button>
+
+      {/* 🧩 Campeonato Cubo Mágico */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0d1b3e, #1d3a6e)',
+        border: '2px solid #3b82f6',
+        borderRadius: 18, padding: '20px 22px',
+        boxShadow: '0 0 40px rgba(59,130,246,.3)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+          <span style={{ fontSize: 36 }}>🧩</span>
+          <div>
+            <div style={{ fontWeight: 900, fontSize: 16, color: '#fbbf24', letterSpacing: 1 }}>
+              1º CAMPEONATO DE CUBO MÁGICO
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>
+              {aluno.turma || 'Sua turma'} · Raciocínio · Foco · Superação
+            </div>
+          </div>
+        </div>
+
+        {inscCubo === 'ok' && (
+          <div style={{ background: 'rgba(34,197,94,.15)', border: '1px solid #22c55e',
+            borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#4ade80',
+            fontWeight: 700, marginBottom: 10 }}>
+            ✅ Inscrição confirmada! Boa sorte, {aluno.nome.split(' ')[0]}! 🏆
+          </div>
+        )}
+        {inscCubo === 'ja' && (
+          <div style={{ background: 'rgba(251,191,36,.1)', border: '1px solid #fbbf24',
+            borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#fbbf24',
+            fontWeight: 700, marginBottom: 10 }}>
+            ⭐ Você já está inscrito no campeonato!
+          </div>
+        )}
+        {inscCubo === 'erro' && (
+          <div style={{ background: 'rgba(239,68,68,.1)', border: '1px solid #ef4444',
+            borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#fca5a5',
+            fontWeight: 700, marginBottom: 10 }}>
+            ❌ Erro ao inscrever. Tente novamente.
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {inscCubo !== 'ok' && inscCubo !== 'ja' && (
+            <button onClick={inscreverCubo} disabled={inscLoading} style={{
+              flex: 1, padding: '13px', borderRadius: 12, fontSize: 14, fontWeight: 900,
+              background: inscLoading ? 'rgba(255,255,255,.1)' : 'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+              border: 'none', color: '#fff', cursor: inscLoading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 20px rgba(59,130,246,.4)', letterSpacing: 1,
+            }}>
+              {inscLoading ? 'Inscrevendo...' : '🏆 QUERO PARTICIPAR!'}
+            </button>
+          )}
+          <a href="/cubo-magico" style={{
+            flex: 1, padding: '13px', borderRadius: 12, fontSize: 13, fontWeight: 700,
+            background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.15)',
+            color: 'rgba(255,255,255,.7)', textDecoration: 'none', textAlign: 'center',
+            display: 'block',
+          }}>
+            📋 Ver regulamento e chaveamento
+          </a>
+        </div>
+      </div>
 
       {/* Acesso rápido: Provas disponíveis */}
       <button onClick={onIrCorretor} style={{
