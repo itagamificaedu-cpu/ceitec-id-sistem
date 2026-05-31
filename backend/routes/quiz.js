@@ -16,7 +16,7 @@ router.get('/jogar/:codigo', async (req, res) => {
     );
     if (!quiz) return res.status(404).json({ erro: 'Quiz não encontrado ou inativo' });
     const questoes = await db.all(
-      'SELECT id, enunciado, alt_a, alt_b, alt_c, alt_d, resposta_correta, ordem FROM quiz_questoes WHERE quiz_id = ? ORDER BY ordem',
+      'SELECT id, enunciado, alt_a, alt_b, alt_c, alt_d, resposta_correta, ordem, imagem, imagem_pdf, alt_imagens, alt_pdfs FROM quiz_questoes WHERE quiz_id = ? ORDER BY ordem',
       [quiz.id]
     );
     res.json({ ...quiz, questoes });
@@ -144,8 +144,11 @@ router.post('/', async (req, res) => {
       for (let i = 0; i < questoes.length; i++) {
         const q = questoes[i];
         await db.run(
-          'INSERT INTO quiz_questoes (quiz_id, enunciado, alt_a, alt_b, alt_c, alt_d, resposta_correta, ordem) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          [quizId, q.enunciado, q.alt_a, q.alt_b, q.alt_c || null, q.alt_d || null, q.resposta_correta ?? 0, i]
+          'INSERT INTO quiz_questoes (quiz_id, enunciado, alt_a, alt_b, alt_c, alt_d, resposta_correta, ordem, imagem, imagem_pdf, alt_imagens, alt_pdfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [quizId, q.enunciado, q.alt_a, q.alt_b, q.alt_c || null, q.alt_d || null, q.resposta_correta ?? 0, i,
+           q.imagem || null, q.imagem_pdf || null,
+           JSON.stringify(q.alt_imagens || [null,null,null,null]),
+           JSON.stringify(q.alt_pdfs    || [null,null,null,null])]
         );
       }
     }
