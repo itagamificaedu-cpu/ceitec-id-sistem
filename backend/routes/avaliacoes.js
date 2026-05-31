@@ -64,28 +64,23 @@ router.post('/', async (req, res) => {
     const avId = result.lastInsertRowid;
 
     if (questoes && questoes.length > 0) {
+      const letras = ['a', 'b', 'c', 'd']
       for (const q of questoes) {
-        const letras = ['a', 'b', 'c', 'd']
-        const alt_a = q.alternativas?.[0] || q.alternativa_a || null
-        const alt_b = q.alternativas?.[1] || q.alternativa_b || null
-        const alt_c = q.alternativas?.[2] || q.alternativa_c || null
-        const alt_d = q.alternativas?.[3] || q.alternativa_d || null
+        const alt_a   = q.alternativas?.[0] || q.alternativa_a || null
+        const alt_b   = q.alternativas?.[1] || q.alternativa_b || null
+        const alt_c   = q.alternativas?.[2] || q.alternativa_c || null
+        const alt_d   = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
-        // Garante colunas de mídia existem (adiciona se não tiver)
-        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS imagem TEXT`).catch(() => {})
-        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS imagem_pdf TEXT`).catch(() => {})
-        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS alt_imagens TEXT`).catch(() => {})
-        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS alt_pdfs TEXT`).catch(() => {})
         await db.run(
           'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [avId, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null,
+          [avId, q.enunciado || '', alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null,
            q.imagem || null, q.imagem_pdf || null,
-           q.alt_imagens ? JSON.stringify(q.alt_imagens) : null,
-           q.alt_pdfs    ? JSON.stringify(q.alt_pdfs)    : null,
+           JSON.stringify(q.alt_imagens || [null,null,null,null]),
+           JSON.stringify(q.alt_pdfs    || [null,null,null,null]),
           ]
-        );
+        )
       }
-      await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, avId]);
+      await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, avId])
     }
 
     // XP ao professor por criar avaliação
@@ -114,8 +109,14 @@ router.put('/:id', async (req, res) => {
         const alt_c = q.alternativas?.[2] || q.alternativa_c || null
         const alt_d = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
-        await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [req.params.id, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
+        await db.run(
+          'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [req.params.id, q.enunciado || '', alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null,
+           q.imagem || null, q.imagem_pdf || null,
+           JSON.stringify(q.alt_imagens || [null,null,null,null]),
+           JSON.stringify(q.alt_pdfs    || [null,null,null,null]),
+          ]
+        )
       }
       await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, req.params.id]);
     }
