@@ -38,8 +38,12 @@ router.get('/:id', async (req, res) => {
     const letras = ['a', 'b', 'c', 'd']
     const questoes = questoesRaw.map(q => ({
       ...q,
-      alternativas: [q.alternativa_a || '', q.alternativa_b || '', q.alternativa_c || '', q.alternativa_d || ''],
+      alternativas:    [q.alternativa_a || '', q.alternativa_b || '', q.alternativa_c || '', q.alternativa_d || ''],
       resposta_correta: letras.indexOf((q.gabarito || 'A').toLowerCase()),
+      imagem:           q.imagem     || null,
+      imagem_pdf:       q.imagem_pdf || null,
+      alt_imagens:      q.alt_imagens ? JSON.parse(q.alt_imagens) : ['', '', '', ''],
+      alt_pdfs:         q.alt_pdfs    ? JSON.parse(q.alt_pdfs)    : ['', '', '', ''],
     }))
     res.json({ ...av, questoes });
   } catch (err) {
@@ -50,7 +54,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { titulo, disciplina, turma_id, professor_id, tipo, total_pontos, data_aplicacao, questoes } = req.body;
-    if (!titulo || !disciplina) return res.status(400).json({ erro: 'Título e disciplina são obrigatórios' });
+    if (!titulo) return res.status(400).json({ erro: 'Título é obrigatório' });
     const eid = req.usuario.escola_id;
     const result = await db.run(
       'INSERT INTO avaliacoes (titulo, disciplina, turma_id, professor_id, tipo, total_questoes, total_pontos, data_aplicacao, escola_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -66,7 +70,19 @@ router.post('/', async (req, res) => {
         const alt_c = q.alternativas?.[2] || q.alternativa_c || null
         const alt_d = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
-        await db.run('INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [avId, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null]);
+        // Garante colunas de mídia existem (adiciona se não tiver)
+        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS imagem TEXT`).catch(() => {})
+        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS imagem_pdf TEXT`).catch(() => {})
+        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS alt_imagens TEXT`).catch(() => {})
+        await db.exec(`ALTER TABLE questoes ADD COLUMN IF NOT EXISTS alt_pdfs TEXT`).catch(() => {})
+        await db.run(
+          'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [avId, q.enunciado, alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null,
+           q.imagem || null, q.imagem_pdf || null,
+           q.alt_imagens ? JSON.stringify(q.alt_imagens) : null,
+           q.alt_pdfs    ? JSON.stringify(q.alt_pdfs)    : null,
+          ]
+        );
       }
       await db.run('UPDATE avaliacoes SET total_questoes = ? WHERE id = ?', [questoes.length, avId]);
     }
