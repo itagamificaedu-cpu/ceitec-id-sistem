@@ -26,6 +26,12 @@ function UploadImagem({ imagem, onChange, label = 'Imagem' }) {
   function handleFile(e) {
     const file = e.target.files[0]
     if (!file) return
+    const maxMB = 5
+    if (file.size > maxMB * 1024 * 1024) {
+      alert(`⚠️ Imagem muito grande!\n\nTamanho: ${(file.size/1024/1024).toFixed(1)} MB\nLimite permitido: ${maxMB} MB\n\nRedimensione a imagem antes de usar.`)
+      e.target.value = ''
+      return
+    }
     const reader = new FileReader()
     reader.onload = ev => onChange(ev.target.result)
     reader.readAsDataURL(file)
@@ -441,6 +447,25 @@ export default function CriadorAvaliacao() {
               </div>
             )}
 
+            {/* Aviso de formatos e tamanhos permitidos */}
+            <div style={{
+              display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16,
+              background: '#eff6ff', border: '1px solid #bfdbfe',
+              borderRadius: 12, padding: '10px 14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#1d4ed8', fontWeight: 600 }}>
+                🖼️ <span><strong>Imagem:</strong> JPG, PNG, GIF, WEBP · máx. <strong>5 MB</strong></span>
+              </div>
+              <span style={{ color: '#93c5fd' }}>|</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7c3aed', fontWeight: 600 }}>
+                📄 <span><strong>PDF:</strong> qualquer PDF · selecione a página desejada · máx. <strong>50 MB</strong></span>
+              </div>
+              <span style={{ color: '#93c5fd' }}>|</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                💡 Imagem e PDF podem ser adicionados no <strong>enunciado</strong> e em cada <strong>alternativa</strong>
+              </div>
+            </div>
+
             {questoes.length === 0 ? (
               <p className="text-gray-400 text-sm text-center py-8">Nenhuma questão adicionada</p>
             ) : (
@@ -538,7 +563,9 @@ export default function CriadorAvaliacao() {
                     </div>
 
                     <p className="text-xs mt-2" style={{ color: '#9ca3af' }}>
-                      Clique na letra para marcar como correta &nbsp;·&nbsp; 🖼️ imagem ou 📄 recorte de PDF em cada item
+                      Clique na letra para marcar como correta &nbsp;·&nbsp;
+                      🖼️ Imagem: JPG/PNG até 5MB &nbsp;·&nbsp;
+                      📄 PDF: qualquer tamanho até 50MB, escolha a página
                     </p>
                   </div>
                 ))}
