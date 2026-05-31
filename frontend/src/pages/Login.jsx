@@ -59,7 +59,7 @@ export default function Login() {
         @keyframes shake     { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
         @keyframes spin      { to{transform:rotate(360deg)} }
         @keyframes floatIn   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes glowPulse { 0%,100%{box-shadow:0 0 22px rgba(245,166,35,.4),0 4px 16px rgba(0,0,0,.4)} 50%{box-shadow:0 0 40px rgba(245,166,35,.7),0 4px 16px rgba(0,0,0,.4)} }
+        @keyframes glowPulse { 0%,100%{box-shadow:0 0 22px rgba(29,78,216,.4),0 4px 16px rgba(0,0,0,.4)} 50%{box-shadow:0 0 40px rgba(29,78,216,.7),0 4px 16px rgba(0,0,0,.4)} }
         @keyframes cardIn    { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
         /* ── WRAPPER GLOBAL ── */
@@ -120,7 +120,7 @@ export default function Login() {
         }
         .lg-icon {
           width: 100px; height: 100px;
-          background: linear-gradient(135deg, #f5a623, #e08000);
+          background: linear-gradient(135deg, #1d4ed8, #1e40af);
           border-radius: 22px;
           display: flex; align-items: center; justify-content: center;
           font-size: 52px;
@@ -130,13 +130,13 @@ export default function Login() {
         .lg-ita-name {
           font-family: 'Orbitron', sans-serif;
           font-weight: 900; font-size: clamp(26px, 3vw, 36px);
-          color: #f5a623; letter-spacing: 4px;
-          text-shadow: 0 0 22px rgba(245,166,35,.7), 0 0 50px rgba(245,166,35,.3);
+          color: #1d4ed8; letter-spacing: 4px;
+          text-shadow: 0 0 22px rgba(29,78,216,.7), 0 0 50px rgba(29,78,216,.3);
         }
         .lg-ita-sub {
           font-family: 'Orbitron', sans-serif;
           font-weight: 700; font-size: clamp(12px, 1.2vw, 15px);
-          color: #64748b; letter-spacing: 9px;
+          color: #111827; letter-spacing: 9px;
         }
 
         /* — CEITECGAME — */
@@ -146,14 +146,14 @@ export default function Login() {
           font-weight: 900; font-size: clamp(36px, 5vw, 54px);
           letter-spacing: 3px; line-height: 1;
         }
-        .lg-c-gold  { color: #f5a623; text-shadow: 0 0 18px rgba(245,166,35,.8), 0 0 40px rgba(245,166,35,.3); }
+        .lg-c-gold  { color: #1d4ed8; text-shadow: 0 0 18px rgba(29,78,216,.8), 0 0 40px rgba(29,78,216,.3); }
         .lg-c-green { color: #22c55e; text-shadow: 0 0 18px rgba(34,197,94,.8),  0 0 40px rgba(34,197,94,.3); }
         .lg-tagline {
           font-family: 'Exo 2', sans-serif;
           font-weight: 700; font-size: clamp(15px, 1.6vw, 20px);
           text-align: center; line-height: 1.8; margin-top: 14px;
         }
-        .lg-tg-gold  { color: #f5a623; text-shadow: 0 0 10px rgba(245,166,35,.4); }
+        .lg-tg-gold  { color: #1d4ed8; text-shadow: 0 0 10px rgba(29,78,216,.4); }
         .lg-tg-green { color: #22c55e; text-shadow: 0 0 10px rgba(34,197,94,.4); }
 
         /* — Badge roxo — */
@@ -215,7 +215,7 @@ export default function Login() {
         }
         .lg-form-title p {
           font-family: 'Exo 2', sans-serif;
-          font-size: 13px; color: #6b7280;
+          font-size: 13px; color: #111827;
         }
 
         /* — Campos — */
@@ -264,10 +264,10 @@ export default function Login() {
           position: absolute; right: 12px; top: 50%;
           transform: translateY(-50%);
           background: none; border: none; cursor: pointer;
-          font-size: 15px; color: #475569; padding: 2px;
+          font-size: 15px; color: #374151; padding: 2px;
           line-height: 1; transition: color .2s;
         }
-        .lg-eye:hover { color: #94a3b8; }
+        .lg-eye:hover { color: #374151; }
 
         /* — Erro — */
         .lg-err {
@@ -284,20 +284,20 @@ export default function Login() {
         /* — Botão principal — */
         .lg-btn {
           width: 100%; height: 50px;
-          background: linear-gradient(135deg, #f5a623, #d97706);
+          background: linear-gradient(135deg, #1d4ed8, #1e40af);
           border: none; border-radius: 12px;
           font-family: 'Orbitron', sans-serif;
           font-weight: 900; font-size: 13px;
           color: #0a1628; letter-spacing: 1px;
           cursor: pointer;
-          box-shadow: 0 4px 24px rgba(245,166,35,.45), 0 2px 8px rgba(245,166,35,.2);
+          box-shadow: 0 4px 24px rgba(29,78,216,.45), 0 2px 8px rgba(29,78,216,.2);
           transition: transform .2s, box-shadow .2s;
           display: flex; align-items: center; justify-content: center; gap: 8px;
           margin-bottom: 12px;
         }
         .lg-btn:hover:not(:disabled) {
           transform: translateY(-3px);
-          box-shadow: 0 8px 36px rgba(245,166,35,.65), 0 4px 16px rgba(245,166,35,.3);
+          box-shadow: 0 8px 36px rgba(29,78,216,.65), 0 4px 16px rgba(29,78,216,.3);
         }
         .lg-btn:active:not(:disabled) { transform: translateY(-1px); }
         .lg-btn:disabled { opacity: .6; cursor: not-allowed; }
@@ -314,18 +314,18 @@ export default function Login() {
           display: flex; align-items: center; justify-content: center; gap: 7px;
           width: 100%; height: 48px;
           background: transparent;
-          border: 1.5px solid rgba(245,166,35,.35);
+          border: 1.5px solid rgba(29,78,216,.35);
           border-radius: 12px;
           font-family: 'Exo 2', sans-serif;
           font-size: 13px; font-weight: 700;
-          color: #f5a623;
+          color: #1d4ed8;
           cursor: pointer; text-decoration: none;
           transition: background .2s, border-color .2s;
           margin-bottom: 22px;
         }
         .lg-btn-sec:hover {
-          background: rgba(245,166,35,.08);
-          border-color: #f5a623;
+          background: rgba(29,78,216,.08);
+          border-color: #1d4ed8;
         }
 
         /* — Divisor — */
@@ -364,7 +364,7 @@ export default function Login() {
           transform: translateY(-2px);
         }
         .lg-cred-icon  { font-size: 20px; line-height: 1; }
-        .lg-cred-role  { font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; color: #f5a623; }
+        .lg-cred-role  { font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; color: #1d4ed8; }
         .lg-cred-email { font-family: 'Exo 2', sans-serif; font-size: 10px; color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
         .lg-tooltip {
