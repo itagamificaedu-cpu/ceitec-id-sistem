@@ -268,8 +268,9 @@ export default function Navbar() {
         {
           titulo: 'CEITEC GAME',
           itens: [
-            { path: '/album',          label: 'Álbum dos Craques',       icon: '🏆' },
-            { path: '/itagame',        label: 'ItagGame — Painel',       icon: '🎮' },
+            { path: '/album',        label: 'Álbum dos Craques',       icon: '🏆' },
+            { path: '/itagame',      label: 'ItagGame — Painel',       icon: '🎮' },
+            { path: '/cubo-magico',  label: 'Campeonato Cubo Mágico',  icon: '🧩' },
           ]
         },
       ]
@@ -304,10 +305,11 @@ export default function Navbar() {
         {
           titulo: 'GAMIFICAÇÃO',
           itens: [
-            { path: '/itagame', label: 'ItagGame — Painel',   icon: '🎮' },
-            { path: '/album',   label: 'Álbum dos Craques',   icon: '🃏' },
-            { href: '/quiz-copa/', label: 'Copa do Saber',    icon: '⚽' },
-            { path: '/divisao-equipes', label: 'Divisão de Equipes', icon: '🎲' },
+            { path: '/itagame',      label: 'ItagGame — Painel',       icon: '🎮' },
+            { path: '/album',        label: 'Álbum dos Craques',       icon: '🃏' },
+            { href: '/quiz-copa/',   label: 'Copa do Saber',           icon: '⚽' },
+            { path: '/cubo-magico',  label: 'Campeonato Cubo Mágico',  icon: '🧩' },
+            { path: '/divisao-equipes', label: 'Divisão de Equipes',   icon: '🎲' },
           ]
         },
         {
