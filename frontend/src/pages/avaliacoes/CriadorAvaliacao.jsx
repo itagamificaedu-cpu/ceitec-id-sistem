@@ -334,7 +334,11 @@ export default function CriadorAvaliacao() {
       else          await api.post('/avaliacoes',        { ...form, questoes })
       navigate('/avaliacoes')
     } catch (err) {
-      setErro(err.response?.data?.erro || 'Erro ao salvar')
+      const msg = err.response?.data?.erro
+        || (err.code === 'ECONNABORTED' ? 'Tempo esgotado — imagem muito grande, tente compactar o PDF' : null)
+        || err.message
+        || 'Erro ao salvar'
+      setErro(msg)
     } finally {
       setSalvando(false)
     }
