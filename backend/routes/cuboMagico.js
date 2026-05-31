@@ -8,21 +8,21 @@ const router = express.Router();
 
 // ── Inicializar tabelas se não existirem ─────────────────────────────────────
 async function initTabelas() {
-  await db.run(`
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS cubo_inscricoes (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      id         SERIAL PRIMARY KEY,
       escola_id  INTEGER NOT NULL,
       nome       TEXT    NOT NULL,
       turma      TEXT    NOT NULL,
-      criado_em  TEXT    DEFAULT (datetime('now','localtime'))
+      criado_em  TIMESTAMP DEFAULT NOW()
     )
   `);
-  await db.run(`
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS cubo_chaveamento (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      id         SERIAL PRIMARY KEY,
       escola_id  INTEGER NOT NULL,
-      dados      TEXT    NOT NULL,   -- JSON com todo o chaveamento
-      atualizado TEXT    DEFAULT (datetime('now','localtime'))
+      dados      TEXT    NOT NULL,
+      atualizado TIMESTAMP DEFAULT NOW()
     )
   `);
 }
@@ -63,7 +63,7 @@ router.post('/inscricoes', async (req, res) => {
       `INSERT INTO cubo_inscricoes (escola_id, nome, turma) VALUES (?, ?, ?)`,
       [escola_id, nome.trim(), turma.trim()]
     );
-    res.json({ id: r.lastID, nome: nome.trim(), turma: turma.trim() });
+    res.json({ id: r.lastInsertRowid, nome: nome.trim(), turma: turma.trim() });
   } catch (e) {
     res.status(500).json({ erro: e.message });
   }
@@ -109,7 +109,7 @@ router.post('/chaveamento', autenticar, async (req, res) => {
     );
     if (existe) {
       await db.run(
-        `UPDATE cubo_chaveamento SET dados = ?, atualizado = datetime('now','localtime') WHERE escola_id = ?`,
+        `UPDATE cubo_chaveamento SET dados = ?, atualizado = NOW() WHERE escola_id = ?`,
         [dados, eid]
       );
     } else {

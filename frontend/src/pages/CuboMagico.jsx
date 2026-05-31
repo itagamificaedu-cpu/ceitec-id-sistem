@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import api from '../api'
 
-// ── Turmas da escola ─────────────────────────────────────────────────────────
-const TURMAS = ['6A','6B','7A','7B','8A','8B','9A','9B','9C']
-
-// ── Escola padrão (para inscrições públicas) ─────────────────────────────────
+// ── Escola padrão ────────────────────────────────────────────────────────────
 function getEscolaId() {
-  try { return JSON.parse(localStorage.getItem('usuario') || '{}').escola_id || 1 }
-  catch { return 1 }
+  try {
+    const u = JSON.parse(localStorage.getItem('usuario') || '{}')
+    // ita_admin pode não ter escola_id — usa 1 como padrão
+    return u.escola_id || 1
+  } catch { return 1 }
 }
 
 // ── Cronograma ───────────────────────────────────────────────────────────────
@@ -49,7 +49,8 @@ function chaveamentoVazio() {
 
 export default function CuboMagico() {
   const [aba,        setAba]        = useState('inscricao')
-  const [inscricoes, setInscricoes] = useState([])  // lista do backend
+  const [inscricoes, setInscricoes] = useState([])
+  const [turmas,     setTurmas]     = useState([])   // turmas do banco
   const [nome,       setNome]       = useState('')
   const [turma,      setTurma]      = useState('')
   const [salvando,   setSalvando]   = useState(false)
@@ -64,6 +65,7 @@ export default function CuboMagico() {
   // ── Carregar inscrições ────────────────────────────────────────────────────
   useEffect(() => {
     carregarInscricoes()
+    carregarTurmas()
     if (isAdmin) carregarChaveamento()
   }, [])
 
@@ -72,6 +74,22 @@ export default function CuboMagico() {
       const { data } = await api.get('/cubo/inscricoes')
       setInscricoes(data)
     } catch { setInscricoes([]) }
+  }
+
+  async function carregarTurmas() {
+    try {
+      const { data } = await api.get('/turmas')
+      // Filtrar apenas 8º e 9º ano e pegar nomes únicos
+      const nomes = [...new Set(
+        data
+          .map(t => t.nome)
+          .filter(n => /\b[89][ABCDEabc]/i.test(n) || /\b(8|9)(º|°|\s)/i.test(n) || /[89][A-E]/i.test(n))
+      )].sort()
+      setTurmas(nomes.length ? nomes : data.map(t => t.nome).filter((v,i,a) => a.indexOf(v)===i).sort())
+    } catch {
+      // fallback: turmas conhecidas do CEITEC
+      setTurmas(['Programacao 8B', 'Robotica 9A'])
+    }
   }
 
   async function carregarChaveamento() {
@@ -117,8 +135,9 @@ export default function CuboMagico() {
     } finally { setSalvandoCh(false) }
   }
 
-  // Agrupa inscrições por turma
-  const porTurma = TURMAS.reduce((acc, t) => {
+  // Agrupa inscrições por turma (dinâmico)
+  const turmasComInscritos = [...new Set(inscricoes.map(i => i.turma))].sort()
+  const porTurma = turmasComInscritos.reduce((acc, t) => {
     acc[t] = inscricoes.filter(i => i.turma === t)
     return acc
   }, {})
@@ -262,7 +281,7 @@ export default function CuboMagico() {
                       </div>
                       <select className="cubo-select" value={turma} onChange={e => setTurma(e.target.value)} required>
                         <option value="">Selecione sua turma...</option>
-                        {TURMAS.map(t => <option key={t} value={t}>{t}</option>)}
+                        {turmas.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
                     {msg && (
@@ -292,7 +311,7 @@ export default function CuboMagico() {
                     margin:'0 0 16px', letterSpacing:1 }}>
                     👥 INSCRITOS ({inscricoes.length})
                   </h3>
-                  {TURMAS.map(t => porTurma[t]?.length > 0 && (
+                  {turmasComInscritos.map(t => porTurma[t]?.length > 0 && (
                     <div key={t} style={{ marginBottom:14 }}>
                       <div style={{ fontSize:10, fontWeight:800, color:'#fbbf24', letterSpacing:2,
                         marginBottom:6, display:'flex', alignItems:'center', gap:8 }}>
