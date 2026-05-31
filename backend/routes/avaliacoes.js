@@ -53,7 +53,8 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { titulo, disciplina, turma_id, professor_id, tipo, total_pontos, data_aplicacao, questoes } = req.body;
+    const { titulo, turma_id, professor_id, tipo, total_pontos, data_aplicacao, questoes } = req.body;
+    const disciplina = req.body.disciplina || ''
     if (!titulo) return res.status(400).json({ erro: 'Título é obrigatório' });
     const eid = req.usuario.escola_id;
     const result = await db.run(
