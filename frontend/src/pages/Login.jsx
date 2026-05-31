@@ -9,17 +9,30 @@ const CREDS = [
   { perfil: 'Aluno',      icon: '🎓', email: null,                 senha: null },
 ]
 
+const FEATURES = [
+  { icon: '🎮', titulo: 'Gamificação',       desc: 'XP, missões, rankings e recompensas que transformam o aprendizado em jogo.' },
+  { icon: '🤖', titulo: 'IA Educacional',    desc: 'Questões, diagnósticos e planos de aula gerados por inteligência artificial.' },
+  { icon: '📊', titulo: 'Desempenho Real',   desc: 'Acompanhe cada aluno em tempo real com dados precisos de frequência e notas.' },
+  { icon: '🏆', titulo: 'Engajamento Total', desc: 'Álbum de figurinhas, Copa do Saber e ItagGame para manter o aluno ativo.' },
+]
+
+const STATS = [
+  { valor: '500+', label: 'Alunos ativos'   },
+  { valor: '9',    label: 'Turmas'          },
+  { valor: '1.2k', label: 'Questões de IA'  },
+  { valor: '247',  label: 'Missões criadas' },
+]
 
 export default function Login() {
   const navigate = useNavigate()
-  const [email, setEmail]           = useState('')
-  const [senha, setSenha]           = useState('')
-  const [erro, setErro]             = useState('')
-  const [carregando, setCarregando] = useState(false)
-  const [verSenha, setVerSenha]     = useState(false)
-  const [shakeEmail, setShakeEmail] = useState(false)
-  const [shakeSenha, setShakeSenha] = useState(false)
-  const [tooltip, setTooltip]       = useState(false)
+  const [email,       setEmail]       = useState('')
+  const [senha,       setSenha]       = useState('')
+  const [erro,        setErro]        = useState('')
+  const [carregando,  setCarregando]  = useState(false)
+  const [verSenha,    setVerSenha]    = useState(false)
+  const [shakeEmail,  setShakeEmail]  = useState(false)
+  const [shakeSenha,  setShakeSenha]  = useState(false)
+  const [tooltip,     setTooltip]     = useState(false)
 
   function shake(set) { set(true); setTimeout(() => set(false), 420) }
 
@@ -37,8 +50,8 @@ export default function Login() {
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
       navigate(data.trocar_senha ? '/trocar-senha' : '/dashboard')
     } catch (err) {
-      if (!err.response) setErro('Servidor offline. Verifique se o backend está rodando.')
-      else setErro(err.response?.data?.erro || 'Email ou senha incorretos.')
+      if (!err.response) setErro('Servidor offline. Verifique a conexão.')
+      else setErro(err.response?.data?.erro || 'E-mail ou senha incorretos.')
     } finally { setCarregando(false) }
   }
 
@@ -51,511 +64,419 @@ export default function Login() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        @keyframes pulse     { 0%,100%{opacity:1} 50%{opacity:.2} }
-        @keyframes shake     { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
-        @keyframes spin      { to{transform:rotate(360deg)} }
-        @keyframes floatIn   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes glowPulse { 0%,100%{box-shadow:0 0 22px rgba(245,166,35,.4),0 4px 16px rgba(0,0,0,.4)} 50%{box-shadow:0 0 40px rgba(245,166,35,.7),0 4px 16px rgba(0,0,0,.4)} }
-        @keyframes cardIn    { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes shake    { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+        @keyframes spin     { to{transform:rotate(360deg)} }
+        @keyframes fadeUp   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @keyframes slideIn  { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
 
-        /* ── WRAPPER GLOBAL ── */
-        .lg-page {
-          min-height: 100vh;
-          width: 100%;
-          background: #07101e;
-          display: flex;
-          align-items: stretch;
-          font-family: 'Exo 2', sans-serif;
-        }
+        .lp { min-height:100vh; font-family:'Inter',sans-serif; background:#fff; display:flex; }
 
-        /* ── CONTAINER DOIS PAINÉIS ── */
-        .lg-root {
-          display: grid;
-          grid-template-columns: 1fr 460px;
-          width: 100%;
-          min-height: 100vh;
-          border: 1px solid rgba(245,166,35,.18);
+        /* ── PAINEL ESQUERDO ── */
+        .lp-left {
+          flex:1; display:flex; flex-direction:column;
+          padding: 48px 56px;
+          background: linear-gradient(160deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%);
+          position:relative; overflow:hidden;
         }
-
-        /* ════════════════════════════════════════
-           PAINEL ESQUERDO
-        ════════════════════════════════════════ */
-        .lg-left {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 48px;
-          padding: 60px 8%;
-          background: #050d19;
-          background-image: radial-gradient(rgba(245,166,35,.09) 1px, transparent 1px);
-          background-size: 26px 26px;
-          border-right: 1px solid rgba(245,166,35,.18);
-          position: relative;
-          overflow: hidden;
+        .lp-left::before {
+          content:''; position:absolute; top:-120px; right:-80px;
+          width:500px; height:500px; border-radius:50%;
+          background:radial-gradient(circle, rgba(124,58,237,.08) 0%, transparent 70%);
+          pointer-events:none;
         }
-        .lg-left::after {
-          content: '';
-          position: absolute;
-          bottom: -80px; left: 50%;
-          transform: translateX(-50%);
-          width: 70%; height: 240px;
-          background: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(245,166,35,.15) 0%, transparent 70%);
-          pointer-events: none;
+        .lp-left::after {
+          content:''; position:absolute; bottom:-100px; left:-60px;
+          width:400px; height:400px; border-radius:50%;
+          background:radial-gradient(circle, rgba(16,185,129,.07) 0%, transparent 70%);
+          pointer-events:none;
         }
 
-        /* — Branding — */
-        .lg-brand {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 14px;
-          text-align: center;
-          position: relative;
-          z-index: 1;
+        /* — Logo / brand — */
+        .lp-brand { display:flex; align-items:center; gap:12px; margin-bottom:56px; position:relative; z-index:1; }
+        .lp-brand-icon {
+          width:44px; height:44px; border-radius:12px;
+          background:linear-gradient(135deg,#7c3aed,#a855f7);
+          display:flex; align-items:center; justify-content:center;
+          font-size:22px; flex-shrink:0;
+          box-shadow:0 4px 16px rgba(124,58,237,.3);
         }
-        .lg-icon {
-          width: 100px; height: 100px;
-          background: linear-gradient(135deg, #f5a623, #e08000);
-          border-radius: 22px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 52px;
-          animation: glowPulse 2.8s ease-in-out infinite;
-          flex-shrink: 0;
+        .lp-brand-name { font-weight:800; font-size:18px; color:#1e1b4b; letter-spacing:-.3px; }
+        .lp-brand-sub  { font-size:11px; color:#6b7280; font-weight:500; }
+
+        /* — Headline — */
+        .lp-headline { position:relative; z-index:1; margin-bottom:32px; animation:fadeUp .6s ease both; }
+        .lp-headline h1 {
+          font-size:clamp(28px,3.2vw,42px); font-weight:900;
+          color:#1e1b4b; line-height:1.15; margin-bottom:14px;
+          letter-spacing:-.5px;
         }
-        .lg-ita-name {
-          font-family: 'Orbitron', sans-serif;
-          font-weight: 900; font-size: clamp(26px, 3vw, 36px);
-          color: #f5a623; letter-spacing: 4px;
-          text-shadow: 0 0 22px rgba(245,166,35,.7), 0 0 50px rgba(245,166,35,.3);
-        }
-        .lg-ita-sub {
-          font-family: 'Orbitron', sans-serif;
-          font-weight: 700; font-size: clamp(12px, 1.2vw, 15px);
-          color: #cbd5e1; letter-spacing: 9px;
+        .lp-headline h1 .hl-purple { color:#7c3aed; }
+        .lp-headline h1 .hl-green  { color:#10b981; }
+        .lp-headline p {
+          font-size:16px; color:#6b7280; line-height:1.7; max-width:480px;
         }
 
-        /* — CEITECGAME — */
-        .lg-ceitec-wrap { text-align: center; position: relative; z-index: 1; }
-        .lg-ceitec {
-          font-family: 'Orbitron', sans-serif;
-          font-weight: 900; font-size: clamp(36px, 5vw, 54px);
-          letter-spacing: 3px; line-height: 1;
+        /* — Badge — */
+        .lp-badge {
+          display:inline-flex; align-items:center; gap:8px;
+          background:#fff; border:1px solid #e5e7eb;
+          border-radius:30px; padding:6px 16px 6px 10px;
+          margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,.06);
+          position:relative; z-index:1;
         }
-        .lg-c-gold  { color: #f5a623; text-shadow: 0 0 18px rgba(245,166,35,.8), 0 0 40px rgba(245,166,35,.3); }
-        .lg-c-green { color: #22c55e; text-shadow: 0 0 18px rgba(34,197,94,.8),  0 0 40px rgba(34,197,94,.3); }
-        .lg-tagline {
-          font-family: 'Exo 2', sans-serif;
-          font-weight: 700; font-size: clamp(15px, 1.6vw, 20px);
-          text-align: center; line-height: 1.8; margin-top: 14px;
-        }
-        .lg-tg-gold  { color: #f5a623; text-shadow: 0 0 10px rgba(245,166,35,.4); }
-        .lg-tg-green { color: #22c55e; text-shadow: 0 0 10px rgba(34,197,94,.4); }
+        .lp-badge-dot { width:8px; height:8px; background:#10b981; border-radius:50%; animation:pulse 1.5s ease-in-out infinite; }
+        .lp-badge span:last-child { font-size:12px; font-weight:600; color:#374151; }
 
-        /* — Badge roxo — */
-        .lg-badge-roxo {
-          display: inline-flex; align-items: center; gap: 10px;
-          background: rgba(124,58,237,.2);
-          border: 1px solid rgba(124,58,237,.5);
-          border-radius: 30px; padding: 10px 24px;
-          position: relative; z-index: 1;
+        /* — Feature cards — */
+        .lp-features { display:grid; grid-template-columns:1fr 1fr; gap:12px; position:relative; z-index:1; animation:fadeUp .7s ease .1s both; }
+        .lp-feat {
+          background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+          padding:18px 16px; cursor:default;
+          transition:transform .2s, box-shadow .2s, border-color .2s;
+          box-shadow:0 2px 8px rgba(0,0,0,.04);
         }
-        .lg-badge-dot {
-          width: 9px; height: 9px;
-          background: #a78bfa; border-radius: 50%;
-          animation: pulse 1.4s ease-in-out infinite;
-          box-shadow: 0 0 10px #a78bfa; flex-shrink: 0;
-        }
-        .lg-badge-roxo span:last-child {
-          font-family: 'Exo 2', sans-serif;
-          font-size: clamp(13px, 1.3vw, 16px);
-          font-weight: 700; color: #c4b5fd; letter-spacing: .5px;
-        }
+        .lp-feat:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.08); border-color:#c4b5fd; }
+        .lp-feat-icon { font-size:28px; margin-bottom:8px; }
+        .lp-feat-title { font-size:13px; font-weight:700; color:#1e1b4b; margin-bottom:4px; }
+        .lp-feat-desc  { font-size:12px; color:#6b7280; line-height:1.5; }
 
+        /* — Stats — */
+        .lp-stats { display:flex; gap:24px; margin-top:20px; position:relative; z-index:1; animation:fadeUp .8s ease .2s both; }
+        .lp-stat  { text-align:center; }
+        .lp-stat-val { font-size:22px; font-weight:900; color:#7c3aed; }
+        .lp-stat-lbl { font-size:11px; color:#9ca3af; font-weight:500; margin-top:2px; }
 
-        /* ════════════════════════════════════════
-           PAINEL DIREITO
-        ════════════════════════════════════════ */
-        .lg-right {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 40px 32px;
-          background: #07101e;
-          position: relative;
-          overflow: hidden;
+        /* — Depoimento — */
+        .lp-quote {
+          background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+          padding:18px 20px; margin-top:20px;
+          position:relative; z-index:1; animation:fadeUp .9s ease .3s both;
+          box-shadow:0 2px 8px rgba(0,0,0,.04);
         }
-        .lg-right::before {
-          content: '';
-          position: absolute; top: -80px; left: 50%;
-          transform: translateX(-50%);
-          width: 300px; height: 220px;
-          background: radial-gradient(ellipse 50% 30% at 50% 0%, rgba(245,166,35,.1) 0%, transparent 100%);
-          pointer-events: none;
+        .lp-quote p   { font-size:13px; color:#374151; line-height:1.6; font-style:italic; margin-bottom:10px; }
+        .lp-quote-by  { display:flex; align-items:center; gap:8px; }
+        .lp-quote-av  { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:center; font-size:14px; }
+        .lp-quote-name { font-size:12px; font-weight:700; color:#1e1b4b; }
+        .lp-quote-role { font-size:11px; color:#9ca3af; }
+        .lp-stars { color:#f59e0b; font-size:12px; margin-top:2px; }
+
+        /* ── PAINEL DIREITO ── */
+        .lp-right {
+          width:460px; flex-shrink:0;
+          background:#fff;
+          border-left:1px solid #f3f4f6;
+          display:flex; align-items:center; justify-content:center;
+          padding:40px 40px;
+          box-shadow:-4px 0 40px rgba(0,0,0,.05);
         }
 
-        .lg-form-wrap {
-          width: 100%; max-width: 360px;
-          display: flex; flex-direction: column;
-          align-items: center;
-          position: relative; z-index: 1;
-          animation: floatIn .5s ease both;
-        }
+        .lp-form-wrap { width:100%; max-width:360px; animation:fadeUp .5s ease both; }
 
-        /* — Título — */
-        .lg-form-title { text-align: center; margin-bottom: 26px; width: 100%; }
-        .lg-form-title h2 {
-          font-family: 'Orbitron', sans-serif;
-          font-weight: 900; font-size: clamp(18px, 2vw, 22px);
-          color: #fff; margin-bottom: 6px; line-height: 1.2;
+        /* — Segurança badge — */
+        .lp-secure {
+          display:flex; align-items:center; justify-content:flex-end;
+          gap:6px; margin-bottom:24px;
+          font-size:11px; color:#9ca3af; font-weight:500;
         }
-        .lg-form-title p {
-          font-family: 'Exo 2', sans-serif;
-          font-size: 13px; color: #94a3b8;
-        }
+        .lp-secure-dot { width:8px; height:8px; background:#10b981; border-radius:50%; }
 
-        /* — Campos — */
-        .lg-field { width: 100%; margin-bottom: 16px; }
-        .lg-field label {
-          display: block;
-          font-family: 'Exo 2', sans-serif;
-          font-size: 12px; font-weight: 700;
-          color: #f5a623; letter-spacing: 2px;
-          text-transform: uppercase; margin-bottom: 7px;
+        /* — Título do form — */
+        .lp-form-title { margin-bottom:28px; }
+        .lp-form-title h2 { font-size:24px; font-weight:800; color:#1e1b4b; margin-bottom:4px; }
+        .lp-form-title p  { font-size:13px; color:#6b7280; }
+
+        /* — Campo — */
+        .lp-field { margin-bottom:16px; }
+        .lp-field label {
+          display:block; font-size:12px; font-weight:600;
+          color:#374151; letter-spacing:.3px; margin-bottom:6px;
         }
-        .lg-field-wrap { position: relative; }
-        .lg-field-icon {
-          position: absolute; left: 13px; top: 50%;
-          transform: translateY(-50%);
-          font-size: 15px; pointer-events: none; line-height: 1;
+        .lp-field-wrap { position:relative; }
+        .lp-field-icon {
+          position:absolute; left:14px; top:50%; transform:translateY(-50%);
+          font-size:15px; pointer-events:none; line-height:1;
         }
-        .lg-input {
-          width: 100%; height: 48px;
-          padding: 0 14px 0 42px;
-          background: rgba(255,255,255,.05);
-          border: 1.5px solid rgba(255,255,255,.15);
-          border-radius: 10px;
-          color: #fff;
-          font-family: 'Exo 2', sans-serif; font-size: 14px;
-          outline: none;
-          transition: border-color .2s, background .2s, box-shadow .2s;
+        .lp-input {
+          width:100%; height:48px; padding:0 14px 0 44px;
+          background:#f9fafb; border:1.5px solid #e5e7eb; border-radius:12px;
+          color:#111827; font-family:'Inter',sans-serif; font-size:14px;
+          outline:none; transition:border-color .2s, background .2s, box-shadow .2s;
         }
-        .lg-input::placeholder { color: #475569; }
-        /* Remove estilo de autopreenchimento do browser */
-        .lg-input:-webkit-autofill,
-        .lg-input:-webkit-autofill:hover,
-        .lg-input:-webkit-autofill:focus {
-          -webkit-box-shadow: 0 0 0 1000px #0d1b2e inset !important;
-          -webkit-text-fill-color: #fff !important;
-          border-color: rgba(255,255,255,.15) !important;
+        .lp-input::placeholder { color:#9ca3af; }
+        .lp-input:focus {
+          border-color:#7c3aed; background:#faf5ff;
+          box-shadow:0 0 0 3px rgba(124,58,237,.1);
         }
-        .lg-input:focus {
-          border-color: #f5a623;
-          background: rgba(245,166,35,.05);
-          box-shadow: 0 0 0 3px rgba(245,166,35,.15);
+        .lp-input.err   { border-color:#ef4444; background:#fef2f2; }
+        .lp-input.shake { animation:shake .4s ease; }
+        .lp-eye {
+          position:absolute; right:12px; top:50%; transform:translateY(-50%);
+          background:none; border:none; cursor:pointer;
+          font-size:16px; color:#9ca3af; padding:2px; transition:color .2s;
         }
-        .lg-input.err   { border-color: #e74c3c; }
-        .lg-input.shake { animation: shake .4s ease; }
-        .lg-eye {
-          position: absolute; right: 12px; top: 50%;
-          transform: translateY(-50%);
-          background: none; border: none; cursor: pointer;
-          font-size: 15px; color: #475569; padding: 2px;
-          line-height: 1; transition: color .2s;
-        }
-        .lg-eye:hover { color: #94a3b8; }
+        .lp-eye:hover { color:#374151; }
 
         /* — Erro — */
-        .lg-err {
-          width: 100%;
-          background: rgba(231,76,60,.12);
-          border: 1px solid rgba(231,76,60,.35);
-          color: #ff8a8a;
-          font-family: 'Exo 2', sans-serif; font-size: 12px;
-          border-radius: 8px; padding: 10px 13px;
-          margin-bottom: 14px;
-          display: flex; align-items: flex-start; gap: 7px;
+        .lp-err {
+          background:#fef2f2; border:1px solid #fecaca;
+          color:#dc2626; font-size:12px; border-radius:10px;
+          padding:10px 14px; margin-bottom:14px;
+          display:flex; align-items:center; gap:7px;
         }
 
         /* — Botão principal — */
-        .lg-btn {
-          width: 100%; height: 50px;
-          background: linear-gradient(135deg, #f5a623, #d97706);
-          border: none; border-radius: 12px;
-          font-family: 'Orbitron', sans-serif;
-          font-weight: 900; font-size: 13px;
-          color: #0a1628; letter-spacing: 1px;
-          cursor: pointer;
-          box-shadow: 0 4px 24px rgba(245,166,35,.45), 0 2px 8px rgba(245,166,35,.2);
-          transition: transform .2s, box-shadow .2s;
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          margin-bottom: 12px;
+        .lp-btn {
+          width:100%; height:50px;
+          background:linear-gradient(135deg,#7c3aed,#9333ea);
+          border:none; border-radius:12px; color:#fff;
+          font-family:'Inter',sans-serif; font-weight:700; font-size:15px;
+          cursor:pointer; transition:transform .2s, box-shadow .2s;
+          display:flex; align-items:center; justify-content:center; gap:8px;
+          margin-bottom:12px;
+          box-shadow:0 4px 20px rgba(124,58,237,.35);
         }
-        .lg-btn:hover:not(:disabled) {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 36px rgba(245,166,35,.65), 0 4px 16px rgba(245,166,35,.3);
-        }
-        .lg-btn:active:not(:disabled) { transform: translateY(-1px); }
-        .lg-btn:disabled { opacity: .6; cursor: not-allowed; }
-        .lg-spinner {
-          width: 18px; height: 18px;
-          border: 2.5px solid rgba(10,22,40,.3);
-          border-top-color: #0a1628;
-          border-radius: 50%;
-          animation: spin .7s linear infinite;
+        .lp-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 28px rgba(124,58,237,.5); }
+        .lp-btn:active:not(:disabled) { transform:translateY(0); }
+        .lp-btn:disabled { opacity:.65; cursor:not-allowed; }
+        .lp-spinner {
+          width:18px; height:18px;
+          border:2.5px solid rgba(255,255,255,.3);
+          border-top-color:#fff; border-radius:50%;
+          animation:spin .7s linear infinite;
         }
 
         /* — Botão secundário — */
-        .lg-btn-sec {
-          display: flex; align-items: center; justify-content: center; gap: 7px;
-          width: 100%; height: 48px;
-          background: transparent;
-          border: 1.5px solid rgba(245,166,35,.35);
-          border-radius: 12px;
-          font-family: 'Exo 2', sans-serif;
-          font-size: 13px; font-weight: 700;
-          color: #f5a623;
-          cursor: pointer; text-decoration: none;
-          transition: background .2s, border-color .2s;
-          margin-bottom: 22px;
+        .lp-btn-sec {
+          display:flex; align-items:center; justify-content:center; gap:7px;
+          width:100%; height:46px;
+          background:#fff; border:1.5px solid #e5e7eb; border-radius:12px;
+          font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+          color:#374151; cursor:pointer; text-decoration:none;
+          transition:background .2s, border-color .2s, color .2s;
+          margin-bottom:24px;
         }
-        .lg-btn-sec:hover {
-          background: rgba(245,166,35,.08);
-          border-color: #f5a623;
-        }
+        .lp-btn-sec:hover { background:#f5f3ff; border-color:#c4b5fd; color:#7c3aed; }
 
         /* — Divisor — */
-        .lg-divider {
-          display: flex; align-items: center; gap: 10px;
-          width: 100%; margin-bottom: 14px;
+        .lp-divider {
+          display:flex; align-items:center; gap:10px;
+          width:100%; margin-bottom:14px;
         }
-        .lg-divider::before, .lg-divider::after {
-          content: ''; flex: 1; height: 1px;
-          background: rgba(255,255,255,.1);
+        .lp-divider::before, .lp-divider::after {
+          content:''; flex:1; height:1px; background:#f3f4f6;
         }
-        .lg-divider span {
-          font-family: 'Exo 2', sans-serif;
-          font-size: 10px; font-weight: 700;
-          color: rgba(255,255,255,.25);
-          letter-spacing: 2px; text-transform: uppercase;
-          white-space: nowrap;
+        .lp-divider span {
+          font-size:10px; font-weight:600; color:#d1d5db;
+          letter-spacing:1px; text-transform:uppercase; white-space:nowrap;
         }
 
         /* — Acesso rápido — */
-        .lg-creds {
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: 8px; width: 100%; position: relative;
+        .lp-creds { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; position:relative; }
+        .lp-cred {
+          background:#f9fafb; border:1.5px solid #f3f4f6;
+          border-radius:12px; padding:12px 10px; cursor:pointer;
+          text-align:center; display:flex; flex-direction:column;
+          align-items:center; gap:3px;
+          transition:background .2s, border-color .2s, transform .15s;
         }
-        .lg-cred {
-          background: rgba(255,255,255,.04);
-          border: 1px solid rgba(255,255,255,.1);
-          border-radius: 10px; padding: 12px 10px;
-          cursor: pointer; text-align: center;
-          transition: background .2s, border-color .2s, transform .2s;
-          display: flex; flex-direction: column; align-items: center; gap: 3px;
-        }
-        .lg-cred:hover {
-          background: rgba(245,166,35,.08);
-          border-color: rgba(245,166,35,.5);
-          transform: translateY(-2px);
-        }
-        .lg-cred-icon  { font-size: 20px; line-height: 1; }
-        .lg-cred-role  { font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 700; color: #f5a623; }
-        .lg-cred-email { font-family: 'Exo 2', sans-serif; font-size: 10px; color: rgba(255,255,255,.3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .lp-cred:hover { background:#f5f3ff; border-color:#c4b5fd; transform:translateY(-2px); }
+        .lp-cred-icon  { font-size:20px; line-height:1; }
+        .lp-cred-role  { font-size:12px; font-weight:700; color:#7c3aed; }
+        .lp-cred-email { font-size:10px; color:#9ca3af; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%; }
 
-        .lg-tooltip {
-          position: absolute; bottom: calc(100% + 8px); right: 0;
-          background: #0f1e35;
-          border: 1px solid rgba(245,166,35,.3);
-          color: #f5a623;
-          font-family: 'Exo 2', sans-serif; font-size: 11px;
-          padding: 8px 14px; border-radius: 8px;
-          white-space: nowrap;
-          box-shadow: 0 4px 20px rgba(0,0,0,.4);
-          z-index: 20; pointer-events: none;
+        .lp-tooltip {
+          position:absolute; bottom:calc(100% + 8px); right:0;
+          background:#1e1b4b; color:#fff;
+          font-size:11px; padding:8px 14px; border-radius:8px;
+          white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,.15);
+          z-index:20; pointer-events:none;
         }
-        .lg-tooltip::after {
-          content: ''; position: absolute;
-          bottom: -5px; right: 18px;
-          width: 10px; height: 10px;
-          background: #0f1e35;
-          border-right: 1px solid rgba(245,166,35,.3);
-          border-bottom: 1px solid rgba(245,166,35,.3);
-          transform: rotate(45deg);
+        .lp-tooltip::after {
+          content:''; position:absolute; bottom:-5px; right:18px;
+          width:10px; height:10px; background:#1e1b4b;
+          transform:rotate(45deg);
         }
 
-        .lg-copy {
-          font-family: 'Exo 2', sans-serif;
-          font-size: 9px; color: rgba(255,255,255,.15);
-          text-align: center; margin-top: 20px;
-          width: 100%; letter-spacing: .5px;
-        }
+        .lp-copy { font-size:10px; color:#d1d5db; text-align:center; margin-top:24px; width:100%; }
 
-        /* ════════════════════════════════════════
-           RESPONSIVIDADE
-        ════════════════════════════════════════ */
-
-        /* Tablet landscape / desktop médio */
-        @media (max-width: 1100px) {
-          .lg-root { grid-template-columns: 1fr 420px; }
-          .lg-feat-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        @media (max-width: 900px) {
-          .lg-root { grid-template-columns: 1fr 400px; }
-          .lg-left { gap: 24px; padding: 32px 5%; }
-        }
-
-        /* Mobile — painel único com formulário */
-        @media (max-width: 680px) {
-          .lg-root {
-            grid-template-columns: 1fr;
-            min-height: 100vh;
-          }
-          .lg-left { display: none; }
-          .lg-right { padding: 32px 20px; min-height: 100vh; }
-          .lg-form-wrap { max-width: 100%; }
-        }
-
-        /* Mobile pequeno */
-        @media (max-width: 380px) {
-          .lg-right { padding: 24px 16px; }
-          .lg-creds { grid-template-columns: 1fr 1fr; }
-        }
+        /* ── RESPONSIVO ── */
+        @media (max-width:1100px) { .lp-left { padding:40px 36px; } .lp-features { grid-template-columns:1fr 1fr; } }
+        @media (max-width:900px)  { .lp-right { width:420px; } .lp-stats { gap:16px; } }
+        @media (max-width:680px)  { .lp-left { display:none; } .lp-right { width:100%; border-left:none; box-shadow:none; padding:32px 24px; } }
       `}</style>
 
-      <div className="lg-page">
-        <div className="lg-root">
+      <div className="lp">
 
-          {/* ═══════════════════════════════════
-              PAINEL ESQUERDO
-          ═══════════════════════════════════ */}
-          <div className="lg-left">
+        {/* ══════════════════ PAINEL ESQUERDO ══════════════════ */}
+        <div className="lp-left">
 
-            {/* ITA Tecnologia */}
-            <div className="lg-brand">
-              <div className="lg-icon">🎓</div>
-              <div className="lg-ita-name">ITA TECNOLOGIA</div>
-              <div className="lg-ita-sub">EDUCACIONAL</div>
+          {/* Logo */}
+          <div className="lp-brand">
+            <div className="lp-brand-icon">🎓</div>
+            <div>
+              <div className="lp-brand-name">ITA Tecnologia Educacional</div>
+              <div className="lp-brand-sub">itatecnologiaeducacional.tech</div>
             </div>
-
-            {/* CEITECGAME + tagline */}
-            <div className="lg-ceitec-wrap">
-              <div className="lg-ceitec">
-                <span className="lg-c-gold">CEITEC</span>
-                <span className="lg-c-green">GAME</span>
-              </div>
-              <div className="lg-tagline">
-                <span className="lg-tg-gold">Gamificando o Ensino</span><br />
-                <span className="lg-tg-green">para Alcançar Melhores Resultados</span>
-              </div>
-            </div>
-
-            {/* Badge roxo */}
-            <div className="lg-badge-roxo">
-              <span className="lg-badge-dot" />
-              <span>Sistema v2.0 — IA + Gamificação</span>
-            </div>
-
-
           </div>
 
-          {/* ═══════════════════════════════════
-              PAINEL DIREITO
-          ═══════════════════════════════════ */}
-          <div className="lg-right">
-            <div className="lg-form-wrap">
+          {/* Badge live */}
+          <div className="lp-badge">
+            <span className="lp-badge-dot"/>
+            <span>Sistema v2.0 — IA + Gamificação ativo</span>
+          </div>
 
-              {/* Título */}
-              <div className="lg-form-title">
-                <h2>Bem-vindo de volta</h2>
-                <p>Entre com suas credenciais para acessar o sistema</p>
+          {/* Headline */}
+          <div className="lp-headline">
+            <h1>
+              Plataforma de{' '}
+              <span className="hl-purple">gamificação educacional</span>{' '}
+              com{' '}
+              <span className="hl-green">IA</span>{' '}
+              para aprendizagem
+            </h1>
+            <p>
+              Engaje alunos. Acompanhe professores. Fortaleça sua escola.<br/>
+              Missões, XP, diagnósticos por IA e muito mais — tudo em um lugar.
+            </p>
+          </div>
+
+          {/* Feature cards */}
+          <div className="lp-features">
+            {FEATURES.map(f => (
+              <div key={f.titulo} className="lp-feat">
+                <div className="lp-feat-icon">{f.icon}</div>
+                <div className="lp-feat-title">{f.titulo}</div>
+                <div className="lp-feat-desc">{f.desc}</div>
               </div>
+            ))}
+          </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} noValidate style={{ width: '100%' }}>
-
-                <div className="lg-field">
-                  <label>E-MAIL</label>
-                  <div className="lg-field-wrap">
-                    <span className="lg-field-icon">✉️</span>
-                    <input
-                      id="inp-email"
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className={`lg-input${!email && shakeEmail ? ' err shake' : ''}`}
-                      placeholder="seu@email.com"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-
-                <div className="lg-field">
-                  <label>SENHA</label>
-                  <div className="lg-field-wrap">
-                    <span className="lg-field-icon">🔑</span>
-                    <input
-                      type={verSenha ? 'text' : 'password'}
-                      value={senha}
-                      onChange={e => setSenha(e.target.value)}
-                      className={`lg-input${!senha && shakeSenha ? ' err shake' : ''}`}
-                      style={{ paddingRight: 42 }}
-                      placeholder="••••••••"
-                    />
-                    <button type="button" className="lg-eye" onClick={() => setVerSenha(v => !v)}>
-                      {verSenha ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                </div>
-
-                {erro && (
-                  <div className="lg-err">
-                    <span>⚠️</span><span>{erro}</span>
-                  </div>
-                )}
-
-                <button type="submit" disabled={carregando} className="lg-btn">
-                  {carregando
-                    ? <><span className="lg-spinner" /> Entrando...</>
-                    : '→ ENTRAR NO SISTEMA'
-                  }
-                </button>
-              </form>
-
-              <Link to="/planos" className="lg-btn-sec">
-                🏫 Criar conta — ver planos
-              </Link>
-
-              <div className="lg-divider"><span>acesso rápido</span></div>
-
-              <div className="lg-creds">
-                {CREDS.map(c => (
-                  <button key={c.perfil} type="button" className="lg-cred" onClick={() => clicarCred(c)}>
-                    <span className="lg-cred-icon">{c.icon}</span>
-                    <span className="lg-cred-role">{c.perfil}</span>
-                    <span className="lg-cred-email">
-                      {c.email || (c.email === '' ? 'digitar email' : 'via QR Code')}
-                    </span>
-                  </button>
-                ))}
-                {tooltip && (
-                  <div className="lg-tooltip">
-                    📱 Alunos acessam via QR Code na entrada
-                  </div>
-                )}
+          {/* Stats */}
+          <div className="lp-stats">
+            {STATS.map(s => (
+              <div key={s.label} className="lp-stat">
+                <div className="lp-stat-val">{s.valor}</div>
+                <div className="lp-stat-lbl">{s.label}</div>
               </div>
+            ))}
+          </div>
 
-              <p className="lg-copy">© 2026 ITA Tecnologia Educacional · Sistema Inteligente de Educação</p>
-
+          {/* Depoimento */}
+          <div className="lp-quote">
+            <p>"Agora estudar parece um jogo. A gente faz missões, ganha moedas e vai subindo de nível. Nunca gostei tanto de aprender!"</p>
+            <div className="lp-quote-by">
+              <div className="lp-quote-av">😊</div>
+              <div>
+                <div className="lp-quote-name">Ana Beatriz</div>
+                <div className="lp-quote-role">Aluna do 9º ano · CEITEC</div>
+                <div className="lp-stars">★★★★★</div>
+              </div>
             </div>
           </div>
 
         </div>
+
+        {/* ══════════════════ PAINEL DIREITO ══════════════════ */}
+        <div className="lp-right">
+          <div className="lp-form-wrap">
+
+            {/* Segurança */}
+            <div className="lp-secure">
+              <span className="lp-secure-dot"/>
+              <span>ACESSO SEGURO</span>
+            </div>
+
+            {/* Título */}
+            <div className="lp-form-title">
+              <h2>Bem-vindo de volta 👋</h2>
+              <p>Entre com suas credenciais para acessar o sistema</p>
+            </div>
+
+            {/* Formulário */}
+            <form onSubmit={handleSubmit} noValidate>
+
+              <div className="lp-field">
+                <label>E-mail</label>
+                <div className="lp-field-wrap">
+                  <span className="lp-field-icon">✉️</span>
+                  <input
+                    id="inp-email"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className={`lp-input${!email && shakeEmail ? ' err shake' : ''}`}
+                    placeholder="seu@email.com"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="lp-field">
+                <label>Senha</label>
+                <div className="lp-field-wrap">
+                  <span className="lp-field-icon">🔑</span>
+                  <input
+                    type={verSenha ? 'text' : 'password'}
+                    value={senha}
+                    onChange={e => setSenha(e.target.value)}
+                    className={`lp-input${!senha && shakeSenha ? ' err shake' : ''}`}
+                    style={{ paddingRight: 44 }}
+                    placeholder="••••••••"
+                  />
+                  <button type="button" className="lp-eye" onClick={() => setVerSenha(v => !v)}>
+                    {verSenha ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </div>
+
+              {erro && (
+                <div className="lp-err">
+                  <span>⚠️</span><span>{erro}</span>
+                </div>
+              )}
+
+              <button type="submit" disabled={carregando} className="lp-btn">
+                {carregando
+                  ? <><span className="lp-spinner"/> Entrando...</>
+                  : '→ Entrar no Sistema'
+                }
+              </button>
+            </form>
+
+            <Link to="/planos" className="lp-btn-sec">
+              🏫 Criar conta — ver planos
+            </Link>
+
+            <div className="lp-divider"><span>acesso rápido</span></div>
+
+            <div className="lp-creds">
+              {CREDS.map(c => (
+                <button key={c.perfil} type="button" className="lp-cred" onClick={() => clicarCred(c)}>
+                  <span className="lp-cred-icon">{c.icon}</span>
+                  <span className="lp-cred-role">{c.perfil}</span>
+                  <span className="lp-cred-email">
+                    {c.email || (c.email === '' ? 'digitar email' : 'via QR Code')}
+                  </span>
+                </button>
+              ))}
+              {tooltip && (
+                <div className="lp-tooltip">
+                  📱 Alunos acessam via QR Code na entrada
+                </div>
+              )}
+            </div>
+
+            <p className="lp-copy">© 2026 ITA Tecnologia Educacional · Sistema Inteligente de Educação</p>
+
+          </div>
+        </div>
+
       </div>
     </>
   )
