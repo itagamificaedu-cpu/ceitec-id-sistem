@@ -81,6 +81,43 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// ── Transferir aluno para outra turma ────────────────────────────────────────
+// PATCH /api/alunos/:id/transferir  { turma_id: 5 }
+// Atualiza apenas turma_id e turma (nome). Todos os dados do aluno seguem.
+router.patch('/:id/transferir', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id
+    const { turma_id } = req.body
+    if (!turma_id) return res.status(400).json({ erro: 'turma_id é obrigatório' })
+
+    // Verifica se a turma pertence à escola
+    const turma = await db.get('SELECT * FROM turmas WHERE id = ? AND escola_id = ?', [turma_id, eid])
+    if (!turma) return res.status(404).json({ erro: 'Turma não encontrada' })
+
+    // Verifica se o aluno pertence à escola
+    const aluno = await db.get('SELECT * FROM alunos WHERE id = ? AND escola_id = ?', [req.params.id, eid])
+    if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' })
+
+    const turmaAnterior = aluno.turma || 'sem turma'
+
+    // Atualiza turma — todos os dados (XP, presenças, notas, álbum) seguem pelo aluno_id
+    await db.run(
+      'UPDATE alunos SET turma_id = ?, turma = ? WHERE id = ? AND escola_id = ?',
+      [turma_id, turma.nome, req.params.id, eid]
+    )
+
+    const alunoAtualizado = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.id])
+    res.json({
+      aluno: alunoAtualizado,
+      turma_anterior: turmaAnterior,
+      turma_nova: turma.nome,
+      mensagem: `${aluno.nome} transferido de "${turmaAnterior}" para "${turma.nome}" com sucesso!`
+    })
+  } catch (err) {
+    res.status(500).json({ erro: err.message })
+  }
+})
+
 router.delete('/:id', async (req, res) => {
   try {
     await db.run('UPDATE alunos SET ativo = 0 WHERE id = ? AND escola_id = ?', [req.params.id, req.usuario.escola_id]);
