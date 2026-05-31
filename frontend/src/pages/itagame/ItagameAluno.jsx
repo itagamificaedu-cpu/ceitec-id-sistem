@@ -28,7 +28,7 @@ const N = {
   azul:    '#00CFFF',
   roxo:    '#B66DFF',
   laranja: '#FF8C00',
-  bg:      '#0A0A0F',
+  bg:      'linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #0f2a4a 70%, #0a1628 100%)',
   card:    '#12121A',
   borda:   '#1E1E2E',
   branco:  '#FFFFFF',

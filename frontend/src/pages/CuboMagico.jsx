@@ -178,7 +178,7 @@ export default function CuboMagico() {
 
       {/* Fundo */}
       <div style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none',
-        background:'linear-gradient(160deg,#0a0a1a,#0d1b3e 40%,#0a1628 70%,#060d1a)' }}>
+        background:'linear-gradient(160deg,#0f172a,#1e3a5f 40%,#0f2a4a 70%,#0a1f3d)' }}>
         <div style={{ position:'absolute', inset:0, opacity:.04,
           backgroundImage:'linear-gradient(rgba(59,130,246,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.5) 1px,transparent 1px)',
           backgroundSize:'40px 40px' }}/>
@@ -194,7 +194,7 @@ export default function CuboMagico() {
             style={{ width:'100%', display:'block', objectFit:'cover', objectPosition:'center top' }}
             onError={e => { e.target.style.display='none' }}/>
           <div style={{ position:'absolute', bottom:0, left:0, right:0, height:80,
-            background:'linear-gradient(transparent,#0a0a1a)' }}/>
+            background:'linear-gradient(transparent,#0f172a)' }}/>
         </div>
 
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 16px 60px' }}>
