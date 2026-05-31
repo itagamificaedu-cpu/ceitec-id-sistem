@@ -8,10 +8,16 @@ const NIVEIS = ['', 'Aprendiz', 'Explorador', 'Guerreiro', 'Campeão', 'Lenda']
 
 export default function PerfilAluno() {
   const { id } = useParams()
-  const [dados, setDados] = useState(null)
-  const [itagame, setItagame] = useState(null)
-  const [carregando, setCarregando] = useState(true)
-  const [aluno, setAluno] = useState(null)
+  const [dados,         setDados]         = useState(null)
+  const [itagame,       setItagame]       = useState(null)
+  const [carregando,    setCarregando]    = useState(true)
+  const [aluno,         setAluno]         = useState(null)
+  // Transferência de turma
+  const [modalTransf,   setModalTransf]   = useState(false)
+  const [turmas,        setTurmas]        = useState([])
+  const [turmaSel,      setTurmaSel]      = useState('')
+  const [transferindo,  setTransferindo]  = useState(false)
+  const [msgTransf,     setMsgTransf]     = useState(null) // { tipo:'ok'|'erro', texto }
 
   useEffect(() => {
     async function carregar() {
@@ -29,6 +35,28 @@ export default function PerfilAluno() {
     }
     carregar()
   }, [id])
+
+  async function abrirTransferencia() {
+    setMsgTransf(null); setTurmaSel('')
+    if (turmas.length === 0) {
+      const { data } = await api.get('/turmas')
+      setTurmas(data)
+    }
+    setModalTransf(true)
+  }
+
+  async function confirmarTransferencia() {
+    if (!turmaSel) return
+    setTransferindo(true); setMsgTransf(null)
+    try {
+      const { data } = await api.patch(`/alunos/${id}/transferir`, { turma_id: parseInt(turmaSel) })
+      setAluno(prev => ({ ...prev, turma: data.aluno.turma, turma_id: data.aluno.turma_id }))
+      setMsgTransf({ tipo: 'ok', texto: data.mensagem })
+      setTimeout(() => setModalTransf(false), 2500)
+    } catch (err) {
+      setMsgTransf({ tipo: 'erro', texto: err.response?.data?.erro || 'Erro ao transferir' })
+    } finally { setTransferindo(false) }
+  }
 
   if (carregando) return <div className="flex min-h-screen bg-background"><Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6 flex items-center justify-center"><p className="text-gray-400">Carregando...</p></main></div>
   if (!dados) return <div className="flex min-h-screen bg-background"><Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20"><p className="text-danger">Aluno não encontrado</p></main></div>
@@ -58,6 +86,12 @@ export default function PerfilAluno() {
               </div>
               <div className="flex gap-3 flex-wrap">
                 <Link to={`/alunos/${id}/carteirinha`} className="btn-primary text-sm">🎫 Carteirinha</Link>
+                <button
+                  onClick={abrirTransferencia}
+                  style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:10, fontSize:13, fontWeight:700, background:'linear-gradient(135deg,#1d4ed8,#3b82f6)', color:'#fff', border:'none', cursor:'pointer', boxShadow:'0 3px 12px rgba(29,78,216,.35)' }}
+                >
+                  🔄 Transferir Turma
+                </button>
                 <Link to={`/alunos/${id}/editar`} className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">✏️ Editar</Link>
               </div>
             </div>
@@ -185,6 +219,86 @@ export default function PerfilAluno() {
           </div>
         </div>
       </main>
+
+      {/* ── MODAL TRANSFERIR TURMA ── */}
+      {modalTransf && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.5)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ background:'#fff', borderRadius:20, padding:28, maxWidth:440, width:'100%', boxShadow:'0 20px 60px rgba(0,0,0,.2)' }}>
+
+            {/* Header */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:28, marginBottom:8 }}>🔄</div>
+              <h2 style={{ fontWeight:800, fontSize:18, color:'#111827', marginBottom:4 }}>
+                Transferir para nova turma
+              </h2>
+              <p style={{ fontSize:13, color:'#6b7280', lineHeight:1.6 }}>
+                O aluno <strong style={{ color:'#1d4ed8' }}>{aluno?.nome || dados?.aluno?.nome}</strong> está atualmente na turma{' '}
+                <strong style={{ color:'#1d4ed8' }}>{aluno?.turma || dados?.aluno?.turma || '—'}</strong>.
+              </p>
+              <div style={{ marginTop:10, background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:10, padding:'8px 12px', fontSize:12, color:'#1d4ed8' }}>
+                ✅ <strong>Todos os dados são preservados:</strong> XP, missões, presenças, notas, álbum de figurinhas — tudo vai junto com o aluno.
+              </div>
+            </div>
+
+            {/* Select de turma */}
+            <div style={{ marginBottom:16 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#374151', letterSpacing:1, textTransform:'uppercase', marginBottom:6 }}>
+                Selecione a nova turma
+              </label>
+              <select
+                value={turmaSel}
+                onChange={e => setTurmaSel(e.target.value)}
+                style={{ width:'100%', height:46, padding:'0 14px', background:'#f9fafb', border:'1.5px solid #e5e7eb', borderRadius:10, fontSize:14, color:'#111827', outline:'none', cursor:'pointer' }}
+              >
+                <option value="">Escolha a turma de destino...</option>
+                {turmas
+                  .filter(t => t.id !== (aluno?.turma_id || dados?.aluno?.turma_id))
+                  .map(t => (
+                    <option key={t.id} value={t.id}>{t.nome}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            {/* Feedback */}
+            {msgTransf && (
+              <div style={{
+                marginBottom: 14, padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                background: msgTransf.tipo === 'ok' ? '#f0fdf4' : '#fef2f2',
+                border: `1px solid ${msgTransf.tipo === 'ok' ? '#86efac' : '#fca5a5'}`,
+                color: msgTransf.tipo === 'ok' ? '#15803d' : '#dc2626',
+              }}>
+                {msgTransf.tipo === 'ok' ? '✅' : '❌'} {msgTransf.texto}
+              </div>
+            )}
+
+            {/* Botões */}
+            <div style={{ display:'flex', gap:10 }}>
+              <button
+                onClick={confirmarTransferencia}
+                disabled={!turmaSel || transferindo}
+                style={{
+                  flex:1, height:46, borderRadius:12, fontSize:14, fontWeight:700,
+                  background: !turmaSel || transferindo ? '#e5e7eb' : 'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+                  border:'none', color: !turmaSel || transferindo ? '#9ca3af' : '#fff',
+                  cursor: !turmaSel || transferindo ? 'not-allowed' : 'pointer',
+                  boxShadow: !turmaSel || transferindo ? 'none' : '0 4px 16px rgba(29,78,216,.35)',
+                  transition:'all .2s'
+                }}
+              >
+                {transferindo ? '⏳ Transferindo...' : '🔄 Confirmar Transferência'}
+              </button>
+              <button
+                onClick={() => setModalTransf(false)}
+                style={{ padding:'0 20px', height:46, borderRadius:12, fontSize:14, fontWeight:600, background:'#fff', border:'1.5px solid #e5e7eb', color:'#374151', cursor:'pointer' }}
+              >
+                Cancelar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   )
 }
