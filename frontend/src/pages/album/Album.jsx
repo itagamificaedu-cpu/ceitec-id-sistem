@@ -69,29 +69,20 @@ function PlayerSilhouette({ pose = 'default', cor = '#FFE600', opacity = 0.55 })
   )
 }
 
-// ── Mapa: nome da figurinha → arquivo de imagem ───────────────
-const IMG_MAP = {
-  'Brasil': '01_Brasil', 'Argentina': '02_Argentina', 'França': '03_Franca',
-  'Alemanha': '04_Alemanha', 'Japão': '05_Japao', 'Espanha': '06_Espanha',
-  'Inglaterra': '07_Inglaterra', 'Portugal': '08_Portugal', 'Itália': '09_Italia',
-  'Holanda': '10_Holanda', 'Bélgica': '11_Belgica', 'Uruguai': '12_Uruguai',
-  'Colômbia': '13_Colombia', 'México': '14_Mexico', 'Estados Unidos': '15_EstadosUnidos',
-  'Croácia': '16_Croacia', 'Suíça': '17_Suica', 'Dinamarca': '18_Dinamarca',
-  'Suécia': '19_Suecia', 'Polônia': '20_Polonia', 'Senegal': '21_Senegal',
-  'Marrocos': '22_Marrocos', 'Coreia do Sul': '23_CoreiadoSul', 'Arábia Saudita': '24_ArabiaSaudita',
-  'Austrália': '25_Australia', 'Canadá': '26_Canada', 'Costa do Marfim': '27_CostaDoMarfim',
-  'Gana': '28_Gana', 'Catar': '29_Catar', 'Tunísia': '30_Tunisia',
-  'Nova Zelândia': '31_NovaZelandia', 'Figurinha Misteriosa': '32_FigurinhaM',
+// ── Mapa: colecao_id → imagem do mascote do país ─────────────
+const COLECAO_IMG = {
+  6:  '01_Brasil',
+  7:  '02_Argentina',
+  8:  '03_Franca',
+  9:  '08_Portugal',
+  10: '06_Espanha',
+  11: '07_Inglaterra',
+  12: '04_Alemanha',
 }
 
 function getImgSrc(fig) {
-  const key = Object.keys(IMG_MAP).find(k => fig.nome?.includes(k) || k.includes(fig.nome))
-  if (key) return `/figurinhas/${IMG_MAP[key]}.png`
-  if (fig.numero) {
-    const num = String(fig.numero).padStart(2, '0')
-    const entry = Object.entries(IMG_MAP).find(([,v]) => v.startsWith(num))
-    if (entry) return `/figurinhas/${entry[1]}.png`
-  }
+  const arquivo = COLECAO_IMG[fig.colecao_id]
+  if (arquivo) return `/figurinhas/${arquivo}.png`
   return null
 }
 
@@ -171,11 +162,30 @@ function CardFigurinha({ fig, onClick }) {
       onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=`0 0 18px ${r.brilho}` }}
     >
       {imgSrc ? (
-        /* Imagem real da figurinha */
-        <img src={imgSrc} alt={fig.nome}
-          style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:12, display:'block' }}
-          onError={e => { e.target.style.display='none' }}
-        />
+        /* Mascote do país como fundo + info do jogador por cima */
+        <div style={{ width:'100%', position:'relative', minHeight:130 }}>
+          <img src={imgSrc} alt={fig.nome}
+            style={{ width:'100%', display:'block', borderRadius:10, opacity:0.85 }}
+            onError={e => { e.target.style.display='none' }}
+          />
+          {/* Overlay escuro no rodapé para legibilidade */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, borderRadius:'0 0 10px 10px',
+            background:'linear-gradient(transparent, rgba(0,0,0,.85))', padding:'18px 6px 6px' }}>
+            <div style={{ fontSize:9, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.2,
+              textShadow:'0 1px 3px rgba(0,0,0,.9)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', padding:'0 4px' }}>
+              {fig.nome}
+            </div>
+            <div style={{ fontSize:8, color:'rgba(255,255,255,.7)', textAlign:'center' }}>{fig.classe}</div>
+          </div>
+          {/* Número no topo */}
+          <div style={{ position:'absolute', top:4, left:6, fontSize:8, color:'rgba(255,255,255,.8)', fontWeight:900, fontFamily:'monospace',
+            background:'rgba(0,0,0,.5)', borderRadius:4, padding:'1px 4px' }}>#{fig.numero}</div>
+          {/* Badge raridade */}
+          <div style={{ position:'absolute', top:4, right:4, fontSize:7, fontWeight:900, padding:'1px 5px',
+            borderRadius:6, background:'rgba(0,0,0,.6)', color:r.cor, border:`1px solid ${r.cor}66` }}>
+            {r.label.toUpperCase()}
+          </div>
+        </div>
       ) : (
         /* Fallback: emoji + nome */
         <>
