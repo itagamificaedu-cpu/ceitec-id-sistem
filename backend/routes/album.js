@@ -70,7 +70,7 @@ router.get('/meu-album/:aluno_id', autenticar, async (req, res) => {
     )
     const minhas = await db.all(
       'SELECT figurinha_id, quantidade, obtida_em FROM album_aluno WHERE aluno_id = ? AND escola_id = ?',
-      [alunoId, escola_id]
+      [alunoId, eid]  // usa eid (resolvido) para bater com como as figurinhas foram salvas
     )
 
     const map = {}
