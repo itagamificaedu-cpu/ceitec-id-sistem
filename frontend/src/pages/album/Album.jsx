@@ -88,130 +88,81 @@ function getImgSrc(fig) {
 
 // ── Card individual ───────────────────────────────────────────
 function CardFigurinha({ fig, onClick }) {
-  const r = RAR[fig.raridade] || RAR.comum
+  const r          = RAR[fig.raridade] || RAR.comum
   const isLendaria = fig.raridade === 'lendaria'
-  const imgSrc = getImgSrc(fig)
+  const imgSrc     = getImgSrc(fig)
+  const bloqueada  = !fig.desbloqueada
 
-  if (!fig.desbloqueada) {
-    return (
-      <div onClick={() => onClick && onClick(fig)} style={{
-        borderRadius: 14,
-        padding: 0,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        cursor: 'default',
-        position: 'relative', overflow: 'hidden',
-        minHeight: 130,
-        background: 'linear-gradient(160deg, #0a2e0a 0%, #1a5410 40%, #2d7a12 70%, #1a4a0a 100%)',
-        border: '2px solid rgba(45,122,18,.6)',
-        boxShadow: 'inset 0 0 20px rgba(0,0,0,.4)',
-      }}>
-        {/* Shimmer animado */}
-        <div style={{
-          position:'absolute', inset:0, zIndex:2,
-          background:'linear-gradient(105deg, transparent 40%, rgba(255,230,0,.18) 50%, transparent 60%)',
-          backgroundSize:'200% 200%',
-          animation:'shimmerCopa 2.2s ease-in-out infinite',
-          borderRadius: 12,
-        }}/>
-        {/* Imagem com filtro escurecido */}
-        {imgSrc ? (
-          <img src={imgSrc} alt={fig.nome}
-            style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.25) saturate(0.3)', borderRadius:12 }}
-            onError={e => { e.target.style.display='none' }}
-          />
-        ) : (
-          <div style={{ width:52, height:66, opacity:.7, marginTop:20, position:'relative', zIndex:3 }}>
-            <PlayerSilhouette pose={fig.classe} cor="#FFE600" opacity={0.6} />
+  return (
+    <div
+      onClick={() => !bloqueada && onClick && onClick(fig)}
+      style={{
+        borderRadius: 14, overflow: 'hidden',
+        position: 'relative',
+        border: bloqueada ? '2px solid rgba(80,80,80,.5)' : `2px solid ${r.cor}`,
+        boxShadow: bloqueada ? 'none' : `0 0 16px ${r.brilho}`,
+        animation: (!bloqueada && isLendaria) ? 'glowLendaria 2s ease-in-out infinite' : 'none',
+        transition: 'transform .2s, box-shadow .2s',
+        cursor: bloqueada ? 'default' : 'pointer',
+        background: '#111',
+      }}
+      onMouseEnter={e => { if (!bloqueada) { e.currentTarget.style.transform='translateY(-4px) scale(1.05)'; e.currentTarget.style.boxShadow=`0 8px 28px ${r.brilho}` }}}
+      onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow = bloqueada ? 'none' : `0 0 16px ${r.brilho}` }}
+    >
+      {/* ── Imagem do mascote (todos os cards) ── */}
+      {imgSrc
+        ? <img src={imgSrc} alt={fig.nome} style={{ width:'100%', display:'block',
+            filter: bloqueada ? 'brightness(0.45) grayscale(0.6)' : 'brightness(1)',
+            transition: 'filter .3s' }}
+            onError={e => e.target.style.display='none'} />
+        : <div style={{ minHeight:130, display:'flex', alignItems:'center', justifyContent:'center',
+            background:`linear-gradient(160deg,${fig.cor_primaria||'#222'}cc,${fig.cor_secundaria||'#111'}ee)` }}>
+            <span style={{ fontSize:36 }}>{fig.icone_emoji}</span>
           </div>
-        )}
-        {/* Número */}
-        <div style={{ position:'absolute', top:5, left:7, fontSize:8, color:'rgba(255,230,0,.7)', fontWeight:900, fontFamily:'monospace', zIndex:4 }}>
-          #{fig.numero}
+      }
+
+      {/* ── Overlay bloqueado: cadeado central ── */}
+      {bloqueada && (
+        <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column',
+          alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.35)',
+          animation:'shimmerCopa 2.5s ease-in-out infinite' }}>
+          <div style={{ fontSize:22, filter:'drop-shadow(0 0 6px rgba(255,220,0,.6))' }}>🔒</div>
         </div>
-        {/* Raridade */}
-        <div style={{
-          position:'absolute', bottom:6, left:'50%', transform:'translateX(-50%)',
-          fontSize:8, fontWeight:700, padding:'2px 8px', borderRadius:8, zIndex:4,
-          background:'rgba(0,0,0,.6)', color:'rgba(255,230,0,.7)',
-          border:'1px solid rgba(255,230,0,.3)', letterSpacing:1, whiteSpace:'nowrap',
-        }}>
+      )}
+
+      {/* ── Rodapé com info (todos os cards) ── */}
+      <div style={{ position:'absolute', bottom:0, left:0, right:0,
+        background:'linear-gradient(transparent, rgba(0,0,0,.92))',
+        padding:'18px 5px 6px' }}>
+        <div style={{ fontSize:9, fontWeight:900, color: bloqueada ? 'rgba(255,255,255,.4)' : '#fff',
+          textAlign:'center', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+          textShadow:'0 1px 3px #000' }}>
+          {bloqueada ? '???' : fig.nome}
+        </div>
+        <div style={{ fontSize:7, color: bloqueada ? 'rgba(255,255,255,.3)' : 'rgba(255,255,255,.75)',
+          textAlign:'center', marginTop:1 }}>
+          {bloqueada ? fig.classe : fig.classe}
+        </div>
+        <div style={{ fontSize:7, fontWeight:900, textAlign:'center', marginTop:2,
+          color: bloqueada ? 'rgba(255,255,255,.3)' : r.cor }}>
           {r.label.toUpperCase()}
         </div>
       </div>
-    )
-  }
 
-  // DESBLOQUEADA — imagem real da figurinha
-  return (
-    <div
-      onClick={() => onClick && onClick(fig)}
-      style={{
-        borderRadius: 14,
-        padding: 0,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        cursor: 'pointer',
-        position: 'relative', overflow: 'hidden',
-        minHeight: 130,
-        border: `2px solid ${r.cor}`,
-        boxShadow: `0 0 18px ${r.brilho}`,
-        animation: isLendaria ? 'glowLendaria 2s ease-in-out infinite' : 'none',
-        transition: 'transform .2s, box-shadow .2s',
-        background: imgSrc ? 'transparent' : `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
-      }}
-      onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px) scale(1.05)'; e.currentTarget.style.boxShadow=`0 8px 28px ${r.brilho}` }}
-      onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=`0 0 18px ${r.brilho}` }}
-    >
-      {imgSrc ? (
-        /* Mascote do país como fundo + info do jogador por cima */
-        <div style={{ width:'100%', position:'relative', minHeight:130, borderRadius:10, overflow:'hidden' }}>
-          <img src={imgSrc} alt={fig.nome}
-            style={{ width:'100%', display:'block', borderRadius:10 }}
-            onError={e => { e.target.style.display='none' }}
-          />
-          {/* Overlay degradê só no rodapé */}
-          <div style={{ position:'absolute', bottom:0, left:0, right:0,
-            background:'linear-gradient(transparent 30%, rgba(0,0,0,.92))', padding:'22px 5px 7px' }}>
-            <div style={{ fontSize:9, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.2,
-              textShadow:'0 1px 4px #000', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-              {fig.nome}
-            </div>
-            <div style={{ fontSize:7, color:'rgba(255,255,255,.75)', textAlign:'center', marginTop:1 }}>{fig.classe}</div>
-            <div style={{ fontSize:7, fontWeight:900, textAlign:'center', color:r.cor, marginTop:2, letterSpacing:.5 }}>
-              {r.label.toUpperCase()}
-            </div>
-          </div>
-          {/* Número no topo esquerdo */}
-          <div style={{ position:'absolute', top:4, left:5, fontSize:8, color:'#fff', fontWeight:900,
-            background:'rgba(0,0,0,.6)', borderRadius:4, padding:'1px 4px', fontFamily:'monospace' }}>
-            #{fig.numero}
-          </div>
-          {isLendaria && (
-            <div style={{ position:'absolute', top:3, right:4, fontSize:11, filter:'drop-shadow(0 0 4px gold)' }}>★</div>
-          )}
-          {fig.quantidade > 1 && (
-            <div style={{ position:'absolute', bottom:4, right:4, fontSize:8, color:'#fbbf24', fontWeight:900,
-              background:'rgba(0,0,0,.7)', borderRadius:4, padding:'1px 5px' }}>x{fig.quantidade}</div>
-          )}
-        </div>
-      ) : (
-        /* Fallback: emoji + nome */
-        <>
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:40, background:'linear-gradient(180deg,rgba(255,255,255,.15),transparent)', pointerEvents:'none' }}/>
-          <div style={{ fontSize:9, color:'rgba(255,255,255,.6)', fontWeight:900, fontFamily:'monospace', alignSelf:'flex-start', margin:'6px 0 0 7px' }}>#{fig.numero}</div>
-          <div style={{ fontSize:32, lineHeight:1, marginTop:4, filter:`drop-shadow(0 2px 6px ${r.brilho})` }}>{fig.icone_emoji}</div>
-          <div style={{ fontSize:9, fontWeight:900, textAlign:'center', color:'#fff', padding:'4px 4px 0', lineHeight:1.2 }}>{fig.nome}</div>
-          <div style={{ fontSize:8, color:'rgba(255,255,255,.65)', marginTop:2 }}>{fig.classe}</div>
-          <div style={{ fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:8, margin:'4px 0 8px', background:'rgba(0,0,0,.35)', color:r.cor, border:`1px solid ${r.cor}66` }}>{r.label.toUpperCase()}</div>
-        </>
-      )}
+      {/* ── Número no topo ── */}
+      <div style={{ position:'absolute', top:4, left:5, fontSize:7, fontWeight:900,
+        background:'rgba(0,0,0,.65)', color: bloqueada ? 'rgba(255,255,255,.4)' : '#fff',
+        borderRadius:4, padding:'1px 4px', fontFamily:'monospace' }}>
+        #{fig.numero}
+      </div>
 
-      {/* Badge lendária */}
-      {isLendaria && (
+      {/* ── Badges extras (só desbloqueados) ── */}
+      {!bloqueada && isLendaria && (
         <div style={{ position:'absolute', top:3, right:4, fontSize:11, filter:'drop-shadow(0 0 4px gold)', zIndex:5 }}>★</div>
       )}
-      {/* Duplicata */}
-      {fig.quantidade > 1 && (
-        <div style={{ position:'absolute', bottom:4, right:5, fontSize:9, color:'#fbbf24', fontWeight:900, zIndex:5, background:'rgba(0,0,0,.6)', borderRadius:4, padding:'1px 5px' }}>
+      {!bloqueada && fig.quantidade > 1 && (
+        <div style={{ position:'absolute', bottom:4, right:4, fontSize:8, color:'#fbbf24', fontWeight:900,
+          background:'rgba(0,0,0,.7)', borderRadius:4, padding:'1px 5px', zIndex:5 }}>
           x{fig.quantidade}
         </div>
       )}
