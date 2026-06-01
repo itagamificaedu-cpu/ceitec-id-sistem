@@ -69,18 +69,44 @@ function PlayerSilhouette({ pose = 'default', cor = '#FFE600', opacity = 0.55 })
   )
 }
 
+// ── Mapa: nome da figurinha → arquivo de imagem ───────────────
+const IMG_MAP = {
+  'Brasil': '01_Brasil', 'Argentina': '02_Argentina', 'França': '03_Franca',
+  'Alemanha': '04_Alemanha', 'Japão': '05_Japao', 'Espanha': '06_Espanha',
+  'Inglaterra': '07_Inglaterra', 'Portugal': '08_Portugal', 'Itália': '09_Italia',
+  'Holanda': '10_Holanda', 'Bélgica': '11_Belgica', 'Uruguai': '12_Uruguai',
+  'Colômbia': '13_Colombia', 'México': '14_Mexico', 'Estados Unidos': '15_EstadosUnidos',
+  'Croácia': '16_Croacia', 'Suíça': '17_Suica', 'Dinamarca': '18_Dinamarca',
+  'Suécia': '19_Suecia', 'Polônia': '20_Polonia', 'Senegal': '21_Senegal',
+  'Marrocos': '22_Marrocos', 'Coreia do Sul': '23_CoreiadoSul', 'Arábia Saudita': '24_ArabiaSaudita',
+  'Austrália': '25_Australia', 'Canadá': '26_Canada', 'Costa do Marfim': '27_CostaDoMarfim',
+  'Gana': '28_Gana', 'Catar': '29_Catar', 'Tunísia': '30_Tunisia',
+  'Nova Zelândia': '31_NovaZelandia', 'Figurinha Misteriosa': '32_FigurinhaM',
+}
+
+function getImgSrc(fig) {
+  const key = Object.keys(IMG_MAP).find(k => fig.nome?.includes(k) || k.includes(fig.nome))
+  if (key) return `/figurinhas/${IMG_MAP[key]}.png`
+  if (fig.numero) {
+    const num = String(fig.numero).padStart(2, '0')
+    const entry = Object.entries(IMG_MAP).find(([,v]) => v.startsWith(num))
+    if (entry) return `/figurinhas/${entry[1]}.png`
+  }
+  return null
+}
+
 // ── Card individual ───────────────────────────────────────────
 function CardFigurinha({ fig, onClick }) {
   const r = RAR[fig.raridade] || RAR.comum
   const isLendaria = fig.raridade === 'lendaria'
+  const imgSrc = getImgSrc(fig)
 
   if (!fig.desbloqueada) {
-    // BLOQUEADA — verde/amarelo Copa do Brasil com shimmer
     return (
       <div onClick={() => onClick && onClick(fig)} style={{
         borderRadius: 14,
-        padding: '8px 6px 10px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        padding: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
         cursor: 'default',
         position: 'relative', overflow: 'hidden',
         minHeight: 130,
@@ -96,94 +122,79 @@ function CardFigurinha({ fig, onClick }) {
           animation:'shimmerCopa 2.2s ease-in-out infinite',
           borderRadius: 12,
         }}/>
+        {/* Imagem com filtro escurecido */}
+        {imgSrc ? (
+          <img src={imgSrc} alt={fig.nome}
+            style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.25) saturate(0.3)', borderRadius:12 }}
+            onError={e => { e.target.style.display='none' }}
+          />
+        ) : (
+          <div style={{ width:52, height:66, opacity:.7, marginTop:20, position:'relative', zIndex:3 }}>
+            <PlayerSilhouette pose={fig.classe} cor="#FFE600" opacity={0.6} />
+          </div>
+        )}
         {/* Número */}
-        <div style={{ position:'absolute', top:5, left:7, fontSize:8, color:'rgba(255,230,0,.5)', fontWeight:900, fontFamily:'monospace', zIndex:3 }}>
+        <div style={{ position:'absolute', top:5, left:7, fontSize:8, color:'rgba(255,230,0,.7)', fontWeight:900, fontFamily:'monospace', zIndex:4 }}>
           #{fig.numero}
-        </div>
-        {/* Silhueta */}
-        <div style={{ width:52, height:66, opacity:.7, marginTop:8, position:'relative', zIndex:3 }}>
-          <PlayerSilhouette pose={fig.classe} cor="#FFE600" opacity={0.6} />
         </div>
         {/* Raridade */}
         <div style={{
-          fontSize:8, fontWeight:700, padding:'2px 8px', borderRadius:8, zIndex:3,
-          background:'rgba(255,230,0,.12)', color:'rgba(255,230,0,.7)',
-          border:'1px solid rgba(255,230,0,.3)', letterSpacing:1,
+          position:'absolute', bottom:6, left:'50%', transform:'translateX(-50%)',
+          fontSize:8, fontWeight:700, padding:'2px 8px', borderRadius:8, zIndex:4,
+          background:'rgba(0,0,0,.6)', color:'rgba(255,230,0,.7)',
+          border:'1px solid rgba(255,230,0,.3)', letterSpacing:1, whiteSpace:'nowrap',
         }}>
           {r.label.toUpperCase()}
-        </div>
-        {/* Pontos no fundo */}
-        <div style={{ position:'absolute', bottom:4, right:5, fontSize:8, color:'rgba(255,230,0,.3)', fontWeight:900, zIndex:3 }}>
-          ⭐
         </div>
       </div>
     )
   }
 
-  // DESBLOQUEADA — carta colorida com brilho
+  // DESBLOQUEADA — imagem real da figurinha
   return (
     <div
       onClick={() => onClick && onClick(fig)}
       style={{
-        background: `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
-        border: `2px solid ${r.cor}`,
         borderRadius: 14,
-        padding: '8px 6px 10px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        padding: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
         cursor: 'pointer',
-        boxShadow: `0 0 18px ${r.brilho}, inset 0 1px 0 rgba(255,255,255,.2)`,
         position: 'relative', overflow: 'hidden',
         minHeight: 130,
+        border: `2px solid ${r.cor}`,
+        boxShadow: `0 0 18px ${r.brilho}`,
         animation: isLendaria ? 'glowLendaria 2s ease-in-out infinite' : 'none',
         transition: 'transform .2s, box-shadow .2s',
+        background: imgSrc ? 'transparent' : `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
       }}
-      onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px) scale(1.04)'; e.currentTarget.style.boxShadow=`0 8px 28px ${r.brilho}` }}
-      onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=`0 0 18px ${r.brilho}, inset 0 1px 0 rgba(255,255,255,.2)` }}
+      onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px) scale(1.05)'; e.currentTarget.style.boxShadow=`0 8px 28px ${r.brilho}` }}
+      onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=`0 0 18px ${r.brilho}` }}
     >
-      {/* Reflexo no topo */}
-      <div style={{ position:'absolute', top:0, left:0, right:0, height:40, background:'linear-gradient(180deg,rgba(255,255,255,.15),transparent)', borderRadius:'12px 12px 0 0', pointerEvents:'none' }}/>
-
-      {/* Número */}
-      <div style={{ position:'absolute', top:5, left:7, fontSize:8, color:'rgba(255,255,255,.6)', fontWeight:900, fontFamily:'monospace' }}>
-        #{fig.numero}
-      </div>
-      {/* Badge lendária */}
-      {isLendaria && (
-        <div style={{ position:'absolute', top:3, right:4, fontSize:11, filter:'drop-shadow(0 0 4px gold)' }}>★</div>
+      {imgSrc ? (
+        /* Imagem real da figurinha */
+        <img src={imgSrc} alt={fig.nome}
+          style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:12, display:'block' }}
+          onError={e => { e.target.style.display='none' }}
+        />
+      ) : (
+        /* Fallback: emoji + nome */
+        <>
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:40, background:'linear-gradient(180deg,rgba(255,255,255,.15),transparent)', pointerEvents:'none' }}/>
+          <div style={{ fontSize:9, color:'rgba(255,255,255,.6)', fontWeight:900, fontFamily:'monospace', alignSelf:'flex-start', margin:'6px 0 0 7px' }}>#{fig.numero}</div>
+          <div style={{ fontSize:32, lineHeight:1, marginTop:4, filter:`drop-shadow(0 2px 6px ${r.brilho})` }}>{fig.icone_emoji}</div>
+          <div style={{ fontSize:9, fontWeight:900, textAlign:'center', color:'#fff', padding:'4px 4px 0', lineHeight:1.2 }}>{fig.nome}</div>
+          <div style={{ fontSize:8, color:'rgba(255,255,255,.65)', marginTop:2 }}>{fig.classe}</div>
+          <div style={{ fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:8, margin:'4px 0 8px', background:'rgba(0,0,0,.35)', color:r.cor, border:`1px solid ${r.cor}66` }}>{r.label.toUpperCase()}</div>
+        </>
       )}
 
-      {/* Emoji grande */}
-      <div style={{ fontSize: 34, lineHeight:1, marginTop:8, filter:`drop-shadow(0 2px 6px ${r.brilho})` }}>
-        {fig.icone_emoji}
-      </div>
-
-      {/* Nome */}
-      <div style={{
-        fontSize:9, fontWeight:900, textAlign:'center', lineHeight:1.2,
-        color:'#fff', textShadow:'0 1px 4px rgba(0,0,0,.6)',
-        maxWidth:'100%', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
-        padding:'0 4px',
-      }}>
-        {fig.nome}
-      </div>
-
-      {/* Posição */}
-      <div style={{ fontSize:8, color:'rgba(255,255,255,.65)', fontWeight:600 }}>
-        {fig.classe}
-      </div>
-
-      {/* Badge raridade */}
-      <div style={{
-        fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:8,
-        background:'rgba(0,0,0,.35)', color:r.cor,
-        border:`1px solid ${r.cor}66`, letterSpacing:1,
-      }}>
-        {r.label.toUpperCase()}
-      </div>
-
+      {/* Badge lendária */}
+      {isLendaria && (
+        <div style={{ position:'absolute', top:3, right:4, fontSize:11, filter:'drop-shadow(0 0 4px gold)', zIndex:5 }}>★</div>
+      )}
       {/* Duplicata */}
       {fig.quantidade > 1 && (
-        <div style={{ position:'absolute', bottom:4, right:5, fontSize:9, color:'#fbbf24', fontWeight:900 }}>
+        <div style={{ position:'absolute', bottom:4, right:5, fontSize:9, color:'#fbbf24', fontWeight:900, zIndex:5, background:'rgba(0,0,0,.6)', borderRadius:4, padding:'1px 5px' }}>
           x{fig.quantidade}
         </div>
       )}
