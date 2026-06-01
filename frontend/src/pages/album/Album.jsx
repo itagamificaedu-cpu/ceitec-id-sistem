@@ -299,25 +299,42 @@ function ModalPacote({ resultado, onClose }) {
           return (
             <div key={i} style={{
               width:96, height:134,
-              background: `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
               border:`2px solid ${rar.cor}`,
-              borderRadius:14, padding:'8px 6px',
-              display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+              borderRadius:14,
               boxShadow:`0 0 24px ${rar.brilho}`,
               animation:'cardReveal .6s cubic-bezier(.175,.885,.32,1.275)',
               position:'relative', overflow:'hidden',
+              background: `linear-gradient(160deg, ${fig.cor_primaria}cc, ${fig.cor_secundaria}ee)`,
             }}>
-              {fig.duplicata && (
-                <div style={{ position:'absolute', top:-4, right:-4, background:'#64748b', color:'#fff', fontSize:8, borderRadius:6, padding:'2px 6px', fontWeight:900, zIndex:5 }}>DUP</div>
-              )}
-              <div style={{ position:'absolute', top:0, left:0, right:0, height:30, background:'linear-gradient(180deg,rgba(255,255,255,.15),transparent)' }}/>
-              <div style={{ fontSize:9, color:'rgba(255,255,255,.5)', fontFamily:'monospace', alignSelf:'flex-start', marginLeft:4 }}>#{fig.numero}</div>
-              <div style={{ fontSize:32, filter:`drop-shadow(0 2px 8px ${rar.brilho})` }}>{fig.icone_emoji}</div>
-              <div style={{ fontSize:9, fontWeight:900, textAlign:'center', color:'#fff', lineHeight:1.2, padding:'0 2px' }}>{fig.nome}</div>
-              <div style={{ fontSize:7, color:'rgba(255,255,255,.6)' }}>{fig.classe}</div>
-              <div style={{ fontSize:7, fontWeight:900, padding:'2px 7px', borderRadius:7, background:'rgba(0,0,0,.35)', color:rar.cor, border:`1px solid ${rar.cor}55` }}>
-                {rar.label.toUpperCase()}
+              {/* Imagem do mascote */}
+              {(() => { const src = getImgSrc(fig); return src ? (
+                <img src={src} alt={fig.nome}
+                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', borderRadius:12 }}
+                  onError={e => e.target.style.display='none'}
+                />
+              ) : (
+                <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <span style={{ fontSize:32 }}>{fig.icone_emoji}</span>
+                </div>
+              )})()}
+
+              {/* Overlay gradiente no rodapé */}
+              <div style={{ position:'absolute', bottom:0, left:0, right:0,
+                background:'linear-gradient(transparent 35%, rgba(0,0,0,.92))', padding:'20px 5px 6px', borderRadius:'0 0 12px 12px' }}>
+                <div style={{ fontSize:8, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.2,
+                  overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{fig.nome}</div>
+                <div style={{ fontSize:7, color:'rgba(255,255,255,.7)', textAlign:'center' }}>{fig.classe}</div>
+                <div style={{ fontSize:7, fontWeight:900, textAlign:'center', color:rar.cor, marginTop:1 }}>{rar.label.toUpperCase()}</div>
               </div>
+
+              {/* Número */}
+              <div style={{ position:'absolute', top:4, left:5, fontSize:7, color:'#fff', fontWeight:900,
+                background:'rgba(0,0,0,.6)', borderRadius:3, padding:'1px 3px', fontFamily:'monospace' }}>#{fig.numero}</div>
+
+              {fig.duplicata && (
+                <div style={{ position:'absolute', top:3, right:3, background:'#64748b', color:'#fff',
+                  fontSize:7, borderRadius:5, padding:'1px 5px', fontWeight:900, zIndex:5 }}>DUP</div>
+              )}
             </div>
           )
         })}
