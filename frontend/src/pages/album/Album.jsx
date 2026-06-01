@@ -163,28 +163,35 @@ function CardFigurinha({ fig, onClick }) {
     >
       {imgSrc ? (
         /* Mascote do país como fundo + info do jogador por cima */
-        <div style={{ width:'100%', position:'relative', minHeight:130 }}>
+        <div style={{ width:'100%', position:'relative', minHeight:130, borderRadius:10, overflow:'hidden' }}>
           <img src={imgSrc} alt={fig.nome}
-            style={{ width:'100%', display:'block', borderRadius:10, opacity:0.85 }}
+            style={{ width:'100%', display:'block', borderRadius:10 }}
             onError={e => { e.target.style.display='none' }}
           />
-          {/* Overlay escuro no rodapé para legibilidade */}
-          <div style={{ position:'absolute', bottom:0, left:0, right:0, borderRadius:'0 0 10px 10px',
-            background:'linear-gradient(transparent, rgba(0,0,0,.85))', padding:'18px 6px 6px' }}>
+          {/* Overlay degradê só no rodapé */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0,
+            background:'linear-gradient(transparent 30%, rgba(0,0,0,.92))', padding:'22px 5px 7px' }}>
             <div style={{ fontSize:9, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.2,
-              textShadow:'0 1px 3px rgba(0,0,0,.9)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', padding:'0 4px' }}>
+              textShadow:'0 1px 4px #000', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
               {fig.nome}
             </div>
-            <div style={{ fontSize:8, color:'rgba(255,255,255,.7)', textAlign:'center' }}>{fig.classe}</div>
+            <div style={{ fontSize:7, color:'rgba(255,255,255,.75)', textAlign:'center', marginTop:1 }}>{fig.classe}</div>
+            <div style={{ fontSize:7, fontWeight:900, textAlign:'center', color:r.cor, marginTop:2, letterSpacing:.5 }}>
+              {r.label.toUpperCase()}
+            </div>
           </div>
-          {/* Número no topo */}
-          <div style={{ position:'absolute', top:4, left:6, fontSize:8, color:'rgba(255,255,255,.8)', fontWeight:900, fontFamily:'monospace',
-            background:'rgba(0,0,0,.5)', borderRadius:4, padding:'1px 4px' }}>#{fig.numero}</div>
-          {/* Badge raridade */}
-          <div style={{ position:'absolute', top:4, right:4, fontSize:7, fontWeight:900, padding:'1px 5px',
-            borderRadius:6, background:'rgba(0,0,0,.6)', color:r.cor, border:`1px solid ${r.cor}66` }}>
-            {r.label.toUpperCase()}
+          {/* Número no topo esquerdo */}
+          <div style={{ position:'absolute', top:4, left:5, fontSize:8, color:'#fff', fontWeight:900,
+            background:'rgba(0,0,0,.6)', borderRadius:4, padding:'1px 4px', fontFamily:'monospace' }}>
+            #{fig.numero}
           </div>
+          {isLendaria && (
+            <div style={{ position:'absolute', top:3, right:4, fontSize:11, filter:'drop-shadow(0 0 4px gold)' }}>★</div>
+          )}
+          {fig.quantidade > 1 && (
+            <div style={{ position:'absolute', bottom:4, right:4, fontSize:8, color:'#fbbf24', fontWeight:900,
+              background:'rgba(0,0,0,.7)', borderRadius:4, padding:'1px 5px' }}>x{fig.quantidade}</div>
+          )}
         </div>
       ) : (
         /* Fallback: emoji + nome */
