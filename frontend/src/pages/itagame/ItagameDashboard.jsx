@@ -88,13 +88,15 @@ export default function ItagameDashboard() {
   }, [])
 
   async function zerarRanking() {
-    if (!window.confirm('⚠️ Tem certeza? Isso vai ZERAR o XP de TODOS os alunos no ItagGame. Essa ação não pode ser desfeita!')) return
+    const nomeTurma = turmaSel
+      ? turmas.find(t => String(t.id) === String(turmaSel))?.nome || 'turma selecionada'
+      : 'TODOS os alunos'
+    if (!window.confirm(`⚠️ Tem certeza? Isso vai ZERAR o XP de ${nomeTurma}. Essa ação não pode ser desfeita!`)) return
     setZerandoRank(true)
     try {
-      await api.post('/itagame/reset')
+      await api.post('/itagame/reset', turmaSel ? { turma_id: turmaSel } : {})
       setSincStatus('ok')
-      setSincMsg('✅ Ranking zerado com sucesso! XP de todos os alunos foi resetado.')
-      // Recarrega ranking
+      setSincMsg(`✅ XP de ${nomeTurma} zerado com sucesso!`)
       const { data } = await api.get(turmaSel ? `/itagame/ranking?turma_id=${turmaSel}` : '/itagame/ranking')
       setRanking(data)
       setTimeout(() => setSincStatus(null), 5000)
@@ -354,7 +356,7 @@ export default function ItagameDashboard() {
                   <button onClick={() => sincronizar(false)} className="btn-secondary text-sm">🔄 Sincronizar ItagGame</button>
                   <button onClick={zerarRanking} disabled={zerandoRank}
                     className="text-sm px-4 py-2 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all">
-                    {zerandoRank ? '⏳ Zerando...' : '🗑️ Zerar Ranking'}
+                    {zerandoRank ? '⏳ Zerando...' : turmaSel ? '🗑️ Zerar Turma' : '🗑️ Zerar Todas as Turmas'}
                   </button>
                   <button onClick={() => {
                     const header = ['#', 'Nome', 'Turma', 'XP', 'Nível']
