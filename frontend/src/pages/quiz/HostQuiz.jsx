@@ -286,31 +286,46 @@ export default function HostQuiz() {
             </p>
           </div>
 
-          {/* Alternativas SEM gabarito durante o jogo — só aparece no reveal */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
-            {(questaoHost.alts || []).map((alt, idx) => (
-              <div key={idx} style={{
-                background: CORES_RESP[idx] + '22',
-                border: `2px solid ${CORES_RESP[idx] + '66'}`,
-                borderRadius: 16, padding: '14px 16px',
-                display: 'flex', alignItems: 'center', gap: 12,
-              }}>
-                <span style={{ background: CORES_RESP[idx], color: '#fff', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, flexShrink: 0 }}>
-                  {LETRAS[idx]}
-                </span>
-                <span style={{ color: '#fff', fontWeight: 600, fontSize: 15, flex: 1 }}>{alt}</span>
-              </div>
-            ))}
-          </div>
+          {/* Pontuações em tempo real — sem gabarito */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 22 }}>
 
-          {/* Progresso de respostas */}
-          <div style={{ background: CARD, borderRadius: 16, padding: '14px 18px', marginBottom: 20, border: `1px solid ${BORDA}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ color: '#a0a0c0', fontSize: 13 }}>Respostas recebidas</span>
-              <span style={{ color: '#00FF88', fontWeight: 700 }}>{answerUpdate.totalAnswered} / {answerUpdate.totalPlayers}</span>
+            {/* Progresso de respostas */}
+            <div style={{ background: CARD, borderRadius: 16, padding: '18px 20px', border: `1px solid ${BORDA}` }}>
+              <div style={{ color: '#a0a0c0', fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 12 }}>
+                Respostas recebidas
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, marginBottom: 10 }}>
+                <span style={{ color: '#00FF88', fontWeight: 900, fontSize: 48, lineHeight: 1 }}>{answerUpdate.totalAnswered}</span>
+                <span style={{ color: '#ffffff40', fontSize: 22, marginBottom: 6 }}>/ {answerUpdate.totalPlayers}</span>
+              </div>
+              <div style={{ height: 12, background: '#ffffff10', borderRadius: 6 }}>
+                <div style={{ height: '100%', width: `${pctResp}%`, background: 'linear-gradient(90deg, #7c3aed, #00FF88)', borderRadius: 6, transition: 'width .4s' }} />
+              </div>
+              <div style={{ color: '#ffffff30', fontSize: 11, marginTop: 6, textAlign: 'right' }}>
+                {answerUpdate.totalPlayers > 0 ? Math.round(pctResp) : 0}% responderam
+              </div>
             </div>
-            <div style={{ height: 10, background: '#ffffff10', borderRadius: 5 }}>
-              <div style={{ height: '100%', width: `${pctResp}%`, background: 'linear-gradient(90deg, #7c3aed, #00FF88)', borderRadius: 5, transition: 'width .3s' }} />
+
+            {/* Placar ao vivo — top 5 */}
+            <div style={{ background: CARD, borderRadius: 16, padding: '18px 20px', border: `1px solid ${BORDA}` }}>
+              <div style={{ color: '#a0a0c0', fontSize: 11, fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 12 }}>
+                🏆 Placar ao vivo
+              </div>
+              {players.length === 0 ? (
+                <div style={{ color: '#ffffff25', fontSize: 13, textAlign: 'center', paddingTop: 12 }}>Nenhum jogador ainda</div>
+              ) : (
+                [...players]
+                  .sort((a, b) => (b.score || 0) - (a.score || 0))
+                  .slice(0, 5)
+                  .map((p, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: i < 4 ? '1px solid #ffffff08' : 'none' }}>
+                      <span style={{ color: i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : '#ffffff30', fontWeight: 900, fontSize: 13, width: 20 }}>#{i + 1}</span>
+                      <span style={{ fontSize: 18 }}>{p.avatar}</span>
+                      <span style={{ flex: 1, color: '#fff', fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nome}</span>
+                      <span style={{ color: '#FFE600', fontWeight: 900, fontSize: 14 }}>{p.score || 0}</span>
+                    </div>
+                  ))
+              )}
             </div>
           </div>
 
