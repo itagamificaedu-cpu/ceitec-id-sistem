@@ -139,90 +139,15 @@ router.get('/aluno/:id', async (req, res) => {
   }
 });
 
-// Atribuir XP: envia ao PythonAnywhere E atualiza local
-// DESATIVADO — professores não podem mais dar XP manualmente
-// XP só é ganho por atividades (quiz, missões, provas)
-router.post('/atribuir', async (req, res) => {
-  return res.status(403).json({ erro: 'XP manual desativado. Alunos ganham XP apenas realizando atividades.' });
-  // eslint-disable-next-line no-unreachable
-  try { // código original mantido abaixo caso precise reativar
-  try {
-    const { aluno_id, xp, motivo, tipo } = req.body;
-    if (!aluno_id || !xp) return res.status(400).json({ erro: 'aluno_id e xp são obrigatórios' });
-
-    const aluno = await db.get('SELECT * FROM alunos WHERE id = ? AND escola_id = ?', [aluno_id, req.usuario.escola_id]);
-    if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
-
-    // Verificação anti-abuso
-    const limite = await verificarLimiteXP(aluno_id, xp);
-    if (!limite.permitido) return res.status(429).json({ erro: limite.motivo });
-    const xpReal = limite.xp;
-
-    // Enviar para PythonAnywhere
-    let pySincronizado = false;
-    let xpPY = null;
-    try {
-      const pyRes = await fetch(`${ITAGAME_PY}/api/xp/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chave: CHAVE, codigo: aluno.codigo, xp: xpReal, motivo: motivo || 'XP atribuído pelo professor' }),
-        signal: AbortSignal.timeout(8000),
-      });
-      if (pyRes.ok) {
-        const pyData = await pyRes.json();
-        pySincronizado = true;
-        xpPY = pyData.xp_total;
-      }
-    } catch (_) {}
-
-    // Atualiza banco local — fonte de verdade do XP (ignora total do PythonAnywhere)
-    let registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
-    if (!registro) {
-      await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno_id, aluno.turma_id]);
-      registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
-    }
-    const novoXP = registro.xp_total + xpReal;
-    const novoNivel = calcularNivel(novoXP).nivel;
-    await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno_id]);
-    await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
-      [aluno_id, tipo || 'bonus', motivo || 'XP atribuído', xpReal]);
-
-    res.json({ xp_total: novoXP, nivel: novoNivel, nivel_info: calcularNivel(novoXP), py_sincronizado: pySincronizado });
-  } catch (err) {
-    res.status(500).json({ erro: err.message });
-  }
+// DESATIVADO — professores não podem dar XP manualmente
+router.post('/atribuir', (req, res) => {
+  res.status(403).json({ erro: 'XP manual desativado. Alunos ganham XP apenas realizando atividades.' });
 });
 
 // DESATIVADO — XP só por atividades
-router.post('/xp', async (req, res) => {
-  return res.status(403).json({ erro: 'XP manual desativado. Alunos ganham XP apenas realizando atividades.' });
-  // eslint-disable-next-line no-unreachable
-  try { // código original mantido abaixo caso precise reativar
-  try {
-    const { aluno_id, xp_ganho, descricao, tipo } = req.body;
-    if (!aluno_id || !xp_ganho) return res.status(400).json({ erro: 'aluno_id e xp_ganho são obrigatórios' });
-
-    // Verificação anti-abuso
-    const limite = await verificarLimiteXP(aluno_id, xp_ganho);
-    if (!limite.permitido) return res.status(429).json({ erro: limite.motivo });
-    const xpReal = limite.xp;
-
-    let registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
-    if (!registro) {
-      const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [aluno_id]);
-      await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno_id, aluno?.turma_id]);
-      registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
-    }
-
-    const novoXP = registro.xp_total + xpReal;
-    const novoNivel = calcularNivel(novoXP).nivel;
-    await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno_id]);
-    await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)', [aluno_id, tipo || 'manual', descricao || 'XP atribuído manualmente', xpReal]);
-
-    res.json({ xp_total: novoXP, nivel: novoNivel, nivel_info: calcularNivel(novoXP) });
-  } catch (err) {
-    res.status(500).json({ erro: err.message });
-  }
+// DESATIVADO — XP só por atividades
+router.post('/xp', (req, res) => {
+  res.status(403).json({ erro: 'XP manual desativado. Alunos ganham XP apenas realizando atividades.' });
 });
 
 router.post('/badge', async (req, res) => {
