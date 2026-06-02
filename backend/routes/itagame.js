@@ -7,6 +7,34 @@ const router = express.Router();
 const ITAGAME_PY = 'https://projetoitagame.pythonanywhere.com';
 const CHAVE = 'gamificaedu_secreto_2026';
 
+// ── Limites anti-abuso ────────────────────────────────────────
+const XP_MAX_POR_TRANSACAO = 2000;  // maximo de XP em uma unica chamada
+const XP_MAX_POR_DIA       = 5000;  // maximo de XP que um aluno pode ganhar por dia
+
+async function verificarLimiteXP(aluno_id, xp_solicitado) {
+  // Limita XP por transacao
+  const xp = Math.min(Math.abs(Number(xp_solicitado)), XP_MAX_POR_TRANSACAO);
+
+  // Verifica total ganho hoje
+  const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const ganhoHoje = await db.get(
+    `SELECT COALESCE(SUM(xp_ganho), 0) AS total
+     FROM itagame_historico
+     WHERE aluno_id = ? AND xp_ganho > 0
+       AND DATE(criado_em) = DATE(NOW())`,
+    [aluno_id]
+  );
+  const totalHoje = Number(ganhoHoje?.total || 0);
+
+  if (totalHoje >= XP_MAX_POR_DIA) {
+    return { permitido: false, xp: 0, motivo: `Limite diario de ${XP_MAX_POR_DIA} XP atingido` };
+  }
+
+  // Corta para nao ultrapassar o teto diario
+  const xpPermitido = Math.min(xp, XP_MAX_POR_DIA - totalHoje);
+  return { permitido: true, xp: xpPermitido };
+}
+
 // Rota pública — acesso do aluno pelo código (sem login)
 router.get('/publico/:codigo', async (req, res) => {
   try {
@@ -120,6 +148,11 @@ router.post('/atribuir', async (req, res) => {
     const aluno = await db.get('SELECT * FROM alunos WHERE id = ? AND escola_id = ?', [aluno_id, req.usuario.escola_id]);
     if (!aluno) return res.status(404).json({ erro: 'Aluno não encontrado' });
 
+    // Verificação anti-abuso
+    const limite = await verificarLimiteXP(aluno_id, xp);
+    if (!limite.permitido) return res.status(429).json({ erro: limite.motivo });
+    const xpReal = limite.xp;
+
     // Enviar para PythonAnywhere
     let pySincronizado = false;
     let xpPY = null;
@@ -127,7 +160,7 @@ router.post('/atribuir', async (req, res) => {
       const pyRes = await fetch(`${ITAGAME_PY}/api/xp/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chave: CHAVE, codigo: aluno.codigo, xp: Number(xp), motivo: motivo || 'XP atribuído pelo professor' }),
+        body: JSON.stringify({ chave: CHAVE, codigo: aluno.codigo, xp: xpReal, motivo: motivo || 'XP atribuído pelo professor' }),
         signal: AbortSignal.timeout(8000),
       });
       if (pyRes.ok) {
@@ -143,11 +176,11 @@ router.post('/atribuir', async (req, res) => {
       await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno_id, aluno.turma_id]);
       registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     }
-    const novoXP = registro.xp_total + Number(xp);
+    const novoXP = registro.xp_total + xpReal;
     const novoNivel = calcularNivel(novoXP).nivel;
     await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno_id]);
     await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
-      [aluno_id, tipo || 'bonus', motivo || 'XP atribuído', Number(xp)]);
+      [aluno_id, tipo || 'bonus', motivo || 'XP atribuído', xpReal]);
 
     res.json({ xp_total: novoXP, nivel: novoNivel, nivel_info: calcularNivel(novoXP), py_sincronizado: pySincronizado });
   } catch (err) {
@@ -160,6 +193,11 @@ router.post('/xp', async (req, res) => {
     const { aluno_id, xp_ganho, descricao, tipo } = req.body;
     if (!aluno_id || !xp_ganho) return res.status(400).json({ erro: 'aluno_id e xp_ganho são obrigatórios' });
 
+    // Verificação anti-abuso
+    const limite = await verificarLimiteXP(aluno_id, xp_ganho);
+    if (!limite.permitido) return res.status(429).json({ erro: limite.motivo });
+    const xpReal = limite.xp;
+
     let registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     if (!registro) {
       const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [aluno_id]);
@@ -167,10 +205,10 @@ router.post('/xp', async (req, res) => {
       registro = await db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno_id]);
     }
 
-    const novoXP = registro.xp_total + xp_ganho;
+    const novoXP = registro.xp_total + xpReal;
     const novoNivel = calcularNivel(novoXP).nivel;
     await db.run('UPDATE itagame_pontos SET xp_total = ?, nivel = ? WHERE aluno_id = ?', [novoXP, novoNivel, aluno_id]);
-    await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)', [aluno_id, tipo || 'manual', descricao || 'XP atribuído manualmente', xp_ganho]);
+    await db.run('INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)', [aluno_id, tipo || 'manual', descricao || 'XP atribuído manualmente', xpReal]);
 
     res.json({ xp_total: novoXP, nivel: novoNivel, nivel_info: calcularNivel(novoXP) });
   } catch (err) {
