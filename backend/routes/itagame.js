@@ -366,26 +366,39 @@ router.post('/sync', async (req, res) => {
   }
 });
 
-// ZERAR RANKING — reseta XP no PythonAnywhere e no banco local
+// ZERAR RANKING — reseta XP por turma ou todos da escola
 router.post('/reset', async (req, res) => {
   try {
-    // 1) Zera PythonAnywhere
-    try {
-      await fetch(`${ITAGAME_PY}/api/reset-xp/?chave=${CHAVE}`, {
-        method: 'POST',
-        signal: AbortSignal.timeout(10000),
-      });
-    } catch (_) { /* ignora se PY não responder */ }
-
-    // 2) Zera itagame_pontos local (todos os alunos da escola)
     const eid = req.usuario.escola_id;
-    await db.run(
-      `UPDATE itagame_pontos SET xp_total = 0, nivel = 1
-       WHERE aluno_id IN (SELECT id FROM alunos WHERE escola_id = ? AND ativo = 1)`,
-      [eid]
-    );
+    const { turma_id } = req.body;
 
-    res.json({ ok: true, mensagem: 'Ranking zerado com sucesso!' });
+    if (turma_id) {
+      // Zera só a turma selecionada
+      await db.run(
+        `UPDATE itagame_pontos SET xp_total = 0, nivel = 1
+         WHERE aluno_id IN (
+           SELECT id FROM alunos
+           WHERE escola_id = ? AND ativo = 1 AND turma_id = ?
+         )`,
+        [eid, turma_id]
+      );
+      res.json({ ok: true, mensagem: 'Ranking da turma zerado com sucesso!' });
+    } else {
+      // Zera todos da escola (mantém chamada PythonAnywhere para reset geral)
+      try {
+        await fetch(`${ITAGAME_PY}/api/reset-xp/?chave=${CHAVE}`, {
+          method: 'POST',
+          signal: AbortSignal.timeout(10000),
+        });
+      } catch (_) { /* ignora se PY não responder */ }
+
+      await db.run(
+        `UPDATE itagame_pontos SET xp_total = 0, nivel = 1
+         WHERE aluno_id IN (SELECT id FROM alunos WHERE escola_id = ? AND ativo = 1)`,
+        [eid]
+      );
+      res.json({ ok: true, mensagem: 'Ranking geral zerado com sucesso!' });
+    }
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
