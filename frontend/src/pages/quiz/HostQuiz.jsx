@@ -286,26 +286,21 @@ export default function HostQuiz() {
             </p>
           </div>
 
-          {/* Alternativas com gabarito visível ao host */}
+          {/* Alternativas SEM gabarito durante o jogo — só aparece no reveal */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
-            {(questaoHost.alts || []).map((alt, idx) => {
-              const correta = idx === questaoHost.correctAnswer
-              return (
-                <div key={idx} style={{
-                  background: correta ? '#00FF8818' : CORES_RESP[idx] + '18',
-                  border: `2px solid ${correta ? '#00FF88' : CORES_RESP[idx] + '55'}`,
-                  borderRadius: 16, padding: '14px 16px',
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  opacity: correta ? 1 : 0.65,
-                }}>
-                  <span style={{ background: correta ? '#00FF88' : CORES_RESP[idx], color: '#000', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, flexShrink: 0 }}>
-                    {LETRAS[idx]}
-                  </span>
-                  <span style={{ color: correta ? '#00FF88' : '#fff', fontWeight: correta ? 800 : 600, fontSize: 15, flex: 1 }}>{alt}</span>
-                  {correta && <span style={{ color: '#00FF88', fontSize: 20, flexShrink: 0 }}>✓</span>}
-                </div>
-              )
-            })}
+            {(questaoHost.alts || []).map((alt, idx) => (
+              <div key={idx} style={{
+                background: CORES_RESP[idx] + '22',
+                border: `2px solid ${CORES_RESP[idx] + '66'}`,
+                borderRadius: 16, padding: '14px 16px',
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+                <span style={{ background: CORES_RESP[idx], color: '#fff', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, flexShrink: 0 }}>
+                  {LETRAS[idx]}
+                </span>
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 15, flex: 1 }}>{alt}</span>
+              </div>
+            ))}
           </div>
 
           {/* Progresso de respostas */}
