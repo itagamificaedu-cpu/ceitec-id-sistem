@@ -28,7 +28,7 @@ function getLeaderboard(room) {
 
 function sendQuestion(io, room) {
   const q = room.questoes[room.currentQuestion];
-  const timeLimit = room.quiz.tempo_por_questao || 30;
+  const timeLimit = room.quiz.tempo_por_questao || 60; // padrão 60s
   const payload = {
     enunciado: q.enunciado,
     alts: [q.alt_a, q.alt_b, q.alt_c, q.alt_d].filter(Boolean),
@@ -42,13 +42,11 @@ function sendQuestion(io, room) {
   const hostSock = io.sockets.sockets.get(room.hostSocketId);
   if (hostSock) hostSock.emit('quiz:question-host', { ...payload, correctAnswer: q.resposta_correta });
 
-  // ── Auto-avançar: servidor revela quando o tempo esgotar ──
-  if (room.quiz.auto_avancar) {
-    clearTimeout(room.autoTimer);
-    room.autoTimer = setTimeout(() => {
-      if (room.state === 'playing') revealQuestion(io, room);
-    }, (timeLimit + 1) * 1000); // +1s de buffer
-  }
+  // ── Auto-avançar sempre após o tempo esgotar ──
+  clearTimeout(room.autoTimer);
+  room.autoTimer = setTimeout(() => {
+    if (room.state === 'playing') revealQuestion(io, room);
+  }, (timeLimit + 1) * 1000);
 }
 
 function revealQuestion(io, room) {
@@ -106,21 +104,20 @@ function revealQuestion(io, room) {
   });
 
   // ── Auto-avançar: após 5s no reveal, passa para a próxima ──
-  if (room.quiz.auto_avancar) {
-    clearTimeout(room.autoTimer);
-    room.autoTimer = setTimeout(() => {
-      if (room.state !== 'reveal') return;
-      const nextIdx = room.currentQuestion + 1;
-      if (nextIdx >= room.questoes.length) {
-        finishGame(io, room);
-      } else {
-        room.currentQuestion = nextIdx;
-        room.questionAnswers = new Map();
-        room.state = 'playing';
-        sendQuestion(io, room);
-      }
-    }, 5000);
-  }
+  // Avança automaticamente após 5s no reveal
+  clearTimeout(room.autoTimer);
+  room.autoTimer = setTimeout(() => {
+    if (room.state !== 'reveal') return;
+    const nextIdx = room.currentQuestion + 1;
+    if (nextIdx >= room.questoes.length) {
+      finishGame(io, room);
+    } else {
+      room.currentQuestion = nextIdx;
+      room.questionAnswers = new Map();
+      room.state = 'playing';
+      sendQuestion(io, room);
+    }
+  }, 5000);
 }
 
 function finishGame(io, room) {
