@@ -423,11 +423,7 @@ export default function ItagameDashboard() {
                           </span>
                           <p className="text-lg font-bold text-secondary mt-1">{a.xp_total} XP</p>
                         </div>
-                        {a.id && (
-                          <button onClick={() => setModalAtribuir(a)} className="ml-2 px-3 py-1.5 bg-secondary/10 text-secondary rounded-lg text-xs font-medium hover:bg-secondary/20 flex-shrink-0">
-                            + XP
-                          </button>
-                        )}
+                        {/* XP manual removido — alunos ganham XP apenas por atividades */}
                       </div>
                     ))}
                   </div>
@@ -866,37 +862,9 @@ export default function ItagameDashboard() {
 
         </div>
 
-        {/* Modal atribuir XP */}
-        {modalAtribuir && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
-              <h3 className="font-bold text-textMain mb-1">Atribuir XP</h3>
-              <p className="text-sm text-gray-500 mb-4">para {modalAtribuir.nome}</p>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade de XP</label>
-                  <input className="input-field" type="number" min={1} max={500} value={xpForm.xp} onChange={e => setXpForm(f => ({ ...f, xp: Number(e.target.value) }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                  <select className="input-field" value={xpForm.tipo} onChange={e => setXpForm(f => ({ ...f, tipo: e.target.value }))}>
-                    <option value="bonus">Bônus</option>
-                    <option value="participacao">Participação</option>
-                    <option value="desempenho">Desempenho</option>
-                    <option value="comportamento">Comportamento</option>
-                    <option value="avaliacao">Avaliação</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Motivo *</label>
-                  <input className="input-field" value={xpForm.motivo} onChange={e => setXpForm(f => ({ ...f, motivo: e.target.value }))} placeholder="Ex: Excelente participação em aula" />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button onClick={atribuirXP} disabled={salvando || !xpForm.motivo} className="btn-primary flex-1">{salvando ? 'Salvando...' : '⭐ Atribuir'}</button>
-                  <button onClick={() => setModalAtribuir(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
-                </div>
-              </div>
-            </div>
+        {/* Modal atribuir XP removido — alunos ganham XP apenas por atividades */}
+        {false && (
+          <div>
           </div>
         )}
       {/* Modal Scanner Loja */}

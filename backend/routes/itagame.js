@@ -140,7 +140,12 @@ router.get('/aluno/:id', async (req, res) => {
 });
 
 // Atribuir XP: envia ao PythonAnywhere E atualiza local
+// DESATIVADO — professores não podem mais dar XP manualmente
+// XP só é ganho por atividades (quiz, missões, provas)
 router.post('/atribuir', async (req, res) => {
+  return res.status(403).json({ erro: 'XP manual desativado. Alunos ganham XP apenas realizando atividades.' });
+  // eslint-disable-next-line no-unreachable
+  try { // código original mantido abaixo caso precise reativar
   try {
     const { aluno_id, xp, motivo, tipo } = req.body;
     if (!aluno_id || !xp) return res.status(400).json({ erro: 'aluno_id e xp são obrigatórios' });
@@ -188,7 +193,11 @@ router.post('/atribuir', async (req, res) => {
   }
 });
 
+// DESATIVADO — XP só por atividades
 router.post('/xp', async (req, res) => {
+  return res.status(403).json({ erro: 'XP manual desativado. Alunos ganham XP apenas realizando atividades.' });
+  // eslint-disable-next-line no-unreachable
+  try { // código original mantido abaixo caso precise reativar
   try {
     const { aluno_id, xp_ganho, descricao, tipo } = req.body;
     if (!aluno_id || !xp_ganho) return res.status(400).json({ erro: 'aluno_id e xp_ganho são obrigatórios' });
