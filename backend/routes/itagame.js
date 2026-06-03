@@ -593,16 +593,27 @@ router.get('/online', async (req, res) => {
     const agora = Math.floor(Date.now() / 1000);
 
     // 1. Alunos online na plataforma ITA (banco local)
-    let sqlITA = `
-      SELECT a.id, a.nome, a.turma, a.foto_path,
-             COALESCE(ip.xp_total, 0) as xp_total,
-             o.ultimo_ping
-      FROM itagame_online o
-      JOIN alunos a ON o.aluno_id = a.id
-      LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
-      WHERE o.escola_id = $1 AND o.ultimo_ping > $2`;
-    const params = [eid, dez_min];
-    if (turma_id) { sqlITA += ' AND a.turma_id = $3'; params.push(turma_id); }
+    // ita_admin ve todos; professor ve só da sua escola
+    const isAdmin = req.usuario.perfil === 'ita_admin' || req.usuario.is_admin;
+    let sqlITA, params;
+    if (isAdmin) {
+      sqlITA = `SELECT a.id, a.nome, a.turma, a.foto_path,
+               COALESCE(ip.xp_total, 0) as xp_total, o.ultimo_ping
+               FROM itagame_online o
+               JOIN alunos a ON o.aluno_id = a.id
+               LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
+               WHERE o.ultimo_ping > $1`;
+      params = [dez_min];
+    } else {
+      sqlITA = `SELECT a.id, a.nome, a.turma, a.foto_path,
+               COALESCE(ip.xp_total, 0) as xp_total, o.ultimo_ping
+               FROM itagame_online o
+               JOIN alunos a ON o.aluno_id = a.id
+               LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
+               WHERE o.escola_id = $1 AND o.ultimo_ping > $2`;
+      params = [eid, dez_min];
+    }
+    if (turma_id) { sqlITA += isAdmin ? ' AND a.turma_id = $2' : ' AND a.turma_id = $3'; params.push(turma_id); }
     sqlITA += ' ORDER BY o.ultimo_ping DESC';
     const listaITA = await db.all(sqlITA, params);
     const onlineITA = listaITA.map(a => ({
