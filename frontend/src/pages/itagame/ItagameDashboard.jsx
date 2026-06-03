@@ -44,6 +44,10 @@ export default function ItagameDashboard() {
   const [sincMsg, setSincMsg] = useState('')
   const [zerandoRank, setZerandoRank] = useState(false)
 
+  // Online
+  const [alunosOnline, setAlunosOnline] = useState([])
+  const [carregandoOnline, setCarregandoOnline] = useState(false)
+
   // Missões
   const [missoes, setMissoes] = useState([])
   const [missaoForm, setMissaoForm] = useState({ titulo: '', descricao: '', xp_recompensa: 100, codigo_secreto: '', turma_id: '' })
@@ -136,6 +140,19 @@ export default function ItagameDashboard() {
     const url = turmaSel ? `/itagame/ranking?turma_id=${turmaSel}` : '/itagame/ranking'
     api.get(url).then(({ data }) => setRanking(data)).finally(() => setCarregando(false))
   }, [turmaSel])
+
+  // Carrega alunos online quando a aba é selecionada, e atualiza a cada 30s
+  useEffect(() => {
+    if (aba !== 'online') return
+    function carregarOnline() {
+      setCarregandoOnline(true)
+      const url = turmaSel ? `/itagame/online?turma_id=${turmaSel}` : '/itagame/online'
+      api.get(url).then(({ data }) => setAlunosOnline(data)).finally(() => setCarregandoOnline(false))
+    }
+    carregarOnline()
+    const intervalo = setInterval(carregarOnline, 30000)
+    return () => clearInterval(intervalo)
+  }, [aba, turmaSel])
 
   useEffect(() => {
     if (aba === 'missoes') api.get('/itagame/missoes').then(({ data }) => setMissoes(data))
@@ -314,6 +331,7 @@ export default function ItagameDashboard() {
   const top3 = ranking.slice(0, 3)
   const ABAS = [
     { id: 'ranking',    label: '🏆 Ranking' },
+    { id: 'online',     label: '🟢 Online' },
     { id: 'missoes',    label: '🎯 Missões' },
     { id: 'recados',    label: '💬 Recados' },
     { id: 'provas',     label: '📝 Provas' },
@@ -342,6 +360,51 @@ export default function ItagameDashboard() {
               </button>
             ))}
           </div>
+
+          {/* ===== ONLINE ===== */}
+          {aba === 'online' && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  <span className="inline-block w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
+                  Alunos ativos nos últimos 10 minutos
+                </h3>
+                <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200">
+                  {alunosOnline.length} online
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mb-4">🔄 Atualiza automaticamente a cada 30 segundos</p>
+              {carregandoOnline ? (
+                <p className="text-center text-gray-400 py-8">Carregando...</p>
+              ) : alunosOnline.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-3">😴</div>
+                  <p className="text-gray-400 font-medium">Nenhum aluno online agora.</p>
+                  <p className="text-gray-300 text-sm mt-1">Os alunos aparecem aqui quando entram no sistema.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {alunosOnline.map(a => {
+                    const min = Math.floor(a.ha_segundos / 60)
+                    const agora = a.ha_segundos < 60
+                    return (
+                      <div key={a.id} className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                        <span className={`w-3 h-3 rounded-full flex-shrink-0 ${agora ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`}></span>
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-800 text-sm">{a.nome}</p>
+                          <p className="text-xs text-gray-400">{a.turma || 'Sem turma'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-yellow-600">⚡ {a.xp_total} XP</p>
+                          <p className="text-xs text-gray-400">{agora ? 'agora mesmo' : `há ${min} min`}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ===== RANKING ===== */}
           {aba === 'ranking' && (
