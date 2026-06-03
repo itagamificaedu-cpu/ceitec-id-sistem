@@ -388,14 +388,19 @@ export default function ItagameDashboard() {
                     const min = Math.floor(a.ha_segundos / 60)
                     const agora = a.ha_segundos < 60
                     return (
-                      <div key={a.id} className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+                      <div key={a.nome} className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
                         <span className={`w-3 h-3 rounded-full flex-shrink-0 ${agora ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`}></span>
                         <div className="flex-1">
-                          <p className="font-bold text-gray-800 text-sm">{a.nome}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-gray-800 text-sm">{a.nome}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${a.sistema === 'ItagGame' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                              {a.sistema === 'ItagGame' ? '🎮 ItagGame' : '🌐 ITA'}
+                            </span>
+                          </div>
                           <p className="text-xs text-gray-400">{a.turma || 'Sem turma'}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs font-bold text-yellow-600">⚡ {a.xp_total} XP</p>
+                          <p className="text-xs font-bold text-yellow-600">⚡ {a.xp || a.xp_total || 0} XP</p>
                           <p className="text-xs text-gray-400">{agora ? 'agora mesmo' : `há ${min} min`}</p>
                         </div>
                       </div>

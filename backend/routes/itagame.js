@@ -590,20 +590,55 @@ router.get('/online', async (req, res) => {
     const eid = req.usuario.escola_id;
     const { turma_id } = req.query;
     const dez_min = Math.floor(Date.now() / 1000) - 600;
-    let sql = `
+    const agora = Math.floor(Date.now() / 1000);
+
+    // 1. Alunos online na plataforma ITA (banco local)
+    let sqlITA = `
       SELECT a.id, a.nome, a.turma, a.foto_path,
              COALESCE(ip.xp_total, 0) as xp_total,
              o.ultimo_ping
       FROM itagame_online o
       JOIN alunos a ON o.aluno_id = a.id
       LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
-      WHERE o.escola_id = ? AND o.ultimo_ping > ?`;
+      WHERE o.escola_id = $1 AND o.ultimo_ping > $2`;
     const params = [eid, dez_min];
-    if (turma_id) { sql += ' AND a.turma_id = ?'; params.push(turma_id); }
-    sql += ' ORDER BY o.ultimo_ping DESC';
-    const lista = await db.all(sql, params);
-    const agora = Math.floor(Date.now() / 1000);
-    res.json(lista.map(a => ({ ...a, ha_segundos: agora - a.ultimo_ping })));
+    if (turma_id) { sqlITA += ' AND a.turma_id = $3'; params.push(turma_id); }
+    sqlITA += ' ORDER BY o.ultimo_ping DESC';
+    const listaITA = await db.all(sqlITA, params);
+    const onlineITA = listaITA.map(a => ({
+      nome: a.nome,
+      turma: a.turma || 'Sem turma',
+      xp: a.xp_total,
+      nivel: 1,
+      ha_segundos: agora - a.ultimo_ping,
+      sistema: 'ITA'
+    }));
+
+    // 2. Alunos online no ItagGame (PythonAnywhere)
+    let onlinePY = [];
+    try {
+      const CHAVE = 'gamificaedu_secreto_2026';
+      const ITAGAME_URL = 'https://projetoitagame.pythonanywhere.com';
+      const resp = await fetch(`${ITAGAME_URL}/api/online-alunos/?chave=${CHAVE}`,
+        { signal: AbortSignal.timeout(6000) });
+      if (resp.ok) {
+        const data = await resp.json();
+        onlinePY = (data.online || []);
+      }
+    } catch (_) { /* PY offline, ignora */ }
+
+    // 3. Junta e remove duplicatas por nome
+    const todos = [...onlineITA, ...onlinePY];
+    const vistos = new Set();
+    const resultado = todos.filter(a => {
+      const chave = a.nome.trim().toUpperCase();
+      if (vistos.has(chave)) return false;
+      vistos.add(chave);
+      return true;
+    });
+    resultado.sort((a, b) => a.ha_segundos - b.ha_segundos);
+
+    res.json(resultado);
   } catch (err) { res.status(500).json({ erro: err.message }); }
 });
 
