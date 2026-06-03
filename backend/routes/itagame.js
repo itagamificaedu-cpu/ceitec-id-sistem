@@ -568,4 +568,43 @@ router.delete('/resgates/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ erro: err.message }); }
 });
 
+// ALUNOS ONLINE — registra e consulta presença ativa (últimos 10 min)
+router.post('/online/ping', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    const aluno_id = req.usuario.aluno_id || req.body.aluno_id;
+    if (!aluno_id) return res.json({ ok: true });
+    const agora = Math.floor(Date.now() / 1000);
+    await db.run(
+      `INSERT INTO itagame_online (aluno_id, escola_id, ultimo_ping)
+       VALUES (?, ?, ?)
+       ON CONFLICT (aluno_id) DO UPDATE SET ultimo_ping = ?, escola_id = ?`,
+      [aluno_id, eid, agora, agora, eid]
+    );
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
+router.get('/online', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    const { turma_id } = req.query;
+    const dez_min = Math.floor(Date.now() / 1000) - 600;
+    let sql = `
+      SELECT a.id, a.nome, a.turma, a.foto_path,
+             COALESCE(ip.xp_total, 0) as xp_total,
+             o.ultimo_ping
+      FROM itagame_online o
+      JOIN alunos a ON o.aluno_id = a.id
+      LEFT JOIN itagame_pontos ip ON ip.aluno_id = a.id
+      WHERE o.escola_id = ? AND o.ultimo_ping > ?`;
+    const params = [eid, dez_min];
+    if (turma_id) { sql += ' AND a.turma_id = ?'; params.push(turma_id); }
+    sql += ' ORDER BY o.ultimo_ping DESC';
+    const lista = await db.all(sql, params);
+    const agora = Math.floor(Date.now() / 1000);
+    res.json(lista.map(a => ({ ...a, ha_segundos: agora - a.ultimo_ping })));
+  } catch (err) { res.status(500).json({ erro: err.message }); }
+});
+
 module.exports = router;
