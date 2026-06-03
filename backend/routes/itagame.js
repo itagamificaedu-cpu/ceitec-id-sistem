@@ -575,11 +575,10 @@ router.post('/online/ping', async (req, res) => {
     const aluno_id = req.usuario.aluno_id || req.body.aluno_id;
     if (!aluno_id) return res.json({ ok: true });
     const agora = Math.floor(Date.now() / 1000);
-    await db.run(
+    await db.exec(
       `INSERT INTO itagame_online (aluno_id, escola_id, ultimo_ping)
-       VALUES (?, ?, ?)
-       ON CONFLICT (aluno_id) DO UPDATE SET ultimo_ping = ?, escola_id = ?`,
-      [aluno_id, eid, agora, agora, eid]
+       VALUES (${aluno_id}, ${eid}, ${agora})
+       ON CONFLICT (aluno_id) DO UPDATE SET ultimo_ping = ${agora}, escola_id = ${eid}`
     );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ erro: err.message }); }

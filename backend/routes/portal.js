@@ -52,11 +52,10 @@ router.get('/:codigo', async (req, res) => {
 
     // Registra aluno como online (ping automático ao abrir o portal)
     const agora = Math.floor(Date.now() / 1000);
-    await db.run(
+    await db.exec(
       `INSERT INTO itagame_online (aluno_id, escola_id, ultimo_ping)
-       VALUES (?, ?, ?)
-       ON CONFLICT (aluno_id) DO UPDATE SET ultimo_ping = ?, escola_id = ?`,
-      [aluno.id, aluno.escola_id, agora, agora, aluno.escola_id]
+       VALUES (${aluno.id}, ${aluno.escola_id}, ${agora})
+       ON CONFLICT (aluno_id) DO UPDATE SET ultimo_ping = ${agora}, escola_id = ${aluno.escola_id}`
     ).catch(() => {}); // ignora se tabela ainda não existir
 
     const eid = aluno.escola_id;
