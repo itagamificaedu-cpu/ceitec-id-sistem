@@ -25,11 +25,26 @@ router.get('/jogar/:codigo', async (req, res) => {
   }
 });
 
+// Rate limiting: controla última submissão por código de aluno (em memória)
+const _ultimaSubmissao = new Map();
+const CAP_XP_QUIZ_DIA = 500; // máximo de XP por dia via quiz
+
 router.post('/jogar/:codigo/responder', async (req, res) => {
   try {
     const { aluno_nome, aluno_codigo, respostas, tempo_total } = req.body;
     const quiz = await db.get('SELECT * FROM quizzes WHERE codigo_acesso = ?', [req.params.codigo]);
     if (!quiz) return res.status(404).json({ erro: 'Quiz não encontrado' });
+
+    // Proteção anti-spam: mínimo 10 segundos entre submissões do mesmo aluno
+    if (aluno_codigo) {
+      const chave = aluno_codigo.toUpperCase();
+      const agora = Date.now();
+      const ultima = _ultimaSubmissao.get(chave) || 0;
+      if (agora - ultima < 10_000) {
+        return res.status(429).json({ erro: 'Aguarde antes de enviar novamente.' });
+      }
+      _ultimaSubmissao.set(chave, agora);
+    }
 
     const questoes = await db.all(
       'SELECT id, resposta_correta FROM quiz_questoes WHERE quiz_id = ? ORDER BY ordem',
@@ -45,43 +60,67 @@ router.post('/jogar/:codigo/responder', async (req, res) => {
     const total = questoes.length;
     const percentual = total > 0 ? Math.round((acertos / total) * 100) : 0;
 
-    await db.run(
-      'INSERT INTO quiz_resultados (quiz_id, aluno_nome, aluno_codigo, acertos, total, percentual, tempo_total) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [quiz.id, aluno_nome || 'Participante', aluno_codigo || null, acertos, total, percentual, tempo_total || 0]
-    );
-
     // Dar XP ao aluno se código da carteirinha foi informado
     let xp_ganho = 0;
+    let ja_respondeu = false;
     let pacote_album = null;
+
     if (aluno_codigo) {
       const aluno = await db.get('SELECT * FROM alunos WHERE codigo = ? AND ativo = 1', [aluno_codigo.toUpperCase()]);
       if (aluno) {
-        xp_ganho = acertos * 10;
-        if (xp_ganho > 0) {
-          await db.run(
-            'INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, 1, \'[]\') ON CONFLICT (aluno_id) DO UPDATE SET xp_total = itagame_pontos.xp_total + ?',
-            [aluno.id, aluno.turma_id, xp_ganho, xp_ganho]
-          );
-          await db.run(
-            'INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
-            [aluno.id, 'quiz', `Quiz: ${quiz.titulo} — ${acertos}/${total} acertos`, xp_ganho]
-          );
-        }
+        // Anti-duplicata: cada aluno responde cada quiz só 1 vez com XP
+        const resposta_anterior = await db.get(
+          'SELECT id FROM quiz_resultados WHERE quiz_id = ? AND aluno_codigo = ? LIMIT 1',
+          [quiz.id, aluno_codigo.toUpperCase()]
+        );
+        ja_respondeu = !!resposta_anterior;
 
-        // ⚽ ÁLBUM COPA — premia com pacote de cartas por desempenho
-        if (percentual >= 90) {
-          // Nota excelente (90%+) → pacote premium (5 cartas, chance de épicas)
-          pacote_album = await premiacao(aluno.id, aluno.escola_id, 'premium', `Quiz ${quiz.titulo}: ${percentual}%`);
-          pacote_album.tipo_pacote = 'premium';
-        } else if (percentual >= 70) {
-          // Boa nota (70%+) → pacote comum (3 cartas)
-          pacote_album = await premiacao(aluno.id, aluno.escola_id, 'comum', `Quiz ${quiz.titulo}: ${percentual}%`);
-          pacote_album.tipo_pacote = 'comum';
+        if (!ja_respondeu) {
+          xp_ganho = acertos * 10;
+
+          // Cap diário: máximo CAP_XP_QUIZ_DIA XP por dia via quiz
+          if (xp_ganho > 0) {
+            const hoje = new Date().toISOString().slice(0, 10);
+            const xp_hoje = await db.get(
+              `SELECT COALESCE(SUM(xp_ganho), 0) AS total
+               FROM itagame_historico
+               WHERE aluno_id = ? AND tipo = 'quiz' AND DATE(criado_em) = ?`,
+              [aluno.id, hoje]
+            );
+            const disponivel = Math.max(0, CAP_XP_QUIZ_DIA - (xp_hoje?.total || 0));
+            xp_ganho = Math.min(xp_ganho, disponivel);
+          }
+
+          if (xp_ganho > 0) {
+            await db.run(
+              'INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, 1, \'[]\') ON CONFLICT (aluno_id) DO UPDATE SET xp_total = itagame_pontos.xp_total + ?',
+              [aluno.id, aluno.turma_id, xp_ganho, xp_ganho]
+            );
+            await db.run(
+              'INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, ?, ?, ?)',
+              [aluno.id, 'quiz', `Quiz: ${quiz.titulo} — ${acertos}/${total} acertos`, xp_ganho]
+            );
+          }
+
+          // ⚽ ÁLBUM COPA — premia com pacote de cartas por desempenho
+          if (percentual >= 90) {
+            pacote_album = await premiacao(aluno.id, aluno.escola_id, 'premium', `Quiz ${quiz.titulo}: ${percentual}%`);
+            pacote_album.tipo_pacote = 'premium';
+          } else if (percentual >= 70) {
+            pacote_album = await premiacao(aluno.id, aluno.escola_id, 'comum', `Quiz ${quiz.titulo}: ${percentual}%`);
+            pacote_album.tipo_pacote = 'comum';
+          }
         }
       }
     }
 
-    res.json({ acertos, total, percentual, xp_ganho, pacote_album });
+    // Registra resultado (sem XP se já respondeu)
+    await db.run(
+      'INSERT INTO quiz_resultados (quiz_id, aluno_nome, aluno_codigo, acertos, total, percentual, tempo_total) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [quiz.id, aluno_nome || 'Participante', aluno_codigo ? aluno_codigo.toUpperCase() : null, acertos, total, percentual, tempo_total || 0]
+    );
+
+    res.json({ acertos, total, percentual, xp_ganho, ja_respondeu, pacote_album });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
