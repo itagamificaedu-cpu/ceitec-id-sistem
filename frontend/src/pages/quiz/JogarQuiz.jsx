@@ -120,7 +120,7 @@ export default function JogarQuiz() {
         setEtapa('setup')
       }
     })
-  }, [codigo, alunoCode])
+  }, [codigo, alunoCode, avatarEscolhido])
 
   /* Auto-conectar se nome vier via URL (aluno chegando do portal) */
   useEffect(() => {
