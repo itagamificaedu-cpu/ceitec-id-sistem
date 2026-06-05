@@ -195,6 +195,16 @@ function finishGame(io, room) {
     }
   }
 
+  // Encerra atividade presencial da turma ao finalizar o quiz
+  if (room.turmaId) {
+    const db = require('../db');
+    db.run(
+      `UPDATE atividade_presencial_ativa SET status='finalizado', encerrada_em=NOW()
+       WHERE turma_id=? AND status='em_andamento'`,
+      [room.turmaId]
+    ).catch(() => {});
+  }
+
   // Limpa a sala depois de 30 min
   setTimeout(() => rooms.delete(room.quizId), 30 * 60 * 1000);
 }
@@ -203,7 +213,7 @@ module.exports = function setupQuizLive(io) {
   io.on('connection', (socket) => {
 
     // ── HOST: Abre sala do quiz ──────────────────────────────────────────
-    socket.on('quiz:host', async ({ quizId, token }) => {
+    socket.on('quiz:host', async ({ quizId, token, turmaId }) => {
       try {
         const jwt = require('jsonwebtoken');
         const db  = require('../db');
@@ -224,12 +234,16 @@ module.exports = function setupQuizLive(io) {
             currentQuestion: -1,
             players: new Map(),
             questionAnswers: new Map(),
+            turmaId: turmaId || null,
+            escolaId: decoded.escola_id,
           });
         } else {
           const r = rooms.get(quizId);
           r.hostSocketId = socket.id;
           r.quiz = quiz;
           r.questoes = questoes;
+          r.turmaId = turmaId || null;
+          r.escolaId = decoded.escola_id;
         }
 
         socket.join(`quiz-${quizId}`);
@@ -296,6 +310,23 @@ module.exports = function setupQuizLive(io) {
       // XP ao professor por realizar Quiz ao Vivo
       if (socket.data.hostUsuarioId && socket.data.hostEscolaId) {
         addProfXP(socket.data.hostUsuarioId, socket.data.hostEscolaId, 'quiz_ao_vivo', room.quiz.titulo).catch(() => {});
+      }
+      // Registra atividade presencial ativa para a turma (se turmaId informado)
+      if (room.turmaId && room.escolaId) {
+        const db = require('../db');
+        // Encerra qualquer atividade anterior da turma
+        db.run(
+          `UPDATE atividade_presencial_ativa SET status='finalizado', encerrada_em=NOW()
+           WHERE turma_id=? AND status='em_andamento'`,
+          [room.turmaId]
+        ).catch(() => {});
+        // Cria nova atividade ativa
+        db.run(
+          `INSERT INTO atividade_presencial_ativa
+           (escola_id, turma_id, tipo, referencia_id, referencia_titulo, codigo_acesso, status)
+           VALUES (?,?,?,?,?,?,?)`,
+          [room.escolaId, room.turmaId, 'quiz', quizId, room.quiz.titulo, room.quiz.codigo_acesso, 'em_andamento']
+        ).catch(() => {});
       }
     });
 

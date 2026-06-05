@@ -60,11 +60,17 @@ const SECOES_ESTATICAS = [
     ]
   },
   {
+    titulo: 'ATIVIDADES PRESENCIAIS',
+    itens: [
+      { path: '/quiz',           label: 'Quiz Interativo',  icon: '🎯' },
+      { path: '/cabo-de-guerra', label: 'Cabo de Guerra',   icon: '🪢' },
+    ]
+  },
+  {
     titulo: 'PEDAGÓGICO',
     itens: [
       { path: '/corretor-resultados', label: 'Resultados Corretor de Provas',   icon: '📋' },
       { path: '/avaliacoes',          label: 'Avaliações da Plataforma',        icon: '📝' },
-      { path: '/quiz',                label: 'Quiz Interativo',                 icon: '🎯' },
       { href: '/quiz-copa/',   label: 'Copa do Saber',        icon: '⚽' },
       { path: '/desempenho', label: 'Desempenho Acadêmico', icon: '📊' },
       { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',      icon: '🔬' },
@@ -289,11 +295,17 @@ export default function Navbar() {
           ]
         },
         {
+          titulo: 'ATIVIDADES PRESENCIAIS',
+          itens: [
+            { path: '/quiz',           label: 'Quiz Interativo',  icon: '🎯' },
+            { path: '/cabo-de-guerra', label: 'Cabo de Guerra',   icon: '🪢' },
+          ]
+        },
+        {
           titulo: 'PEDAGÓGICO',
           itens: [
             { path: '/corretor-resultados', label: 'Resultados Corretor',       icon: '📋' },
             { path: '/avaliacoes',          label: 'Avaliações da Plataforma',  icon: '📝' },
-            { path: '/quiz',                label: 'Quiz Interativo',           icon: '🎯' },
             { href: '/quiz-copa/',   label: 'Copa do Saber',        icon: '⚽' },
             { path: '/desempenho', label: 'Desempenho Acadêmico', icon: '📊' },
             { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',icon: '🔬' },
