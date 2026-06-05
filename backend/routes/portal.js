@@ -152,9 +152,8 @@ router.get('/:codigo', async (req, res) => {
     resgates.forEach(r => { resgatesMap[r.item_id] = r; });
 
     // FIX: Buscar XP real do ItagGame Django e sincronizar com nossa tabela
-    // SEGURANÇA: cap de 10000 XP total no sync (impede que XP fraudulento do Django
-    // se propague para o ranking da plataforma ITA)
-    const XP_SYNC_CAP = 10000;
+    const XP_SYNC_CAP   = 10000; // nível máximo da plataforma
+    const XP_BAN_LIMITE = 10500; // acima disso = burló o sistema → ban automático
     let xpTotal = xp?.xp_total || 0;
     try {
       const statsResp = await fetch(
@@ -162,7 +161,26 @@ router.get('/:codigo', async (req, res) => {
       );
       const stats = await statsResp.json();
       if (stats.xp > 0) {
-        const xpSincronizado = Math.min(stats.xp, XP_SYNC_CAP); // nunca aceita acima do cap
+
+        // ── DETECÇÃO DE FRAUDE: XP acima do possível → BAN AUTOMÁTICO ──
+        if (stats.xp > XP_BAN_LIMITE) {
+          // Bane o aluno imediatamente
+          await db.run(
+            "UPDATE alunos SET ativo = 0 WHERE id = ?",
+            [aluno.id]
+          );
+          await db.run(
+            "INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, 'ban', ?, 0)",
+            [aluno.id, `BAN AUTOMÁTICO: XP fraudulento detectado (${stats.xp} XP > limite ${XP_BAN_LIMITE})`]
+          );
+          // Retorna erro imediatamente — aluno está banido
+          return res.status(403).json({
+            erro: 'Conta suspensa por atividade suspeita. Procure o professor.',
+            banido: true
+          });
+        }
+
+        const xpSincronizado = Math.min(stats.xp, XP_SYNC_CAP);
         xpTotal = xpSincronizado;
         // Sincroniza na nossa tabela para o ranking ficar correto
         await db.run(

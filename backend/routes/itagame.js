@@ -653,3 +653,40 @@ router.get('/online', async (req, res) => {
 });
 
 module.exports = router;
+
+// ── GET /api/itagame/banidos — lista alunos banidos por fraude (só professor/admin) ──
+router.get('/banidos', autenticar, async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    const banidos = await db.all(
+      `SELECT a.id, a.nome, a.codigo, a.turma,
+              h.descricao AS motivo, h.criado_em AS data_ban
+       FROM alunos a
+       JOIN itagame_historico h ON h.aluno_id = a.id AND h.tipo = 'ban'
+       WHERE a.escola_id = ? AND a.ativo = 0
+       ORDER BY h.criado_em DESC`,
+      [eid]
+    );
+    res.json({ banidos });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// ── POST /api/itagame/desbanir/:id — reativa aluno banido (só professor/admin) ──
+router.post('/desbanir/:id', autenticar, async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    await db.run(
+      "UPDATE alunos SET ativo = 1 WHERE id = ? AND escola_id = ?",
+      [req.params.id, eid]
+    );
+    await db.run(
+      "INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, 'desban', 'Conta reativada pelo professor', 0)",
+      [req.params.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
