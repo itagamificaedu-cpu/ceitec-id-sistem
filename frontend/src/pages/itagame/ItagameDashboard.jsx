@@ -32,6 +32,13 @@ function BadgeXP({ xp, nivel }) {
 export default function ItagameDashboard() {
   const [aba, setAba] = useState('ranking')
 
+  // Banidos (só ita_admin)
+  const usuarioLogado = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const isItaAdmin = usuarioLogado.perfil === 'ita_admin'
+  const [banidos, setBanidos] = useState([])
+  const [carregandoBanidos, setCarregandoBanidos] = useState(false)
+  const [desbanindo, setDesbanindo] = useState(null)
+
   // Ranking
   const [ranking, setRanking] = useState([])
   const [turmas, setTurmas] = useState([])
@@ -328,6 +335,27 @@ export default function ItagameDashboard() {
     } finally { setConfirmando(false) }
   }
 
+  // Carrega banidos quando aba selecionada
+  useEffect(() => {
+    if (aba !== 'banidos') return
+    setCarregandoBanidos(true)
+    api.get('/itagame/banidos')
+      .then(({ data }) => setBanidos(data.banidos || []))
+      .catch(() => setBanidos([]))
+      .finally(() => setCarregandoBanidos(false))
+  }, [aba])
+
+  async function desbanirAluno(id, nome) {
+    if (!window.confirm(`Reativar a conta de ${nome}?`)) return
+    setDesbanindo(id)
+    try {
+      await api.post(`/itagame/desbanir/${id}`)
+      setBanidos(prev => prev.filter(b => b.id !== id))
+    } catch (err) {
+      alert(err.response?.data?.erro || 'Erro ao desbanir')
+    } finally { setDesbanindo(null) }
+  }
+
   const top3 = ranking.slice(0, 3)
   const ABAS = [
     { id: 'ranking',    label: '🏆 Ranking' },
@@ -338,6 +366,7 @@ export default function ItagameDashboard() {
     { id: 'historico',  label: '📋 Histórico XP' },
     { id: 'repositorio',label: '📚 Repositório' },
     { id: 'loja',       label: '💰 Loja' },
+    ...(isItaAdmin ? [{ id: 'banidos', label: '🚫 Banidos' }] : []),
   ]
 
   return (
@@ -1001,6 +1030,50 @@ export default function ItagameDashboard() {
           </div>
         </div>
       )}
+          {/* ===== BANIDOS (só ita_admin) ===== */}
+          {aba === 'banidos' && isItaAdmin && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  🚫 Alunos Banidos por Fraude
+                </h3>
+                <span className="text-sm font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200">
+                  {banidos.length} banido(s)
+                </span>
+              </div>
+
+              {carregandoBanidos ? (
+                <p className="text-gray-400 text-sm">Carregando...</p>
+              ) : banidos.length === 0 ? (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                  <p className="text-green-700 font-medium">✅ Nenhum aluno banido no momento.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {banidos.map(b => (
+                    <div key={b.id} className="bg-white border border-red-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-800">{b.nome}</p>
+                        <p className="text-xs text-gray-500">{b.turma} · Cód: {b.codigo}</p>
+                        <p className="text-xs text-red-600 mt-1 break-all">{b.motivo}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {b.data_ban ? new Date(b.data_ban).toLocaleString('pt-BR') : ''}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => desbanirAluno(b.id, b.nome)}
+                        disabled={desbanindo === b.id}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 whitespace-nowrap"
+                      >
+                        {desbanindo === b.id ? '⏳...' : '✅ Reativar'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
       </main>
     </div>
   )
