@@ -660,7 +660,21 @@ router.post('/responder-avaliacao', async (req, res) => {
       [aluno.id, avaliacao_id, aluno.turma_id, av.disciplina, nota_final, percentual, aluno.escola_id]
     );
 
-    const xp_ganho = Math.round(pontos_obtidos * 10);
+    let xp_ganho = Math.round(pontos_obtidos * 10);
+
+    // Cap diário: máximo 300 XP/dia via avaliações
+    if (xp_ganho > 0) {
+      const CAP_XP_AVALIACAO_DIA = 300;
+      const hoje = new Date().toISOString().slice(0, 10);
+      const xp_hoje = await db.get(
+        `SELECT COALESCE(SUM(xp_ganho), 0) AS total FROM itagame_historico
+         WHERE aluno_id = ? AND tipo = 'avaliacao' AND DATE(criado_em) = ?`,
+        [aluno.id, hoje]
+      );
+      const disponivel = Math.max(0, CAP_XP_AVALIACAO_DIA - (xp_hoje?.total || 0));
+      xp_ganho = Math.min(xp_ganho, disponivel);
+    }
+
     if (xp_ganho > 0) {
       await db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, 0, 1, '[]') ON CONFLICT (aluno_id) DO NOTHING", [aluno.id, aluno.turma_id]);
       await db.run('UPDATE itagame_pontos SET xp_total = xp_total + ? WHERE aluno_id = ?', [xp_ganho, aluno.id]);
