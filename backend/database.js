@@ -585,8 +585,16 @@ async function initDatabase() {
 
   ];
 
+  // Cria cada tabela individualmente — erro em uma não para as demais
   for (const sql of tabelas) {
-    await db.exec(sql);
+    try {
+      await db.exec(sql);
+    } catch (err) {
+      // Extrai o nome da tabela do SQL para log útil
+      const match = sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/i);
+      const tabela = match ? match[1] : 'desconhecida';
+      console.error(`[DB] Erro ao criar tabela ${tabela}:`, err.message);
+    }
   }
 
   const hoje = new Date().toISOString().split('T')[0];
