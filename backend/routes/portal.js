@@ -152,6 +152,9 @@ router.get('/:codigo', async (req, res) => {
     resgates.forEach(r => { resgatesMap[r.item_id] = r; });
 
     // FIX: Buscar XP real do ItagGame Django e sincronizar com nossa tabela
+    // SEGURANÇA: cap de 10000 XP total no sync (impede que XP fraudulento do Django
+    // se propague para o ranking da plataforma ITA)
+    const XP_SYNC_CAP = 10000;
     let xpTotal = xp?.xp_total || 0;
     try {
       const statsResp = await fetch(
@@ -159,11 +162,12 @@ router.get('/:codigo', async (req, res) => {
       );
       const stats = await statsResp.json();
       if (stats.xp > 0) {
-        xpTotal = stats.xp; // usa XP real do ItagGame
+        const xpSincronizado = Math.min(stats.xp, XP_SYNC_CAP); // nunca aceita acima do cap
+        xpTotal = xpSincronizado;
         // Sincroniza na nossa tabela para o ranking ficar correto
         await db.run(
           "INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, 1, '[]') ON CONFLICT (aluno_id) DO UPDATE SET xp_total = ?",
-          [aluno.id, aluno.turma_id, stats.xp, stats.xp]
+          [aluno.id, aluno.turma_id, xpSincronizado, xpSincronizado]
         );
       }
     } catch (_) { /* usa xp local se Django estiver fora */ }
