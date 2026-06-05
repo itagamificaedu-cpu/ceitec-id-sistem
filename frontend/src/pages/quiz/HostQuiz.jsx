@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { io } from 'socket.io-client'
 
 const CORES_RESP = ['#e21b3c', '#1368ce', '#d89e00', '#26890c']
@@ -31,7 +31,9 @@ function Spinner({ texto }) {
 ══════════════════════════════════════════ */
 export default function HostQuiz() {
   const { id: quizIdParam } = useParams()
+  const [searchParams] = useSearchParams()
   const quizId = Number(quizIdParam)
+  const turmaId = searchParams.get('turma') ? Number(searchParams.get('turma')) : null
   const token  = localStorage.getItem('token')
 
   const [estado,       setEstado]       = useState('connecting')
@@ -64,7 +66,7 @@ export default function HostQuiz() {
     socketRef.current = socket
 
     socket.on('connect', () => {
-      socket.emit('quiz:host', { quizId, token })
+      socket.emit('quiz:host', { quizId, token, turmaId })
     })
 
     socket.on('quiz:error', msg => {

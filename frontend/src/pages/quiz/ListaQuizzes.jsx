@@ -10,7 +10,15 @@ export default function ListaQuizzes() {
   const [carregando, setCarregando] = useState(true)
   const [filtro, setFiltro] = useState('')
   const [copiado, setCopiado] = useState(null)
+  // Modal de seleção de turma antes de "Jogar ao Vivo"
+  const [modalQuiz, setModalQuiz] = useState(null) // quiz selecionado para iniciar
+  const [turmas, setTurmas] = useState([])
+  const [turmaSelecionada, setTurmaSelecionada] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    api.get('/turmas').then(({ data }) => setTurmas(data)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     api.get('/quiz').then(({ data }) => setQuizzes(data)).finally(() => setCarregando(false))
@@ -29,6 +37,18 @@ export default function ListaQuizzes() {
     setTimeout(() => setCopiado(null), 2000)
   }
 
+  // Abre modal de seleção de turma antes de lançar o quiz ao vivo
+  function prepararJogarAoVivo(quiz) {
+    setModalQuiz(quiz)
+    setTurmaSelecionada('')
+  }
+
+  function confirmarJogarAoVivo() {
+    if (!turmaSelecionada) return
+    window.open(`/quiz/${modalQuiz.id}/host?turma=${turmaSelecionada}`, '_blank')
+    setModalQuiz(null)
+  }
+
   const filtrados = quizzes.filter(q =>
     q.titulo?.toLowerCase().includes(filtro.toLowerCase()) ||
     q.descricao?.toLowerCase().includes(filtro.toLowerCase())
@@ -37,6 +57,46 @@ export default function ListaQuizzes() {
   return (
     <div className="flex min-h-screen bg-background">
       <Navbar />
+
+      {/* Modal — selecionar turma para jogar ao vivo */}
+      {modalQuiz && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) setModalQuiz(null) }}
+        >
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-1">🎮 Jogar ao Vivo</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Selecione a turma que vai participar do quiz <strong>"{modalQuiz.titulo}"</strong>.
+              Isso ativa a atividade no dashboard dos alunos.
+            </p>
+            <select
+              className="input-field mb-4"
+              value={turmaSelecionada}
+              onChange={e => setTurmaSelecionada(e.target.value)}
+            >
+              <option value="">Selecione a turma...</option>
+              {turmas.map(t => <option key={t.id} value={t.id}>{t.nome}</option>)}
+            </select>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalQuiz(null)}
+                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarJogarAoVivo}
+                disabled={!turmaSelecionada}
+                className="flex-1 btn-primary text-sm py-2"
+              >
+                ▶ Iniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-6xl mx-auto">
 
@@ -89,6 +149,7 @@ export default function ListaQuizzes() {
                   onEditar={() => navigate(`/quiz/${quiz.id}/editar`)}
                   onRanking={() => navigate(`/quiz/${quiz.id}/ranking`)}
                   onExcluir={() => excluir(quiz)}
+                  onJogarAoVivo={() => prepararJogarAoVivo(quiz)}
                 />
               ))}
             </div>
@@ -108,7 +169,7 @@ const CORES = [
   { bg: 'from-indigo-500 to-blue-600',   icon: '🎮' },
 ]
 
-function QuizCard({ quiz, cor, copiado, onCopiar, onEditar, onRanking, onExcluir }) {
+function QuizCard({ quiz, cor, copiado, onCopiar, onEditar, onRanking, onExcluir, onJogarAoVivo }) {
   const VITE_APP_URL = import.meta.env.VITE_APP_URL || window.location.origin
   const linkJogar = `${VITE_APP_URL}/q/${quiz.codigo_acesso}`
 
@@ -161,7 +222,7 @@ function QuizCard({ quiz, cor, copiado, onCopiar, onEditar, onRanking, onExcluir
         {/* Ações */}
         <div className="flex gap-2">
           <button
-            onClick={() => window.open(`/quiz/${quiz.id}/host`, '_blank')}
+            onClick={onJogarAoVivo}
             className="flex-1 text-center py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:opacity-90 transition-opacity cursor-pointer border-0"
           >
             🎮 Jogar ao Vivo

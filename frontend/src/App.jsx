@@ -59,6 +59,13 @@ import Agenda from './pages/Agenda'
 import Album from './pages/album/Album'
 import LigaJovem from './pages/LigaJovem'
 import CuboMagico from './pages/CuboMagico'
+import LoginAluno from './pages/aluno/LoginAluno'
+import DashboardAluno from './pages/aluno/DashboardAluno'
+import ListaCaboGuerra from './pages/caboGuerra/ListaCaboGuerra'
+import CriarCaboGuerra from './pages/caboGuerra/CriarCaboGuerra'
+import HostCaboGuerra from './pages/caboGuerra/HostCaboGuerra'
+import JogarCaboGuerra from './pages/caboGuerra/JogarCaboGuerra'
+import ProjetorCaboGuerra from './pages/caboGuerra/ProjetorCaboGuerra'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -114,6 +121,13 @@ function Admin({ children }) {
   if (usuario.perfil === 'professor') return <Navigate to="/dashboard" replace />
   // Liga Jovem tem acesso de professor a turmas e scanner
   if (usuario.perfil === 'liga_jovem') return children
+  return children
+}
+
+// Guard para o portal do aluno — usa token_aluno separado do token do professor
+function AlunoProtegida({ children }) {
+  const token = localStorage.getItem('token_aluno')
+  if (!token) return <Navigate to="/aluno/login" replace />
   return children
 }
 
@@ -229,6 +243,20 @@ export default function App() {
 
         {/* Campeonato de Cubo Mágico — visível para todos */}
         <Route path="/cubo-magico" element={<P><CuboMagico /></P>} />
+
+        {/* ── PORTAL DO ALUNO — auth separada via código da carteirinha ── */}
+        <Route path="/aluno/login" element={<LoginAluno />} />
+        <Route path="/aluno/dashboard" element={<AlunoProtegida><DashboardAluno /></AlunoProtegida>} />
+        <Route path="/aluno/cabo-guerra/:id" element={<AlunoProtegida><JogarCaboGuerra /></AlunoProtegida>} />
+
+        {/* ── CABO DE GUERRA — professor (usa guard P normal) ── */}
+        <Route path="/cabo-de-guerra" element={<P><ListaCaboGuerra /></P>} />
+        <Route path="/cabo-de-guerra/novo" element={<P><CriarCaboGuerra /></P>} />
+        <Route path="/cabo-de-guerra/:id/editar" element={<P><CriarCaboGuerra /></P>} />
+        {/* Painel do professor — abre em nova aba */}
+        <Route path="/cabo-de-guerra/:id/host" element={<P><HostCaboGuerra /></P>} />
+        {/* Projetor — público (sem login) */}
+        <Route path="/cabo-de-guerra/:id/projetar" element={<ProjetorCaboGuerra />} />
 
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />

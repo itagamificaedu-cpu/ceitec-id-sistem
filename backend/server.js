@@ -52,6 +52,8 @@ app.use('/api/calendario',        verificarLicenca, require('./routes/calendario
 app.use('/api/portal',       require('./routes/portal')); // portal do aluno — sem check de licença
 app.use('/api/prof-game',    verificarLicenca, require('./routes/professorGame').router); // Gamificação dos professores
 app.use('/api/quiz',         require('./routes/quiz'));    // quiz público — sem check de licença
+app.use('/api/aluno',        require('./routes/aluno').router);    // portal do aluno (auth via código)
+app.use('/api/cabo-guerra',  require('./routes/caboGuerra'));       // cabo de guerra presencial
 app.use('/api/mobile-tracker', require('./routes/mobile-tracker')); // tracker GPS (POST /localizar é público)
 app.use('/api/mestre',        require('./routes/mestre'));          // Mestre da Escola (sem autenticação JWT)
 app.use('/api/agenda',        require('./routes/agenda'));           // Agenda e Avisos (rota /publico não exige auth)
