@@ -673,16 +673,19 @@ router.get('/banidos', autenticar, async (req, res) => {
   }
 });
 
-// ── POST /api/itagame/desbanir/:id — reativa aluno banido (só professor/admin) ──
+// ── POST /api/itagame/desbanir/:id — reativa aluno banido (SOMENTE ita_admin) ──
 router.post('/desbanir/:id', autenticar, async (req, res) => {
+  // Apenas o administrador ITA pode reativar contas banidas — professores não têm acesso
+  if (req.usuario.perfil !== 'ita_admin') {
+    return res.status(403).json({ erro: 'Acesso negado. Somente o administrador ITA pode reativar contas suspensas.' });
+  }
   try {
-    const eid = req.usuario.escola_id;
     await db.run(
-      "UPDATE alunos SET ativo = 1 WHERE id = ? AND escola_id = ?",
-      [req.params.id, eid]
+      "UPDATE alunos SET ativo = 1 WHERE id = ?",
+      [req.params.id]
     );
     await db.run(
-      "INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, 'desban', 'Conta reativada pelo professor', 0)",
+      "INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, 'desban', 'Conta reativada pelo administrador ITA', 0)",
       [req.params.id]
     );
     res.json({ ok: true });
