@@ -10,6 +10,100 @@ import api from '../../api'
 
 const LETRAS = ['A', 'B', 'C', 'D']
 
+function ModalIA({ disciplina, onFechar, onAdicionar }) {
+  const [tema, setTema] = useState('')
+  const [quantidade, setQuantidade] = useState(5)
+  const [nivel, setNivel] = useState('médio')
+  const [gerando, setGerando] = useState(false)
+  const [erro, setErro] = useState('')
+
+  async function gerar() {
+    if (!tema.trim()) return setErro('Informe o tema das questões')
+    setErro('')
+    setGerando(true)
+    try {
+      const { data } = await api.post('/ia/questoes', {
+        disciplina: disciplina || 'Geral',
+        tema,
+        quantidade,
+        nivel,
+      })
+      // Converte formato da IA para o formato do Cabo de Guerra
+      const convertidas = (data.questoes || []).map(q => ({
+        texto: q.enunciado || q.texto || '',
+        alt_a: q.alternativas?.[0] || q.alt_a || '',
+        alt_b: q.alternativas?.[1] || q.alt_b || '',
+        alt_c: q.alternativas?.[2] || q.alt_c || '',
+        alt_d: q.alternativas?.[3] || q.alt_d || '',
+        resposta_correta: q.resposta_correta ?? 0,
+      }))
+      onAdicionar(convertidas)
+      onFechar()
+    } catch (err) {
+      setErro(err.response?.data?.erro || 'Erro ao gerar questões com IA')
+    } finally {
+      setGerando(false)
+    }
+  }
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={e => { if (e.target === e.currentTarget) onFechar() }}
+    >
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+        <h3 className="text-lg font-bold text-gray-900 mb-1">✨ Gerar Questões com IA</h3>
+        <p className="text-sm text-gray-500 mb-4">
+          A IA vai criar questões de múltipla escolha prontas para o Cabo de Guerra.
+        </p>
+
+        <div className="space-y-3 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tema / Assunto *</label>
+            <input
+              className="input-field"
+              placeholder="Ex: Frações, Revolução Industrial, Sistema Solar..."
+              value={tema}
+              onChange={e => setTema(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+              <select className="input-field" value={quantidade} onChange={e => setQuantidade(Number(e.target.value))}>
+                {[3,5,8,10].map(n => <option key={n} value={n}>{n} questões</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dificuldade</label>
+              <select className="input-field" value={nivel} onChange={e => setNivel(e.target.value)}>
+                <option value="fácil">Fácil</option>
+                <option value="médio">Médio</option>
+                <option value="difícil">Difícil</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {erro && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600 text-sm mb-3">⚠️ {erro}</div>}
+
+        <div className="flex gap-3">
+          <button onClick={onFechar} className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium">
+            Cancelar
+          </button>
+          <button
+            onClick={gerar}
+            disabled={gerando}
+            className="flex-1 btn-primary text-sm py-2"
+          >
+            {gerando ? '⏳ Gerando...' : '✨ Gerar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function QuestaoEditor({ questao, idx, onChange, onRemover }) {
   const alts = [questao.alt_a || '', questao.alt_b || '', questao.alt_c || '', questao.alt_d || '']
 
@@ -83,6 +177,7 @@ export default function CriarCaboGuerra() {
   const [questoes, setQuestoes] = useState([])
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
+  const [modalIA, setModalIA] = useState(false)
 
   useEffect(() => {
     api.get('/turmas').then(({ data }) => setTurmas(data))
@@ -149,6 +244,15 @@ export default function CriarCaboGuerra() {
   return (
     <div className="flex min-h-screen bg-background">
       <Navbar />
+
+      {modalIA && (
+        <ModalIA
+          disciplina={form.disciplina}
+          onFechar={() => setModalIA(false)}
+          onAdicionar={novas => setQuestoes(prev => [...prev, ...novas])}
+        />
+      )}
+
       <main className="flex-1 lg:ml-64 p-6 pt-20 lg:pt-6">
         <div className="max-w-2xl mx-auto">
 
@@ -228,9 +332,18 @@ export default function CriarCaboGuerra() {
                 <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wide">
                   Perguntas ({questoes.length})
                 </h2>
-                <button type="button" onClick={adicionarQuestao} className="btn-primary text-sm">
-                  + Adicionar Pergunta
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setModalIA(true)}
+                    className="text-sm px-3 py-2 rounded-xl border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 font-medium"
+                  >
+                    ✨ Gerar com IA
+                  </button>
+                  <button type="button" onClick={adicionarQuestao} className="btn-primary text-sm">
+                    + Adicionar
+                  </button>
+                </div>
               </div>
 
               {questoes.length === 0 ? (

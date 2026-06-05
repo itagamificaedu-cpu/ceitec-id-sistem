@@ -468,9 +468,12 @@ router.post('/:id/entrar', autenticarAluno, async (req, res) => {
       return res.status(400).json({ erro: 'Esta partida não está em andamento' });
     }
 
-    // Verifica isolamento por escola
+    // Verifica isolamento por escola e turma
     if (partida.escola_id !== req.aluno.escola_id) {
       return res.status(403).json({ erro: 'Acesso negado' });
+    }
+    if (partida.turma_id !== req.aluno.turma_id) {
+      return res.status(403).json({ erro: 'Você não pertence à turma desta partida' });
     }
 
     // Registra participante (ON CONFLICT atualiza o time se aluno trocar)
@@ -515,8 +518,8 @@ router.post('/:id/responder', autenticarAluno, async (req, res) => {
       return res.status(400).json({ erro: 'Pergunta ainda não liberada pelo professor' });
     }
 
-    // Verifica isolamento por escola
-    if (partida.escola_id !== req.aluno.escola_id) {
+    // Verifica isolamento por escola e turma
+    if (partida.escola_id !== req.aluno.escola_id || partida.turma_id !== req.aluno.turma_id) {
       return res.status(403).json({ erro: 'Acesso negado' });
     }
 
