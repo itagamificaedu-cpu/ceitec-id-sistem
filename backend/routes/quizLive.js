@@ -171,10 +171,20 @@ function finishGame(io, room) {
       [room.quizId, player.nome, player.codigo || null, acertos, total, pct]
     ).catch(() => {});
     if (player.codigo && acertos > 0) {
-      const xp = acertos * 10;
+      const CAP_XP_QUIZ_DIA = 500;
       db.get('SELECT * FROM alunos WHERE codigo = ? AND ativo = 1', [player.codigo.toUpperCase()])
-        .then(aluno => {
+        .then(async aluno => {
           if (!aluno) return;
+          // Cap diário: máximo 500 XP/dia via quiz (inclui quiz normal + ao vivo)
+          const hoje = new Date().toISOString().slice(0, 10);
+          const xp_hoje = await db.get(
+            `SELECT COALESCE(SUM(xp_ganho), 0) AS total FROM itagame_historico
+             WHERE aluno_id = ? AND tipo = 'quiz' AND DATE(criado_em) = ?`,
+            [aluno.id, hoje]
+          );
+          const disponivel = Math.max(0, CAP_XP_QUIZ_DIA - (xp_hoje?.total || 0));
+          const xp = Math.min(acertos * 10, disponivel);
+          if (xp <= 0) return;
           return Promise.all([
             db.run("INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json) VALUES (?, ?, ?, 1, '[]') ON CONFLICT (aluno_id) DO UPDATE SET xp_total = itagame_pontos.xp_total + ?",
               [aluno.id, aluno.turma_id, xp, xp]),
