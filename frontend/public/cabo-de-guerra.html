@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🪢 Cabo de Guerra — Batalha de Calculadoras</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+  :root {
+    --azul: #1565C0;
+    --azul-claro: #42A5F5;
+    --azul-bg: #E3F2FD;
+    --vermelho: #C62828;
+    --vermelho-claro: #EF5350;
+    --vermelho-bg: #FFEBEE;
+    --amarelo: #FFD600;
+    --verde: #2E7D32;
+  }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1a1a2e;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== HEADER ===== */
+  #header {
+    background: linear-gradient(135deg, #0d0d0d, #1a1a2e);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #FFD600;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .placar-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 6px 14px;
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+
+  .placar-eq {
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .placar-eq.azul { color: #42A5F5; text-shadow: 0 0 12px #42A5F5; }
+  .placar-eq.vermelho { color: #EF5350; text-shadow: 0 0 12px #EF5350; }
+
+  .placar-sep {
+    color: #aaa;
+    font-size: 1.4rem;
+    font-weight: 300;
+  }
+
+  #timer-box {
+    background: rgba(255,214,0,0.15);
+    border: 2px solid #FFD600;
+    border-radius: 12px;
+    padding: 6px 18px;
+    text-align: center;
+  }
+
+  #timer-label { color: #aaa; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; }
+  #timer { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 900; color: #FFD600; font-variant-numeric: tabular-nums; line-height: 1; }
+  #timer.urgente { color: #EF5350; animation: pulsa 0.5s infinite; }
+
+  #rodada-box {
+    color: #aaa;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  #rodada-box span { display: block; color: white; font-size: 1rem; font-weight: 700; }
+
+  @keyframes pulsa { 0%,100%{transform:scale(1);} 50%{transform:scale(1.12);} }
+
+  /* ===== PERGUNTA ===== */
+  #pergunta-area {
+    background: linear-gradient(135deg, #FFD600, #FF8F00);
+    padding: 10px 20px;
+    text-align: center;
+    flex-shrink: 0;
+    position: relative;
+    border-bottom: 3px solid rgba(0,0,0,0.3);
+  }
+
+  #pergunta-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: rgba(0,0,0,0.5); font-weight: 600; }
+  #pergunta-texto {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #1a1a2e;
+    letter-spacing: 2px;
+    line-height: 1.1;
+  }
+
+  /* ===== ARENA ===== */
+  #arena {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+    position: relative;
+  }
+
+  /* ===== LADOS ===== */
+  .lado {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 6px;
+    transition: background 0.4s;
+  }
+
+  .lado.azul { background: linear-gradient(160deg, #0d47a1, #1565C0); }
+  .lado.vermelho { background: linear-gradient(160deg, #b71c1c, #C62828); }
+
+  .lado.brilho-azul { background: linear-gradient(160deg, #1565C0, #42A5F5); }
+  .lado.brilho-vermelho { background: linear-gradient(160deg, #C62828, #EF5350); }
+
+  .nome-equipe {
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .jogadores {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    text-align: center;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    animation: balancar 1.5s ease-in-out infinite;
+  }
+  .lado.azul .jogadores { animation-direction: normal; }
+  .lado.vermelho .jogadores { animation-direction: reverse; }
+
+  @keyframes balancar {
+    0%,100% { transform: rotate(-3deg) translateY(0); }
+    50% { transform: rotate(3deg) translateY(-4px); }
+  }
+
+  /* ===== CALCULADORA ===== */
+  .calc-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .calc-display {
+    width: 100%;
+    max-width: 260px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: right;
+    border: 2px solid rgba(255,255,255,0.2);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .calc-valor {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 900;
+    color: white;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+  }
+
+  .calc-status {
+    font-size: 1.2rem;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .btn-num {
+    background: rgba(255,255,255,0.18);
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 10px;
+    color: white;
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    font-weight: 800;
+    cursor: pointer;
+    aspect-ratio: 1.2;
+    transition: all 0.12s;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-num:active, .btn-num.pressed {
+    background: rgba(255,255,255,0.4);
+    transform: scale(0.93);
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  .btn-del {
+    background: rgba(255,100,100,0.3);
+    border-color: rgba(255,100,100,0.5);
+    font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+  }
+
+  .btn-ok {
+    grid-column: 1 / -1;
+    background: #FFD600;
+    border: 2px solid #FF8F00;
+    border-radius: 10px;
+    color: #1a1a2e;
+    font-size: clamp(1rem, 2.2vw, 1.4rem);
+    font-weight: 900;
+    cursor: pointer;
+    padding: 10px;
+    transition: all 0.12s;
+    touch-action: manipulation;
+    letter-spacing: 1px;
+  }
+
+  .btn-ok:active, .btn-ok.pressed {
+    background: #FF8F00;
+    transform: scale(0.97);
+  }
+
+  .lado.azul .btn-ok { background: #FFD600; }
+  .lado.vermelho .btn-ok { background: #FFD600; }
+
+  /* ===== CABO CENTRAL ===== */
+  #cabo-area {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #cabo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 180px;
+    pointer-events: none;
+  }
+
+  #corda-svg {
+    width: 100%;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+    transition: all 0.3s;
+  }
+
+  #bandeira-centro {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    display: block;
+    text-align: center;
+  }
+
+  #pontos-diff {
+    background: rgba(0,0,0,0.6);
+    border-radius: 20px;
+    padding: 4px 14px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* ===== FEEDBACK FLASH ===== */
+  .feedback-flash {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .feedback-flash.acerto-azul { background: radial-gradient(ellipse at 25% 50%, rgba(66,165,245,0.35), transparent 70%); }
+  .feedback-flash.acerto-vermelho { background: radial-gradient(ellipse at 75% 50%, rgba(239,83,80,0.35), transparent 70%); }
+  .feedback-flash.erro { background: rgba(0,0,0,0.2); }
+  .feedback-flash.visible { opacity: 1; }
+
+  /* ===== MENSAGEM RODADA ===== */
+  #msg-rodada {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    background: rgba(0,0,0,0.92);
+    border: 3px solid #FFD600;
+    border-radius: 20px;
+    padding: 20px 36px;
+    text-align: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    max-width: 90vw;
+  }
+
+  #msg-rodada.visivel {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  #msg-rodada .emoji { font-size: 3rem; display: block; margin-bottom: 6px; }
+  #msg-rodada .titulo { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 900; color: #FFD600; }
+  #msg-rodada .sub { font-size: clamp(0.9rem, 2vw, 1.1rem); color: #aaa; margin-top: 4px; }
+
+  /* ===== TELA FIM DE JOGO ===== */
+  #fim-jogo {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+  }
+
+  #fim-jogo.azul-venceu { background: linear-gradient(135deg, #0d47a1, #1565C0, #42A5F5); }
+  #fim-jogo.vermelho-venceu { background: linear-gradient(135deg, #b71c1c, #C62828, #EF5350); }
+  #fim-jogo.empate { background: linear-gradient(135deg, #1a1a2e, #2d2d5e, #1a1a2e); }
+
+  #fim-jogo .trofeu { font-size: clamp(4rem, 12vw, 8rem); animation: pula 0.5s ease-in-out infinite alternate; }
+  #fim-jogo .vencedor-nome { font-size: clamp(2rem, 6vw, 4rem); font-weight: 900; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.5); margin: 10px 0; }
+  #fim-jogo .placar-final { font-size: clamp(1.2rem, 3vw, 2rem); color: rgba(255,255,255,0.85); margin: 8px 0; }
+  #fim-jogo .confetes { font-size: 2rem; display: block; animation: chuva 1s linear infinite; }
+
+  @keyframes pula { from{transform:translateY(0) rotate(-5deg);} to{transform:translateY(-20px) rotate(5deg);} }
+  @keyframes chuva { 0%{letter-spacing:2px;opacity:1;} 100%{letter-spacing:20px;opacity:0;} }
+
+  #btn-reiniciar {
+    margin-top: 20px;
+    background: #FFD600;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 40px;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: 900;
+    color: #1a1a2e;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: transform 0.12s;
+    touch-action: manipulation;
+  }
+  #btn-reiniciar:active { transform: scale(0.95); }
+
+  /* ===== PROGRESSO ===== */
+  #progress-bar {
+    height: 5px;
+    background: rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD600, #FF8F00);
+    transition: width 1s linear;
+  }
+
+  /* ===== ESTRELAS PONTUAÇÃO ===== */
+  .estrelas {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+  }
+  .estrela {
+    font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+    opacity: 0.3;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .estrela.ativa {
+    opacity: 1;
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 4px #FFD600);
+  }
+
+  /* Efeito pulo ao ganhar ponto */
+  @keyframes ponto-ganho {
+    0%{transform:scale(1);}
+    30%{transform:scale(1.3) rotate(5deg);}
+    60%{transform:scale(0.9);}
+    100%{transform:scale(1);}
+  }
+  .ponto-animado { animation: ponto-ganho 0.5s ease-out; }
+
+  /* Feedback de resposta na calculadora */
+  .calc-display.correto { border-color: #69F0AE !important; box-shadow: 0 0 12px #69F0AE; }
+  .calc-display.errado { border-color: #EF5350 !important; box-shadow: 0 0 12px #EF5350; animation: shake 0.3s; }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px);}
+    75%{transform:translateX(6px);}
+  }
+
+  /* Separador central */
+  #sep {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    background: linear-gradient(to bottom, rgba(255,214,0,0.1), rgba(255,214,0,0.5), rgba(255,214,0,0.1));
+    pointer-events: none;
+  }
+
+  /* Badge "ACERTOU!" */
+  .badge-acertou {
+    position: fixed;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    font-weight: 900;
+    background: #69F0AE;
+    color: #1a1a2e;
+    border-radius: 12px;
+    padding: 8px 20px;
+    z-index: 60;
+    pointer-events: none;
+    animation: badge-fly 1.2s ease-out forwards;
+    white-space: nowrap;
+  }
+
+  @keyframes badge-fly {
+    0%{opacity:1;transform:translateY(0) scale(1);}
+    60%{opacity:1;transform:translateY(-40px) scale(1.1);}
+    100%{opacity:0;transform:translateY(-80px) scale(0.9);}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <!-- Placar Equipe 1 -->
+  <div class="placar-box">
+    <div>
+      <div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;">Equipe 1</div>
+      <div class="placar-eq azul" id="pts1">0</div>
+    </div>
+    <div class="estrelas" id="estrelas1"></div>
+  </div>
+
+  <!-- Timer central -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+    <div id="timer-box">
+      <div id="timer-label">Tempo</div>
+      <div id="timer">30</div>
+    </div>
+    <div id="rodada-box">Rodada <span id="rodada-num">1</span>/10</div>
+  </div>
+
+  <!-- Placar Equipe 2 -->
+  <div class="placar-box">
+    <div class="estrelas" id="estrelas2"></div>
+    <div style="text-align:right;">
+      <div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;text-align:right;">Equipe 2</div>
+      <div class="placar-eq vermelho" id="pts2">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar"><div id="progress-fill" style="width:100%"></div></div>
+
+<!-- PERGUNTA -->
+<div id="pergunta-area">
+  <div id="pergunta-label">⚡ Responda primeiro e puxe a corda! ⚡</div>
+  <div id="pergunta-texto">Carregando...</div>
+</div>
+
+<!-- ARENA -->
+<div id="arena">
+  <div id="sep"></div>
+
+  <!-- EQUIPE 1 (AZUL) -->
+  <div class="lado azul" id="lado1">
+    <div class="nome-equipe">🔵 EQUIPE 1</div>
+    <div class="jogadores" id="jogadores1">🧍‍♂️🧍‍♂️🧍‍♂️</div>
+    <div class="calc-wrapper">
+      <div class="calc-display" id="display1">
+        <span class="calc-status" id="status1"></span>
+        <span class="calc-valor" id="valor1">_</span>
+      </div>
+      <div class="calc-grid" id="grid1"></div>
+    </div>
+  </div>
+
+  <!-- CABO CENTRAL -->
+  <div id="cabo-area">
+    <div id="cabo-container">
+      <span id="bandeira-centro">🚩</span>
+      <svg id="corda-svg" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="cordaGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#42A5F5"/>
+            <stop offset="50%" style="stop-color:#D4A017"/>
+            <stop offset="100%" style="stop-color:#EF5350"/>
+          </linearGradient>
+        </defs>
+        <path id="corda-path" d="M10,20 Q40,8 80,20 Q120,32 150,20" stroke="url(#cordaGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="10" cy="20" r="5" fill="#42A5F5"/>
+        <circle cx="150" cy="20" r="5" fill="#EF5350"/>
+      </svg>
+      <div id="pontos-diff">0 × 0</div>
+    </div>
+  </div>
+
+  <!-- EQUIPE 2 (VERMELHO) -->
+  <div class="lado vermelho" id="lado2">
+    <div class="nome-equipe">🔴 EQUIPE 2</div>
+    <div class="jogadores" id="jogadores2">🧍‍♀️🧍‍♀️🧍‍♀️</div>
+    <div class="calc-wrapper">
+      <div class="calc-display" id="display2">
+        <span class="calc-status" id="status2"></span>
+        <span class="calc-valor" id="valor2">_</span>
+      </div>
+      <div class="calc-grid" id="grid2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK FLASH -->
+<div class="feedback-flash" id="flash"></div>
+
+<!-- MENSAGEM RODADA -->
+<div id="msg-rodada">
+  <span class="emoji" id="msg-emoji">🎉</span>
+  <div class="titulo" id="msg-titulo">Equipe 1 acertou!</div>
+  <div class="sub" id="msg-sub">Próxima pergunta em 2s...</div>
+</div>
+
+<!-- FIM DE JOGO -->
+<div id="fim-jogo">
+  <div class="confetes" id="confetes">🎊 🎉 🏆 🎉 🎊</div>
+  <div class="trofeu" id="trofeu">🏆</div>
+  <div class="vencedor-nome" id="vencedor-nome">Equipe 1 Venceu!</div>
+  <div class="placar-final" id="placar-final">5 × 3</div>
+  <button id="btn-reiniciar" onclick="reiniciar()">🔄 Jogar Novamente</button>
+</div>
+
+<script>
+// ===== ESTADO DO JOGO =====
+const TOTAL_RODADAS = 10;
+const TEMPO_RODADA  = 30;
+const TEMPO_PAUSA   = 2200; // ms entre rodadas
+
+let pontos1 = 0, pontos2 = 0;
+let rodada = 1;
+let respostaCorreta = 0;
+let timerInterval = null;
+let tempoRestante = TEMPO_RODADA;
+let rodadaAtiva = true;
+let entrada1 = '', entrada2 = '';
+let audioCtx = null;
+
+// ===== AUDIO =====
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function somAcerto() {
+  try {
+    const ctx = getAudio();
+    const notas = [523.25, 659.25, 783.99, 1046.5];
+    notas.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.25);
+      osc.start(ctx.currentTime + i * 0.1);
+      osc.stop(ctx.currentTime + i * 0.1 + 0.25);
+    });
+  } catch(e) {}
+}
+
+function somErro() {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+function somTic() {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.05);
+  } catch(e) {}
+}
+
+function somVitoria() {
+  try {
+    const ctx = getAudio();
+    const notas = [523,587,659,698,784,880,988,1047];
+    notas.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.4);
+      osc.start(ctx.currentTime + i * 0.08);
+      osc.stop(ctx.currentTime + i * 0.08 + 0.4);
+    });
+  } catch(e) {}
+}
+
+// ===== PERGUNTAS =====
+function gerarPergunta() {
+  const tipo = Math.floor(Math.random() * 3);
+  let a, b, res, texto;
+
+  if (tipo === 0) {
+    // Adição
+    a = Math.floor(Math.random() * 50) + 5;
+    b = Math.floor(Math.random() * 50) + 5;
+    res = a + b;
+    texto = `${a} + ${b} = ?`;
+  } else if (tipo === 1) {
+    // Subtração (sempre positivo)
+    a = Math.floor(Math.random() * 40) + 20;
+    b = Math.floor(Math.random() * (a - 1)) + 1;
+    res = a - b;
+    texto = `${a} − ${b} = ?`;
+  } else {
+    // Multiplicação simples
+    const fators = [[2,3],[2,4],[2,5],[2,6],[3,3],[3,4],[3,5],[4,4],[4,5],[5,5],[2,7],[2,8],[3,6],[2,9],[6,6],[5,6],[4,6],[3,7],[3,8],[4,7]];
+    const [fa, fb] = fators[Math.floor(Math.random() * fators.length)];
+    a = fa; b = fb;
+    res = a * b;
+    texto = `${a} × ${b} = ?`;
+  }
+
+  return { texto, res };
+}
+
+// ===== CALCULADORA =====
+function criarCalc(gridId, equipe) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  const nums = ['7','8','9','4','5','6','1','2','3','⌫','0','✓'];
+
+  nums.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-num' + (n === '⌫' ? ' btn-del' : '') + (n === '✓' ? ' btn-ok' : '');
+    if (n === '✓') btn.style.gridColumn = '1 / -1';
+    btn.textContent = n === '✓' ? '✅ CONFIRMAR' : n;
+    btn.setAttribute('data-val', n);
+
+    const handler = (e) => {
+      e.preventDefault();
+      btn.classList.add('pressed');
+      setTimeout(() => btn.classList.remove('pressed'), 120);
+      handleInput(equipe, n);
+    };
+
+    btn.addEventListener('pointerdown', handler);
+    grid.appendChild(btn);
+  });
+}
+
+function handleInput(equipe, val) {
+  if (!rodadaAtiva) return;
+  somTic();
+
+  if (equipe === 1) {
+    if (val === '⌫') entrada1 = entrada1.slice(0, -1);
+    else if (val === '✓') confirmar(1);
+    else if (entrada1.length < 5) entrada1 += val;
+    atualizarDisplay(1);
+  } else {
+    if (val === '⌫') entrada2 = entrada2.slice(0, -1);
+    else if (val === '✓') confirmar(2);
+    else if (entrada2.length < 5) entrada2 += val;
+    atualizarDisplay(2);
+  }
+}
+
+function atualizarDisplay(eq) {
+  const val = eq === 1 ? entrada1 : entrada2;
+  document.getElementById(`valor${eq}`).textContent = val || '_';
+}
+
+function confirmar(equipe) {
+  if (!rodadaAtiva) return;
+  const entrada = equipe === 1 ? entrada1 : entrada2;
+  if (!entrada) return;
+
+  const resposta = parseInt(entrada);
+  const display = document.getElementById(`display${equipe}`);
+  const status = document.getElementById(`status${equipe}`);
+
+  if (resposta === respostaCorreta) {
+    // ACERTOU!
+    rodadaAtiva = false;
+    clearInterval(timerInterval);
+    somAcerto();
+
+    if (equipe === 1) pontos1++;
+    else pontos2++;
+
+    display.classList.add('correto');
+    status.textContent = '✅';
+
+    // Badge voador
+    mostrarBadge(equipe);
+
+    // Flash
+    const flash = document.getElementById('flash');
+    flash.className = `feedback-flash acerto-${equipe === 1 ? 'azul' : 'vermelho'} visible`;
+    setTimeout(() => flash.className = 'feedback-flash', 600);
+
+    // Brilho no lado
+    document.getElementById(`lado${equipe}`).classList.add(equipe === 1 ? 'brilho-azul' : 'brilho-vermelho');
+
+    atualizarPlacar();
+    atualizarCorda();
+
+    // Mensagem
+    const nomes = ['Equipe 1 🔵', 'Equipe 2 🔴'];
+    mostrarMensagem('🎉', `${nomes[equipe-1]} acertou!`, `Próxima pergunta em 2s...`);
+
+    setTimeout(() => proximaRodada(), TEMPO_PAUSA);
+  } else {
+    // ERROU
+    somErro();
+    display.classList.add('errado');
+    status.textContent = '❌';
+    setTimeout(() => {
+      display.classList.remove('errado');
+      status.textContent = '';
+    }, 600);
+
+    if (equipe === 1) entrada1 = '';
+    else entrada2 = '';
+    atualizarDisplay(equipe);
+  }
+}
+
+// ===== BADGE VOADOR =====
+function mostrarBadge(equipe) {
+  const badge = document.createElement('div');
+  badge.className = 'badge-acertou';
+  badge.textContent = equipe === 1 ? '🔵 +1 PONTO!' : '🔴 +1 PONTO!';
+  badge.style.top = '45%';
+  badge.style.left = equipe === 1 ? '10%' : '60%';
+  badge.style.color = equipe === 1 ? '#1565C0' : '#C62828';
+  document.body.appendChild(badge);
+  setTimeout(() => badge.remove(), 1200);
+}
+
+// ===== PLACAR / CORDA =====
+function atualizarPlacar() {
+  document.getElementById('pts1').textContent = pontos1;
+  document.getElementById('pts2').textContent = pontos2;
+
+  // Estrelas
+  atualizarEstrelas('estrelas1', pontos1);
+  atualizarEstrelas('estrelas2', pontos2);
+
+  // Animação do número
+  ['pts1','pts2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('ponto-animado');
+    void el.offsetWidth;
+    el.classList.add('ponto-animado');
+  });
+
+  document.getElementById('pontos-diff').textContent = `${pontos1} × ${pontos2}`;
+}
+
+function atualizarEstrelas(id, pontos) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  for (let i = 0; i < Math.min(pontos, TOTAL_RODADAS); i++) {
+    const s = document.createElement('span');
+    s.className = 'estrela ativa';
+    s.textContent = '⭐';
+    el.appendChild(s);
+  }
+}
+
+function atualizarCorda() {
+  // Corda se move baseado na diferença de pontos
+  const diff = pontos1 - pontos2; // positivo = azul puxa
+  const maxDiff = 5;
+  const offset = Math.max(-maxDiff, Math.min(maxDiff, diff));
+  const pct = (offset + maxDiff) / (2 * maxDiff); // 0=vermelho vence, 0.5=empate, 1=azul vence
+
+  // Move bandeira
+  const flag = document.getElementById('bandeira-centro');
+  const deslocamento = -offset * 12; // px de deslocamento horizontal
+  flag.style.transform = `translateX(${deslocamento}px)`;
+
+  // Curva da corda
+  const midX = 80 + deslocamento * 0.6;
+  const path = document.getElementById('corda-path');
+  path.setAttribute('d', `M10,20 Q${midX - 20},8 ${midX},20 Q${midX + 20},32 150,20`);
+
+  // Jogadores pulam quando ganham ponto
+  const jogs = document.getElementById(pontos1 > pontos2 ? 'jogadores1' : 'jogadores2');
+  jogs.style.animation = 'none';
+  void jogs.offsetWidth;
+  jogs.style.animation = '';
+}
+
+// ===== TIMER =====
+function iniciarTimer() {
+  tempoRestante = TEMPO_RODADA;
+  const progress = document.getElementById('progress-fill');
+  const timer = document.getElementById('timer');
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    tempoRestante--;
+    timer.textContent = tempoRestante;
+    progress.style.width = `${(tempoRestante / TEMPO_RODADA) * 100}%`;
+
+    if (tempoRestante <= 5) {
+      timer.classList.add('urgente');
+      if (tempoRestante > 0) somTic();
+    } else {
+      timer.classList.remove('urgente');
+    }
+
+    if (tempoRestante <= 0) {
+      clearInterval(timerInterval);
+      if (rodadaAtiva) {
+        rodadaAtiva = false;
+        mostrarMensagem('⏰', 'Tempo esgotado!', 'Ninguém pontuou. Próxima...');
+        setTimeout(() => proximaRodada(), TEMPO_PAUSA);
+      }
+    }
+  }, 1000);
+}
+
+// ===== RODADA =====
+function proximaRodada() {
+  // Esconde mensagem
+  esconderMensagem();
+
+  // Remove brilho
+  document.getElementById('lado1').className = 'lado azul';
+  document.getElementById('lado2').className = 'lado vermelho';
+
+  // Reset displays
+  ['display1','display2'].forEach(id => {
+    document.getElementById(id).className = 'calc-display';
+  });
+  document.getElementById('status1').textContent = '';
+  document.getElementById('status2').textContent = '';
+  entrada1 = ''; entrada2 = '';
+  atualizarDisplay(1); atualizarDisplay(2);
+
+  if (rodada >= TOTAL_RODADAS) {
+    fimDeJogo();
+    return;
+  }
+
+  rodada++;
+  document.getElementById('rodada-num').textContent = rodada;
+
+  novaPergunta();
+  rodadaAtiva = true;
+  iniciarTimer();
+}
+
+function novaPergunta() {
+  const { texto, res } = gerarPergunta();
+  respostaCorreta = res;
+  const el = document.getElementById('pergunta-texto');
+  el.style.transform = 'scale(0.8)';
+  el.style.opacity = '0';
+  el.textContent = texto;
+  requestAnimationFrame(() => {
+    el.style.transition = 'all 0.3s cubic-bezier(.34,1.56,.64,1)';
+    el.style.transform = 'scale(1)';
+    el.style.opacity = '1';
+  });
+}
+
+// ===== MENSAGEM =====
+function mostrarMensagem(emoji, titulo, sub) {
+  document.getElementById('msg-emoji').textContent = emoji;
+  document.getElementById('msg-titulo').textContent = titulo;
+  document.getElementById('msg-sub').textContent = sub;
+  document.getElementById('msg-rodada').classList.add('visivel');
+}
+
+function esconderMensagem() {
+  document.getElementById('msg-rodada').classList.remove('visivel');
+}
+
+// ===== FIM DE JOGO =====
+function fimDeJogo() {
+  clearInterval(timerInterval);
+  somVitoria();
+
+  const fim = document.getElementById('fim-jogo');
+  fim.style.display = 'flex';
+
+  let classe, trofeu, nome;
+  if (pontos1 > pontos2) {
+    classe = 'azul-venceu'; trofeu = '🏆'; nome = '🔵 EQUIPE 1 VENCEU!';
+  } else if (pontos2 > pontos1) {
+    classe = 'vermelho-venceu'; trofeu = '🏆'; nome = '🔴 EQUIPE 2 VENCEU!';
+  } else {
+    classe = 'empate'; trofeu = '🤝'; nome = 'EMPATE! 🎊';
+  }
+
+  fim.className = classe;
+  fim.style.display = 'flex';
+  document.getElementById('trofeu').textContent = trofeu;
+  document.getElementById('vencedor-nome').textContent = nome;
+  document.getElementById('placar-final').textContent = `Placar Final: ${pontos1} × ${pontos2}`;
+}
+
+// ===== REINICIAR =====
+function reiniciar() {
+  pontos1 = 0; pontos2 = 0;
+  rodada = 1;
+  entrada1 = ''; entrada2 = '';
+
+  document.getElementById('fim-jogo').style.display = 'none';
+  document.getElementById('rodada-num').textContent = '1';
+  document.getElementById('lado1').className = 'lado azul';
+  document.getElementById('lado2').className = 'lado vermelho';
+  document.getElementById('timer').classList.remove('urgente');
+  document.getElementById('bandeira-centro').style.transform = 'translateX(0)';
+
+  const path = document.getElementById('corda-path');
+  path.setAttribute('d', 'M10,20 Q40,8 80,20 Q120,32 150,20');
+
+  ['estrelas1','estrelas2'].forEach(id => document.getElementById(id).innerHTML = '');
+  ['display1','display2'].forEach(id => document.getElementById(id).className = 'calc-display');
+  ['status1','status2'].forEach(id => document.getElementById(id).textContent = '');
+  document.getElementById('pontos-diff').textContent = '0 × 0';
+
+  atualizarPlacar();
+  novaPergunta();
+  rodadaAtiva = true;
+  iniciarTimer();
+}
+
+// ===== INICIALIZAR =====
+function init() {
+  criarCalc('grid1', 1);
+  criarCalc('grid2', 2);
+  novaPergunta();
+  atualizarPlacar();
+  iniciarTimer();
+
+  // Inicializar estrelas vazias
+  ['estrelas1','estrelas2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+  });
+}
+
+// Ativa áudio no primeiro toque
+document.addEventListener('pointerdown', () => {
+  try { getAudio().resume(); } catch(e) {}
+}, { once: false });
+
+// Inicia o jogo
+init();
+</script>
+</body>
+</html>

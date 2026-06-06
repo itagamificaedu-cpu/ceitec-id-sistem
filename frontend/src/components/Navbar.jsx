@@ -64,6 +64,7 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/quiz',           label: 'Quiz Interativo',  icon: '🎯' },
       { path: '/cabo-de-guerra', label: 'Cabo de Guerra',   icon: '🪢' },
+      { href: '/cabo-de-guerra.html', label: 'Batalha de Calculadoras', icon: '🧮' },
     ]
   },
   {
@@ -299,6 +300,7 @@ export default function Navbar() {
           itens: [
             { path: '/quiz',           label: 'Quiz Interativo',  icon: '🎯' },
             { path: '/cabo-de-guerra', label: 'Cabo de Guerra',   icon: '🪢' },
+            { href: '/cabo-de-guerra.html', label: 'Batalha de Calculadoras', icon: '🧮' },
           ]
         },
         {
