@@ -15,7 +15,154 @@ body {
   display: flex; flex-direction: column;
 }
 
-/* HEADER */
+/* ── TELA DE CONFIGURAÇÃO ───────────────────────────────── */
+#tela-config {
+  position:fixed; inset:0; z-index:300;
+  background:linear-gradient(135deg,#0d0d1a,#1a1a2e,#0d1a2e);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:20px; overflow-y:auto;
+}
+.config-titulo {
+  font-size:clamp(1.4rem,3vw,2.2rem); font-weight:900; color:#FFD600;
+  text-align:center; margin-bottom:6px; letter-spacing:2px;
+}
+.config-sub {
+  color:#aaa; font-size:0.85rem; text-align:center; margin-bottom:20px;
+}
+.config-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:16px; width:100%; max-width:760px;
+}
+.config-col {
+  background:rgba(255,255,255,0.06);
+  border-radius:14px; padding:16px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.config-col.azul { border:2px solid #42A5F5; }
+.config-col.vermelho { border:2px solid #EF5350; }
+.config-col-titulo {
+  font-size:0.85rem; font-weight:900; letter-spacing:2px;
+  text-transform:uppercase; text-align:center;
+}
+.config-col.azul .config-col-titulo { color:#42A5F5; }
+.config-col.vermelho .config-col-titulo { color:#EF5350; }
+
+.config-input {
+  background:rgba(0,0,0,0.4); border:2px solid rgba(255,255,255,0.2);
+  border-radius:9px; padding:9px 12px; color:white;
+  font-size:1rem; font-weight:700; width:100%;
+  outline:none; transition:border-color .2s;
+}
+.config-input:focus { border-color:#FFD600; }
+
+.alunos-lista {
+  max-height:200px; overflow-y:auto;
+  display:flex; flex-direction:column; gap:4px;
+  scrollbar-width:thin; scrollbar-color:#333 transparent;
+}
+.aluno-item {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,0.05); border-radius:8px;
+  padding:6px 10px; cursor:pointer; transition:background .15s;
+}
+.aluno-item:hover { background:rgba(255,255,255,0.12); }
+.aluno-item input[type=checkbox] { accent-color:#FFD600; width:16px; height:16px; cursor:pointer; }
+.aluno-item label { color:#ddd; font-size:0.85rem; cursor:pointer; flex:1; user-select:none; }
+.aluno-item.selecionado { background:rgba(255,214,0,0.12); border:1px solid rgba(255,214,0,0.3); }
+
+.config-busca {
+  background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15);
+  border-radius:8px; padding:7px 10px; color:white;
+  font-size:0.85rem; width:100%; outline:none; margin-bottom:4px;
+}
+.config-busca::placeholder { color:#666; }
+
+.config-status {
+  font-size:0.75rem; color:#888; text-align:center; min-height:16px;
+}
+
+.config-btn-iniciar {
+  margin-top:18px;
+  background:linear-gradient(135deg,#FFD600,#FF8F00);
+  border:none; border-radius:14px;
+  padding:14px 48px; font-size:clamp(1rem,2.2vw,1.3rem); font-weight:900;
+  color:#1a1a2e; cursor:pointer; letter-spacing:2px;
+  transition:transform .1s, box-shadow .1s;
+  box-shadow:0 4px 20px rgba(255,214,0,0.4);
+}
+.config-btn-iniciar:active { transform:scale(0.96); }
+.config-btn-iniciar:hover { box-shadow:0 6px 28px rgba(255,214,0,0.6); }
+
+.config-sem-login {
+  color:#888; font-size:0.75rem; text-align:center; margin-top:8px;
+}
+
+/* ── TELA DE XP ──────────────────────────────────────────── */
+#tela-xp {
+  display:none; position:fixed; inset:0; z-index:400;
+  background:linear-gradient(135deg,#0a1a0a,#0d2a1a,#0a1a0a);
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:24px; text-align:center;
+}
+.xp-titulo {
+  font-size:clamp(1.3rem,3vw,2rem); font-weight:900; color:#69F0AE;
+  letter-spacing:2px; margin-bottom:6px;
+}
+.xp-vencedor {
+  font-size:clamp(1.6rem,4vw,2.8rem); font-weight:900; color:#FFD600;
+  margin-bottom:4px;
+}
+.xp-placar {
+  color:#aaa; font-size:0.9rem; margin-bottom:20px;
+}
+.xp-box {
+  background:rgba(255,255,255,0.07); border:2px solid rgba(105,240,174,0.4);
+  border-radius:16px; padding:20px 28px; max-width:520px; width:100%;
+  display:flex; flex-direction:column; gap:14px;
+}
+.xp-alunos-lista {
+  display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:#333 transparent;
+}
+.xp-aluno-row {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,0.06); border-radius:8px; padding:8px 12px;
+}
+.xp-aluno-row input[type=checkbox] { accent-color:#69F0AE; width:16px; height:16px; }
+.xp-aluno-row label { color:#ddd; font-size:0.9rem; flex:1; text-align:left; }
+.xp-amount-row {
+  display:flex; align-items:center; gap:10px;
+}
+.xp-amount-row label { color:#aaa; font-size:0.85rem; white-space:nowrap; }
+.xp-amount-input {
+  background:rgba(0,0,0,0.5); border:2px solid #69F0AE;
+  border-radius:9px; padding:8px 12px; color:#69F0AE;
+  font-size:1.3rem; font-weight:900; width:100px; text-align:center;
+  outline:none;
+}
+.xp-btn-dar {
+  background:linear-gradient(135deg,#00C853,#69F0AE);
+  border:none; border-radius:12px; padding:12px 32px;
+  font-size:1.1rem; font-weight:900; color:#0a2a0a;
+  cursor:pointer; letter-spacing:1px; transition:transform .1s;
+  align-self:center;
+}
+.xp-btn-dar:active { transform:scale(0.96); }
+.xp-btn-pular {
+  background:transparent; border:2px solid #555; border-radius:12px;
+  padding:10px 24px; color:#888; font-size:0.9rem; font-weight:700;
+  cursor:pointer; letter-spacing:1px; align-self:center;
+  transition:border-color .2s, color .2s;
+}
+.xp-btn-pular:hover { border-color:#aaa; color:#ccc; }
+.xp-resultado {
+  font-size:0.85rem; color:#69F0AE; min-height:20px;
+}
+.xp-sem-alunos {
+  color:#888; font-size:0.85rem;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
 #header {
   background: linear-gradient(135deg,#0d0d0d,#1a1a2e);
   padding: 6px 14px;
@@ -205,6 +352,13 @@ body {
   padding:12px 36px; font-size:clamp(1rem,2.2vw,1.3rem); font-weight:900;
   color:#1a1a2e; cursor:pointer; touch-action:manipulation;
 }
+#btn-dar-xp-fim {
+  margin-top:10px; background:linear-gradient(135deg,#00C853,#69F0AE);
+  border:none; border-radius:14px; padding:10px 28px;
+  font-size:clamp(0.85rem,1.8vw,1.1rem); font-weight:900;
+  color:#0a2a0a; cursor:pointer; touch-action:manipulation;
+  display:none;
+}
 
 /* badge */
 .badge {
@@ -216,15 +370,88 @@ body {
 @keyframes badge-up { 0%{opacity:1;transform:translateY(0);} 100%{opacity:0;transform:translateY(-80px);} }
 @keyframes ponto { 0%{transform:scale(1);} 40%{transform:scale(1.35);} 100%{transform:scale(1);} }
 .ponto-anim { animation:ponto .5s ease-out; }
+
+/* Responsivo mobile na config */
+@media(max-width:600px){
+  .config-grid { grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════════════
+     TELA DE CONFIGURAÇÃO (aparece antes do jogo)
+═══════════════════════════════════════════════════════ -->
+<div id="tela-config">
+  <div class="config-titulo">🪢 CABO DE GUERRA</div>
+  <div class="config-sub">Configure as equipes antes de começar · Professor</div>
+
+  <div class="config-grid">
+
+    <!-- EQUIPE 1 -->
+    <div class="config-col azul">
+      <div class="config-col-titulo">🔵 Equipe 1</div>
+      <input class="config-input" id="nome-eq1" type="text" placeholder="Nome da Equipe 1" value="Equipe 1" maxlength="20"/>
+      <input class="config-busca" id="busca1" type="text" placeholder="🔍 Buscar aluno..." oninput="filtrarAlunos(1)"/>
+      <div class="alunos-lista" id="lista1">
+        <div class="config-status" id="status-alunos1">Carregando alunos...</div>
+      </div>
+      <div class="config-status" id="sel-count1">0 alunos selecionados</div>
+    </div>
+
+    <!-- EQUIPE 2 -->
+    <div class="config-col vermelho">
+      <div class="config-col-titulo">🔴 Equipe 2</div>
+      <input class="config-input" id="nome-eq2" type="text" placeholder="Nome da Equipe 2" value="Equipe 2" maxlength="20"/>
+      <input class="config-busca" id="busca2" type="text" placeholder="🔍 Buscar aluno..." oninput="filtrarAlunos(2)"/>
+      <div class="alunos-lista" id="lista2">
+        <div class="config-status" id="status-alunos2">Carregando alunos...</div>
+      </div>
+      <div class="config-status" id="sel-count2">0 alunos selecionados</div>
+    </div>
+
+  </div>
+
+  <button class="config-btn-iniciar" onclick="iniciarJogo()">⚔️ COMEÇAR JOGO</button>
+  <div class="config-sem-login" id="config-aviso"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TELA DE XP (aparece após o jogo)
+═══════════════════════════════════════════════════════ -->
+<div id="tela-xp">
+  <div style="font-size:3rem;margin-bottom:6px;">⭐</div>
+  <div class="xp-titulo">DAR XP PARA A EQUIPE VENCEDORA</div>
+  <div class="xp-vencedor" id="xp-nome-venc">—</div>
+  <div class="xp-placar" id="xp-placar-final">—</div>
+
+  <div class="xp-box">
+    <div style="color:#aaa;font-size:0.8rem;text-align:left;">Selecione os alunos que vão receber XP:</div>
+    <div class="xp-alunos-lista" id="xp-lista-alunos">
+      <div class="xp-sem-alunos">Nenhum aluno cadastrado nesta equipe.</div>
+    </div>
+
+    <div class="xp-amount-row">
+      <label>⚡ XP por aluno:</label>
+      <input class="xp-amount-input" id="xp-amount" type="number" value="50" min="1" max="500"/>
+      <span style="color:#aaa;font-size:0.8rem;">(máx. 500)</span>
+    </div>
+
+    <button class="xp-btn-dar" onclick="darXP()">⭐ DAR XP</button>
+    <div class="xp-resultado" id="xp-resultado"></div>
+    <button class="xp-btn-pular" onclick="fecharXpEJogarNovamente()">↩ Pular e jogar novamente</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JOGO PRINCIPAL
+═══════════════════════════════════════════════════════ -->
 
 <!-- HEADER -->
 <div id="header">
   <div class="placar-box">
     <div>
-      <div class="placar-label">Equipe 1</div>
+      <div class="placar-label" id="label-eq1">Equipe 1</div>
       <div class="placar-num azul" id="pts1">0</div>
     </div>
   </div>
@@ -234,7 +461,7 @@ body {
   </div>
   <div class="placar-box" style="justify-content:flex-end;">
     <div style="text-align:right;">
-      <div class="placar-label">Equipe 2</div>
+      <div class="placar-label" id="label-eq2">Equipe 2</div>
       <div class="placar-num vermelho" id="pts2">0</div>
     </div>
   </div>
@@ -253,7 +480,7 @@ body {
 
   <!-- CALC EQUIPE 1 -->
   <div class="painel azul" id="painel1">
-    <div class="nome-equipe">🔵 EQUIPE 1</div>
+    <div class="nome-equipe" id="painel-nome1">🔵 EQUIPE 1</div>
     <div class="calc-display" id="display1">
       <span class="calc-status" id="status1"></span>
       <span class="calc-valor"  id="valor1">_</span>
@@ -272,7 +499,6 @@ body {
           <stop offset="45%"  stop-color="#c8960a"/>
           <stop offset="100%" stop-color="#EF5350"/>
         </linearGradient>
-        <!-- brilho no chão -->
         <linearGradient id="gChao" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stop-color="#1a3a6b" stop-opacity="0.8"/>
           <stop offset="50%"  stop-color="#2a2a5a" stop-opacity="0.4"/>
@@ -286,28 +512,16 @@ body {
       <!-- Chão -->
       <rect x="0" y="195" width="300" height="6" fill="url(#gChao)" rx="3"/>
 
-      <!-- ═══════════════════════════════
-           BONECOS AZUIS (esquerda)
-           Puxando para a ESQUERDA
-           Mão direita segura a corda
-      ═══════════════════════════════ -->
-
-      <!-- Boneco Azul 1 (mais à esquerda, traseiro) -->
+      <!-- BONECOS AZUIS (esquerda) -->
       <g id="b1c" filter="url(#sombra)" opacity="0.75">
-        <!-- pernas -->
         <line x1="28" y1="155" x2="20" y2="190" stroke="#2196F3" stroke-width="4" stroke-linecap="round"/>
         <line x1="28" y1="155" x2="35" y2="190" stroke="#2196F3" stroke-width="4" stroke-linecap="round"/>
-        <!-- corpo -->
         <line x1="28" y1="120" x2="28" y2="155" stroke="#2196F3" stroke-width="5" stroke-linecap="round"/>
-        <!-- braço esquerdo (puxa para trás) -->
         <line x1="28" y1="132" x2="14" y2="126" stroke="#2196F3" stroke-width="4" stroke-linecap="round"/>
-        <!-- braço direito (segura corda) -->
         <line x1="28" y1="132" x2="44" y2="140" stroke="#2196F3" stroke-width="4" stroke-linecap="round"/>
-        <!-- cabeça -->
         <circle cx="28" cy="108" r="12" fill="#42A5F5" stroke="#1565C0" stroke-width="2"/>
       </g>
 
-      <!-- Boneco Azul 2 (meio) -->
       <g id="b1b" filter="url(#sombra)" opacity="0.88">
         <line x1="54" y1="152" x2="46" y2="190" stroke="#1E88E5" stroke-width="4" stroke-linecap="round"/>
         <line x1="54" y1="152" x2="62" y2="190" stroke="#1E88E5" stroke-width="4" stroke-linecap="round"/>
@@ -317,26 +531,17 @@ body {
         <circle cx="54" cy="104" r="12" fill="#42A5F5" stroke="#1565C0" stroke-width="2"/>
       </g>
 
-      <!-- Boneco Azul 3 (frente, segura corda) -->
       <g id="b1a" filter="url(#sombra)">
         <line x1="80" y1="148" x2="72" y2="190" stroke="#1565C0" stroke-width="5" stroke-linecap="round"/>
         <line x1="80" y1="148" x2="90" y2="190" stroke="#1565C0" stroke-width="5" stroke-linecap="round"/>
         <line x1="80" y1="110" x2="80" y2="148" stroke="#1565C0" stroke-width="6" stroke-linecap="round"/>
-        <!-- braço esquerdo (puxa) -->
         <line x1="80" y1="124" x2="62" y2="118" stroke="#1565C0" stroke-width="5" stroke-linecap="round"/>
-        <!-- braço direito — esticado, segurando a corda -->
         <line x1="80" y1="124" x2="102" y2="130" stroke="#1565C0" stroke-width="5" stroke-linecap="round"/>
-        <!-- mão -->
         <circle cx="102" cy="130" r="5" fill="#FFD600" stroke="#CC8800" stroke-width="2"/>
         <circle cx="80" cy="96" r="14" fill="#42A5F5" stroke="#1565C0" stroke-width="2.5"/>
       </g>
 
-      <!-- ═══════════════════════════════
-           BONECOS VERMELHOS (direita)
-           Espelhados, mão esquerda na corda
-      ═══════════════════════════════ -->
-
-      <!-- Boneco Vermelho 1 (mais à direita, traseiro) -->
+      <!-- BONECOS VERMELHOS (direita) -->
       <g id="b2c" filter="url(#sombra)" opacity="0.75">
         <line x1="272" y1="155" x2="264" y2="190" stroke="#E53935" stroke-width="4" stroke-linecap="round"/>
         <line x1="272" y1="155" x2="280" y2="190" stroke="#E53935" stroke-width="4" stroke-linecap="round"/>
@@ -346,7 +551,6 @@ body {
         <circle cx="272" cy="108" r="12" fill="#EF5350" stroke="#b71c1c" stroke-width="2"/>
       </g>
 
-      <!-- Boneco Vermelho 2 (meio) -->
       <g id="b2b" filter="url(#sombra)" opacity="0.88">
         <line x1="246" y1="152" x2="238" y2="190" stroke="#E53935" stroke-width="4" stroke-linecap="round"/>
         <line x1="246" y1="152" x2="254" y2="190" stroke="#E53935" stroke-width="4" stroke-linecap="round"/>
@@ -356,43 +560,29 @@ body {
         <circle cx="246" cy="104" r="12" fill="#EF5350" stroke="#b71c1c" stroke-width="2"/>
       </g>
 
-      <!-- Boneco Vermelho 3 (frente, segura corda) -->
       <g id="b2a" filter="url(#sombra)">
         <line x1="220" y1="148" x2="210" y2="190" stroke="#C62828" stroke-width="5" stroke-linecap="round"/>
         <line x1="220" y1="148" x2="228" y2="190" stroke="#C62828" stroke-width="5" stroke-linecap="round"/>
         <line x1="220" y1="110" x2="220" y2="148" stroke="#C62828" stroke-width="6" stroke-linecap="round"/>
         <line x1="220" y1="124" x2="238" y2="118" stroke="#C62828" stroke-width="5" stroke-linecap="round"/>
-        <!-- braço esquerdo esticado segurando corda -->
         <line x1="220" y1="124" x2="198" y2="130" stroke="#C62828" stroke-width="5" stroke-linecap="round"/>
-        <!-- mão -->
         <circle cx="198" cy="130" r="5" fill="#FFD600" stroke="#CC8800" stroke-width="2"/>
         <circle cx="220" cy="96" r="14" fill="#EF5350" stroke="#C62828" stroke-width="2.5"/>
       </g>
 
-      <!-- ═══════════════════════════════
-           CORDA — conecta mão azul (102,130) à mão vermelha (198,130)
-      ═══════════════════════════════ -->
-
-      <!-- sombra da corda -->
+      <!-- CORDA -->
       <path id="corda-sombra"
         d="M 102,133 C 130,145 170,145 198,133"
         stroke="rgba(0,0,0,0.35)" stroke-width="8" fill="none" stroke-linecap="round"/>
-
-      <!-- corda principal -->
       <path id="corda-path"
         d="M 102,130 C 130,142 170,142 198,130"
         stroke="url(#gCorda)" stroke-width="6" fill="none" stroke-linecap="round"/>
-
-      <!-- Nó central amarelo -->
       <circle id="no-corda" cx="150" cy="138" r="7" fill="#FFD600" stroke="#CC8800" stroke-width="2.5"/>
-
-      <!-- Bandeira no nó -->
       <text id="bandeira-svg" x="150" y="128" text-anchor="middle" font-size="14">🚩</text>
 
-      <!-- Linhas do chão (sombras dos pés) -->
+      <!-- Sombras dos pés -->
       <ellipse cx="80"  cy="194" rx="22" ry="4" fill="rgba(0,0,0,0.3)"/>
       <ellipse cx="220" cy="194" rx="22" ry="4" fill="rgba(0,0,0,0.3)"/>
-
     </svg>
 
     <!-- Placar e barra -->
@@ -409,7 +599,7 @@ body {
 
   <!-- CALC EQUIPE 2 -->
   <div class="painel vermelho" id="painel2">
-    <div class="nome-equipe">🔴 EQUIPE 2</div>
+    <div class="nome-equipe" id="painel-nome2">🔴 EQUIPE 2</div>
     <div class="calc-display" id="display2">
       <span class="calc-status" id="status2"></span>
       <span class="calc-valor"  id="valor2">_</span>
@@ -431,12 +621,238 @@ body {
   <div class="trofeu"    id="trofeu">🏆</div>
   <div class="nome-venc" id="nome-venc">Equipe 1 Venceu!</div>
   <div class="pf"        id="pf-placar">5 × 3</div>
+  <button id="btn-dar-xp-fim" onclick="abrirTelaXP()">⭐ Dar XP para a equipe</button>
   <button id="btn-reiniciar" onclick="reiniciar()">🔄 Jogar Novamente</button>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════
+// CONFIGURAÇÃO — carrega alunos da plataforma
+// ═══════════════════════════════════════════════════════
+
+const API_BASE = window.location.origin;
+let todosAlunos = []; // lista completa da API
+let selecionados1 = new Set(); // ids selecionados equipe 1
+let selecionados2 = new Set(); // ids equipe 2
+let nomeEquipe1 = 'Equipe 1';
+let nomeEquipe2 = 'Equipe 2';
+let vencedorFinal = 0; // 1 ou 2
+
+// Token JWT do localStorage (mesmo que o restante da plataforma usa)
+function getToken() {
+  return localStorage.getItem('token') || localStorage.getItem('authToken') || '';
+}
+
+// Carrega alunos da plataforma via API
+async function carregarAlunos() {
+  const token = getToken();
+  if (!token) {
+    document.getElementById('config-aviso').textContent =
+      '⚠️ Você não está logado — os alunos não serão carregados. Configure os nomes e inicie o jogo.';
+    document.getElementById('status-alunos1').textContent = 'Faça login para ver os alunos.';
+    document.getElementById('status-alunos2').textContent = 'Faça login para ver os alunos.';
+    return;
+  }
+
+  try {
+    const resp = await fetch(API_BASE + '/api/alunos', {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (!resp.ok) throw new Error('Erro ' + resp.status);
+    todosAlunos = await resp.json();
+    renderizarListaAlunos(1);
+    renderizarListaAlunos(2);
+  } catch (e) {
+    document.getElementById('status-alunos1').textContent = 'Erro ao carregar alunos.';
+    document.getElementById('status-alunos2').textContent = 'Erro ao carregar alunos.';
+    document.getElementById('config-aviso').textContent = '⚠️ Não foi possível carregar a lista de alunos.';
+  }
+}
+
+function filtrarAlunos(eq) {
+  renderizarListaAlunos(eq);
+}
+
+function renderizarListaAlunos(eq) {
+  const listaEl = document.getElementById('lista' + eq);
+  const busca = (document.getElementById('busca' + eq).value || '').toLowerCase().trim();
+  const sel = eq === 1 ? selecionados1 : selecionados2;
+
+  if (todosAlunos.length === 0) {
+    listaEl.innerHTML = '<div class="config-status">Nenhum aluno encontrado.</div>';
+    return;
+  }
+
+  const filtrados = todosAlunos.filter(a =>
+    !busca || a.nome.toLowerCase().includes(busca)
+  );
+
+  listaEl.innerHTML = '';
+  filtrados.forEach(aluno => {
+    const checked = sel.has(aluno.id);
+    const div = document.createElement('div');
+    div.className = 'aluno-item' + (checked ? ' selecionado' : '');
+    div.innerHTML = `
+      <input type="checkbox" id="al${eq}_${aluno.id}" ${checked ? 'checked' : ''}>
+      <label for="al${eq}_${aluno.id}">${aluno.nome}${aluno.turma ? ' · ' + aluno.turma : ''}</label>
+    `;
+    div.addEventListener('click', () => {
+      if (sel.has(aluno.id)) {
+        sel.delete(aluno.id);
+        div.classList.remove('selecionado');
+        div.querySelector('input').checked = false;
+      } else {
+        sel.add(aluno.id);
+        div.classList.add('selecionado');
+        div.querySelector('input').checked = true;
+      }
+      atualizarContagem(eq);
+    });
+    listaEl.appendChild(div);
+  });
+
+  document.getElementById('status-alunos' + eq).textContent = '';
+  atualizarContagem(eq);
+}
+
+function atualizarContagem(eq) {
+  const sel = eq === 1 ? selecionados1 : selecionados2;
+  const n = sel.size;
+  document.getElementById('sel-count' + eq).textContent =
+    n === 0 ? 'Nenhum aluno selecionado' : `${n} aluno${n > 1 ? 's' : ''} selecionado${n > 1 ? 's' : ''}`;
+}
+
+// Obtém dados completos dos alunos selecionados de uma equipe
+function getAlunosSelecionados(eq) {
+  const sel = eq === 1 ? selecionados1 : selecionados2;
+  return todosAlunos.filter(a => sel.has(a.id));
+}
+
+// Inicia o jogo após configuração
+function iniciarJogo() {
+  nomeEquipe1 = document.getElementById('nome-eq1').value.trim() || 'Equipe 1';
+  nomeEquipe2 = document.getElementById('nome-eq2').value.trim() || 'Equipe 2';
+
+  // Atualiza nomes na interface do jogo
+  document.getElementById('label-eq1').textContent = nomeEquipe1;
+  document.getElementById('label-eq2').textContent = nomeEquipe2;
+  document.getElementById('painel-nome1').textContent = '🔵 ' + nomeEquipe1.toUpperCase();
+  document.getElementById('painel-nome2').textContent = '🔴 ' + nomeEquipe2.toUpperCase();
+
+  // Esconde tela de configuração e inicia
+  document.getElementById('tela-config').style.display = 'none';
+  criarCalc('grid1', 1);
+  criarCalc('grid2', 2);
+  novaQ(); atualizarPlacar(); iniciarTimer();
+}
+
+// ═══════════════════════════════════════════════════════
+// TELA DE XP
+// ═══════════════════════════════════════════════════════
+
+function abrirTelaXP() {
+  // Determina equipe vencedora
+  const alunos = getAlunosSelecionados(vencedorFinal);
+  const nomeVenc = vencedorFinal === 1 ? nomeEquipe1 : nomeEquipe2;
+
+  document.getElementById('xp-nome-venc').textContent =
+    (vencedorFinal === 1 ? '🔵 ' : '🔴 ') + nomeVenc;
+  document.getElementById('xp-placar-final').textContent =
+    `Placar final: ${p1} × ${p2}`;
+
+  // Monta lista de alunos
+  const listaEl = document.getElementById('xp-lista-alunos');
+  if (alunos.length === 0) {
+    listaEl.innerHTML = '<div class="xp-sem-alunos">Nenhum aluno cadastrado nesta equipe.</div>';
+  } else {
+    listaEl.innerHTML = '';
+    alunos.forEach(aluno => {
+      const div = document.createElement('div');
+      div.className = 'xp-aluno-row';
+      div.innerHTML = `
+        <input type="checkbox" id="xpal_${aluno.id}" checked>
+        <label for="xpal_${aluno.id}">${aluno.nome}${aluno.turma ? ' · ' + aluno.turma : ''}</label>
+      `;
+      listaEl.appendChild(div);
+    });
+  }
+
+  document.getElementById('xp-resultado').textContent = '';
+  document.getElementById('fim-jogo').style.display = 'none';
+  document.getElementById('tela-xp').style.display = 'flex';
+}
+
+async function darXP() {
+  const token = getToken();
+  if (!token) {
+    document.getElementById('xp-resultado').textContent = '⚠️ Você não está logado. Faça login para dar XP.';
+    return;
+  }
+
+  const xp = parseInt(document.getElementById('xp-amount').value);
+  if (!xp || xp < 1 || xp > 500) {
+    document.getElementById('xp-resultado').textContent = '⚠️ XP deve ser entre 1 e 500.';
+    return;
+  }
+
+  // Coleta alunos marcados
+  const alunos = getAlunosSelecionados(vencedorFinal);
+  const alunosMarcados = alunos.filter(a => {
+    const cb = document.getElementById('xpal_' + a.id);
+    return cb && cb.checked;
+  });
+
+  if (alunosMarcados.length === 0) {
+    document.getElementById('xp-resultado').textContent = '⚠️ Selecione ao menos um aluno.';
+    return;
+  }
+
+  document.getElementById('xp-resultado').textContent = '⏳ Enviando XP...';
+
+  try {
+    const resp = await fetch(API_BASE + '/api/cabo-guerra/dar-xp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        alunos: alunosMarcados.map(a => ({ codigo: a.codigo, nome: a.nome })),
+        xp,
+        motivo: `Cabo de Guerra — ${vencedorFinal === 1 ? nomeEquipe1 : nomeEquipe2} Venceu`,
+      }),
+    });
+
+    const dados = await resp.json();
+    if (resp.ok) {
+      const ok = dados.resultados.filter(r => r.ok).length;
+      const fail = dados.resultados.length - ok;
+      let msg = `✅ ${ok} aluno${ok !== 1 ? 's' : ''} recebeu ${xp} XP!`;
+      if (fail > 0) msg += ` ⚠️ ${fail} falhou.`;
+      document.getElementById('xp-resultado').textContent = msg;
+      // Desabilita botão após sucesso
+      document.querySelector('.xp-btn-dar').disabled = true;
+      document.querySelector('.xp-btn-dar').textContent = '✅ XP Enviado!';
+    } else {
+      document.getElementById('xp-resultado').textContent = '❌ Erro: ' + (dados.erro || 'Falha ao enviar XP.');
+    }
+  } catch (e) {
+    document.getElementById('xp-resultado').textContent = '❌ Erro de conexão. Tente novamente.';
+  }
+}
+
+function fecharXpEJogarNovamente() {
+  document.getElementById('tela-xp').style.display = 'none';
+  reiniciar();
+  document.getElementById('tela-config').style.display = 'flex';
+}
+
+// ═══════════════════════════════════════════════════════
+// JOGO
+// ═══════════════════════════════════════════════════════
+
 const TOTAL = 10, TEMPO = 30, PAUSA = 2300;
-let p1=0, p2=0, rod=1, resp=0, tiv=null, t=TEMPO, ativo=true, e1='', e2='';
+let p1=0, p2=0, rod=1, resp=0, tiv=null, t=TEMPO, ativo=false, e1='', e2='';
 let actx=null;
 
 function AC(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx;}
@@ -496,13 +912,12 @@ function ok(eq){
     fl.className=`feedback-flash ${eq===1?'az-flash':'vm-flash'} show`;
     setTimeout(()=>fl.className='feedback-flash',700);
     document.getElementById(`painel${eq}`).classList.add(eq===1?'brilho-azul':'brilho-vermelho');
-    // badge
     const b=document.createElement('div');b.className='badge';
     b.textContent=eq===1?'🔵 +1 PONTO!':'🔴 +1 PONTO!';
     b.style.cssText=`top:45%;left:${eq===1?'6%':'55%'};color:${eq===1?'#1565C0':'#C62828'};`;
     document.body.appendChild(b);setTimeout(()=>b.remove(),1300);
     atualizarPlacar(); atualizarCorda(eq);
-    showMsg('🎉',`${eq===1?'🔵 Equipe 1':'🔴 Equipe 2'} acertou!`,'Próxima pergunta em 2s...');
+    showMsg('🎉',`${eq===1?'🔵 '+nomeEquipe1:'🔴 '+nomeEquipe2} acertou!`,'Próxima pergunta em 2s...');
     setTimeout(()=>proxRodada(),PAUSA);
   }else{
     somErro(); disp.classList.add('errado'); stat.textContent='❌';
@@ -520,11 +935,8 @@ function atualizarPlacar(){
 function atualizarCorda(venc){
   const diff=p1-p2, MAX=5;
   const off=Math.max(-MAX,Math.min(MAX,diff));
-  // deslocamento do nó central
   const noX=150+off*-10;
   const sag=142+Math.abs(off)*2;
-  // A corda vai de mão azul (102,130) a mão vermelha (198,130)
-  // quando azul puxa, curva vai para esquerda
   const cx=noX;
   document.getElementById('corda-path').setAttribute('d',`M 102,130 Q ${cx},${sag} 198,130`);
   document.getElementById('corda-sombra').setAttribute('d',`M 102,134 Q ${cx},${sag+5} 198,134`);
@@ -532,20 +944,17 @@ function atualizarCorda(venc){
   document.getElementById('no-corda').setAttribute('cy',sag-2);
   document.getElementById('bandeira-svg').setAttribute('x',noX);
   document.getElementById('bandeira-svg').setAttribute('y',sag-12);
-  // barra
   const fill=document.getElementById('tensao-fill');
   const w=Math.abs(off)/MAX*50;
   if(off>0){fill.style.cssText=`width:${w}%;margin-left:50%;background:linear-gradient(90deg,#FFD600,#42A5F5);`;}
   else if(off<0){fill.style.cssText=`width:${w}%;margin-left:${50-w}%;background:linear-gradient(90deg,#EF5350,#FFD600);`;}
   else{fill.style.cssText='width:0%;margin-left:50%;';}
-  // anima bonecos da equipe vencedora
   if(venc){
     const grupo = venc===1 ? ['b1a','b1b','b1c'] : ['b2a','b2b','b2c'];
     grupo.forEach((id,i)=>{
       const el=document.getElementById(id);
       if(!el)return;
       setTimeout(()=>{
-        const orig=el.getAttribute('transform')||'';
         el.setAttribute('transform',venc===1?'translate(-6,0)':'translate(6,0)');
         setTimeout(()=>el.removeAttribute('transform'),400);
       },i*100);
@@ -600,22 +1009,33 @@ function fimJogo(){
   clearInterval(tiv); somFim();
   const fim=document.getElementById('fim-jogo');
   let cls,tr,nm;
-  if(p1>p2){cls='az-win';tr='🏆';nm='🔵 EQUIPE 1 VENCEU!';}
-  else if(p2>p1){cls='vm-win';tr='🏆';nm='🔴 EQUIPE 2 VENCEU!';}
-  else{cls='empate';tr='🤝';nm='EMPATE!';}
+  if(p1>p2){
+    cls='az-win';tr='🏆';nm='🔵 '+nomeEquipe1.toUpperCase()+' VENCEU!';
+    vencedorFinal=1;
+  } else if(p2>p1){
+    cls='vm-win';tr='🏆';nm='🔴 '+nomeEquipe2.toUpperCase()+' VENCEU!';
+    vencedorFinal=2;
+  } else {
+    cls='empate';tr='🤝';nm='EMPATE!';
+    vencedorFinal=0;
+  }
   fim.className=cls; fim.style.display='flex';
   document.getElementById('trofeu').textContent=tr;
   document.getElementById('nome-venc').textContent=nm;
   document.getElementById('pf-placar').textContent=`Placar Final: ${p1} × ${p2}`;
+
+  // Mostra botão de XP apenas se há vencedor e há alunos cadastrados
+  const temAlunos = vencedorFinal > 0 && getAlunosSelecionados(vencedorFinal).length > 0;
+  document.getElementById('btn-dar-xp-fim').style.display = temAlunos ? 'block' : 'none';
 }
 
 function reiniciar(){
-  p1=0;p2=0;rod=1;e1='';e2='';
+  p1=0;p2=0;rod=1;e1='';e2='';vencedorFinal=0;
   document.getElementById('fim-jogo').style.display='none';
+  document.getElementById('tela-xp').style.display='none';
   document.getElementById('rodada-num').textContent='1';
   ['painel1','painel2'].forEach((id,i)=>document.getElementById(id).className=`painel ${i===0?'azul':'vermelho'}`);
   document.getElementById('timer').classList.remove('urgente');
-  // reset corda
   document.getElementById('corda-path').setAttribute('d','M 102,130 Q 150,142 198,130');
   document.getElementById('corda-sombra').setAttribute('d','M 102,134 Q 150,147 198,134');
   document.getElementById('no-corda').setAttribute('cx','150');
@@ -629,8 +1049,9 @@ function reiniciar(){
 }
 
 document.addEventListener('pointerdown',()=>{try{AC().resume();}catch(e){}},{once:false});
-criarCalc('grid1',1); criarCalc('grid2',2);
-novaQ(); atualizarPlacar(); iniciarTimer();
+
+// Inicia carregando alunos da plataforma
+carregarAlunos();
 </script>
 </body>
 </html>

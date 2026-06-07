@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Curso de férias de robótica, Arduino e eletrônica para jovens de 11 a 17 anos em Itapipoca, CE. 5 dias intensivos, projeto real e certificado.">
+<title>Alunos Maker Não Tiram Férias | ITA Tecnologia Educacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul-escuro: #020818;
+    --azul-mid: #0a1628;
+    --azul-neon: #00c3ff;
+    --verde-neon: #00ff88;
+    --laranja: #ff6a00;
+    --amarelo: #ffd600;
+    --vermelho: #ff2d55;
+    --branco: #ffffff;
+    --cinza-claro: #c8d6e5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--azul-escuro);
+    color: var(--branco);
+    overflow-x: hidden;
+  }
+
+  /* PARTÍCULAS FUNDO */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(0,195,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,106,0,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(2,8,24,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,195,255,0.2);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--branco);
+    letter-spacing: 1px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--laranja), #ff2d55);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  nav { display: flex; gap: 24px; align-items: center; }
+  nav a {
+    color: var(--cinza-claro);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--azul-neon); }
+
+  .btn-nav {
+    background: linear-gradient(90deg, var(--laranja), #ff2d55);
+    color: white !important;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 0 16px rgba(255,106,0,0.4);
+  }
+
+  /* ===== BANNER TOPO ===== */
+  .top-banner {
+    background: linear-gradient(90deg, var(--laranja), #ff2d55);
+    text-align: center;
+    padding: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 50;
+    margin-top: 62px;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 80px 24px 60px;
+  }
+
+  /* Holofotes de fundo */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120%;
+    height: 80%;
+    background:
+      conic-gradient(from -20deg at 20% 0%, transparent 0deg, rgba(0,195,255,0.15) 10deg, transparent 20deg),
+      conic-gradient(from 10deg at 50% 0%, transparent 0deg, rgba(255,255,255,0.08) 8deg, transparent 16deg),
+      conic-gradient(from -10deg at 80% 0%, transparent 0deg, rgba(0,255,136,0.12) 10deg, transparent 20deg);
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 60px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,195,255,0.1);
+    border: 1px solid rgba(0,195,255,0.3);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--azul-neon);
+    margin-bottom: 24px;
+    animation: pulse-border 2s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,195,255,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(0,195,255,0); }
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(56px, 8vw, 100px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .hero-title .line1 { color: var(--branco); }
+  .hero-title .line2 { 
+    color: var(--amarelo);
+    -webkit-text-stroke: 1px rgba(255,214,0,0.5);
+    text-shadow: 0 0 40px rgba(255,214,0,0.4);
+  }
+  .hero-title .line3 { color: var(--branco); }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--cinza-claro);
+    margin: 20px 0 32px;
+    line-height: 1.6;
+    max-width: 520px;
+  }
+
+  .hero-sub strong { color: var(--laranja); }
+
+  .hero-ctas {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(90deg, var(--laranja) 0%, #ff2d55 100%);
+    color: white;
+    text-decoration: none;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 0 30px rgba(255,106,0,0.5), 0 4px 20px rgba(0,0,0,0.4);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.4s;
+  }
+  .btn-primary:hover::before { left: 100%; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(255,106,0,0.7), 0 8px 30px rgba(0,0,0,0.5); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--azul-neon);
+    text-decoration: none;
+    padding: 16px 24px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,195,255,0.4);
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover { background: rgba(0,195,255,0.1); border-color: var(--azul-neon); }
+
+  /* Stats row */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s;
+  }
+  .stat-card:hover { border-color: rgba(0,195,255,0.3); background: rgba(0,195,255,0.06); }
+
+  .stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--cinza-claro); letter-spacing: 1px; font-weight: 600; }
+
+  /* Imagem hero */
+  .hero-image-wrap {
+    position: relative;
+  }
+
+  .hero-img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 0 60px rgba(0,195,255,0.2), 0 30px 80px rgba(0,0,0,0.6);
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .hero-image-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--azul-neon), var(--verde-neon), var(--laranja));
+    z-index: -1;
+    opacity: 0.6;
+    animation: rotate-gradient 4s linear infinite;
+  }
+
+  @keyframes rotate-gradient {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+
+  /* ===== SEÇÃO BANNER HORIZONTAL ===== */
+  .banner-section {
+    padding: 60px 24px;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .banner-horizontal {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0,195,255,0.15), 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .banner-horizontal img { width: 100%; display: block; }
+
+  /* ===== SEÇÃO DIAS ===== */
+  .section {
+    padding: 80px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--laranja);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .section-title span { color: var(--amarelo); }
+
+  .section-sub {
+    color: var(--cinza-claro);
+    font-size: 17px;
+    max-width: 600px;
+    line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  /* Cards dias */
+  .dias-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+
+  .dia-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px 16px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dia-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--laranja), var(--amarelo));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .dia-card:hover::after { transform: scaleX(1); }
+  .dia-card:hover { border-color: rgba(255,106,0,0.3); background: rgba(255,106,0,0.05); transform: translateY(-4px); }
+
+  .dia-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--laranja);
+    margin-bottom: 12px;
+  }
+
+  .dia-icon { font-size: 32px; margin-bottom: 12px; }
+
+  .dia-titulo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--branco);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .dia-desc { font-size: 13px; color: var(--cinza-claro); line-height: 1.5; }
+
+  /* ===== CARDS BENEFÍCIOS ===== */
+  .beneficios-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .beneficio-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s;
+  }
+  .beneficio-card:hover { border-color: rgba(0,195,255,0.25); background: rgba(0,195,255,0.04); }
+
+  .beneficio-icon { font-size: 36px; margin-bottom: 16px; }
+  .beneficio-titulo { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .beneficio-desc { font-size: 14px; color: var(--cinza-claro); line-height: 1.6; }
+
+  /* ===== PRICING ===== */
+  .pricing-section {
+    padding: 80px 24px;
+    background: rgba(0,0,0,0.4);
+  }
+
+  .pricing-card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(0,195,255,0.2);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,195,255,0.1);
+  }
+
+  .pricing-header {
+    background: linear-gradient(135deg, rgba(0,195,255,0.15), rgba(0,255,136,0.1));
+    padding: 32px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .pricing-tag {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--laranja), #ff2d55);
+    padding: 4px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  .pricing-de {
+    font-size: 18px;
+    color: var(--cinza-claro);
+    text-decoration: line-through;
+    margin-bottom: 4px;
+  }
+
+  .pricing-por {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--verde-neon);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(0,255,136,0.4);
+  }
+
+  .pricing-por sup { font-size: 28px; vertical-align: super; }
+
+  .pricing-parcela {
+    font-size: 16px;
+    color: var(--cinza-claro);
+    margin-top: 8px;
+  }
+
+  .pricing-body { padding: 32px; }
+
+  .pricing-items {
+    list-style: none;
+    margin-bottom: 32px;
+  }
+
+  .pricing-items li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .pricing-items li:last-child { border-bottom: none; }
+
+  .check {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, var(--verde-neon), #00cc66);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .btn-cta-full {
+    display: block;
+    width: 100%;
+    background: linear-gradient(90deg, var(--laranja), #ff2d55);
+    color: white;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255,106,0,0.5);
+    transition: all 0.3s;
+    margin-bottom: 16px;
+  }
+  .btn-cta-full:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(255,106,0,0.7); }
+
+  .pricing-garantia {
+    text-align: center;
+    font-size: 13px;
+    color: var(--cinza-claro);
+    line-height: 1.8;
+  }
+
+  /* ===== DESTAQUES NUMÉRICOS ===== */
+  .destaques-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 48px 0;
+  }
+
+  .destaque-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .destaque-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .destaque-card:nth-child(1)::before { background: linear-gradient(90deg, var(--laranja), var(--amarelo)); }
+  .destaque-card:nth-child(2)::before { background: linear-gradient(90deg, var(--verde-neon), var(--azul-neon)); }
+  .destaque-card:nth-child(3)::before { background: linear-gradient(90deg, var(--azul-neon), #7c3aed); }
+  .destaque-card:nth-child(4)::before { background: linear-gradient(90deg, #ff2d55, var(--laranja)); }
+
+  .destaque-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .destaque-card:nth-child(1) .destaque-num { color: var(--laranja); }
+  .destaque-card:nth-child(2) .destaque-num { color: var(--verde-neon); }
+  .destaque-card:nth-child(3) .destaque-num { color: var(--azul-neon); }
+  .destaque-card:nth-child(4) .destaque-num { color: var(--amarelo); }
+
+  .destaque-label { font-size: 14px; color: var(--cinza-claro); font-weight: 600; letter-spacing: 1px; }
+
+  /* ===== DEPOIMENTOS ===== */
+  .depo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .depo-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .stars { color: var(--amarelo); font-size: 18px; margin-bottom: 12px; }
+
+  .depo-texto {
+    font-size: 15px;
+    color: var(--cinza-claro);
+    line-height: 1.7;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .depo-autor { display: flex; align-items: center; gap: 12px; }
+
+  .depo-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--laranja), #ff2d55);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .depo-nome { font-size: 15px; font-weight: 700; }
+  .depo-cargo { font-size: 13px; color: var(--cinza-claro); }
+
+  /* ===== FAQ ===== */
+  .faq-list { max-width: 720px; margin: 0 auto; }
+
+  .faq-item {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .faq-question {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: none;
+    color: var(--branco);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 20px 24px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .faq-question:hover { background: rgba(255,255,255,0.05); }
+
+  .faq-arrow { transition: transform 0.3s; font-size: 20px; color: var(--azul-neon); }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+    padding: 0 24px;
+    color: var(--cinza-claro);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .faq-item.open .faq-answer {
+    max-height: 300px;
+    padding: 0 24px 20px;
+  }
+
+  /* ===== CTA FINAL ===== */
+  .cta-final {
+    padding: 80px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-final::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 100%, rgba(0,195,255,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(0,255,136,0.08) 0%, transparent 50%);
+  }
+
+  .cta-final .container { position: relative; z-index: 1; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: rgba(0,0,0,0.5);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin: 16px 0;
+  }
+  .footer-links a { color: var(--cinza-claro); text-decoration: none; font-size: 14px; }
+  .footer-links a:hover { color: var(--azul-neon); }
+
+  footer p { font-size: 13px; color: rgba(200,214,229,0.5); }
+
+  /* ===== RESPONSIVO ===== */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-image-wrap { display: none; }
+    .dias-grid { grid-template-columns: repeat(2, 1fr); }
+    .beneficios-grid { grid-template-columns: 1fr 1fr; }
+    .depo-grid { grid-template-columns: 1fr; }
+    .destaques-grid { grid-template-columns: repeat(2, 1fr); }
+    nav { display: none; }
+  }
+
+  @media (max-width: 600px) {
+    .dias-grid { grid-template-columns: 1fr; }
+    .beneficios-grid { grid-template-columns: 1fr; }
+    .destaques-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Animações de entrada */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-badge { animation: fadeUp 0.5s ease both; }
+  .hero-title { animation: fadeUp 0.6s ease 0.1s both; }
+  .hero-sub { animation: fadeUp 0.6s ease 0.2s both; }
+  .hero-ctas { animation: fadeUp 0.6s ease 0.3s both; }
+  .hero-stats { animation: fadeUp 0.6s ease 0.4s both; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-header">
+    <div class="logo-icon">🤖</div>
+    <div>
+      <div>ITA TECNOLOGIA EDUCACIONAL</div>
+      <div style="font-size:10px;font-weight:400;color:var(--cinza-claro);letter-spacing:2px;">Itapipoca · Ceará · Brasil</div>
+    </div>
+  </div>
+  <nav>
+    <a href="#sobre">Sobre</a>
+    <a href="#modulos">Módulos</a>
+    <a href="#beneficios">Benefícios</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://itatecnologiaeducacional.tech/inscricao/formulario/" class="btn-nav">🚀 Garantir Vaga</a>
+  </nav>
+</header>
+
+<!-- BANNER TOPO -->
+<div class="top-banner">
+  ⏳ VAGAS LIMITADAS — TURMA JULHO 2026 &nbsp;·&nbsp; 🔥 INSCRIÇÕES ABERTAS ATÉ 30 DE JUNHO
+</div>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-badge">
+        <span>🏆</span> JULHO DE 2026 · INSCRIÇÕES ABERTAS
+      </div>
+      <h1 class="hero-title">
+        <span class="line1">ALUNOS MAKER</span><br>
+        <span class="line2">NÃO TIRAM</span><br>
+        <span class="line3">FÉRIAS.</span>
+      </h1>
+      <p class="hero-sub">
+        5 dias de imersão em <strong>Robótica, Arduino & ESP32</strong><br>
+        para jovens de 11 a 17 anos · Projeto real + Certificado
+      </p>
+      <div class="hero-ctas">
+        <a href="https://itatecnologiaeducacional.tech/inscricao/formulario/" class="btn-primary">
+          🚀 GARANTIR MINHA VAGA →
+        </a>
+        <a href="#modulos" class="btn-secondary">Ver o que vou aprender ↓</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--laranja);">30</div>
+          <div class="stat-label">VAGAS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--amarelo);">5</div>
+          <div class="stat-label">DIAS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--verde-neon);">25H+</div>
+          <div class="stat-label">PRÁTICA</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--azul-neon);">R$199</div>
+          <div class="stat-label">INVESTIMENTO</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image-wrap">
+      <img src="ba.png" alt="Alunos Maker Não Tiram Férias" class="hero-img">
+    </div>
+  </div>
+</section>
+
+<!-- BANNER HORIZONTAL -->
+<div class="banner-section" id="sobre">
+  <div class="container">
+    <div class="banner-horizontal">
+      <img src="banner_oficial.png" alt="Banner Alunos Maker">
+    </div>
+  </div>
+</div>
+
+<!-- DESTAQUES NUMÉRICOS -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Números que provam</div>
+    <h2 class="section-title">O <span>LABORATÓRIO</span><br>QUE NUNCA PARA.</h2>
+    <p class="section-sub">Aqui a aprendizagem não tem prazo de validade — nem nas férias.</p>
+
+    <div class="destaques-grid">
+      <div class="destaque-card">
+        <div class="destaque-num">30</div>
+        <div class="destaque-label">VAGAS · Turma limitada</div>
+      </div>
+      <div class="destaque-card">
+        <div class="destaque-num">25H+</div>
+        <div class="destaque-label">PRÁTICA · Hands-on</div>
+      </div>
+      <div class="destaque-card">
+        <div class="destaque-num">5</div>
+        <div class="destaque-label">DIAS · Imersão total</div>
+      </div>
+      <div class="destaque-card">
+        <div class="destaque-num">R$199</div>
+        <div class="destaque-label">3× R$66,33 sem juros</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MÓDULOS -->
+<section class="section" id="modulos" style="background:rgba(0,0,0,0.3);">
+  <div class="container">
+    <div class="section-label">Programa completo</div>
+    <h2 class="section-title">5 DIAS QUE VÃO<br><span>MUDAR TUDO.</span></h2>
+    <p class="section-sub">Cada dia é uma nova camada. No final você une tudo em um projeto completo e apresenta para a plateia.</p>
+
+    <div class="dias-grid">
+      <div class="dia-card">
+        <div class="dia-num">DIA 1</div>
+        <div class="dia-icon">🔬</div>
+        <div class="dia-titulo">Mundo Maker & Eletrônica Básica</div>
+        <div class="dia-desc">Cultura maker, componentes eletrônicos, protoboard, LEDs e resistores. Saída: primeiro circuito funcionando.</div>
+      </div>
+      <div class="dia-card">
+        <div class="dia-num">DIA 2</div>
+        <div class="dia-icon">⚡</div>
+        <div class="dia-titulo">Arduino na Prática</div>
+        <div class="dia-desc">IDE, lógica de programação, sensores de temperatura e ultrassônico. Saída: protótipo com sensor real.</div>
+      </div>
+      <div class="dia-card">
+        <div class="dia-num">DIA 3</div>
+        <div class="dia-icon">🤖</div>
+        <div class="dia-titulo">Robótica e Movimento</div>
+        <div class="dia-desc">Motores DC, servomotores, chassi de robô, programação de trajetória e desvio autônomo de obstáculos.</div>
+      </div>
+      <div class="dia-card">
+        <div class="dia-num">DIA 4</div>
+        <div class="dia-icon">📡</div>
+        <div class="dia-titulo">ESP32 & Controle Sem Fio</div>
+        <div class="dia-desc">ESP32, Wi-Fi, dashboard web local. Projeto: controlar seu robô pelo celular, sem fio.</div>
+      </div>
+      <div class="dia-card">
+        <div class="dia-num">DIA 5</div>
+        <div class="dia-icon">🏆</div>
+        <div class="dia-titulo">Demo Day — Mostra Maker</div>
+        <div class="dia-desc">Apresentação dos projetos, campeonato e entrega dos certificados. Convide a família — vai ser épico.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFÍCIOS -->
+<section class="section" id="beneficios">
+  <div class="container">
+    <div class="section-label">Por que vale cada centavo</div>
+    <h2 class="section-title">O QUE VOCÊ LEVA<br><span>PARA SEMPRE.</span></h2>
+    <p class="section-sub">Não é só um curso. É uma virada de chave.</p>
+
+    <div class="beneficios-grid">
+      <div class="beneficio-card">
+        <div class="beneficio-icon">🛠️</div>
+        <div class="beneficio-titulo">Habilidade Técnica Real</div>
+        <div class="beneficio-desc">Arduino, ESP32, eletrônica e robótica. Ferramentas usadas por engenheiros e startups do mundo todo.</div>
+      </div>
+      <div class="beneficio-card">
+        <div class="beneficio-icon">📜</div>
+        <div class="beneficio-titulo">Certificado Reconhecido</div>
+        <div class="beneficio-desc">Certificado do ITA Tecnologia Educacional para colocar no currículo e provar que você fez algo nas férias.</div>
+      </div>
+      <div class="beneficio-card">
+        <div class="beneficio-icon">🌐</div>
+        <div class="beneficio-titulo">Comunidade Maker</div>
+        <div class="beneficio-desc">Acesso ao ITA Tecnologia Educacional — jovens que constroem, competem e evoluem juntos.</div>
+      </div>
+      <div class="beneficio-card">
+        <div class="beneficio-icon">🚀</div>
+        <div class="beneficio-titulo">Aceleração de Carreira</div>
+        <div class="beneficio-desc">Quem começa antes chega mais preparado. Você vai sair na frente dos colegas na tecnologia.</div>
+      </div>
+      <div class="beneficio-card">
+        <div class="beneficio-icon">💡</div>
+        <div class="beneficio-titulo">Mentalidade Criadora</div>
+        <div class="beneficio-desc">Você aprende a enxergar problemas e pensar em soluções. A habilidade que diferencia quem faz de quem assiste.</div>
+      </div>
+      <div class="beneficio-card">
+        <div class="beneficio-icon">📂</div>
+        <div class="beneficio-titulo">Portfólio Documentado</div>
+        <div class="beneficio-desc">Fotos e vídeos do seu projeto no Demo Day. Conteúdo real para mostrar para a faculdade ou mercado.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="section" style="background:rgba(0,0,0,0.3);">
+  <div class="container">
+    <div class="section-label">Quem já viveu</div>
+    <h2 class="section-title">O QUE DIZEM<br><span>OS MAKERS.</span></h2>
+    <div class="depo-grid" style="margin-top:48px;">
+      <div class="depo-card">
+        <div class="stars">★★★★★</div>
+        <p class="depo-texto">"Nunca tinha mexido com eletrônica na vida. No segundo dia já tinha feito um sensor de distância funcionar. Foi o melhor investimento das minhas férias."</p>
+        <div class="depo-autor">
+          <div class="depo-avatar">MF</div>
+          <div>
+            <div class="depo-nome">Mateus F.</div>
+            <div class="depo-cargo">15 anos · Ex-aluno</div>
+          </div>
+        </div>
+      </div>
+      <div class="depo-card">
+        <div class="stars">★★★★★</div>
+        <p class="depo-texto">"Minha filha voltou todo dia com a cabeça fervilhando. No último dia apresentou um robô funcionando. Valeu cada centavo. Já estou perguntando quando tem o próximo."</p>
+        <div class="depo-autor">
+          <div class="depo-avatar">CF</div>
+          <div>
+            <div class="depo-nome">Carla F.</div>
+            <div class="depo-cargo">Mãe de aluna · 13 anos</div>
+          </div>
+        </div>
+      </div>
+      <div class="depo-card">
+        <div class="stars">★★★★★</div>
+        <p class="depo-texto">"Aprendi mais sobre tecnologia em 5 dias do que em um ano na escola. Controlei um robô pelo celular — isso parecia sci-fi, mas eu fiz."</p>
+        <div class="depo-autor">
+          <div class="depo-avatar">LR</div>
+          <div>
+            <div class="depo-nome">Lucas R.</div>
+            <div class="depo-cargo">17 anos · Ex-aluno</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="inscricao">
+  <div class="container" style="text-align:center;">
+    <div class="section-label">Garanta sua vaga agora</div>
+    <h2 class="section-title" style="margin-bottom:8px;">INVISTA 5 DIAS.<br><span>GANHE O FUTURO.</span></h2>
+    <p style="color:var(--cinza-claro);margin-bottom:48px;">🔥 Inscrição Aberta — Vagas Limitadas</p>
+
+    <div class="pricing-card">
+      <div class="pricing-header">
+        <div class="pricing-tag">🔥 OFERTA ESPECIAL</div>
+        <div class="pricing-de">De R$ 350,00</div>
+        <div class="pricing-por"><sup>R$</sup>199</div>
+        <div class="pricing-parcela">ou até <strong>3× sem juros</strong> de R$ 66,33 · Apostila inclusa</div>
+      </div>
+      <div class="pricing-body">
+        <ul class="pricing-items">
+          <li><span class="check">✓</span> 5 dias de imersão prática (25h+)</li>
+          <li><span class="check">✓</span> Todos os materiais e equipamentos inclusos</li>
+          <li><span class="check">✓</span> Apostila digital completa</li>
+          <li><span class="check">✓</span> Certificado impresso pelo ITA Tecnologia Educacional</li>
+          <li><span class="check">✓</span> Acesso ao Clube de Robótica ITA</li>
+          <li><span class="check">✓</span> Registro fotográfico e vídeo do seu projeto</li>
+          <li><span class="check">✓</span> Participação no Campeonato Demo Day</li>
+        </ul>
+        <a href="https://itatecnologiaeducacional.tech/inscricao/formulario/" class="btn-cta-full">
+          🚀 QUERO GARANTIR MINHA VAGA — R$199 →
+        </a>
+        <div class="pricing-garantia">
+          🔒 Pagamento seguro · Confirmação em até 2h úteis<br>
+          📱 Suporte via WhatsApp · CEITEC · Itapipoca-CE
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:48px;">
+      <div class="section-label">Dúvidas frequentes</div>
+      <h2 class="section-title">FICOU ALGUMA<br><span>DÚVIDA?</span></h2>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ❓ Não sei nada de tecnologia. Consigo acompanhar?
+          <span class="faq-arrow">⌄</span>
+        </button>
+        <div class="faq-answer">Sim — e você não é exceção. O curso começa literalmente do zero. Nunca assumimos conhecimento prévio. Quem chega sem vícios costuma aprender mais rápido. Basta trazer curiosidade e disposição para fazer.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ❓ Vou precisar comprar algum equipamento?
+          <span class="faq-arrow">⌄</span>
+        </button>
+        <div class="faq-answer">Não. Absolutamente nada. Todo o material — Arduino, ESP32, sensores, cabos, protoboard — está incluído no laboratório. A apostila digital também. Você vem, aprende e vai embora.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ❓ É para qual faixa etária exatamente?
+          <span class="faq-arrow">⌄</span>
+        </button>
+        <div class="faq-answer">Para estudantes de 11 a 17 anos (Ensino Fundamental II e Médio). O conteúdo é adaptado para que tanto o de 11 quanto o de 17 se desafiem e evoluam.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ❓ Quando acontece o curso?
+          <span class="faq-arrow">⌄</span>
+        </button>
+        <div class="faq-answer">O curso acontece nas férias de julho de 2026. As datas exatas são confirmadas com a turma após a inscrição. As vagas são preenchidas por ordem de inscrição.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ❓ Posso pagar no dia do curso?
+          <span class="faq-arrow">⌄</span>
+        </button>
+        <div class="faq-answer">As vagas são garantidas mediante pagamento antecipado. Como temos apenas 30 vagas, não reservamos sem confirmação. Aceitamos PIX, cartão e transferência bancária.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <div class="container">
+    <div class="section-label">Última chamada</div>
+    <h2 class="section-title" style="font-size:clamp(48px,7vw,90px);margin-bottom:16px;">
+      ENQUANTO OUTROS<br><span>DORMEM,</span><br>VOCÊ CONSTRÓI.
+    </h2>
+    <p style="color:var(--cinza-claro);font-size:18px;margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.6;">
+      30 vagas. Julho de 2026. CEITEC · Itapipoca-CE.<br>Não espere acabar.
+    </p>
+    <a href="https://itatecnologiaeducacional.tech/inscricao/formulario/" class="btn-primary" style="font-size:22px;padding:20px 48px;margin:0 auto;display:inline-flex;">
+      🚀 GARANTIR MINHA VAGA AGORA →
+    </a>
+    <div style="margin-top:24px;color:var(--cinza-claro);font-size:14px;">
+      📱 Dúvidas? <a href="https://wa.me/5588988411890" style="color:var(--verde-neon);">WhatsApp: (88) 9 8841-1890</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🤖 ITA TECNOLOGIA EDUCACIONAL</div>
+  <p style="color:var(--cinza-claro);font-size:14px;margin-bottom:16px;">Formando os makers e inovadores do Ceará.</p>
+  <div class="footer-links">
+    <a href="#inicio">Início</a>
+    <a href="#modulos">Módulos</a>
+    <a href="#beneficios">Benefícios</a>
+    <a href="#inscricao">Inscrição</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://wa.me/5588988411890">WhatsApp</a>
+  </div>
+  <p>📍 Itapipoca, Ceará, Brasil &nbsp;·&nbsp; 📧 itagamificaedu@gmail.com</p>
+  <p style="margin-top:12px;">© 2026 ITA Tecnologia Educacional · Todos os direitos reservados.</p>
+</footer>
+
+<script>
+  function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // Scroll suave header
+  window.addEventListener('scroll', () => {
+    const header = document.querySelector('header');
+    header.style.background = window.scrollY > 50 
+      ? 'rgba(2,8,24,0.98)' 
+      : 'rgba(2,8,24,0.92)';
+  });
+</script>
+
+</body>
+</html>
