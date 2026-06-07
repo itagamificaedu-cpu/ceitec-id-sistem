@@ -5,13 +5,26 @@
       "name": "frontend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 5173
+      "port": 5173,
+      "cwd": "frontend"
     },
     {
       "name": "backend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3001
+    },
+    {
+      "name": "login-preview",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8999", "--bind", "127.0.0.1", "--directory", "plataforma/ita_core/templates/ita_core"],
+      "port": 8999
+    }
+  ,{
+      "name": "figurinhas-preview",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8998", "--bind", "127.0.0.1", "--directory", "C:\\Users\\genez\\OneDrive\\CIETEC\\LIGA JOVEM\\figurinhas_recortadas"],
+      "port": 8998
     }
   ]
 }
