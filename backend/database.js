@@ -530,6 +530,30 @@ async function initDatabase() {
       encerrada_em TIMESTAMP
     )`,
 
+    /* ========== MANYCHAT ========== */
+
+    /* Contatos vindos do ManyChat (Instagram, WhatsApp, etc.) */
+    `CREATE TABLE IF NOT EXISTS manychat_contatos (
+      id                SERIAL PRIMARY KEY,
+      contact_id        TEXT UNIQUE NOT NULL,
+      nome              TEXT,
+      username          TEXT,
+      canal             TEXT DEFAULT 'instagram',
+      ultima_interacao  TIMESTAMP,
+      criado_em         TIMESTAMP DEFAULT NOW()
+    )`,
+
+    /* Log de todos os eventos recebidos pelo webhook */
+    `CREATE TABLE IF NOT EXISTS manychat_logs (
+      id           SERIAL PRIMARY KEY,
+      contact_id   TEXT,
+      username     TEXT,
+      event        TEXT NOT NULL,
+      payload_json TEXT DEFAULT '{}',
+      ip           TEXT,
+      criado_em    TIMESTAMP DEFAULT NOW()
+    )`,
+
     /* ========== CABO DE GUERRA ========== */
 
     /* Partidas do Cabo de Guerra */
