@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🪢 Cabo de Guerra Online</title>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#fff;min-height:100vh;overflow:hidden;}
+  .tela{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:16px;}
+  .tela.ativa{display:flex;}
+
+  /* ── Tela Início ── */
+  .logo-titulo{font-size:clamp(1.4rem,4vw,2.2rem);font-weight:900;text-align:center;margin-bottom:8px;
+    background:linear-gradient(90deg,#2196F3,#E53935);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .logo-sub{font-size:clamp(0.75rem,2vw,1rem);color:#888;margin-bottom:32px;text-align:center;}
+  .btn-papel{padding:18px 40px;border:none;border-radius:16px;font-size:1.1rem;font-weight:700;
+    cursor:pointer;transition:transform .1s,box-shadow .1s;margin:8px;min-width:220px;}
+  .btn-papel:active{transform:scale(.97);}
+  .btn-prof{background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;box-shadow:0 4px 20px rgba(33,150,243,.4);}
+  .btn-aluno{background:linear-gradient(135deg,#B71C1C,#C62828);color:#fff;box-shadow:0 4px 20px rgba(229,57,53,.4);}
+
+  /* ── Formulários ── */
+  .card-form{background:#161b22;border:1px solid #30363d;border-radius:20px;padding:28px;width:100%;max-width:420px;}
+  .card-form h2{font-size:1.3rem;margin-bottom:20px;text-align:center;}
+  .campo{margin-bottom:14px;}
+  .campo label{display:block;font-size:.8rem;color:#8b949e;margin-bottom:6px;font-weight:600;text-transform:uppercase;}
+  .campo input, .campo select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #30363d;
+    background:#0d1117;color:#fff;font-size:1rem;}
+  .campo input:focus,.campo select:focus{outline:2px solid #2196F3;border-color:#2196F3;}
+  .btn-acao{width:100%;padding:15px;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;
+    cursor:pointer;margin-top:8px;transition:opacity .2s;}
+  .btn-acao:active{opacity:.8;}
+  .btn-criar{background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;}
+  .btn-entrar{background:linear-gradient(135deg,#B71C1C,#C62828);color:#fff;}
+  .btn-voltar{background:#21262d;color:#8b949e;margin-top:10px;}
+
+  /* ── Sala de Espera ── */
+  .codigo-grande{font-size:clamp(3rem,12vw,5rem);font-weight:900;letter-spacing:.2em;
+    background:linear-gradient(90deg,#2196F3,#E53935);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    text-align:center;margin:8px 0;}
+  .codigo-label{font-size:.8rem;color:#8b949e;text-align:center;margin-bottom:4px;}
+  .espera-times{display:flex;gap:20px;margin:20px 0;justify-content:center;flex-wrap:wrap;}
+  .espera-time{background:#161b22;border-radius:14px;padding:16px 24px;text-align:center;flex:1;min-width:140px;}
+  .espera-time.az{border:2px solid #1565C0;}
+  .espera-time.vm{border:2px solid #C62828;}
+  .espera-time .et-nome{font-weight:700;margin-bottom:6px;}
+  .espera-time .et-count{font-size:2rem;font-weight:900;}
+  .az .et-count{color:#2196F3;}
+  .vm .et-count{color:#E53935;}
+  .espera-dica{font-size:.85rem;color:#8b949e;text-align:center;margin-top:12px;}
+  .badge-equipe{padding:10px 24px;border-radius:30px;font-weight:700;font-size:1rem;margin:10px auto;display:inline-block;}
+  .badge-az{background:#1565C0;color:#fff;}
+  .badge-vm{background:#C62828;color:#fff;}
+  .btn-iniciar-jogo{background:linear-gradient(135deg,#388E3C,#2E7D32);color:#fff;
+    padding:18px 48px;font-size:1.2rem;border:none;border-radius:16px;cursor:pointer;font-weight:700;
+    box-shadow:0 4px 20px rgba(56,142,60,.5);margin-top:12px;width:100%;max-width:340px;}
+  .aguardando-spinner{display:flex;align-items:center;gap:10px;font-size:1rem;color:#8b949e;margin-top:12px;}
+  .spinner{width:20px;height:20px;border:2px solid #30363d;border-top:2px solid #2196F3;
+    border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ── Tela do Jogo ── */
+  #tela-jogo{background:#0d1117;flex-direction:column;padding:6px;gap:5px;}
+
+  .jogo-top{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:900px;gap:8px;}
+  .jogo-placar-az, .jogo-placar-vm{font-size:clamp(1.2rem,4vw,2rem);font-weight:900;min-width:60px;text-align:center;}
+  .jogo-placar-az{color:#2196F3;}
+  .jogo-placar-vm{color:#E53935;}
+  .jogo-nome-time{font-size:clamp(.6rem,1.8vw,.85rem);font-weight:600;max-width:120px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .nm-az{color:#2196F3;text-align:left;}
+  .nm-vm{color:#E53935;text-align:right;}
+
+  .timer-bloco{text-align:center;flex:1;}
+  .timer-num{font-size:clamp(1.8rem,6vw,3rem);font-weight:900;line-height:1;}
+  .timer-num.urgente{color:#F44336;animation:pulsar .4s ease-in-out infinite alternate;}
+  @keyframes pulsar{from{transform:scale(1)}to{transform:scale(1.1)}}
+  .timer-label{font-size:.65rem;color:#8b949e;text-transform:uppercase;}
+  .timer-bar{height:5px;background:#21262d;border-radius:3px;overflow:hidden;margin-top:4px;width:120px;margin-inline:auto;}
+  .timer-fill{height:100%;background:linear-gradient(90deg,#2196F3,#4CAF50);transition:width .8s linear;border-radius:3px;}
+
+  .rodada-info{font-size:.7rem;color:#8b949e;text-align:center;}
+
+  /* Pergunta */
+  .pergunta-bloco{background:#161b22;border:1px solid #30363d;border-radius:14px;
+    padding:10px 20px;text-align:center;width:100%;max-width:900px;}
+  .pergunta-txt{font-size:clamp(1.2rem,4vw,2rem);font-weight:700;letter-spacing:.02em;}
+
+  /* Arena corda */
+  .arena{position:relative;width:100%;max-width:900px;height:100px;flex-shrink:0;}
+  #cvArena{width:100%;height:100%;display:block;}
+
+  /* Calculadoras */
+  .calcs-bloco{display:flex;gap:8px;width:100%;max-width:900px;flex:1;}
+  .painel-calc{flex:1;background:#161b22;border-radius:14px;border:2px solid #30363d;
+    padding:8px;display:flex;flex-direction:column;gap:6px;transition:border-color .3s;}
+  .painel-calc.az-borda{border-color:#1565C0;}
+  .painel-calc.vm-borda{border-color:#C62828;}
+  .painel-calc.inativo{opacity:.45;pointer-events:none;}
+  .calc-header{display:flex;align-items:center;justify-content:space-between;padding:0 2px;}
+  .calc-team-nome{font-size:.7rem;font-weight:700;text-transform:uppercase;}
+  .az-cor{color:#2196F3;}
+  .vm-cor{color:#E53935;}
+  .calc-status{font-size:.9rem;min-width:20px;text-align:right;}
+  .calc-display{background:#0d1117;border-radius:8px;padding:6px 10px;
+    display:flex;align-items:center;justify-content:flex-end;gap:6px;border:1px solid #30363d;}
+  .display-valor{font-size:clamp(1.2rem,4vw,1.8rem);font-weight:900;font-family:monospace;}
+  .display-valor.az{color:#90CAF9;}
+  .display-valor.vm{color:#EF9A9A;}
+  .calc-display.correto{border-color:#4CAF50;background:#0a1f0a;}
+  .calc-display.errado{border-color:#F44336;background:#1f0a0a;animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+  .grid-calc{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+  .btn-c{border:none;border-radius:8px;font-size:clamp(.9rem,3vw,1.2rem);font-weight:700;
+    cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center;transition:transform .08s;}
+  .btn-c:active{transform:scale(.9);}
+  .btn-c:disabled{opacity:.3;cursor:not-allowed;}
+  .az-btn{background:#1565C0;color:#fff;}
+  .az-btn-lt{background:#0D47A1;color:#90CAF9;}
+  .az-btn-ok{background:#388E3C;color:#fff;grid-column:span 2;}
+  .vm-btn{background:#C62828;color:#fff;}
+  .vm-btn-lt{background:#B71C1C;color:#EF9A9A;}
+  .vm-btn-ok{background:#388E3C;color:#fff;grid-column:span 2;}
+
+  /* Mensagem central */
+  .msg-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;
+    background:rgba(0,0,0,.7);flex-direction:column;gap:8px;}
+  .msg-overlay.show{display:flex;}
+  .msg-icone{font-size:3rem;}
+  .msg-titulo{font-size:1.5rem;font-weight:800;}
+  .msg-sub{font-size:1rem;color:#8b949e;}
+
+  /* Flash de acerto */
+  .feedback-flash{position:fixed;inset:0;pointer-events:none;z-index:60;opacity:0;transition:opacity .2s;}
+  .feedback-flash.show{opacity:1;}
+  .az-flash{background:rgba(33,150,243,.25);}
+  .vm-flash{background:rgba(229,57,53,.25);}
+
+  /* Fim de jogo */
+  #fim-jogo{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;
+    justify-content:center;z-index:80;gap:14px;padding:24px;}
+  #fim-jogo.az-win{background:linear-gradient(135deg,#0D47A1 0%,#1565C0 100%);}
+  #fim-jogo.vm-win{background:linear-gradient(135deg,#B71C1C 0%,#C62828 100%);}
+  #fim-jogo.empate{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);}
+  .fim-trofeu{font-size:5rem;}
+  .fim-nome{font-size:clamp(1.4rem,5vw,2.5rem);font-weight:900;text-align:center;}
+  .fim-placar{font-size:1.3rem;opacity:.8;}
+  .fim-reiniciar{background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.5);
+    color:#fff;padding:14px 36px;border-radius:14px;font-size:1.1rem;font-weight:700;cursor:pointer;margin-top:10px;}
+  .fim-reiniciar:hover{background:rgba(255,255,255,.3);}
+
+  /* Badge ponto */
+  .badge-ponto{position:fixed;font-size:1.4rem;font-weight:900;pointer-events:none;z-index:70;
+    animation:subir .9s ease-out forwards;}
+  @keyframes subir{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.2)}}
+
+  /* Responsivo tablets */
+  @media(max-height:680px){
+    .arena{height:80px;}
+    .pergunta-bloco{padding:6px 14px;}
+    .grid-calc{gap:3px;}
+    .btn-c{font-size:.85rem;}
+  }
+  @media(max-width:480px){
+    .calcs-bloco{gap:5px;}
+    .painel-calc{padding:6px;}
+    .grid-calc{gap:3px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ════ TELA INÍCIO ════ -->
+<div id="tela-inicio" class="tela ativa">
+  <div class="logo-titulo">🪢 Cabo de Guerra</div>
+  <div class="logo-sub">Batalha de Calculadoras — Online</div>
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <button class="btn-papel btn-prof" onclick="escolherPapel('professor')">🎓 Sou Professor</button>
+    <button class="btn-papel btn-aluno" onclick="escolherPapel('aluno')">🎮 Sou Aluno</button>
+  </div>
+</div>
+
+<!-- ════ TELA PROFESSOR ════ -->
+<div id="tela-professor" class="tela">
+  <div class="card-form">
+    <h2>🎓 Criar Sala</h2>
+    <div class="campo">
+      <label>Nome da Equipe 1 (Azul)</label>
+      <input id="p-nome1" type="text" placeholder="Ex: Equipe Azul" maxlength="20">
+    </div>
+    <div class="campo">
+      <label>Nome da Equipe 2 (Vermelha)</label>
+      <input id="p-nome2" type="text" placeholder="Ex: Equipe Vermelha" maxlength="20">
+    </div>
+    <button class="btn-acao btn-criar" onclick="criarSala()">🚀 Criar Sala</button>
+    <button class="btn-acao btn-voltar" onclick="voltarInicio()">← Voltar</button>
+  </div>
+</div>
+
+<!-- ════ TELA ALUNO ════ -->
+<div id="tela-aluno" class="tela">
+  <div class="card-form">
+    <h2>🎮 Entrar na Sala</h2>
+    <div class="campo">
+      <label>Código da Sala</label>
+      <input id="a-codigo" type="text" placeholder="Ex: A3B7" maxlength="6" style="text-transform:uppercase;letter-spacing:.15em;font-size:1.3rem;text-align:center;">
+    </div>
+    <div class="campo">
+      <label>Seu Nome</label>
+      <input id="a-nome" type="text" placeholder="Como você quer ser chamado?" maxlength="20">
+    </div>
+    <div class="campo">
+      <label>Escolha sua Equipe</label>
+      <select id="a-equipe">
+        <option value="1">🔵 Equipe 1 (Azul)</option>
+        <option value="2">🔴 Equipe 2 (Vermelha)</option>
+      </select>
+    </div>
+    <button class="btn-acao btn-entrar" onclick="entrarSala()">✅ Entrar</button>
+    <button class="btn-acao btn-voltar" onclick="voltarInicio()">← Voltar</button>
+  </div>
+</div>
+
+<!-- ════ TELA ESPERA ════ -->
+<div id="tela-espera" class="tela" style="gap:14px;">
+  <div style="text-align:center;">
+    <div id="e-meu-time" class="badge-equipe" style="background:#21262d;color:#8b949e;">...</div>
+  </div>
+  <div style="text-align:center;">
+    <div class="codigo-label">🔑 Código da Sala — alunos digitam este código</div>
+    <div class="codigo-grande" id="e-codigo">----</div>
+  </div>
+  <div class="espera-times">
+    <div class="espera-time az">
+      <div class="et-nome az-cor" id="e-nome1">Equipe 1</div>
+      <div class="et-count" id="e-eq1-count">0</div>
+      <div style="font-size:.7rem;color:#8b949e;">jogadores</div>
+    </div>
+    <div class="espera-time vm">
+      <div class="et-nome vm-cor" id="e-nome2">Equipe 2</div>
+      <div class="et-count" id="e-eq2-count">0</div>
+      <div style="font-size:.7rem;color:#8b949e;">jogadores</div>
+    </div>
+  </div>
+  <button class="btn-iniciar-jogo" id="e-btn-iniciar" onclick="iniciarJogo()" style="display:none;">
+    ▶ INICIAR JOGO
+  </button>
+  <div class="aguardando-spinner" id="e-aguardando" style="display:none;">
+    <div class="spinner"></div>
+    <span>Aguardando o professor iniciar...</span>
+  </div>
+  <div class="espera-dica" id="e-dica-prof" style="display:none;">
+    Espere os alunos entrarem, depois clique em INICIAR JOGO
+  </div>
+</div>
+
+<!-- ════ TELA JOGO ════ -->
+<div id="tela-jogo" class="tela">
+
+  <!-- Topo: placar + timer -->
+  <div class="jogo-top">
+    <div>
+      <div class="jogo-nome-time nm-az" id="g-nome1">Equipe 1</div>
+      <div class="jogo-placar-az" id="g-p1">0</div>
+    </div>
+    <div class="timer-bloco">
+      <div class="timer-num" id="g-timer">30</div>
+      <div class="timer-label">segundos</div>
+      <div class="timer-bar"><div class="timer-fill" id="g-bar" style="width:100%"></div></div>
+      <div class="rodada-info" id="g-rodada">Rodada 1 de 10</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="jogo-nome-time nm-vm" id="g-nome2">Equipe 2</div>
+      <div class="jogo-placar-vm" id="g-p2">0</div>
+    </div>
+  </div>
+
+  <!-- Pergunta -->
+  <div class="pergunta-bloco">
+    <div class="pergunta-txt" id="g-pergunta">...</div>
+  </div>
+
+  <!-- Arena corda com bonecos -->
+  <div class="arena">
+    <canvas id="cvArena"></canvas>
+  </div>
+
+  <!-- Calculadoras -->
+  <div class="calcs-bloco">
+
+    <!-- Calc Equipe 1 (Azul) -->
+    <div class="painel-calc az-borda" id="painel1">
+      <div class="calc-header">
+        <span class="calc-team-nome az-cor" id="c-nome1">Equipe 1</span>
+        <span class="calc-status" id="stat1"></span>
+      </div>
+      <div class="calc-display" id="display1">
+        <span class="display-valor az" id="valor1">_</span>
+      </div>
+      <div class="grid-calc" id="grid1">
+        <button class="btn-c az-btn-lt" onclick="inp(1,'7')">7</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'8')">8</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'9')">9</button>
+        <button class="btn-c az-btn" onclick="inp(1,'⌫')">⌫</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'4')">4</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'5')">5</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'6')">6</button>
+        <button class="btn-c az-btn-ok" onclick="inp(1,'✓')" style="grid-column:span 1;">✓</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'1')">1</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'2')">2</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'3')">3</button>
+        <button class="btn-c az-btn-lt" onclick="inp(1,'0')">0</button>
+      </div>
+    </div>
+
+    <!-- Calc Equipe 2 (Vermelha) -->
+    <div class="painel-calc vm-borda" id="painel2">
+      <div class="calc-header">
+        <span class="calc-team-nome vm-cor" id="c-nome2">Equipe 2</span>
+        <span class="calc-status" id="stat2"></span>
+      </div>
+      <div class="calc-display" id="display2">
+        <span class="display-valor vm" id="valor2">_</span>
+      </div>
+      <div class="grid-calc" id="grid2">
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'7')">7</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'8')">8</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'9')">9</button>
+        <button class="btn-c vm-btn" onclick="inp(2,'⌫')">⌫</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'4')">4</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'5')">5</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'6')">6</button>
+        <button class="btn-c vm-btn-ok" onclick="inp(2,'✓')" style="grid-column:span 1;">✓</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'1')">1</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'2')">2</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'3')">3</button>
+        <button class="btn-c vm-btn-lt" onclick="inp(2,'0')">0</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Flash de fundo ao acertar -->
+<div class="feedback-flash" id="flash"></div>
+
+<!-- Mensagem sobre o jogo (tempo esgotado, etc.) -->
+<div class="msg-overlay" id="msg-overlay">
+  <div class="msg-icone" id="msg-icone">⏰</div>
+  <div class="msg-titulo" id="msg-titulo">Tempo esgotado!</div>
+  <div class="msg-sub" id="msg-sub">Próxima pergunta...</div>
+</div>
+
+<!-- Fim de jogo -->
+<div id="fim-jogo">
+  <div class="fim-trofeu" id="fim-trofeu">🏆</div>
+  <div class="fim-nome" id="fim-nome">VENCEDOR!</div>
+  <div class="fim-placar" id="fim-placar">Placar Final</div>
+  <button class="fim-reiniciar" onclick="location.reload()">🔄 Jogar Novamente</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ════════════════════════════════════════════════════════════
+const socket = io();
+
+let papel        = null;   // 'professor' | 'aluno'
+let codigoSala   = null;
+let minhaEquipe  = null;   // 1 | 2 | null (professor não joga)
+let nomeJogador  = '';
+let entrada      = '';     // dígitos digitados na calc
+let jogoAtivo    = false;  // bloqueia input quando false
+let nomeTimes    = ['Equipe 1','Equipe 2'];
+
+// ════════════════════════════════════════════════════════════
+//  NAVEGAÇÃO ENTRE TELAS
+// ════════════════════════════════════════════════════════════
+function mostraTela(id){
+  document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativa');
+}
+
+function voltarInicio(){ mostraTela('tela-inicio'); }
+
+function escolherPapel(p){
+  papel = p;
+  mostraTela(p === 'professor' ? 'tela-professor' : 'tela-aluno');
+}
+
+// ════════════════════════════════════════════════════════════
+//  PROFESSOR — CRIAR SALA
+// ════════════════════════════════════════════════════════════
+function criarSala(){
+  const nome1 = document.getElementById('p-nome1').value.trim() || 'Equipe 1';
+  const nome2 = document.getElementById('p-nome2').value.trim() || 'Equipe 2';
+  socket.emit('cg:criar_sala', { nome1, nome2 });
+}
+
+socket.on('cg:sala_criada', ({ codigo, sala }) => {
+  codigoSala = codigo;
+  nomeTimes = [sala.nome1, sala.nome2];
+  mostraEspera(sala, true);
+});
+
+function iniciarJogo(){
+  if (!codigoSala) return;
+  socket.emit('cg:iniciar', { codigo: codigoSala });
+}
+
+// ════════════════════════════════════════════════════════════
+//  ALUNO — ENTRAR NA SALA
+// ════════════════════════════════════════════════════════════
+function entrarSala(){
+  const codigo = (document.getElementById('a-codigo').value || '').trim().toUpperCase();
+  const nome   = (document.getElementById('a-nome').value || '').trim();
+  const equipe = parseInt(document.getElementById('a-equipe').value);
+  if (!codigo || !nome){ alert('Preencha o código e seu nome!'); return; }
+  nomeJogador = nome;
+  minhaEquipe = equipe;
+  socket.emit('cg:entrar_sala', { codigo, nome, equipe });
+}
+
+socket.on('cg:entrou', ({ sala, minha_equipe }) => {
+  codigoSala  = sala.codigo;
+  minhaEquipe = minha_equipe;
+  nomeTimes   = [sala.nome1, sala.nome2];
+  mostraEspera(sala, false);
+});
+
+socket.on('cg:erro', ({ msg }) => { alert(msg); });
+
+// ════════════════════════════════════════════════════════════
+//  SALA DE ESPERA
+// ════════════════════════════════════════════════════════════
+function mostraEspera(sala, ehProf){
+  document.getElementById('e-codigo').textContent   = sala.codigo;
+  document.getElementById('e-nome1').textContent    = sala.nome1;
+  document.getElementById('e-nome2').textContent    = sala.nome2;
+  document.getElementById('e-eq1-count').textContent = sala.eq1_count;
+  document.getElementById('e-eq2-count').textContent = sala.eq2_count;
+
+  const meuTime = document.getElementById('e-meu-time');
+  if (ehProf){
+    meuTime.textContent = '🎓 Você é o Professor';
+    meuTime.className = 'badge-equipe';
+    meuTime.style.cssText = 'background:#21262d;color:#8b949e;';
+    document.getElementById('e-btn-iniciar').style.display = 'block';
+    document.getElementById('e-aguardando').style.display  = 'none';
+    document.getElementById('e-dica-prof').style.display   = 'block';
+  } else {
+    if (minhaEquipe === 1){
+      meuTime.textContent = `🔵 Você está na ${sala.nome1}`;
+      meuTime.className = 'badge-equipe badge-az';
+      meuTime.style.cssText = '';
+    } else {
+      meuTime.textContent = `🔴 Você está na ${sala.nome2}`;
+      meuTime.className = 'badge-equipe badge-vm';
+      meuTime.style.cssText = '';
+    }
+    document.getElementById('e-btn-iniciar').style.display = 'none';
+    document.getElementById('e-aguardando').style.display  = 'flex';
+    document.getElementById('e-dica-prof').style.display   = 'none';
+  }
+  mostraTela('tela-espera');
+}
+
+socket.on('cg:estado', (sala) => {
+  // Atualiza contagem na sala de espera
+  const c1 = document.getElementById('e-eq1-count');
+  const c2 = document.getElementById('e-eq2-count');
+  if (c1) c1.textContent = sala.eq1_count;
+  if (c2) c2.textContent = sala.eq2_count;
+});
+
+// ════════════════════════════════════════════════════════════
+//  JOGO — EVENTOS DO SERVIDOR
+// ════════════════════════════════════════════════════════════
+
+socket.on('cg:nova_pergunta', (dados) => {
+  jogoAtivo = true;
+  entrada   = '';
+
+  // Atualiza nomes dos times
+  nomeTimes = [dados.nome1 || nomeTimes[0], dados.nome2 || nomeTimes[1]];
+  document.getElementById('g-nome1').textContent = nomeTimes[0];
+  document.getElementById('g-nome2').textContent = nomeTimes[1];
+  document.getElementById('c-nome1').textContent = nomeTimes[0];
+  document.getElementById('c-nome2').textContent = nomeTimes[1];
+
+  // Placar
+  document.getElementById('g-p1').textContent = dados.p1;
+  document.getElementById('g-p2').textContent = dados.p2;
+
+  // Timer
+  document.getElementById('g-timer').textContent = dados.tempo;
+  document.getElementById('g-timer').classList.remove('urgente');
+  document.getElementById('g-bar').style.width = '100%';
+  document.getElementById('g-bar').style.transition = 'width .8s linear';
+
+  // Rodada
+  document.getElementById('g-rodada').textContent = `Rodada ${dados.rodada} de ${dados.total}`;
+
+  // Pergunta
+  document.getElementById('g-pergunta').textContent = dados.txt;
+
+  // Displays
+  document.getElementById('valor1').textContent = '_';
+  document.getElementById('valor2').textContent = '_';
+  document.getElementById('display1').className = 'calc-display';
+  document.getElementById('display2').className = 'calc-display';
+  document.getElementById('stat1').textContent = '';
+  document.getElementById('stat2').textContent = '';
+
+  // Habilita/desabilita calculadoras conforme papel e equipe
+  const ehProf = (papel === 'professor');
+  document.getElementById('painel1').classList.toggle('inativo', ehProf || minhaEquipe === 2);
+  document.getElementById('painel2').classList.toggle('inativo', ehProf || minhaEquipe === 1);
+
+  // Atualiza corda para posição central
+  atualizarCorda(0);
+  esconderMsg();
+  document.getElementById('fim-jogo').style.display = 'none';
+  mostraTela('tela-jogo');
+  desenharBonecos(0);
+});
+
+socket.on('cg:timer', ({ tempo }) => {
+  document.getElementById('g-timer').textContent = tempo;
+  document.getElementById('g-bar').style.width = `${(tempo / 30) * 100}%`;
+  if (tempo <= 5){
+    document.getElementById('g-timer').classList.add('urgente');
+  }
+});
+
+socket.on('cg:acertou', ({ equipe, nome_jogador, p1, p2, rodada }) => {
+  jogoAtivo = false;
+  entrada   = '';
+
+  // Flash de fundo
+  const fl = document.getElementById('flash');
+  fl.className = `feedback-flash ${equipe === 1 ? 'az-flash' : 'vm-flash'} show`;
+  setTimeout(() => fl.className = 'feedback-flash', 700);
+
+  // Display correto
+  const disp = document.getElementById(`display${equipe}`);
+  const stat = document.getElementById(`stat${equipe}`);
+  disp.classList.add('correto');
+  stat.textContent = '✅';
+
+  // Placar atualizado
+  document.getElementById('g-p1').textContent = p1;
+  document.getElementById('g-p2').textContent = p2;
+
+  // Corda
+  atualizarCorda(equipe);
+  desenharBonecos(equipe === 1 ? -1 : 1);
+
+  // Badge flutuante
+  const b = document.createElement('div');
+  b.className = 'badge-ponto';
+  b.textContent = equipe === 1 ? '🔵 +1 PONTO!' : '🔴 +1 PONTO!';
+  b.style.cssText = `position:fixed;top:35%;${equipe===1?'left:10%':'right:10%'};
+    color:${equipe===1?'#2196F3':'#E53935'};font-size:1.5rem;font-weight:900;
+    pointer-events:none;z-index:70;animation:subir .9s ease-out forwards;`;
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 1000);
+
+  mostrarMsg(
+    equipe === 1 ? '🔵' : '🔴',
+    `${nome_jogador} acertou!`,
+    'Próxima pergunta em 2s...'
+  );
+});
+
+socket.on('cg:errou', () => {
+  if (!minhaEquipe) return;
+  const disp = document.getElementById(`display${minhaEquipe}`);
+  const stat = document.getElementById(`stat${minhaEquipe}`);
+  disp.classList.add('errado');
+  stat.textContent = '❌';
+  setTimeout(() => {
+    disp.classList.remove('errado');
+    stat.textContent = '';
+  }, 600);
+  entrada = '';
+  document.getElementById(`valor${minhaEquipe}`).textContent = '_';
+});
+
+socket.on('cg:tempo_esgotado', ({ p1, p2, rodada }) => {
+  jogoAtivo = false;
+  entrada   = '';
+  document.getElementById('g-p1').textContent = p1;
+  document.getElementById('g-p2').textContent = p2;
+  mostrarMsg('⏰', 'Tempo esgotado!', 'Ninguém pontuou nesta rodada...');
+});
+
+socket.on('cg:fim', ({ p1, p2, vencedor, nome1, nome2 }) => {
+  document.getElementById('g-p1').textContent = p1;
+  document.getElementById('g-p2').textContent = p2;
+
+  const fim = document.getElementById('fim-jogo');
+  let cls, trofeu, nomeVenc;
+  if (vencedor === 1){
+    cls = 'az-win'; trofeu = '🏆';
+    nomeVenc = `🔵 ${nome1.toUpperCase()} VENCEU!`;
+  } else if (vencedor === 2){
+    cls = 'vm-win'; trofeu = '🏆';
+    nomeVenc = `🔴 ${nome2.toUpperCase()} VENCEU!`;
+  } else {
+    cls = 'empate'; trofeu = '🤝'; nomeVenc = 'EMPATE!';
+  }
+  fim.className = cls;
+  fim.style.display = 'flex';
+  document.getElementById('fim-trofeu').textContent = trofeu;
+  document.getElementById('fim-nome').textContent   = nomeVenc;
+  document.getElementById('fim-placar').textContent = `Placar Final: ${p1} × ${p2}`;
+});
+
+// ════════════════════════════════════════════════════════════
+//  INPUT DA CALCULADORA
+// ════════════════════════════════════════════════════════════
+function inp(eq, v){
+  if (!jogoAtivo) return;
+  // Só a equipe correta pode interagir (professor não joga)
+  if (papel === 'professor') return;
+  if (minhaEquipe !== eq) return;
+
+  if (v === '⌫'){
+    entrada = entrada.slice(0, -1);
+  } else if (v === '✓'){
+    if (entrada === '') return;
+    socket.emit('cg:resposta', { codigo: codigoSala, valor: parseInt(entrada) });
+    return;
+  } else {
+    if (entrada.length < 5) entrada += v;
+  }
+  document.getElementById(`valor${eq}`).textContent = entrada || '_';
+}
+
+// ════════════════════════════════════════════════════════════
+//  DESENHO — CORDA E BONECOS (Canvas)
+// ════════════════════════════════════════════════════════════
+const FAIXAS = 5; // quanto a corda desloca por ponto
+let rodOffset = 0; // posição atual da corda
+
+function atualizarCorda(equipeVencedora){
+  if (equipeVencedora === 1) rodOffset = Math.max(rodOffset - FAIXAS, -25);
+  else if (equipeVencedora === 2) rodOffset = Math.min(rodOffset + FAIXAS, 25);
+  else rodOffset = 0;
+  desenharBonecos(rodOffset < 0 ? -1 : rodOffset > 0 ? 1 : 0);
+}
+
+function desenharBonecos(dir){
+  const cv = document.getElementById('cvArena');
+  if (!cv) return;
+  const W = cv.parentElement.clientWidth;
+  const H = cv.parentElement.clientHeight;
+  cv.width  = W;
+  cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const cx   = W / 2 + rodOffset * (W / 60);
+  const rope_y = H / 2;
+  const passo  = Math.min(W / 12, 36); // espaço entre bonecos
+
+  // ── Corda ──────────────────────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(0, rope_y);
+  ctx.lineTo(W, rope_y);
+  ctx.strokeStyle = '#8B6914';
+  ctx.lineWidth   = 8;
+  // Listras na corda
+  for (let x = 0; x < W; x += 18){
+    ctx.beginPath();
+    ctx.moveTo(x, rope_y - 3);
+    ctx.lineTo(x + 10, rope_y + 3);
+    ctx.strokeStyle = '#A0791A';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  ctx.restore();
+  // Corda principal
+  ctx.beginPath();
+  ctx.moveTo(0, rope_y);
+  ctx.lineTo(W, rope_y);
+  ctx.strokeStyle = '#C8960C';
+  ctx.lineWidth   = 5;
+  ctx.stroke();
+
+  // Marcador central
+  ctx.beginPath();
+  ctx.arc(cx, rope_y, 8, 0, Math.PI * 2);
+  ctx.fillStyle   = '#FFD700';
+  ctx.fill();
+  ctx.strokeStyle = '#B8960C';
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+
+  // Linha divisória
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 0);
+  ctx.lineTo(W / 2, H);
+  ctx.strokeStyle = 'rgba(255,255,255,.12)';
+  ctx.lineWidth   = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── Bonecos Equipe 1 (Azul) — ficam no centro-esquerda ──
+  const bonecos = 3;
+  for (let i = 0; i < bonecos; i++){
+    const bx = cx - passo * (i + 1.2);
+    desenharBoneco(ctx, bx, rope_y, '#2196F3', '#1565C0', i === 0);
+  }
+
+  // ── Bonecos Equipe 2 (Vermelho) — ficam no centro-direita ──
+  for (let i = 0; i < bonecos; i++){
+    const bx = cx + passo * (i + 1.2);
+    desenharBoneco(ctx, bx, rope_y, '#E53935', '#B71C1C', i === 0, true);
+  }
+}
+
+/**
+ * Desenha um boneco de palito segurando a corda no meio
+ * cx, cy = posição X e Y do PONTO DE CONTATO COM A CORDA (mão)
+ */
+function desenharBoneco(ctx, cx, cy, cor, corEscura, lider, invertido){
+  const s    = 1;             // escala (1 = tamanho normal)
+  const bracoY = cy;          // braço na altura da corda
+  const torsoH = 22 * s;
+  const corpoY = bracoY + torsoH;  // cintura
+  const cabecaR = 8 * s;
+  const cabecaY = bracoY - 10 * s; // cabeça ACIMA dos braços
+
+  ctx.save();
+  ctx.lineWidth   = lider ? 3 : 2;
+  ctx.strokeStyle = cor;
+  ctx.fillStyle   = cor;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+
+  // Braço (horizontal, segurando a corda)
+  const bracoLen = 14 * s;
+  ctx.beginPath();
+  ctx.moveTo(cx, bracoY);
+  ctx.lineTo(invertido ? cx + bracoLen : cx - bracoLen, bracoY);
+  ctx.stroke();
+
+  // Torso (desce do braço)
+  ctx.beginPath();
+  ctx.moveTo(cx, bracoY);
+  ctx.lineTo(cx, corpoY);
+  ctx.stroke();
+
+  // Pernas
+  const pernaH = 16 * s;
+  const pernaAb = 10 * s;
+  ctx.beginPath();
+  ctx.moveTo(cx, corpoY);
+  ctx.lineTo(cx - pernaAb, corpoY + pernaH);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, corpoY);
+  ctx.lineTo(cx + pernaAb, corpoY + pernaH);
+  ctx.stroke();
+
+  // Cabeça (acima dos braços)
+  ctx.beginPath();
+  ctx.arc(cx, cabecaY, cabecaR, 0, Math.PI * 2);
+  ctx.fillStyle = cor;
+  ctx.fill();
+
+  // Rosto simples
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(cx - 2.5*s, cabecaY - 1*s, 1.5*s, 0, Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx + 2.5*s, cabecaY - 1*s, 1.5*s, 0, Math.PI*2);
+  ctx.fill();
+
+  // Estrela/distintivo para líder
+  if (lider){
+    ctx.fillStyle = '#FFD700';
+    ctx.font = `${10*s}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('★', cx, cabecaY - cabecaR - 2);
+  }
+
+  ctx.restore();
+}
+
+// ════════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════════
+function mostrarMsg(icone, titulo, sub){
+  document.getElementById('msg-icone').textContent  = icone;
+  document.getElementById('msg-titulo').textContent = titulo;
+  document.getElementById('msg-sub').textContent    = sub;
+  document.getElementById('msg-overlay').classList.add('show');
+  setTimeout(esconderMsg, 2200);
+}
+
+function esconderMsg(){
+  document.getElementById('msg-overlay').classList.remove('show');
+}
+
+// ── Desconexão ────────────────────────────────────────────────
+socket.on('disconnect', () => {
+  if (document.querySelector('.tela.ativa')?.id === 'tela-jogo'){
+    mostrarMsg('⚡','Conexão perdida','Reconectando...');
+  }
+});
+socket.on('connect', () => {
+  // Ao reconectar, tenta reentrar na sala
+  if (codigoSala && nomeJogador && minhaEquipe){
+    socket.emit('cg:entrar_sala', {
+      codigo: codigoSala, nome: nomeJogador, equipe: minhaEquipe,
+    });
+  }
+});
+
+// ── Redimensiona canvas quando tela do jogo fica ativa ────────
+const observer = new MutationObserver(() => {
+  if (document.getElementById('tela-jogo').classList.contains('ativa')){
+    desenharBonecos(rodOffset < 0 ? -1 : rodOffset > 0 ? 1 : 0);
+  }
+});
+observer.observe(document.getElementById('tela-jogo'), { attributes: true, attributeFilter: ['class'] });
+window.addEventListener('resize', () => desenharBonecos(0));
+</script>
+</body>
+</html>
