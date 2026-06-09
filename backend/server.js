@@ -85,6 +85,7 @@ io.on('connection', (socket) => {
 });
 app.set('io', io);
 require('./routes/quizLive')(io);
+require('./caboGuerraOnline')(io); // Cabo de Guerra Multiplayer — cada aluno no seu tablet
 
 initDatabase().catch(console.error);
 
