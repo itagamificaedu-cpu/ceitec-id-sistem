@@ -65,6 +65,7 @@ const SECOES_ESTATICAS = [
       { path: '/quiz',           label: 'Quiz Interativo',  icon: '🎯' },
       { path: '/cabo-de-guerra', label: 'Cabo de Guerra',   icon: '🪢' },
       { href: '/cabo-de-guerra.html', label: 'Batalha de Calculadoras', icon: '🧮' },
+      { href: '/cabo-de-guerra-online.html', label: 'Batalha Online 🔥', icon: '🪢' },
     ]
   },
   {
@@ -301,6 +302,7 @@ export default function Navbar() {
             { path: '/quiz',           label: 'Quiz Interativo',  icon: '🎯' },
             { path: '/cabo-de-guerra', label: 'Cabo de Guerra',   icon: '🪢' },
             { href: '/cabo-de-guerra.html', label: 'Batalha de Calculadoras', icon: '🧮' },
+            { href: '/cabo-de-guerra-online.html', label: 'Batalha Online 🔥', icon: '🪢' },
           ]
         },
         {

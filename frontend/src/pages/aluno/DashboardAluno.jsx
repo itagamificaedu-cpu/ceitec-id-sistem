@@ -218,6 +218,34 @@ export default function DashboardAluno() {
           </div>
         )}
 
+        {/* Batalha de Calculadoras Online — acesso rápido */}
+        <a
+          href="/cabo-de-guerra-online.html"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            width: '100%',
+            maxWidth: 380,
+            background: 'linear-gradient(135deg, #1565C0, #B71C1C)',
+            border: 'none',
+            borderRadius: 18,
+            padding: '16px 24px',
+            color: '#fff',
+            fontWeight: 900,
+            fontSize: 17,
+            cursor: 'pointer',
+            textDecoration: 'none',
+            boxShadow: '0 4px 24px rgba(33,150,243,.3)',
+            letterSpacing: 0.5,
+          }}
+        >
+          <span style={{ fontSize: 24 }}>🪢</span>
+          <span>Batalha de Calculadoras</span>
+          <span style={{ fontSize: 18, opacity: .7 }}>🔥</span>
+        </a>
+
         {/* Identificação do aluno */}
         {alunoLocal.codigo && (
           <div style={{
