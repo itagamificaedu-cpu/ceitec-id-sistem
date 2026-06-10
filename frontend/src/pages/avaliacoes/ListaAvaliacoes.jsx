@@ -62,7 +62,14 @@ export default function ListaAvaliacoes() {
                 <div key={av.id} className="bg-white rounded-xl shadow-md p-5 flex items-center gap-4 flex-wrap">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl flex-shrink-0">📝</div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-textMain">{av.titulo}</p>
+                    <p className="font-semibold text-textMain">
+                      {av.titulo}
+                      {av.bncc_codigo && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold align-middle" style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
+                          📚 {av.bncc_codigo}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-sm text-gray-500">{av.disciplina} • {av.tipo} • {av.total_questoes} questões</p>
                     <p className="text-xs text-gray-400 mt-0.5">{av.turma_nome} {av.data_aplicacao ? `• ${new Date(av.data_aplicacao + 'T12:00:00').toLocaleDateString('pt-BR')}` : ''}</p>
                   </div>

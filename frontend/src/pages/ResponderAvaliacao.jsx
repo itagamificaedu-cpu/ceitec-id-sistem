@@ -23,8 +23,26 @@ export default function ResponderAvaliacao() {
     setRespostas(r => ({ ...r, [questao_id]: letra }))
   }
 
+  // Dissertativa: texto livre
+  function escreverTexto(questao_id, texto) {
+    setRespostas(r => ({ ...r, [questao_id]: texto }))
+  }
+
+  // Associação: liga um item da coluna A a um item da coluna B
+  function associar(questao_id, itemA, itemB) {
+    setRespostas(r => ({ ...r, [questao_id]: { ...(r[questao_id] || {}), [itemA]: itemB } }))
+  }
+
+  // Verifica se a questão está completamente respondida (por tipo)
+  function respondida(q) {
+    const r = respostas[q.id]
+    if (q.tipo_questao === 'dissertativa') return typeof r === 'string' && r.trim().length > 0
+    if (q.tipo_questao === 'associacao')   return (q.coluna_a || []).every(a => r?.[a])
+    return !!r
+  }
+
   async function enviar() {
-    const faltando = dados.questoes.filter(q => !respostas[q.id])
+    const faltando = dados.questoes.filter(q => !respondida(q))
     if (faltando.length > 0) {
       alert(`Responda todas as questões antes de enviar. Faltam ${faltando.length}.`)
       return
@@ -34,10 +52,12 @@ export default function ResponderAvaliacao() {
       const resp = await axios.post(`${API}/portal/responder-avaliacao`, {
         codigo,
         avaliacao_id: parseInt(avaliacao_id),
-        respostas: Object.entries(respostas).map(([questao_id, resposta_marcada]) => ({
-          questao_id: parseInt(questao_id),
-          resposta_marcada,
-        })),
+        respostas: dados.questoes.map(q => {
+          const r = respostas[q.id]
+          if (q.tipo_questao === 'dissertativa') return { questao_id: q.id, resposta_texto: r }
+          if (q.tipo_questao === 'associacao')   return { questao_id: q.id, associacoes: r }
+          return { questao_id: q.id, resposta_marcada: r }
+        }),
       })
       setResultado(resp.data)
     } catch (e) {
@@ -85,6 +105,11 @@ export default function ResponderAvaliacao() {
             <span style={{ color: '#6b7280', fontSize: '.85rem' }}>ItagGame</span>
           </div>
         </div>
+        {resultado.pendentes > 0 && (
+          <div style={{ background: '#fefce8', border: '1px solid #fde68a', borderRadius: 10, padding: '.75rem 1rem', marginBottom: '1rem', color: '#854d0e', fontSize: '.85rem', fontWeight: 600 }}>
+            ✍️ {resultado.pendentes} questão(ões) de resposta livre aguardando correção do professor — sua nota pode aumentar!
+          </div>
+        )}
         <button style={s.btn} onClick={() => navigate(`/aluno/${codigo}`)}>Voltar ao Meu Painel</button>
       </div>
     </div>
@@ -120,8 +145,66 @@ export default function ResponderAvaliacao() {
 
           return (
             <div key={q.id} style={s.questao}>
-              <div style={s.questaoNum}>Questão {i + 1}</div>
+              <div style={s.questaoNum}>
+                Questão {i + 1}
+                {q.tipo_questao === 'dissertativa' && <span style={{ marginLeft: 8, color: '#92400e' }}>✍️ Resposta livre</span>}
+                {q.tipo_questao === 'associacao' && <span style={{ marginLeft: 8, color: '#3730a3' }}>🔗 Associação</span>}
+              </div>
               <p style={s.enunciado}>{q.enunciado}</p>
+
+              {/* ── DISSERTATIVA: texto livre ── */}
+              {q.tipo_questao === 'dissertativa' && (
+                ja_respondeu ? (
+                  <div style={{ background: '#f9fafb', border: '2px solid #e5e7eb', borderRadius: 8, padding: '.75rem 1rem', color: '#374151', whiteSpace: 'pre-wrap' }}>
+                    {resp_salvas?.find(r => r.questao_id === q.id)?.resposta_texto || '—'}
+                    <div style={{ marginTop: '.5rem', fontSize: '.75rem', color: '#92400e', fontWeight: 700 }}>
+                      ⏳ Aguardando correção do professor
+                    </div>
+                  </div>
+                ) : (
+                  <textarea
+                    rows={5}
+                    placeholder="Escreva sua resposta aqui..."
+                    value={respostas[q.id] || ''}
+                    onChange={e => escreverTexto(q.id, e.target.value)}
+                    style={{ width: '100%', border: '2px solid #e5e7eb', borderRadius: 8, padding: '.75rem 1rem', fontFamily: 'inherit', fontSize: '.9rem', resize: 'vertical', boxSizing: 'border-box' }}
+                  />
+                )
+              )}
+
+              {/* ── ASSOCIAÇÃO: ligar colunas (toque, mobile-first) ── */}
+              {q.tipo_questao === 'associacao' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                  {(q.coluna_a || []).map(itemA => {
+                    const respSalvaAssoc = ja_respondeu
+                      ? (() => { try { return JSON.parse(resp_salvas?.find(r => r.questao_id === q.id)?.resposta_marcada || '{}') } catch { return {} } })()
+                      : null
+                    const escolhido = ja_respondeu ? respSalvaAssoc?.[itemA] : respostas[q.id]?.[itemA]
+                    return (
+                      <div key={itemA} style={{ background: '#f9fafb', border: '2px solid #e5e7eb', borderRadius: 8, padding: '.6rem .75rem' }}>
+                        <div style={{ fontWeight: 700, color: '#1e3a5f', fontSize: '.9rem', marginBottom: '.4rem' }}>{itemA}</div>
+                        {ja_respondeu ? (
+                          <div style={{ fontSize: '.85rem', color: '#374151' }}>↳ {escolhido || '—'}</div>
+                        ) : (
+                          <select
+                            value={escolhido || ''}
+                            onChange={e => associar(q.id, itemA, e.target.value)}
+                            style={{ width: '100%', border: escolhido ? '2px solid #3b82f6' : '2px solid #e5e7eb', borderRadius: 8, padding: '.5rem .75rem', fontFamily: 'inherit', fontSize: '.85rem', background: escolhido ? '#dbeafe' : '#fff', color: '#1e3a5f', boxSizing: 'border-box' }}
+                          >
+                            <option value="">Toque para escolher...</option>
+                            {(q.coluna_b || []).map(itemB => (
+                              <option key={itemB} value={itemB}>{itemB}</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* ── MÚLTIPLA ESCOLHA (modelo original) ── */}
+              {(!q.tipo_questao || q.tipo_questao === 'multipla') && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
                 {['a', 'b', 'c', 'd'].filter(l => q[`alternativa_${l}`]).map(letra => {
                   const selecionada = marcada?.toLowerCase() === letra
@@ -148,6 +231,7 @@ export default function ResponderAvaliacao() {
                   )
                 })}
               </div>
+              )}
               {ja_respondeu && gabarito?.explicacao && (
                 <div style={s.explicacao}>💡 {gabarito.explicacao}</div>
               )}
@@ -158,7 +242,7 @@ export default function ResponderAvaliacao() {
         {/* Botão enviar */}
         {!ja_respondeu && (
           <button style={{ ...s.btn, width: '100%', marginTop: '1rem' }} onClick={enviar} disabled={enviando}>
-            {enviando ? 'Enviando...' : `📤 Enviar Respostas (${Object.keys(respostas).length}/${questoes.length})`}
+            {enviando ? 'Enviando...' : `📤 Enviar Respostas (${questoes.filter(q => respondida(q)).length}/${questoes.length})`}
           </button>
         )}
       </div>

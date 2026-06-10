@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { autenticar } = require('../middleware/auth');
 const { gerarPlanoAula } = require('../ia/planoAula');
-const { gerarQuestoes } = require('../ia/criadorQuestoes');
+const { gerarQuestoes, sugerirCorrecao } = require('../ia/criadorQuestoes');
 const { interpretarFolhaResposta, corrigirRespostas } = require('../ia/corretorProvas');
 const { gerarDiagnostico, gerarConteudo } = require('../ia/diagnosticoAluno');
 const db = require('../db');
@@ -40,6 +40,20 @@ router.post('/questoes', async (req, res) => {
   try {
     const questoes = await gerarQuestoes(req.body);
     res.json({ questoes });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+/* ── POST /ia/sugerir-correcao — IA sugere nota para resposta dissertativa ──
+   A sugestão é apoio ao professor: a decisão final de nota é sempre dele. */
+router.post('/sugerir-correcao', async (req, res) => {
+  if (!checkApiKey(res)) return;
+  try {
+    const { enunciado, criterios, resposta_aluno, pontos_max } = req.body;
+    if (!enunciado || !resposta_aluno) return res.status(400).json({ erro: 'enunciado e resposta_aluno são obrigatórios' });
+    const sugestao = await sugerirCorrecao({ enunciado, criterios, resposta_aluno, pontos_max });
+    res.json(sugestao);
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }

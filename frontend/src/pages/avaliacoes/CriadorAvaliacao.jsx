@@ -234,6 +234,25 @@ function BotoesMedia({ imgKey, pdfKey, dados, onImg, onPdf, tamanho = 'normal' }
   )
 }
 
+// ── Componentes curriculares da BNCC — Fundamental Anos Finais (8º e 9º) ─────
+const BNCC_COMPONENTES = [
+  { nome: 'Língua Portuguesa', sigla: 'LP' },
+  { nome: 'Matemática',        sigla: 'MA' },
+  { nome: 'Ciências',          sigla: 'CI' },
+  { nome: 'História',          sigla: 'HI' },
+  { nome: 'Geografia',         sigla: 'GE' },
+  { nome: 'Língua Inglesa',    sigla: 'LI' },
+  { nome: 'Arte',              sigla: 'AR' },
+  { nome: 'Educação Física',   sigla: 'EF' },
+]
+
+// Rótulos e ícones dos tipos de questão
+const TIPOS_QUESTAO = {
+  multipla:     { label: 'Múltipla Escolha', icone: '🔘' },
+  dissertativa: { label: 'Resposta Livre',   icone: '✍️' },
+  associacao:   { label: 'Associação',       icone: '🔗' },
+}
+
 // ── Componente principal ──────────────────────────────────────────────────────
 export default function CriadorAvaliacao() {
   const { id } = useParams()
@@ -241,7 +260,8 @@ export default function CriadorAvaliacao() {
   const editando = !!id
 
   const [turmas,    setTurmas]    = useState([])
-  const [form,      setForm]      = useState({ titulo: '', disciplina: '', tipo: 'prova', turma_id: '', data_aplicacao: '', instrucoes: '' })
+  const [form,      setForm]      = useState({ titulo: '', disciplina: '', tipo: 'prova', turma_id: '', data_aplicacao: '', instrucoes: '', bncc_codigo: '', bncc_ano: '', bncc_componente: '' })
+  const [bnccAtivo, setBnccAtivo] = useState(false)
   const [questoes,  setQuestoes]  = useState([])
   const [salvando,  setSalvando]  = useState(false)
   const [erro,      setErro]      = useState('')
@@ -251,6 +271,7 @@ export default function CriadorAvaliacao() {
   const [iaTema,    setIaTema]    = useState('')
   const [iaNivel,   setIaNivel]   = useState('médio')
   const [iaQtd,     setIaQtd]     = useState(5)
+  const [iaTipo,    setIaTipo]    = useState('multipla')
   const [iaGerando, setIaGerando] = useState(false)
   const [iaErro,    setIaErro]    = useState('')
 
@@ -258,9 +279,11 @@ export default function CriadorAvaliacao() {
     api.get('/turmas').then(({ data }) => setTurmas(data))
     if (editando) {
       api.get(`/avaliacoes/${id}`).then(({ data }) => {
-        setForm({ titulo: data.titulo || '', disciplina: data.disciplina || '', tipo: data.tipo || 'prova', turma_id: data.turma_id || '', data_aplicacao: (data.data_aplicacao || '').slice(0, 10), instrucoes: data.instrucoes || '' })
+        setForm({ titulo: data.titulo || '', disciplina: data.disciplina || '', tipo: data.tipo || 'prova', turma_id: data.turma_id || '', data_aplicacao: (data.data_aplicacao || '').slice(0, 10), instrucoes: data.instrucoes || '', bncc_codigo: data.bncc_codigo || '', bncc_ano: data.bncc_ano || '', bncc_componente: data.bncc_componente || '' })
+        if (data.bncc_codigo) setBnccAtivo(true)
         const qs = (data.questoes || []).map(q => ({
           ...q,
+          tipo_questao: q.tipo_questao || 'multipla',
           alternativas: Array.isArray(q.alternativas) && q.alternativas.some(a => a)
             ? q.alternativas
             : [q.alternativa_a || '', q.alternativa_b || '', q.alternativa_c || '', q.alternativa_d || ''],
@@ -269,19 +292,37 @@ export default function CriadorAvaliacao() {
           imagem_pdf: q.imagem_pdf || null,
           alt_imagens: q.alt_imagens || ['', '', '', ''],
           alt_pdfs:    q.alt_pdfs    || ['', '', '', ''],
+          criterios_correcao: q.criterios_correcao || '',
+          pares_associacao:   q.pares_associacao   || [],
         }))
         setQuestoes(qs)
       })
     }
   }, [id])
 
-  function addQuestao() {
+  function addQuestao(tipo = 'multipla') {
     setQuestoes(q => [...q, {
+      tipo_questao: tipo,
       enunciado: '', alternativas: ['', '', '', ''], resposta_correta: 0, pontos: 1,
       imagem: null, imagem_pdf: null,
       alt_imagens: ['', '', '', ''],
       alt_pdfs:    ['', '', '', ''],
+      criterios_correcao: '',
+      pares_associacao: tipo === 'associacao' ? [{ a: '', b: '' }, { a: '', b: '' }, { a: '', b: '' }, { a: '', b: '' }] : [],
     }])
+  }
+
+  // ── Pares de associação (coluna A ↔ coluna B) ──
+  function updatePar(qIdx, pIdx, lado, valor) {
+    setQuestoes(q => q.map((x, i) => i === qIdx
+      ? { ...x, pares_associacao: x.pares_associacao.map((p, j) => j === pIdx ? { ...p, [lado]: valor } : p) }
+      : x))
+  }
+  function addPar(qIdx) {
+    setQuestoes(q => q.map((x, i) => i === qIdx ? { ...x, pares_associacao: [...x.pares_associacao, { a: '', b: '' }] } : x))
+  }
+  function removePar(qIdx, pIdx) {
+    setQuestoes(q => q.map((x, i) => i === qIdx ? { ...x, pares_associacao: x.pares_associacao.filter((_, j) => j !== pIdx) } : x))
   }
 
   function updateQuestao(idx, campo, valor) {
@@ -314,12 +355,23 @@ export default function CriadorAvaliacao() {
     if (!iaTema) return setIaErro('Informe o tema')
     setIaErro(''); setIaGerando(true)
     try {
-      const { data } = await api.post('/ia/questoes', { tema: iaTema, nivel: iaNivel, quantidade: iaQtd, disciplina: form.disciplina })
+      const { data } = await api.post('/ia/questoes', {
+        tema: iaTema, nivel: iaNivel, quantidade: iaQtd, disciplina: form.disciplina,
+        tipo: iaTipo,
+        bncc_codigo: bnccAtivo ? form.bncc_codigo : '',
+        bncc_ano: bnccAtivo ? form.bncc_ano : '',
+        bncc_componente: bnccAtivo ? form.bncc_componente : '',
+      })
       const novas = data.questoes.map(q => ({
-        enunciado: q.enunciado, alternativas: q.alternativas,
+        tipo_questao: q.tipo_questao || iaTipo,
+        enunciado: q.enunciado,
+        alternativas: q.alternativas || ['', '', '', ''],
         resposta_correta: q.resposta_correta ?? 0, pontos: 1,
+        explicacao: q.explicacao || '',
         imagem: null, imagem_pdf: null,
         alt_imagens: ['', '', '', ''], alt_pdfs: ['', '', '', ''],
+        criterios_correcao: q.criterios_correcao || '',
+        pares_associacao:   q.pares_associacao   || [],
       }))
       setQuestoes(prev => [...prev, ...novas])
       setIaAberto(false)
@@ -334,10 +386,24 @@ export default function CriadorAvaliacao() {
     setErro('')
     if (!form.titulo || !form.turma_id) return setErro('Título e turma são obrigatórios')
     if (questoes.length === 0) return setErro('Adicione pelo menos uma questão')
+    if (bnccAtivo && !form.bncc_codigo) return setErro('Informe o código da habilidade BNCC ou desative o vínculo BNCC')
+    for (let i = 0; i < questoes.length; i++) {
+      const q = questoes[i]
+      if (q.tipo_questao === 'associacao') {
+        const validos = (q.pares_associacao || []).filter(p => p.a?.trim() && p.b?.trim())
+        if (validos.length < 2) return setErro(`Questão ${i + 1} (Associação): preencha pelo menos 2 pares completos`)
+      }
+    }
+    // Limpa pares vazios e remove campos BNCC quando o vínculo está desativado
+    const questoesLimpas = questoes.map(q => ({
+      ...q,
+      pares_associacao: (q.pares_associacao || []).filter(p => p.a?.trim() && p.b?.trim()),
+    }))
+    const dados = bnccAtivo ? { ...form } : { ...form, bncc_codigo: '', bncc_ano: '', bncc_componente: '' }
     setSalvando(true)
     try {
-      if (editando) await api.put(`/avaliacoes/${id}`, { ...form, questoes })
-      else          await api.post('/avaliacoes',        { ...form, questoes })
+      if (editando) await api.put(`/avaliacoes/${id}`, { ...dados, questoes: questoesLimpas })
+      else          await api.post('/avaliacoes',        { ...dados, questoes: questoesLimpas })
       navigate('/avaliacoes')
     } catch (err) {
       const msg = err.response?.data?.erro
@@ -401,16 +467,69 @@ export default function CriadorAvaliacao() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Instruções</label>
               <textarea className="input-field resize-none" rows={2} value={form.instrucoes} onChange={e => setForm(f => ({ ...f, instrucoes: e.target.value }))} placeholder="Instruções para os alunos..." />
             </div>
+
+            {/* ── Vínculo com habilidade da BNCC ── */}
+            <div style={{ background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 12, padding: '12px 14px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: 700, fontSize: 14, color: '#166534' }}>
+                <input type="checkbox" checked={bnccAtivo} onChange={e => setBnccAtivo(e.target.checked)} style={{ width: 16, height: 16, accentColor: '#00c264' }} />
+                📚 Vincular habilidade da BNCC
+                <span style={{ fontWeight: 400, fontSize: 12, color: '#16a34a' }}>(Fundamental Anos Finais — 8º e 9º ano)</span>
+              </label>
+
+              {bnccAtivo && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" style={{ marginTop: 12 }}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ano *</label>
+                    <select className="input-field" value={form.bncc_ano} onChange={e => setForm(f => ({ ...f, bncc_ano: e.target.value }))}>
+                      <option value="">Selecione...</option>
+                      <option value="8">8º ano</option>
+                      <option value="9">9º ano</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Componente *</label>
+                    <select className="input-field" value={form.bncc_componente} onChange={e => setForm(f => ({ ...f, bncc_componente: e.target.value }))}>
+                      <option value="">Selecione...</option>
+                      {BNCC_COMPONENTES.map(c => <option key={c.sigla} value={c.nome}>{c.nome}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Código da habilidade *</label>
+                    <input
+                      className="input-field"
+                      value={form.bncc_codigo}
+                      onChange={e => setForm(f => ({ ...f, bncc_codigo: e.target.value.toUpperCase().replace(/\s/g, '') }))}
+                      placeholder={`Ex: EF0${form.bncc_ano || '9'}${BNCC_COMPONENTES.find(c => c.nome === form.bncc_componente)?.sigla || 'MA'}05`}
+                      maxLength={10}
+                    />
+                  </div>
+                  <p className="sm:col-span-3 text-xs" style={{ color: '#16a34a', margin: 0 }}>
+                    💡 O código aparece na atividade e nos relatórios de desempenho. Consulte as habilidades em basenacionalcomum.mec.gov.br
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Questões */}
           <div className="bg-white rounded-xl shadow-md p-5 mb-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-textMain">Questões ({questoes.length})</h3>
-              <div className="flex gap-2">
-                <button onClick={() => setIaAberto(true)} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200">🤖 Gerar com IA</button>
-                <button onClick={addQuestao} className="btn-primary text-sm">+ Adicionar</button>
-              </div>
+              <button onClick={() => setIaAberto(true)} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200">🤖 Gerar com IA</button>
+            </div>
+
+            {/* Botões de adicionar por tipo de questão */}
+            <div className="flex gap-2 flex-wrap mb-4">
+              {Object.entries(TIPOS_QUESTAO).map(([tipo, info]) => (
+                <button key={tipo} onClick={() => addQuestao(tipo)} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                  background: '#eff6ff', border: '1.5px dashed #1a3fd4',
+                  color: '#1a3fd4', cursor: 'pointer'
+                }}>
+                  {info.icone} + {info.label}
+                </button>
+              ))}
             </div>
 
             {/* Modal IA */}
@@ -420,9 +539,22 @@ export default function CriadorAvaliacao() {
                   <h3 className="font-bold text-textMain mb-4">🤖 Gerar Questões com IA</h3>
                   <div className="space-y-3">
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de questão</label>
+                      <select className="input-field" value={iaTipo} onChange={e => setIaTipo(e.target.value)}>
+                        {Object.entries(TIPOS_QUESTAO).map(([tipo, info]) => (
+                          <option key={tipo} value={tipo}>{info.icone} {info.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Tema / Conteúdo *</label>
                       <input className="input-field" value={iaTema} onChange={e => setIaTema(e.target.value)} placeholder="Ex: Equações do 2º grau" />
                     </div>
+                    {bnccAtivo && form.bncc_codigo && (
+                      <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#166534', fontWeight: 600 }}>
+                        📚 As questões serão alinhadas à habilidade BNCC <strong>{form.bncc_codigo}</strong>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Nível</label>
@@ -475,7 +607,16 @@ export default function CriadorAvaliacao() {
 
                     {/* Cabeçalho da questão */}
                     <div className="flex items-center justify-between mb-3">
-                      <span className="font-medium text-sm" style={{ color: '#111827' }}>Questão {qi + 1}</span>
+                      <span className="font-medium text-sm" style={{ color: '#111827' }}>
+                        Questão {qi + 1}
+                        <span style={{
+                          marginLeft: 8, padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800,
+                          background: q.tipo_questao === 'dissertativa' ? '#fef3c7' : q.tipo_questao === 'associacao' ? '#e0e7ff' : '#dbeafe',
+                          color:      q.tipo_questao === 'dissertativa' ? '#92400e' : q.tipo_questao === 'associacao' ? '#3730a3' : '#1d4ed8',
+                        }}>
+                          {TIPOS_QUESTAO[q.tipo_questao || 'multipla'].icone} {TIPOS_QUESTAO[q.tipo_questao || 'multipla'].label}
+                        </span>
+                      </span>
                       <div className="flex items-center gap-2">
                         <label className="text-xs" style={{ color: '#374151' }}>Pontos:</label>
                         <input className="w-16 text-center border rounded-lg px-2 py-1 text-sm" type="number" min={0.5} step={0.5} value={q.pontos} onChange={e => updateQuestao(qi, 'pontos', Number(e.target.value))} />
@@ -511,7 +652,65 @@ export default function CriadorAvaliacao() {
                       </div>
                     </div>
 
-                    {/* ── ALTERNATIVAS ── */}
+                    {/* ── DISSERTATIVA: critérios de correção ── */}
+                    {q.tipo_questao === 'dissertativa' && (
+                      <div style={{ marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+                          Critérios de correção
+                        </div>
+                        <textarea
+                          className="input-field resize-none"
+                          rows={4}
+                          placeholder={"Ex:\n- Cita pelo menos 2 causas do fenômeno\n- Usa vocabulário adequado\n- Apresenta conclusão coerente"}
+                          value={q.criterios_correcao}
+                          onChange={e => updateQuestao(qi, 'criterios_correcao', e.target.value)}
+                        />
+                        <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
+                          ✍️ O aluno responde em texto livre. Você corrige manualmente usando estes critérios — com opção de sugestão da IA.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* ── ASSOCIAÇÃO: pares coluna A ↔ coluna B ── */}
+                    {q.tipo_questao === 'associacao' && (
+                      <div style={{ marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
+                          Pares de associação
+                        </div>
+                        <div className="space-y-2">
+                          {(q.pares_associacao || []).map((par, pi) => (
+                            <div key={pi} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <input
+                                className="input-field flex-1"
+                                placeholder={`Coluna A — item ${pi + 1}`}
+                                value={par.a}
+                                onChange={e => updatePar(qi, pi, 'a', e.target.value)}
+                                style={{ marginBottom: 0 }}
+                              />
+                              <span style={{ color: '#1a3fd4', fontWeight: 900, flexShrink: 0 }}>↔</span>
+                              <input
+                                className="input-field flex-1"
+                                placeholder={`Coluna B — item ${pi + 1}`}
+                                value={par.b}
+                                onChange={e => updatePar(qi, pi, 'b', e.target.value)}
+                                style={{ marginBottom: 0 }}
+                              />
+                              <button type="button" onClick={() => removePar(qi, pi)} className="text-danger hover:text-red-700 text-sm flex-shrink-0">✕</button>
+                            </div>
+                          ))}
+                        </div>
+                        <button type="button" onClick={() => addPar(qi)} style={{
+                          marginTop: 8, padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                          background: '#eff6ff', border: '1.5px dashed #1a3fd4', color: '#1a3fd4', cursor: 'pointer'
+                        }}>+ Adicionar par</button>
+                        <p className="text-xs mt-2" style={{ color: '#9ca3af' }}>
+                          🔗 O aluno verá a coluna B embaralhada e precisará ligar cada item. Correção automática com crédito parcial.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* ── ALTERNATIVAS (só múltipla escolha) ── */}
+                    {(q.tipo_questao || 'multipla') === 'multipla' && (<>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
                       Alternativas
                     </div>
@@ -567,6 +766,7 @@ export default function CriadorAvaliacao() {
                       🖼️ Imagem: JPG/PNG até 5MB &nbsp;·&nbsp;
                       📄 PDF: qualquer tamanho até 50MB, escolha a página
                     </p>
+                    </>)}
                   </div>
                 ))}
               </div>

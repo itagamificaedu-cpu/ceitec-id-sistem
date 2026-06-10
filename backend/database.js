@@ -30,6 +30,16 @@ async function initDatabase() {
     `ALTER TABLE professores ADD COLUMN IF NOT EXISTS codigo_mestre TEXT`,
     `ALTER TABLE almoco_registros  ADD COLUMN IF NOT EXISTS escola_id INTEGER`,
     `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS trocar_senha INTEGER DEFAULT 0`,
+    // ── Novos modelos de atividade: BNCC + Dissertativa + Associação ──
+    `ALTER TABLE avaliacoes ADD COLUMN IF NOT EXISTS bncc_codigo TEXT`,
+    `ALTER TABLE avaliacoes ADD COLUMN IF NOT EXISTS bncc_ano TEXT`,
+    `ALTER TABLE avaliacoes ADD COLUMN IF NOT EXISTS bncc_componente TEXT`,
+    `ALTER TABLE questoes ADD COLUMN IF NOT EXISTS tipo_questao TEXT DEFAULT 'multipla'`,
+    `ALTER TABLE questoes ADD COLUMN IF NOT EXISTS criterios_correcao TEXT`,
+    `ALTER TABLE questoes ADD COLUMN IF NOT EXISTS pares_associacao TEXT`,
+    `ALTER TABLE respostas_alunos ADD COLUMN IF NOT EXISTS resposta_texto TEXT`,
+    `ALTER TABLE respostas_alunos ADD COLUMN IF NOT EXISTS corrigida INTEGER DEFAULT 1`,
+    `ALTER TABLE respostas_alunos ADD COLUMN IF NOT EXISTS feedback_professor TEXT`,
     // Perfil especial do dono da plataforma ITA (acesso global — não é escola contratante)
     `UPDATE usuarios SET perfil = 'ita_admin' WHERE email = 'itagamificaedu@gmail.com'`,
     // Cada admin tem escola_id = próprio id
