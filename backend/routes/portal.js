@@ -610,10 +610,25 @@ router.get('/avaliacao/:id/:codigo', async (req, res) => {
     const av = await db.get('SELECT * FROM avaliacoes WHERE id = ? AND turma_id = ? AND escola_id = ?', [req.params.id, aluno.turma_id, aluno.escola_id]);
     if (!av) return res.status(404).json({ erro: 'Avaliação não disponível para sua turma' });
 
-    const questoes = await db.all(
-      'SELECT id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, pontos, dificuldade FROM questoes WHERE avaliacao_id = ? ORDER BY id',
+    const questoesRaw = await db.all(
+      'SELECT id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, pontos, dificuldade, tipo_questao, pares_associacao FROM questoes WHERE avaliacao_id = ? ORDER BY id',
       [req.params.id]
     );
+
+    // Prepara questões para o aluno SEM vazar o gabarito:
+    // associação envia coluna A na ordem e coluna B embaralhada
+    const questoes = questoesRaw.map(q => {
+      const base = { ...q, tipo_questao: q.tipo_questao || 'multipla' };
+      delete base.pares_associacao;
+      if (base.tipo_questao === 'associacao' && q.pares_associacao) {
+        try {
+          const pares = JSON.parse(q.pares_associacao);
+          base.coluna_a = pares.map(p => p.a);
+          base.coluna_b = pares.map(p => p.b).sort(() => Math.random() - 0.5);
+        } catch (_) { base.coluna_a = []; base.coluna_b = []; }
+      }
+      return base;
+    });
 
     const jaRespondeu = await db.get('SELECT id FROM respostas_alunos WHERE avaliacao_id = ? AND aluno_id = ? LIMIT 1', [req.params.id, aluno.id]);
 
@@ -657,18 +672,49 @@ router.post('/responder-avaliacao', async (req, res) => {
     const questaoMap = {};
     questoes.forEach(q => { questaoMap[q.id] = q; });
 
-    let pontos_total = 0, pontos_obtidos = 0, acertos = 0;
+    let pontos_total = 0, pontos_obtidos = 0, acertos = 0, pendentes = 0;
 
     for (const resp of respostas) {
       const q = questaoMap[resp.questao_id];
       if (!q) continue;
+      const tipoQ = q.tipo_questao || 'multipla';
+      const ptsMax = q.pontos || 1;
+      pontos_total += ptsMax;
+
+      if (tipoQ === 'dissertativa') {
+        // Resposta livre: fica pendente de correção manual do professor
+        await db.run(
+          'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_texto, correta, pontos_obtidos, corrigida, respondido_em) VALUES (?, ?, ?, ?, 0, 0, 0, NOW())',
+          [avaliacao_id, aluno.id, q.id, resp.resposta_texto || '']
+        );
+        pendentes++;
+        continue;
+      }
+
+      if (tipoQ === 'associacao') {
+        // Correção automática com crédito parcial por par correto
+        let pares = [];
+        try { pares = JSON.parse(q.pares_associacao || '[]'); } catch (_) {}
+        const respAluno = resp.associacoes || {}; // { "item A": "item B escolhido" }
+        const acertosPar = pares.filter(p => respAluno[p.a] === p.b).length;
+        const pts = pares.length > 0 ? Math.round((acertosPar / pares.length) * ptsMax * 100) / 100 : 0;
+        const correta = pares.length > 0 && acertosPar === pares.length ? 1 : 0;
+        await db.run(
+          'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_marcada, correta, pontos_obtidos, respondido_em) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [avaliacao_id, aluno.id, q.id, JSON.stringify(respAluno), correta, pts]
+        );
+        pontos_obtidos += pts;
+        if (correta) acertos++;
+        continue;
+      }
+
+      // Múltipla escolha (modelo original)
       const correta = resp.resposta_marcada?.toUpperCase() === q.gabarito?.toUpperCase() ? 1 : 0;
-      const pts = correta ? (q.pontos || 1) : 0;
+      const pts = correta ? ptsMax : 0;
       await db.run(
         'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_marcada, correta, pontos_obtidos, respondido_em) VALUES (?, ?, ?, ?, ?, ?, NOW())',
         [avaliacao_id, aluno.id, q.id, resp.resposta_marcada, correta, pts]
       );
-      pontos_total += (q.pontos || 1);
       pontos_obtidos += pts;
       if (correta) acertos++;
     }
@@ -703,7 +749,7 @@ router.post('/responder-avaliacao', async (req, res) => {
       await db.run("INSERT INTO itagame_historico (aluno_id, tipo, descricao, xp_ganho) VALUES (?, 'avaliacao', ?, ?)", [aluno.id, `Avaliação: ${av.titulo} — ${acertos} acertos`, xp_ganho]);
     }
 
-    res.json({ ok: true, acertos, total: respostas.length, percentual, nota_final, xp_ganho });
+    res.json({ ok: true, acertos, total: respostas.length, percentual, nota_final, xp_ganho, pendentes });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }

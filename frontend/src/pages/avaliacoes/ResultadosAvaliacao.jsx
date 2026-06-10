@@ -4,6 +4,102 @@ import Navbar from '../../components/Navbar'
 import { GraficoBarrasDesempenho } from '../../components/GraficoDesempenho'
 import api from '../../api'
 
+// ── Painel de correção manual da questão dissertativa ─────────────────────────
+// Professor define a nota (com apoio opcional da IA) e um feedback para o aluno
+function CorrecaoDissertativa({ avaliacaoId, questao, aoCorrigir }) {
+  const [pontos,    setPontos]    = useState(questao.pontos_obtidos ?? '')
+  const [feedback,  setFeedback]  = useState(questao.feedback_professor || '')
+  const [sugestao,  setSugestao]  = useState(null)
+  const [sugerindo, setSugerindo] = useState(false)
+  const [salvando,  setSalvando]  = useState(false)
+  const [msg,       setMsg]       = useState('')
+
+  async function pedirSugestaoIA() {
+    setSugerindo(true); setMsg('')
+    try {
+      const { data } = await api.post('/ia/sugerir-correcao', {
+        enunciado: questao.enunciado,
+        criterios: questao.criterios_correcao,
+        resposta_aluno: questao.resposta_texto,
+        pontos_max: questao.pontos,
+      })
+      setSugestao(data)
+      setPontos(data.pontos_sugeridos)
+      if (!feedback) setFeedback(data.feedback_aluno || '')
+    } catch (e) {
+      setMsg(e.response?.data?.erro || 'Erro ao pedir sugestão da IA')
+    } finally { setSugerindo(false) }
+  }
+
+  async function salvarCorrecao() {
+    if (pontos === '' || pontos == null) return setMsg('Informe a pontuação')
+    setSalvando(true); setMsg('')
+    try {
+      const { data } = await api.post(`/avaliacoes/${avaliacaoId}/corrigir-dissertativa`, {
+        resposta_id: questao.resposta_id,
+        pontos_obtidos: Number(pontos),
+        feedback,
+      })
+      setMsg(`✅ Corrigida! Nota do aluno atualizada: ${data.nota_final}`)
+      aoCorrigir && aoCorrigir()
+    } catch (e) {
+      setMsg(e.response?.data?.erro || 'Erro ao salvar correção')
+    } finally { setSalvando(false) }
+  }
+
+  return (
+    <div className="mt-2 p-3 rounded-lg" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+      <p className="text-xs font-bold mb-1" style={{ color: '#92400e' }}>✍️ RESPOSTA DO ALUNO:</p>
+      <p className="text-sm mb-2 whitespace-pre-wrap" style={{ color: '#374151', background: '#fff', borderRadius: 8, padding: '8px 10px' }}>
+        {questao.resposta_texto || '— (em branco)'}
+      </p>
+
+      {questao.criterios_correcao && (
+        <details className="mb-2">
+          <summary className="text-xs font-semibold cursor-pointer" style={{ color: '#92400e' }}>📋 Ver critérios de correção</summary>
+          <p className="text-xs mt-1 whitespace-pre-wrap" style={{ color: '#6b7280' }}>{questao.criterios_correcao}</p>
+        </details>
+      )}
+
+      {sugestao && (
+        <div className="mb-2 p-2 rounded-lg text-xs" style={{ background: '#faf5ff', border: '1px solid #e9d5ff', color: '#6b21a8' }}>
+          🤖 <strong>Sugestão da IA: {sugestao.pontos_sugeridos} / {questao.pontos} pts</strong>
+          <p className="mt-1">{sugestao.justificativa}</p>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 flex-wrap mb-2">
+        <label className="text-xs font-semibold" style={{ color: '#92400e' }}>Pontos (máx {questao.pontos}):</label>
+        <input
+          type="number" min={0} max={questao.pontos} step={0.1}
+          className="w-20 text-center border rounded-lg px-2 py-1 text-sm"
+          value={pontos}
+          onChange={e => setPontos(e.target.value)}
+        />
+        <button onClick={pedirSugestaoIA} disabled={sugerindo}
+          className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200">
+          {sugerindo ? '⏳ Analisando...' : '🤖 Sugestão da IA'}
+        </button>
+      </div>
+
+      <textarea
+        className="w-full border rounded-lg px-3 py-2 text-sm resize-none mb-2"
+        rows={2}
+        placeholder="Feedback para o aluno (opcional)..."
+        value={feedback}
+        onChange={e => setFeedback(e.target.value)}
+      />
+
+      <div className="flex items-center gap-3">
+        <button onClick={salvarCorrecao} disabled={salvando} className="btn-primary text-xs">
+          {salvando ? 'Salvando...' : questao.corrigida ? '💾 Atualizar correção' : '✅ Salvar correção'}
+        </button>
+        {msg && <span className="text-xs font-medium" style={{ color: msg.startsWith('✅') ? '#16a34a' : '#dc2626' }}>{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function ResultadosAvaliacao() {
   const { id } = useParams()
   const [avaliacao, setAvaliacao] = useState(null)
@@ -36,6 +132,15 @@ export default function ResultadosAvaliacao() {
     carregar()
   }, [id])
 
+  // Recarrega resultados após o professor corrigir uma dissertativa
+  async function recarregarResultados() {
+    try {
+      const { data } = await api.get(`/avaliacoes/${id}/resultados`)
+      setResultados(data.notas || [])
+      setQuestoes(data.questoes || [])
+    } catch { }
+  }
+
   async function lancarNotas() {
     setSalvando(true)
     try {
@@ -53,8 +158,8 @@ export default function ResultadosAvaliacao() {
   if (!avaliacao) return <div className="flex min-h-screen bg-background"><Navbar /><main className="flex-1 lg:ml-64 p-6 pt-20"><p className="text-danger">Avaliação não encontrada</p></main></div>
 
   function exportarCSV() {
-    const header = ['Aluno', 'Nota', '% Acerto', 'Status']
-    const rows = resultados.map(r => [r.nome, r.nota_final ?? '', r.percentual_acerto != null ? r.percentual_acerto + '%' : '', r.nota_final == null ? 'Pendente' : r.nota_final >= 7 ? 'Aprovado' : r.nota_final >= 5 ? 'Recuperação' : 'Em risco'])
+    const header = ['Aluno', 'Nota', '% Acerto', 'Status', 'BNCC']
+    const rows = resultados.map(r => [r.nome, r.nota_final ?? '', r.percentual_acerto != null ? r.percentual_acerto + '%' : '', r.nota_final == null ? 'Pendente' : r.nota_final >= 7 ? 'Aprovado' : r.nota_final >= 5 ? 'Recuperação' : 'Em risco', avaliacao.bncc_codigo || ''])
     const csv = [header, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -81,6 +186,11 @@ export default function ResultadosAvaliacao() {
               <div>
                 <h1 className="text-2xl font-bold text-textMain">{avaliacao.titulo}</h1>
                 <p className="text-gray-500 text-sm">{avaliacao.disciplina} • {avaliacao.tipo} • {avaliacao.total_questoes} questões • {avaliacao.turma_nome}</p>
+                {avaliacao.bncc_codigo && (
+                  <span className="inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold" style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
+                    📚 BNCC: {avaliacao.bncc_codigo}{avaliacao.bncc_ano ? ` • ${avaliacao.bncc_ano}º ano` : ''}{avaliacao.bncc_componente ? ` • ${avaliacao.bncc_componente}` : ''}
+                  </span>
+                )}
                 {avaliacao.data_aplicacao && <p className="text-xs text-gray-400 mt-1">📅 {new Date(avaliacao.data_aplicacao + 'T12:00:00').toLocaleDateString('pt-BR')}</p>}
               </div>
               <div className="flex gap-2">
@@ -215,18 +325,38 @@ export default function ResultadosAvaliacao() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-gray-700 leading-snug">{q.enunciado || `Questão ${q.numero}`}</p>
-                            <div className="flex gap-4 mt-1 text-xs">
-                              <span className={`font-medium ${q.acertou ? 'text-success' : 'text-danger'}`}>
-                                Resposta: <strong className="uppercase">{q.resposta_aluno || '—'}</strong>
-                              </span>
-                              {!q.acertou && q.gabarito && (
-                                <span className="text-success font-medium">
-                                  Correta: <strong className="uppercase">{q.gabarito}</strong>
+
+                            {/* Dissertativa: painel de correção manual + IA */}
+                            {q.tipo_questao === 'dissertativa' ? (
+                              q.resposta_id ? (
+                                <CorrecaoDissertativa
+                                  avaliacaoId={id}
+                                  questao={q}
+                                  aoCorrigir={recarregarResultados}
+                                />
+                              ) : (
+                                <p className="text-xs text-gray-400 mt-1">Aluno ainda não respondeu</p>
+                              )
+                            ) : q.tipo_questao === 'associacao' ? (
+                              <div className="mt-1 text-xs text-gray-600">
+                                🔗 Associação • Pontos obtidos: <strong>{q.pontos_obtidos ?? 0} / {q.pontos}</strong>
+                              </div>
+                            ) : (
+                              <div className="flex gap-4 mt-1 text-xs">
+                                <span className={`font-medium ${q.acertou ? 'text-success' : 'text-danger'}`}>
+                                  Resposta: <strong className="uppercase">{q.resposta_aluno || '—'}</strong>
                                 </span>
-                              )}
-                            </div>
+                                {!q.acertou && q.gabarito && (
+                                  <span className="text-success font-medium">
+                                    Correta: <strong className="uppercase">{q.gabarito}</strong>
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <span className="text-lg flex-shrink-0">{q.acertou ? '✅' : q.resposta_aluno ? '❌' : '⬜'}</span>
+                          <span className="text-lg flex-shrink-0">
+                            {q.tipo_questao === 'dissertativa' && !q.corrigida ? '⏳' : q.acertou ? '✅' : (q.resposta_aluno || q.resposta_texto) ? (q.tipo_questao !== 'multipla' && (q.pontos_obtidos || 0) > 0 ? '🟡' : '❌') : '⬜'}
+                          </span>
                         </div>
                       ))}
                     </div>
