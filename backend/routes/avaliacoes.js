@@ -47,6 +47,7 @@ router.get('/:id', async (req, res) => {
       alt_pdfs:         q.alt_pdfs    ? JSON.parse(q.alt_pdfs)    : ['', '', '', ''],
       criterios_correcao: q.criterios_correcao || '',
       pares_associacao:   q.pares_associacao ? JSON.parse(q.pares_associacao) : [],
+      dados_jogo:         q.dados_jogo ? JSON.parse(q.dados_jogo) : null,
     }))
     res.json({ ...av, questoes });
   } catch (err) {
@@ -75,7 +76,7 @@ router.post('/', async (req, res) => {
         const alt_d   = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
         await db.run(
-          'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs, tipo_questao, criterios_correcao, pares_associacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs, tipo_questao, criterios_correcao, pares_associacao, dados_jogo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [avId, q.enunciado || '', alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null,
            q.imagem || null, q.imagem_pdf || null,
            JSON.stringify(q.alt_imagens || [null,null,null,null]),
@@ -83,6 +84,7 @@ router.post('/', async (req, res) => {
            q.tipo_questao || 'multipla',
            q.criterios_correcao || null,
            q.pares_associacao ? JSON.stringify(q.pares_associacao) : null,
+           q.dados_jogo ? JSON.stringify(q.dados_jogo) : null,
           ]
         )
       }
@@ -116,7 +118,7 @@ router.put('/:id', async (req, res) => {
         const alt_d = q.alternativas?.[3] || q.alternativa_d || null
         const gabarito = q.gabarito || (letras[q.resposta_correta ?? 0]?.toUpperCase()) || 'A'
         await db.run(
-          'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs, tipo_questao, criterios_correcao, pares_associacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO questoes (avaliacao_id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, gabarito, pontos, dificuldade, disciplina, explicacao, imagem, imagem_pdf, alt_imagens, alt_pdfs, tipo_questao, criterios_correcao, pares_associacao, dados_jogo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [req.params.id, q.enunciado || '', alt_a, alt_b, alt_c, alt_d, gabarito, q.pontos || 1, q.dificuldade || 'medio', disciplina, q.explicacao || null,
            q.imagem || null, q.imagem_pdf || null,
            JSON.stringify(q.alt_imagens || [null,null,null,null]),
@@ -124,6 +126,7 @@ router.put('/:id', async (req, res) => {
            q.tipo_questao || 'multipla',
            q.criterios_correcao || null,
            q.pares_associacao ? JSON.stringify(q.pares_associacao) : null,
+           q.dados_jogo ? JSON.stringify(q.dados_jogo) : null,
           ]
         )
       }

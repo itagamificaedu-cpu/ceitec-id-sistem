@@ -337,9 +337,10 @@ export default function ResultadosAvaliacao() {
                               ) : (
                                 <p className="text-xs text-gray-400 mt-1">Aluno ainda não respondeu</p>
                               )
-                            ) : q.tipo_questao === 'associacao' ? (
+                            ) : ['associacao', 'caca_palavras', 'cruzadinha', 'lacunas'].includes(q.tipo_questao) ? (
                               <div className="mt-1 text-xs text-gray-600">
-                                🔗 Associação • Pontos obtidos: <strong>{q.pontos_obtidos ?? 0} / {q.pontos}</strong>
+                                {{ associacao: '🔗 Associação', caca_palavras: '🔤 Caça-Palavras', cruzadinha: '➕ Cruzadinha', lacunas: '✏️ Completar Lacunas' }[q.tipo_questao]}
+                                {' '}• Pontos obtidos: <strong>{q.pontos_obtidos ?? 0} / {q.pontos}</strong>
                               </div>
                             ) : (
                               <div className="flex gap-4 mt-1 text-xs">
