@@ -25,8 +25,11 @@ async function gerarQuestoes(params) {
   const { disciplina, tema, nivel, quantidade, ano_escolar, tipo } = params;
 
   // Roteia para o gerador do tipo certo
-  if (tipo === 'dissertativa') return gerarDissertativas(params);
-  if (tipo === 'associacao')   return gerarAssociacoes(params);
+  if (tipo === 'dissertativa')  return gerarDissertativas(params);
+  if (tipo === 'associacao')    return gerarAssociacoes(params);
+  if (tipo === 'caca_palavras') return gerarCacaPalavrasIA(params);
+  if (tipo === 'cruzadinha')    return gerarCruzadinhaIA(params);
+  if (tipo === 'lacunas')       return gerarLacunasIA(params);
 
   const nivelFinal = nivel || 'médio';
   const qtd = quantidade || 5;
@@ -134,6 +137,106 @@ Regras:
     explicacao: q.explicacao || '',
     tipo_questao: 'associacao',
   }));
+}
+
+/* ── Caça-Palavras (IA gera a lista de palavras; a grade é montada no servidor) ─ */
+async function gerarCacaPalavrasIA({ disciplina, tema, nivel, quantidade, ...resto }) {
+  const qtd  = Math.min(Math.max(quantidade || 8, 4), 12); // palavras por jogo
+  const disc = disciplina || 'Geral';
+
+  const prompt = `Você é um professor especialista em ${disc}. Crie um CAÇA-PALAVRAS sobre "${tema}".
+
+Nível de dificuldade: ${nivel || 'médio'}
+${contextoBncc(resto)}
+
+IMPORTANTE: Responda APENAS com JSON válido, sem texto adicional. Formato exato:
+{
+  "enunciado": "instrução para o aluno (ex: Encontre no diagrama as palavras relacionadas a ...)",
+  "palavras": ["PALAVRA1", "PALAVRA2"],
+  "explicacao": "breve explicação do vocabulário trabalhado"
+}
+
+Regras:
+- Exatamente ${qtd} palavras, todas relacionadas ao tema
+- Cada palavra deve ter entre 3 e 12 letras, SEM espaços nem hífens (uma palavra só)
+- Palavras em português, em MAIÚSCULAS, sem repetições`;
+
+  const texto = (await chamarGemini(prompt)).trim();
+  const r = extrairJson(texto, 'objeto');
+  return [{
+    enunciado: r.enunciado || `Encontre as palavras sobre ${tema}`,
+    dados_jogo: { palavras: (r.palavras || []).map(p => String(p).toUpperCase().trim()).filter(p => p && !p.includes(' ')) },
+    explicacao: r.explicacao || '',
+    tipo_questao: 'caca_palavras',
+  }];
+}
+
+/* ── Cruzadinha (IA gera dicas + palavras; a grade é montada no servidor) ────── */
+async function gerarCruzadinhaIA({ disciplina, tema, nivel, quantidade, ...resto }) {
+  const qtd  = Math.min(Math.max(quantidade || 6, 3), 10); // palavras por cruzadinha
+  const disc = disciplina || 'Geral';
+
+  const prompt = `Você é um professor especialista em ${disc}. Crie uma PALAVRA CRUZADA (cruzadinha) sobre "${tema}".
+
+Nível de dificuldade: ${nivel || 'médio'}
+${contextoBncc(resto)}
+
+IMPORTANTE: Responda APENAS com JSON válido, sem texto adicional. Formato exato:
+{
+  "enunciado": "instrução para o aluno (ex: Resolva a cruzadinha sobre ...)",
+  "itens": [
+    { "dica": "definição ou pista da palavra", "palavra": "RESPOSTA" }
+  ],
+  "explicacao": "breve explicação do conteúdo trabalhado"
+}
+
+Regras:
+- Exatamente ${qtd} itens
+- Cada palavra deve ter entre 3 e 12 letras, SEM espaços nem hífens (uma palavra só)
+- As dicas devem ser claras e adequadas ao ano escolar
+- Palavras em MAIÚSCULAS, sem repetições, que compartilhem letras entre si (para cruzar na grade)`;
+
+  const texto = (await chamarGemini(prompt)).trim();
+  const r = extrairJson(texto, 'objeto');
+  return [{
+    enunciado: r.enunciado || `Resolva a cruzadinha sobre ${tema}`,
+    dados_jogo: { itens: (r.itens || []).map(it => ({ dica: String(it.dica || '').trim(), palavra: String(it.palavra || '').toUpperCase().trim() })).filter(it => it.dica && it.palavra && !it.palavra.includes(' ')) },
+    explicacao: r.explicacao || '',
+    tipo_questao: 'cruzadinha',
+  }];
+}
+
+/* ── Completar Lacunas (IA gera texto com lacunas marcadas como [palavra]) ───── */
+async function gerarLacunasIA({ disciplina, tema, nivel, quantidade, ...resto }) {
+  const qtd  = Math.min(Math.max(quantidade || 5, 3), 10); // lacunas no texto
+  const disc = disciplina || 'Geral';
+
+  const prompt = `Você é um professor especialista em ${disc}. Crie uma atividade de COMPLETAR LACUNAS sobre "${tema}".
+
+Nível de dificuldade: ${nivel || 'médio'}
+${contextoBncc(resto)}
+
+IMPORTANTE: Responda APENAS com JSON válido, sem texto adicional. Formato exato:
+{
+  "enunciado": "instrução para o aluno (ex: Complete o texto com as palavras do banco)",
+  "texto": "O [sol] é uma estrela que ilumina a [terra] durante o dia.",
+  "explicacao": "breve explicação do conteúdo"
+}
+
+Regras:
+- O texto deve ter exatamente ${qtd} lacunas, cada uma marcada com a palavra correta entre colchetes: [palavra]
+- O texto deve ser educativo, coeso e adequado ao ano escolar (4 a 8 frases)
+- Cada lacuna deve ter UMA palavra só entre os colchetes
+- As palavras das lacunas devem ser diferentes entre si`;
+
+  const texto = (await chamarGemini(prompt)).trim();
+  const r = extrairJson(texto, 'objeto');
+  return [{
+    enunciado: r.enunciado || 'Complete o texto com as palavras do banco',
+    dados_jogo: { texto: r.texto || '' },
+    explicacao: r.explicacao || '',
+    tipo_questao: 'lacunas',
+  }];
 }
 
 /* ── Sugestão de correção da dissertativa (IA avalia a resposta do aluno) ───── */

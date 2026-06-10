@@ -4,6 +4,7 @@ const db = require('../db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { gerarCacaPalavras, gerarCruzadinha, parsearLacunas, normalizar } = require('../utils/jogos');
 
 // Upload de PDFs de missão
 const uploadDir = path.join(__dirname, '../uploads/missoes');
@@ -611,21 +612,54 @@ router.get('/avaliacao/:id/:codigo', async (req, res) => {
     if (!av) return res.status(404).json({ erro: 'Avaliação não disponível para sua turma' });
 
     const questoesRaw = await db.all(
-      'SELECT id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, pontos, dificuldade, tipo_questao, pares_associacao FROM questoes WHERE avaliacao_id = ? ORDER BY id',
+      'SELECT id, enunciado, alternativa_a, alternativa_b, alternativa_c, alternativa_d, pontos, dificuldade, tipo_questao, pares_associacao, dados_jogo FROM questoes WHERE avaliacao_id = ? ORDER BY id',
       [req.params.id]
     );
 
     // Prepara questões para o aluno SEM vazar o gabarito:
-    // associação envia coluna A na ordem e coluna B embaralhada
+    // associação envia coluna A na ordem e coluna B embaralhada;
+    // jogos (caça-palavras, cruzadinha, lacunas) montados aqui no servidor
     const questoes = questoesRaw.map(q => {
       const base = { ...q, tipo_questao: q.tipo_questao || 'multipla' };
       delete base.pares_associacao;
+      delete base.dados_jogo;
       if (base.tipo_questao === 'associacao' && q.pares_associacao) {
         try {
           const pares = JSON.parse(q.pares_associacao);
           base.coluna_a = pares.map(p => p.a);
           base.coluna_b = pares.map(p => p.b).sort(() => Math.random() - 0.5);
         } catch (_) { base.coluna_a = []; base.coluna_b = []; }
+      }
+      if (base.tipo_questao === 'caca_palavras' && q.dados_jogo) {
+        try {
+          const dj = JSON.parse(q.dados_jogo);
+          // Semente = id da questão → a grade é a mesma a cada recarga
+          const jogo = gerarCacaPalavras(dj.palavras || [], q.id);
+          base.grade = jogo.grade;
+          base.palavras = jogo.palavras;
+        } catch (_) { base.grade = []; base.palavras = []; }
+      }
+      if (base.tipo_questao === 'cruzadinha' && q.dados_jogo) {
+        try {
+          const dj = JSON.parse(q.dados_jogo);
+          const jogo = gerarCruzadinha(dj.itens || [], q.id);
+          if (jogo) {
+            base.cruzadinha = {
+              linhas: jogo.linhas, colunas: jogo.colunas, celulas: jogo.celulas,
+              // Remove a palavra (gabarito) antes de enviar ao aluno
+              palavras: jogo.palavras.map(({ palavra, ...resto }) => resto),
+            };
+          }
+        } catch (_) { base.cruzadinha = null; }
+      }
+      if (base.tipo_questao === 'lacunas' && q.dados_jogo) {
+        try {
+          const dj = JSON.parse(q.dados_jogo);
+          const { partes, respostas } = parsearLacunas(dj.texto || '');
+          base.texto_partes = partes;
+          // Banco de palavras embaralhado (respostas em ordem aleatória)
+          base.banco_palavras = [...respostas].sort(() => Math.random() - 0.5);
+        } catch (_) { base.texto_partes = []; base.banco_palavras = []; }
       }
       return base;
     });
@@ -702,6 +736,67 @@ router.post('/responder-avaliacao', async (req, res) => {
         await db.run(
           'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_marcada, correta, pontos_obtidos, respondido_em) VALUES (?, ?, ?, ?, ?, ?, NOW())',
           [avaliacao_id, aluno.id, q.id, JSON.stringify(respAluno), correta, pts]
+        );
+        pontos_obtidos += pts;
+        if (correta) acertos++;
+        continue;
+      }
+
+      if (tipoQ === 'caca_palavras') {
+        // Crédito parcial por palavra encontrada (valida contra a lista salva)
+        let palavrasJogo = [];
+        try { palavrasJogo = (JSON.parse(q.dados_jogo || '{}').palavras || []).map(normalizar); } catch (_) {}
+        const encontradas = [...new Set((resp.encontradas || []).map(normalizar))].filter(p => palavrasJogo.includes(p));
+        const pts = palavrasJogo.length > 0 ? Math.round((encontradas.length / palavrasJogo.length) * ptsMax * 100) / 100 : 0;
+        const correta = palavrasJogo.length > 0 && encontradas.length === palavrasJogo.length ? 1 : 0;
+        await db.run(
+          'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_marcada, correta, pontos_obtidos, respondido_em) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [avaliacao_id, aluno.id, q.id, JSON.stringify({ encontradas }), correta, pts]
+        );
+        pontos_obtidos += pts;
+        if (correta) acertos++;
+        continue;
+      }
+
+      if (tipoQ === 'cruzadinha') {
+        // Crédito parcial por palavra correta (compara sem acentos, maiúsculas)
+        let itens = [];
+        try { itens = JSON.parse(q.dados_jogo || '{}').itens || []; } catch (_) {}
+        const jogo = gerarCruzadinha(itens, q.id);
+        const respPalavras = resp.palavras_resp || {}; // { numero: "palavra digitada" }
+        let acertosPal = 0;
+        const detalhe = {};
+        for (const p of (jogo?.palavras || [])) {
+          const digitada = normalizar(respPalavras[p.numero] || '');
+          const ok = digitada === p.palavra;
+          if (ok) acertosPal++;
+          detalhe[p.numero] = { digitada: respPalavras[p.numero] || '', ok };
+        }
+        const totalPal = jogo?.palavras?.length || 0;
+        const pts = totalPal > 0 ? Math.round((acertosPal / totalPal) * ptsMax * 100) / 100 : 0;
+        const correta = totalPal > 0 && acertosPal === totalPal ? 1 : 0;
+        await db.run(
+          'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_marcada, correta, pontos_obtidos, respondido_em) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [avaliacao_id, aluno.id, q.id, JSON.stringify(detalhe), correta, pts]
+        );
+        pontos_obtidos += pts;
+        if (correta) acertos++;
+        continue;
+      }
+
+      if (tipoQ === 'lacunas') {
+        // Crédito parcial por lacuna correta
+        let textoJogo = '';
+        try { textoJogo = JSON.parse(q.dados_jogo || '{}').texto || ''; } catch (_) {}
+        const { respostas: gabaritoLac } = parsearLacunas(textoJogo);
+        const respLac = resp.lacunas || []; // array na ordem das lacunas
+        let acertosLac = 0;
+        gabaritoLac.forEach((g, i) => { if (normalizar(respLac[i] || '') === normalizar(g)) acertosLac++; });
+        const pts = gabaritoLac.length > 0 ? Math.round((acertosLac / gabaritoLac.length) * ptsMax * 100) / 100 : 0;
+        const correta = gabaritoLac.length > 0 && acertosLac === gabaritoLac.length ? 1 : 0;
+        await db.run(
+          'INSERT INTO respostas_alunos (avaliacao_id, aluno_id, questao_id, resposta_marcada, correta, pontos_obtidos, respondido_em) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [avaliacao_id, aluno.id, q.id, JSON.stringify(respLac), correta, pts]
         );
         pontos_obtidos += pts;
         if (correta) acertos++;

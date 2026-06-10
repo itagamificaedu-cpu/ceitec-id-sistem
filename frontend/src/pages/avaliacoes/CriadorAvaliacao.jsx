@@ -248,9 +248,12 @@ const BNCC_COMPONENTES = [
 
 // Rótulos e ícones dos tipos de questão
 const TIPOS_QUESTAO = {
-  multipla:     { label: 'Múltipla Escolha', icone: '🔘' },
-  dissertativa: { label: 'Resposta Livre',   icone: '✍️' },
-  associacao:   { label: 'Associação',       icone: '🔗' },
+  multipla:      { label: 'Múltipla Escolha',  icone: '🔘' },
+  dissertativa:  { label: 'Resposta Livre',    icone: '✍️' },
+  associacao:    { label: 'Associação',        icone: '🔗' },
+  caca_palavras: { label: 'Caça-Palavras',     icone: '🔤' },
+  cruzadinha:    { label: 'Cruzadinha',        icone: '➕' },
+  lacunas:       { label: 'Completar Lacunas', icone: '✏️' },
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -294,6 +297,10 @@ export default function CriadorAvaliacao() {
           alt_pdfs:    q.alt_pdfs    || ['', '', '', ''],
           criterios_correcao: q.criterios_correcao || '',
           pares_associacao:   q.pares_associacao   || [],
+          // Jogos: converte dados_jogo salvo de volta para os campos do formulário
+          palavras_texto:   q.dados_jogo?.palavras ? q.dados_jogo.palavras.join('\n') : '',
+          itens_cruzadinha: q.dados_jogo?.itens    || [],
+          texto_lacunas:    q.dados_jogo?.texto    || '',
         }))
         setQuestoes(qs)
       })
@@ -309,7 +316,23 @@ export default function CriadorAvaliacao() {
       alt_pdfs:    ['', '', '', ''],
       criterios_correcao: '',
       pares_associacao: tipo === 'associacao' ? [{ a: '', b: '' }, { a: '', b: '' }, { a: '', b: '' }, { a: '', b: '' }] : [],
+      palavras_texto: '',
+      itens_cruzadinha: tipo === 'cruzadinha' ? [{ dica: '', palavra: '' }, { dica: '', palavra: '' }, { dica: '', palavra: '' }, { dica: '', palavra: '' }] : [],
+      texto_lacunas: '',
     }])
+  }
+
+  // ── Itens da cruzadinha (dica ↔ palavra) ──
+  function updateItemCruz(qIdx, iIdx, campo, valor) {
+    setQuestoes(q => q.map((x, i) => i === qIdx
+      ? { ...x, itens_cruzadinha: x.itens_cruzadinha.map((it, j) => j === iIdx ? { ...it, [campo]: valor } : it) }
+      : x))
+  }
+  function addItemCruz(qIdx) {
+    setQuestoes(q => q.map((x, i) => i === qIdx ? { ...x, itens_cruzadinha: [...x.itens_cruzadinha, { dica: '', palavra: '' }] } : x))
+  }
+  function removeItemCruz(qIdx, iIdx) {
+    setQuestoes(q => q.map((x, i) => i === qIdx ? { ...x, itens_cruzadinha: x.itens_cruzadinha.filter((_, j) => j !== iIdx) } : x))
   }
 
   // ── Pares de associação (coluna A ↔ coluna B) ──
@@ -372,6 +395,9 @@ export default function CriadorAvaliacao() {
         alt_imagens: ['', '', '', ''], alt_pdfs: ['', '', '', ''],
         criterios_correcao: q.criterios_correcao || '',
         pares_associacao:   q.pares_associacao   || [],
+        palavras_texto:   q.dados_jogo?.palavras ? q.dados_jogo.palavras.join('\n') : '',
+        itens_cruzadinha: q.dados_jogo?.itens    || [],
+        texto_lacunas:    q.dados_jogo?.texto    || '',
       }))
       setQuestoes(prev => [...prev, ...novas])
       setIaAberto(false)
@@ -393,11 +419,32 @@ export default function CriadorAvaliacao() {
         const validos = (q.pares_associacao || []).filter(p => p.a?.trim() && p.b?.trim())
         if (validos.length < 2) return setErro(`Questão ${i + 1} (Associação): preencha pelo menos 2 pares completos`)
       }
+      if (q.tipo_questao === 'caca_palavras') {
+        const palavras = (q.palavras_texto || '').split('\n').map(p => p.trim()).filter(Boolean)
+        if (palavras.length < 3) return setErro(`Questão ${i + 1} (Caça-Palavras): informe pelo menos 3 palavras (uma por linha)`)
+        const invalida = palavras.find(p => /\s/.test(p) || p.length < 3 || p.length > 14)
+        if (invalida) return setErro(`Questão ${i + 1} (Caça-Palavras): "${invalida}" inválida — use 1 palavra só, de 3 a 14 letras`)
+      }
+      if (q.tipo_questao === 'cruzadinha') {
+        const validos = (q.itens_cruzadinha || []).filter(it => it.dica?.trim() && it.palavra?.trim())
+        if (validos.length < 2) return setErro(`Questão ${i + 1} (Cruzadinha): preencha pelo menos 2 itens completos (dica + palavra)`)
+        const invalido = validos.find(it => /\s/.test(it.palavra.trim()) || it.palavra.trim().length < 3)
+        if (invalido) return setErro(`Questão ${i + 1} (Cruzadinha): "${invalido.palavra}" inválida — use 1 palavra só, mínimo 3 letras`)
+      }
+      if (q.tipo_questao === 'lacunas') {
+        const lacs = ((q.texto_lacunas || '').match(/\[[^\]]+\]/g) || [])
+        if (lacs.length < 1) return setErro(`Questão ${i + 1} (Lacunas): marque pelo menos 1 lacuna no texto usando colchetes, ex: O [sol] é uma estrela`)
+      }
     }
-    // Limpa pares vazios e remove campos BNCC quando o vínculo está desativado
+    // Limpa pares vazios, monta dados_jogo e remove campos BNCC quando o vínculo está desativado
     const questoesLimpas = questoes.map(q => ({
       ...q,
       pares_associacao: (q.pares_associacao || []).filter(p => p.a?.trim() && p.b?.trim()),
+      dados_jogo:
+        q.tipo_questao === 'caca_palavras' ? { palavras: (q.palavras_texto || '').split('\n').map(p => p.trim().toUpperCase()).filter(Boolean) } :
+        q.tipo_questao === 'cruzadinha'    ? { itens: (q.itens_cruzadinha || []).filter(it => it.dica?.trim() && it.palavra?.trim()).map(it => ({ dica: it.dica.trim(), palavra: it.palavra.trim().toUpperCase() })) } :
+        q.tipo_questao === 'lacunas'       ? { texto: q.texto_lacunas || '' } :
+        null,
     }))
     const dados = bnccAtivo ? { ...form } : { ...form, bncc_codigo: '', bncc_ano: '', bncc_componente: '' }
     setSalvando(true)
@@ -565,7 +612,9 @@ export default function CriadorAvaliacao() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {iaTipo === 'caca_palavras' ? 'Nº de palavras' : iaTipo === 'cruzadinha' ? 'Nº de dicas' : iaTipo === 'lacunas' ? 'Nº de lacunas' : 'Quantidade'}
+                        </label>
                         <input className="input-field" type="number" min={1} max={20} value={iaQtd} onChange={e => setIaQtd(Number(e.target.value))} />
                       </div>
                     </div>
@@ -611,8 +660,8 @@ export default function CriadorAvaliacao() {
                         Questão {qi + 1}
                         <span style={{
                           marginLeft: 8, padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800,
-                          background: q.tipo_questao === 'dissertativa' ? '#fef3c7' : q.tipo_questao === 'associacao' ? '#e0e7ff' : '#dbeafe',
-                          color:      q.tipo_questao === 'dissertativa' ? '#92400e' : q.tipo_questao === 'associacao' ? '#3730a3' : '#1d4ed8',
+                          background: q.tipo_questao === 'dissertativa' ? '#fef3c7' : q.tipo_questao === 'associacao' ? '#e0e7ff' : ['caca_palavras', 'cruzadinha', 'lacunas'].includes(q.tipo_questao) ? '#f0fdf4' : '#dbeafe',
+                          color:      q.tipo_questao === 'dissertativa' ? '#92400e' : q.tipo_questao === 'associacao' ? '#3730a3' : ['caca_palavras', 'cruzadinha', 'lacunas'].includes(q.tipo_questao) ? '#166534' : '#1d4ed8',
                         }}>
                           {TIPOS_QUESTAO[q.tipo_questao || 'multipla'].icone} {TIPOS_QUESTAO[q.tipo_questao || 'multipla'].label}
                         </span>
@@ -706,6 +755,87 @@ export default function CriadorAvaliacao() {
                         <p className="text-xs mt-2" style={{ color: '#9ca3af' }}>
                           🔗 O aluno verá a coluna B embaralhada e precisará ligar cada item. Correção automática com crédito parcial.
                         </p>
+                      </div>
+                    )}
+
+                    {/* ── CAÇA-PALAVRAS: lista de palavras (uma por linha) ── */}
+                    {q.tipo_questao === 'caca_palavras' && (
+                      <div style={{ marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+                          Palavras do jogo (uma por linha)
+                        </div>
+                        <textarea
+                          className="input-field resize-none"
+                          rows={6}
+                          placeholder={"Ex:\nFOTOSSINTESE\nCLOROFILA\nENERGIA\nOXIGENIO"}
+                          value={q.palavras_texto}
+                          onChange={e => updateQuestao(qi, 'palavras_texto', e.target.value)}
+                        />
+                        <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
+                          🔤 A grade é montada automaticamente (horizontal, vertical e diagonal). Mínimo 3 palavras, sem espaços. Correção automática com crédito parcial.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* ── CRUZADINHA: itens dica ↔ palavra ── */}
+                    {q.tipo_questao === 'cruzadinha' && (
+                      <div style={{ marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
+                          Dicas e palavras
+                        </div>
+                        <div className="space-y-2">
+                          {(q.itens_cruzadinha || []).map((it, ii) => (
+                            <div key={ii} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <input
+                                className="input-field flex-1"
+                                placeholder={`Dica ${ii + 1} — ex: Astro que ilumina o dia`}
+                                value={it.dica}
+                                onChange={e => updateItemCruz(qi, ii, 'dica', e.target.value)}
+                                style={{ marginBottom: 0 }}
+                              />
+                              <span style={{ color: '#1a3fd4', fontWeight: 900, flexShrink: 0 }}>→</span>
+                              <input
+                                className="input-field"
+                                placeholder="PALAVRA"
+                                value={it.palavra}
+                                onChange={e => updateItemCruz(qi, ii, 'palavra', e.target.value.toUpperCase().replace(/\s/g, ''))}
+                                style={{ marginBottom: 0, width: 150, flexShrink: 0 }}
+                              />
+                              <button type="button" onClick={() => removeItemCruz(qi, ii)} className="text-danger hover:text-red-700 text-sm flex-shrink-0">✕</button>
+                            </div>
+                          ))}
+                        </div>
+                        <button type="button" onClick={() => addItemCruz(qi)} style={{
+                          marginTop: 8, padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                          background: '#eff6ff', border: '1.5px dashed #1a3fd4', color: '#1a3fd4', cursor: 'pointer'
+                        }}>+ Adicionar item</button>
+                        <p className="text-xs mt-2" style={{ color: '#9ca3af' }}>
+                          ➕ A grade é montada automaticamente cruzando as palavras. O aluno digita a resposta de cada dica. Correção automática com crédito parcial.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* ── COMPLETAR LACUNAS: texto com [palavra] ── */}
+                    {q.tipo_questao === 'lacunas' && (
+                      <div style={{ marginBottom: 4 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+                          Texto com lacunas
+                        </div>
+                        <textarea
+                          className="input-field resize-none"
+                          rows={5}
+                          placeholder={'Escreva o texto e marque cada lacuna com colchetes.\nEx: O [sol] é uma estrela que ilumina a [terra] durante o dia.'}
+                          value={q.texto_lacunas}
+                          onChange={e => updateQuestao(qi, 'texto_lacunas', e.target.value)}
+                        />
+                        <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>
+                          ✏️ O aluno vê o texto com espaços vazios e escolhe as palavras no banco embaralhado. Marque cada lacuna assim: <strong>[palavra]</strong>. Correção automática com crédito parcial.
+                        </p>
+                        {((q.texto_lacunas || '').match(/\[[^\]]+\]/g) || []).length > 0 && (
+                          <p className="text-xs mt-1" style={{ color: '#16a34a', fontWeight: 600 }}>
+                            ✅ {((q.texto_lacunas || '').match(/\[[^\]]+\]/g) || []).length} lacuna(s) detectada(s)
+                          </p>
+                        )}
                       </div>
                     )}
 

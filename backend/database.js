@@ -40,6 +40,8 @@ async function initDatabase() {
     `ALTER TABLE respostas_alunos ADD COLUMN IF NOT EXISTS resposta_texto TEXT`,
     `ALTER TABLE respostas_alunos ADD COLUMN IF NOT EXISTS corrigida INTEGER DEFAULT 1`,
     `ALTER TABLE respostas_alunos ADD COLUMN IF NOT EXISTS feedback_professor TEXT`,
+    // ── Etapa 2: Caça-Palavras, Cruzadinha e Completar Lacunas (dados do jogo em JSON) ──
+    `ALTER TABLE questoes ADD COLUMN IF NOT EXISTS dados_jogo TEXT`,
     // Perfil especial do dono da plataforma ITA (acesso global — não é escola contratante)
     `UPDATE usuarios SET perfil = 'ita_admin' WHERE email = 'itagamificaedu@gmail.com'`,
     // Cada admin tem escola_id = próprio id
