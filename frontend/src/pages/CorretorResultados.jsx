@@ -241,26 +241,12 @@ export default function CorretorResultados() {
               {alunoSel.questoes_detalhe?.length > 0 ? (
                 <div>
                   <h4 className="font-semibold text-sm text-gray-700 mb-3">Questão por Questão:</h4>
-                  <div className="space-y-2">
+                  <div className="flex gap-1.5 flex-wrap">
                     {alunoSel.questoes_detalhe.map((q, i) => (
-                      <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border ${q.acertou ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${q.acertou ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                          {q.numero}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-700 font-medium">Questão {q.numero}</p>
-                          <div className="flex gap-4 mt-1 text-xs">
-                            <span className={`font-medium ${q.acertou ? 'text-success' : 'text-danger'}`}>
-                              Resposta: <strong className="uppercase">{q.resposta_aluno || '—'}</strong>
-                            </span>
-                            {!q.acertou && q.gabarito && (
-                              <span className="text-success font-medium">
-                                Correta: <strong className="uppercase">{q.gabarito}</strong>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-lg">{q.acertou ? '✅' : '❌'}</span>
+                      <div key={i} title={`Q${q.numero}: Aluno=${q.resposta_aluno || '—'} | Gabarito=${q.gabarito || '—'}`}
+                        className={`w-10 h-10 rounded text-xs flex flex-col items-center justify-center font-bold cursor-default select-none ${q.acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className="text-[10px] leading-none text-gray-400">{q.numero}</span>
+                        <span className="text-sm leading-tight uppercase">{q.resposta_aluno || '—'}</span>
                       </div>
                     ))}
                   </div>
@@ -272,16 +258,11 @@ export default function CorretorResultados() {
                   return (
                     <div>
                       <h4 className="font-semibold text-sm text-gray-700 mb-3">Questão por Questão:</h4>
-                      <div className="space-y-2">
+                      <div className="flex gap-1.5 flex-wrap">
                         {Array.from({ length: total }, (_, i) => i < alunoSel.acertos).map((acertou, i) => (
-                          <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border ${acertou ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${acertou ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                              {i + 1}
-                            </div>
-                            <div className="flex-1">
-                              <p className={`text-sm font-medium ${acertou ? 'text-green-700' : 'text-red-700'}`}>Questão {i + 1}: {acertou ? 'Acerto' : 'Erro'}</p>
-                            </div>
-                            <span className="text-lg">{acertou ? '✅' : '❌'}</span>
+                          <div key={i}
+                            className={`w-10 h-10 rounded text-xs flex items-center justify-center font-bold ${acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {i + 1}
                           </div>
                         ))}
                       </div>
