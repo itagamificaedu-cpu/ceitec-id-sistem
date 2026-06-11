@@ -5,7 +5,7 @@ const router = express.Router();
 router.use(autenticar);
 
 const CORRETOR_BASE = 'https://correcaoonlineita.pythonanywhere.com';
-const CHAVE = 'gamificaedu_secreto_2026';
+const CHAVE = '6e0e6c9e61c6de88cb4673f2094b5b6a10343da0';
 
 async function getCorretorSession(email, nome) {
   const url = `${CORRETOR_BASE}/login-magico/?email=${encodeURIComponent(email)}&nome=${encodeURIComponent(nome || '')}&chave=${CHAVE}&next=/resultados/`;
