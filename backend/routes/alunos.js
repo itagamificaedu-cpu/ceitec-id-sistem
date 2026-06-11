@@ -7,6 +7,27 @@ const { autenticar } = require('../middleware/auth');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
+// ── Sync automático com Corretor de Provas ───────────────────────────────────
+// Chamado sempre que aluno é criado, atualizado ou importado no ITA.
+// Fire-and-forget: não bloqueia a resposta da API.
+async function sincronizarComCorretor(alunos, emailProfessor) {
+  try {
+    await fetch('https://correcaoonlineita.pythonanywhere.com/api/sync-alunos/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chave: 'gamificaedu_secreto_2026',
+        email: emailProfessor,
+        alunos: alunos
+      }),
+      signal: AbortSignal.timeout(10000)
+    });
+  } catch (e) {
+    // Falha silenciosa: o Corretor pode estar offline, não impede o ITA
+    console.warn('[Corretor Sync] Falhou:', e.message);
+  }
+}
+
 async function gerarCodigo(escola_id) {
   const ultimo = await db.get('SELECT codigo FROM alunos WHERE escola_id = ? ORDER BY id DESC LIMIT 1', [escola_id]);
   if (!ultimo) return `ESC${escola_id}-0001`;
@@ -32,6 +53,13 @@ router.post('/', async (req, res) => {
       [codigo, nome, turma, turma_id || null, curso, email_responsavel || null, telefone_responsavel || null, matricula, eid]
     );
     const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [result.lastInsertRowid]);
+
+    // Sync com Corretor de Provas (fire-and-forget)
+    sincronizarComCorretor(
+      [{ nome: aluno.nome, turma: aluno.turma, codigo: aluno.codigo }],
+      req.usuario.email
+    );
+
     res.status(201).json(aluno);
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -75,6 +103,13 @@ router.put('/:id', async (req, res) => {
       [nome, turma, turma_id || null, curso, email_responsavel, telefone_responsavel, data_matricula, req.params.id, req.usuario.escola_id]
     );
     const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.id]);
+
+    // Sync com Corretor de Provas (fire-and-forget)
+    sincronizarComCorretor(
+      [{ nome: aluno.nome, turma: aluno.turma, codigo: aluno.codigo }],
+      req.usuario.email
+    );
+
     res.json(aluno);
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -107,6 +142,13 @@ router.patch('/:id/transferir', async (req, res) => {
     )
 
     const alunoAtualizado = await db.get('SELECT * FROM alunos WHERE id = ?', [req.params.id])
+
+    // Sync com Corretor de Provas (fire-and-forget)
+    sincronizarComCorretor(
+      [{ nome: alunoAtualizado.nome, turma: alunoAtualizado.turma, codigo: alunoAtualizado.codigo }],
+      req.usuario.email
+    );
+
     res.json({
       aluno: alunoAtualizado,
       turma_anterior: turmaAnterior,
@@ -150,7 +192,7 @@ router.post('/importar', async (req, res) => {
       if (t) { turma_nome = t.nome; curso_nome = t.curso; }
     }
 
-    const REPLACEMENT = '�';
+    const REPLACEMENT = '?';
     const corrompidos = alunos.filter(a => (a.nome || '').includes(REPLACEMENT));
     if (corrompidos.length > 0) {
       return res.status(400).json({
@@ -218,6 +260,14 @@ router.post('/importar', async (req, res) => {
       }
     }
 
+    // Sync com Corretor de Provas de todos os alunos importados/atualizados
+    const todosParaSync = [...importados, ...atualizados].map(a => ({
+      nome: a.nome, turma: turma_nome || '', codigo: a.codigo
+    }));
+    if (todosParaSync.length > 0) {
+      sincronizarComCorretor(todosParaSync, req.usuario.email);
+    }
+
     res.json({
       importados: importados.length,
       atualizados: atualizados.length,
@@ -225,6 +275,18 @@ router.post('/importar', async (req, res) => {
       erros,
       lista: [...importados, ...atualizados]
     });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// Re-sincroniza TODOS os alunos ativos da escola com o Corretor de Provas
+router.post('/sync-corretor', async (req, res) => {
+  try {
+    const alunos = await db.all('SELECT nome, turma, codigo FROM alunos WHERE ativo = 1 AND escola_id = ?', [req.usuario.escola_id]);
+    if (alunos.length === 0) return res.json({ mensagem: 'Nenhum aluno para sincronizar', total: 0 });
+    await sincronizarComCorretor(alunos, req.usuario.email);
+    res.json({ mensagem: `${alunos.length} alunos enviados para sincronização com o Corretor`, total: alunos.length });
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
