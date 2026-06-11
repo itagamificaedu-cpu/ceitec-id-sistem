@@ -58,30 +58,69 @@ router.get('/resultados', async (req, res) => {
 
 router.get('/avaliacoes', async (req, res) => {
   try {
-    const { email, nome } = req.usuario;
-    const cookie = await getCorretorSession(email, nome);
-    const resultRes = await fetch(`${CORRETOR_BASE}/resultados/`, {
-      headers: { Cookie: cookie, 'User-Agent': 'ITA-CEITEC/1.0' }
-    });
-    const resultHtml = await resultRes.text();
-    const resultados = parseHtml(resultHtml);
-    // Group by avaliacao
+    const { email, nome, perfil } = req.usuario;
+    const isAdmin = perfil === 'ita_admin' || perfil === 'coordenador';
+
+    let resultados = [];
+
+    if (isAdmin) {
+      // Admin vê TODOS os resultados de TODOS os professores
+      const resp = await fetch(`${CORRETOR_BASE}/api/resultados-todos/?chave=${CHAVE}`, {
+        signal: AbortSignal.timeout(10000)
+      });
+      if (!resp.ok) throw new Error('Erro ao buscar resultados do Corretor');
+      const dados = await resp.json();
+      // Converte para o mesmo formato do parseHtml
+      resultados = dados.map(r => ({
+        aluno:     r.aluno,
+        turma:     r.turma,
+        avaliacao: r.avaliacao,
+        disciplina: r.disciplina,
+        nota:      parseFloat(r.nota) || 0,
+        acertos:   r.acertos || 0,
+        erros:     r.erros || 0,
+        data:      r.data || '',
+        professor: r.professor || '',
+      }));
+    } else {
+      // Professor vê só os seus resultados via scraping HTML
+      const cookie = await getCorretorSession(email, nome);
+      const resultRes = await fetch(`${CORRETOR_BASE}/resultados/`, {
+        headers: { Cookie: cookie, 'User-Agent': 'ITA-CEITEC/1.0' }
+      });
+      const resultHtml = await resultRes.text();
+      resultados = parseHtml(resultHtml);
+    }
+
+    // Agrupa por avaliação
     const avalMap = {};
     for (const r of resultados) {
-      if (!avalMap[r.avaliacao]) {
-        avalMap[r.avaliacao] = { titulo: r.avaliacao, disciplina: r.disciplina, resultados: [], turmas: new Set() };
+      const chave = isAdmin ? `${r.avaliacao}||${r.professor}` : r.avaliacao;
+      if (!avalMap[chave]) {
+        avalMap[chave] = {
+          titulo: r.avaliacao,
+          disciplina: r.disciplina,
+          professor: r.professor || '',
+          resultados: [],
+          turmas: new Set()
+        };
       }
-      avalMap[r.avaliacao].resultados.push(r);
-      avalMap[r.avaliacao].turmas.add(r.turma);
+      avalMap[chave].resultados.push(r);
+      if (r.turma) avalMap[chave].turmas.add(r.turma);
     }
+
     const avaliacoes = Object.values(avalMap).map(a => ({
-      titulo: a.titulo,
-      disciplina: a.disciplina,
+      titulo:      a.titulo,
+      disciplina:  a.disciplina,
+      professor:   a.professor,
       total_alunos: a.resultados.length,
-      media: a.resultados.length ? (a.resultados.reduce((s,r) => s + r.nota, 0) / a.resultados.length).toFixed(1) : '0',
-      turmas: Array.from(a.turmas).join(', '),
+      media: a.resultados.length
+        ? (a.resultados.reduce((s, r) => s + r.nota, 0) / a.resultados.length).toFixed(1)
+        : '0',
+      turmas:     Array.from(a.turmas).join(', '),
       resultados: a.resultados,
     }));
+
     res.json(avaliacoes);
   } catch (err) {
     res.status(500).json({ erro: err.message });

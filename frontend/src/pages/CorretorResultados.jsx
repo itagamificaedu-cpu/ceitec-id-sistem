@@ -11,6 +11,8 @@ export default function CorretorResultados() {
   const [erro, setErro] = useState('')
   const [avaliacaoSel, setAvaliacaoSel] = useState(null)
   const [alunoSel, setAlunoSel] = useState(null)
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const isAdmin = usuario.perfil === 'ita_admin' || usuario.perfil === 'coordenador'
 
   function carregar() {
     setCarregando(true)
@@ -91,6 +93,7 @@ export default function CorretorResultados() {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${avaliacaoSel === i ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'}`}
                     >
                       {a.titulo}
+                      {isAdmin && a.professor && <span className="ml-1 text-xs opacity-70">({a.professor.split('@')[0]})</span>}
                     </button>
                   ))}
                 </div>
@@ -101,7 +104,10 @@ export default function CorretorResultados() {
                   {/* Info da avaliação */}
                   <div className="bg-white rounded-xl shadow-md p-5 mb-5">
                     <h2 className="text-xl font-bold text-textMain">{av.titulo}</h2>
-                    <p className="text-gray-500 text-sm">{av.disciplina} • {av.turmas} • {av.total_alunos} alunos</p>
+                    <p className="text-gray-500 text-sm">
+                      {av.disciplina} • {av.turmas} • {av.total_alunos} alunos
+                      {isAdmin && av.professor && <span className="ml-2 text-primary font-medium">👨‍🏫 {av.professor}</span>}
+                    </p>
                   </div>
 
                   {/* Stats */}
