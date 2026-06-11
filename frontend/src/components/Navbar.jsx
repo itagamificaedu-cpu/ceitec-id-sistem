@@ -311,7 +311,6 @@ export default function Navbar() {
             { path: '/corretor-resultados', label: 'Resultados Corretor',       icon: '📋' },
             { path: '/avaliacoes',          label: 'Avaliações da Plataforma',  icon: '📝' },
             { href: '/quiz-copa/',   label: 'Copa do Saber',        icon: '⚽' },
-            { path: '/desempenho', label: 'Desempenho Acadêmico', icon: '📊' },
             { path: '/diagnostico',         label: 'Diagnóstico por Disciplina',icon: '🔬' },
             { path: '/ocorrencias',         label: 'Ocorrências',               icon: '⚠️' },
             { path: '/professor-game',      label: 'Professor Game',            icon: '🏆' },
