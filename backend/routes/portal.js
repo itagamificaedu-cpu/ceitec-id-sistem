@@ -154,7 +154,7 @@ router.get('/:codigo', async (req, res) => {
 
     // FIX: Buscar XP real do ItagGame Django e sincronizar com nossa tabela
     const XP_SYNC_CAP   = 10000; // nível máximo da plataforma
-    const XP_BAN_LIMITE = 10500; // acima disso = burló o sistema → ban automático
+    const XP_BAN_LIMITE = 10200; // acima disso = burló o sistema → ban automático
     let xpTotal = xp?.xp_total || 0;
     try {
       const statsResp = await fetch(
