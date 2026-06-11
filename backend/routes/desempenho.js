@@ -5,34 +5,78 @@ const { autenticar } = require('../middleware/auth');
 const router = express.Router();
 router.use(autenticar);
 
-// URL interna do Django no Docker (mesmo host da rede app)
-const DJANGO_INTERNO = process.env.DJANGO_INTERNAL_URL || 'http://django:8000';
-const CHAVE_CORRETOR  = 'gamificaedu_secreto_2026';
+const CORRETOR_BASE  = 'https://correcaoonlineita.pythonanywhere.com';
+const CHAVE_CORRETOR = 'gamificaedu_secreto_2026';
 
 /**
- * Busca resultados do Corretor de Provas (Django/PostgreSQL)
+ * Busca resultados do Corretor de Provas (PythonAnywhere)
  * e os transforma no mesmo formato que o /geral usa,
  * mais uma lista completa de avaliações para exibir na tabela.
  * GET /api/desempenho/corretor
  */
 router.get('/corretor', async (req, res) => {
   try {
-    const email = req.usuario.email;
-    const url   = `${DJANGO_INTERNO}/corretor/api/resultados-json/?chave=${CHAVE_CORRETOR}&email=${encodeURIComponent(email)}`;
+    const { email, perfil } = req.usuario;
+    const isAdmin = perfil === 'ita_admin' || perfil === 'coordenador' || perfil === 'admin';
 
-    const respDjango = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    let resultadosFlat = [];
 
-    if (!respDjango.ok) {
-      // Django retornou erro (professor não cadastrado no Corretor, etc.)
+    if (isAdmin) {
+      const resp = await fetch(`${CORRETOR_BASE}/api/resultados-todos/?chave=${CHAVE_CORRETOR}`, {
+        signal: AbortSignal.timeout(10000)
+      });
+      if (!resp.ok) throw new Error('Erro ao buscar resultados do Corretor');
+      resultadosFlat = await resp.json();
+    } else {
+      const resp = await fetch(`${CORRETOR_BASE}/api/resultados-professor/?email=${encodeURIComponent(email)}&chave=${CHAVE_CORRETOR}`, {
+        signal: AbortSignal.timeout(10000)
+      });
+      if (!resp.ok) {
+        return res.json({
+          total_alunos: 0, media_geral: null, aprovados: 0, em_risco: 0,
+          por_turma: [], por_disciplina: [], alunos_risco: [], avaliacoes: [],
+          aviso: 'Nenhum resultado encontrado no Corretor para este professor.',
+        });
+      }
+      resultadosFlat = await resp.json();
+    }
+
+    if (!resultadosFlat.length) {
       return res.json({
         total_alunos: 0, media_geral: null, aprovados: 0, em_risco: 0,
         por_turma: [], por_disciplina: [], alunos_risco: [], avaliacoes: [],
-        aviso: 'Nenhum resultado encontrado no Corretor para este professor.',
       });
     }
 
-    // dados = array de avaliações com 'resultados' internos
-    const dados = await respDjango.json();
+    // Agrupa resultados por avaliação (mesmo padrão de corretor.js)
+    const avalMap = {};
+    for (const r of resultadosFlat) {
+      const chave = isAdmin ? `${r.avaliacao}||${r.professor}` : r.avaliacao;
+      if (!avalMap[chave]) {
+        avalMap[chave] = {
+          titulo: r.avaliacao,
+          disciplina: r.disciplina,
+          professor: r.professor || '',
+          resultados: [],
+          turmas: new Set(),
+        };
+      }
+      avalMap[chave].resultados.push(r);
+      if (r.turma) avalMap[chave].turmas.add(r.turma);
+    }
+
+    const dados = Object.values(avalMap).map(a => ({
+      titulo:          a.titulo,
+      disciplina:      a.disciplina,
+      professor:       a.professor,
+      total_alunos:    a.resultados.length,
+      turmas:          Array.from(a.turmas).join(', '),
+      numero_questoes: a.resultados[0] ? (a.resultados[0].acertos || 0) + (a.resultados[0].erros || 0) : 0,
+      media:           a.resultados.length
+        ? (a.resultados.reduce((s, r) => s + (Number(r.nota) || 0), 0) / a.resultados.length).toFixed(1)
+        : '0',
+      resultados: a.resultados,
+    }));
 
     // ── Agrega por aluno, turma e disciplina ───────────────────────────────
     const turmaMap  = {};

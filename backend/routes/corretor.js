@@ -72,15 +72,16 @@ router.get('/avaliacoes', async (req, res) => {
       const dados = await resp.json();
       // Converte para o mesmo formato do parseHtml
       resultados = dados.map(r => ({
-        aluno:     r.aluno,
-        turma:     r.turma,
-        avaliacao: r.avaliacao,
-        disciplina: r.disciplina,
-        nota:      parseFloat(r.nota) || 0,
-        acertos:   r.acertos || 0,
-        erros:     r.erros || 0,
-        data:      r.data || '',
-        professor: r.professor || '',
+        aluno:            r.aluno,
+        turma:            r.turma,
+        avaliacao:        r.avaliacao,
+        disciplina:       r.disciplina,
+        nota:             parseFloat(r.nota) || 0,
+        acertos:          r.acertos || 0,
+        erros:            r.erros || 0,
+        data:             r.data || '',
+        professor:        r.professor || '',
+        questoes_detalhe: r.questoes_detalhe || [],
       }));
     } else {
       // Professor vê só os seus resultados via API JSON (inclui questoes_detalhe)
