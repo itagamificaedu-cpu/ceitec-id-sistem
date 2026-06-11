@@ -148,7 +148,7 @@ export default function CorretorResultados() {
                           <th className="text-left px-4 py-3 text-gray-600">Nota</th>
                           <th className="text-left px-4 py-3 text-gray-600">% Acerto</th>
                           <th className="text-left px-4 py-3 text-gray-600">Status</th>
-                          <th className="text-left px-4 py-3 text-gray-600">Questões</th>
+                          {!isAdmin && <th className="text-left px-4 py-3 text-gray-600">Questões</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -168,24 +168,26 @@ export default function CorretorResultados() {
                                   ? <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">Recuperação</span>
                                   : <span className="px-2 py-0.5 bg-red-100 text-danger rounded-full text-xs">Em risco</span>}
                               </td>
-                              <td className="px-4 py-3">
-                                <div className="flex gap-0.5 flex-wrap">
-                                  {temDetalhe
-                                    ? r.questoes_detalhe.map((q, i) => (
-                                        <span key={i} title={`Q${q.numero}: ${q.acertou ? 'Acerto' : 'Erro'}`}
-                                          className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${q.acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                          {q.numero}
-                                        </span>
-                                      ))
-                                    : Array.from({ length: total }, (_, i) => i < r.acertos).map((acertou, i) => (
-                                        <span key={i} title={`Q${i + 1}: ${acertou ? 'Acerto' : 'Erro'}`}
-                                          className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                          {i + 1}
-                                        </span>
-                                      ))
-                                  }
-                                </div>
-                              </td>
+                              {!isAdmin && (
+                                <td className="px-4 py-3">
+                                  <div className="flex gap-0.5 flex-wrap">
+                                    {temDetalhe
+                                      ? r.questoes_detalhe.map((q, i) => (
+                                          <span key={i} title={`Q${q.numero}: ${q.acertou ? 'Acerto' : 'Erro'}`}
+                                            className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${q.acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {q.numero}
+                                          </span>
+                                        ))
+                                      : Array.from({ length: total }, (_, i) => i < r.acertos).map((acertou, i) => (
+                                          <span key={i} title={`Q${i + 1}: ${acertou ? 'Acerto' : 'Erro'}`}
+                                            className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {i + 1}
+                                          </span>
+                                        ))
+                                    }
+                                  </div>
+                                </td>
+                              )}
                             </tr>
                           )
                         })}
