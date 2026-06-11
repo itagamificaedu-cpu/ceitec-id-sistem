@@ -146,7 +146,7 @@ export default function CorretorResultados() {
                         <tr>
                           <th className="text-left px-4 py-3 text-gray-600">Aluno</th>
                           <th className="text-left px-4 py-3 text-gray-600">Nota</th>
-                          <th className="text-left px-4 py-3 text-gray-600">% Acerto</th>
+                          <th className="text-left px-4 py-3 text-gray-600">% Acerto / Erro</th>
                           <th className="text-left px-4 py-3 text-gray-600">Status</th>
                           <th className="text-left px-4 py-3 text-gray-600">Questões</th>
                         </tr>
@@ -165,7 +165,11 @@ export default function CorretorResultados() {
                                 </span>
                               </td>
                               <td className="px-4 py-3 font-bold" style={{ color: corNota(r.nota) }}>{r.nota}</td>
-                              <td className="px-4 py-3 text-gray-500">{pct}%</td>
+                              <td className="px-4 py-3">
+                                <span className="text-green-600 font-medium">{pct}%</span>
+                                <span className="text-gray-300 mx-1">/</span>
+                                <span className="text-red-500 font-medium">{total > 0 ? Math.round((r.erros / total) * 100) : 0}%</span>
+                              </td>
                               <td className="px-4 py-3">
                                 {r.nota >= 7
                                   ? <span className="px-2 py-0.5 bg-green-100 text-success rounded-full text-xs">Aprovado</span>
@@ -176,12 +180,15 @@ export default function CorretorResultados() {
                               <td className="px-4 py-3">
                                 <div className="flex gap-0.5 flex-wrap">
                                   {temDetalhe
-                                    ? r.questoes_detalhe.map((q, i) => (
-                                        <span key={i} title={`Q${q.numero}: Aluno=${q.resposta_aluno} Gabarito=${q.gabarito}`}
-                                          className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${q.acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                          {q.numero}
-                                        </span>
-                                      ))
+                                    ? r.questoes_detalhe.map((q, i) => {
+                                        const acertou = (r.erros === 0) ? true : q.acertou
+                                        return (
+                                          <span key={i} title={`Q${q.numero}: ${q.resposta_aluno || '—'} | gabarito: ${q.gabarito || '—'}`}
+                                            className={`w-5 h-5 rounded text-[10px] flex items-center justify-center font-bold uppercase ${acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {q.resposta_aluno || q.numero}
+                                          </span>
+                                        )
+                                      })
                                     : Array.from({ length: total }, (_, i) => i < r.acertos).map((acertou, i) => (
                                         <span key={i}
                                           className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${acertou ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
