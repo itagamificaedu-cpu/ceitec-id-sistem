@@ -223,23 +223,31 @@ export default function CorretorResultados() {
             </div>
 
             <div className="p-5">
-              {/* Resumo */}
-              <div className="grid grid-cols-3 gap-3 mb-5">
-                <div className="bg-green-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-success">{alunoSel.acertos}</p>
-                  <p className="text-xs text-gray-500">Acertos</p>
-                </div>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-danger">{alunoSel.erros}</p>
-                  <p className="text-xs text-gray-500">Erros</p>
-                </div>
-                <div className="bg-blue-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-primary">
-                    {(() => { const t = (alunoSel.acertos || 0) + (alunoSel.erros || 0); return t > 0 ? Math.round((alunoSel.acertos / t) * 100) + '%' : '—' })()}
-                  </p>
-                  <p className="text-xs text-gray-500">% Acerto</p>
-                </div>
-              </div>
+              {/* Resumo — usa questoes_detalhe para garantir consistência com os quadradinhos */}
+              {(() => {
+                const temDetalhe = alunoSel.questoes_detalhe?.length > 0
+                const acertos = temDetalhe ? alunoSel.questoes_detalhe.filter(q => q.acertou).length : (alunoSel.acertos || 0)
+                const erros   = temDetalhe ? alunoSel.questoes_detalhe.filter(q => !q.acertou).length : (alunoSel.erros || 0)
+                const total   = acertos + erros
+                return (
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    <div className="bg-green-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-success">{acertos}</p>
+                      <p className="text-xs text-gray-500">Acertos</p>
+                    </div>
+                    <div className="bg-red-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-danger">{erros}</p>
+                      <p className="text-xs text-gray-500">Erros</p>
+                    </div>
+                    <div className="bg-blue-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-primary">
+                        {total > 0 ? Math.round((acertos / total) * 100) + '%' : '—'}
+                      </p>
+                      <p className="text-xs text-gray-500">% Acerto</p>
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Grade de questões */}
               {alunoSel.questoes_detalhe?.length > 0 ? (
