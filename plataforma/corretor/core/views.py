@@ -24,6 +24,11 @@ from .utils.helpers import normalizar_turma, turmas_compativeis
 logger = logging.getLogger(__name__)
 
 
+def _é_admin(user):
+    """Retorna True se o usuário tem acesso global (ita_admin ou superuser)."""
+    return user.is_superuser or user.groups.filter(name='ita_admin').exists()
+
+
 # ---------------------------------------------------------------------------
 # Importação de Alunos
 # ---------------------------------------------------------------------------
@@ -107,8 +112,12 @@ def registro_view(request):
 
 @login_required
 def home(request):
-    avaliacoes_qs = Avaliacao.objects.filter(professor=request.user)
-    correcoes_qs = Resultado.objects.filter(avaliacao__professor=request.user)
+    if _é_admin(request.user):
+        avaliacoes_qs = Avaliacao.objects.all()
+        correcoes_qs = Resultado.objects.all()
+    else:
+        avaliacoes_qs = Avaliacao.objects.filter(professor=request.user)
+        correcoes_qs = Resultado.objects.filter(avaliacao__professor=request.user)
 
     context = {
         'total_avaliacoes': avaliacoes_qs.count(),
@@ -125,7 +134,10 @@ def home(request):
 
 @login_required
 def lista_avaliacoes(request):
-    avaliacoes = Avaliacao.objects.filter(professor=request.user)
+    if _é_admin(request.user):
+        avaliacoes = Avaliacao.objects.select_related('professor').all()
+    else:
+        avaliacoes = Avaliacao.objects.filter(professor=request.user)
 
     filtro_status = request.GET.get('status')
     filtro_disciplina = request.GET.get('disciplina')
@@ -143,6 +155,7 @@ def lista_avaliacoes(request):
         'avaliacoes': avaliacoes_page,
         'filtro_status': filtro_status,
         'filtro_disciplina': filtro_disciplina,
+        'é_admin': _é_admin(request.user),
     })
 
 
@@ -394,7 +407,10 @@ def correcao(request):
     else:
         form = CorrecaoForm()
 
-    avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
+    avaliacoes = (
+        Avaliacao.objects.order_by('-data_criacao').all() if _é_admin(request.user)
+        else Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
+    )
     turmas_sugeridas = AlunoITA.objects.filter(ativo=1).values_list('turma', flat=True).distinct()
     alunos_sugeridos = AlunoITA.objects.filter(ativo=1).order_by('nome')[:50]
 
@@ -408,7 +424,10 @@ def correcao(request):
 
 @login_required
 def correcao_lote(request):
-    avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
+    avaliacoes = (
+        Avaliacao.objects.order_by('-data_criacao').all() if _é_admin(request.user)
+        else Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
+    )
     return render(request, 'correcao/lote.html', {'avaliacoes': avaliacoes})
 
 
@@ -537,9 +556,12 @@ def api_get_alunos_turma(request, avaliacao_id):
 
 @login_required
 def lista_resultados(request):
-    resultados = Resultado.objects.filter(
-        avaliacao__professor=request.user
-    ).select_related('avaliacao')
+    if _é_admin(request.user):
+        resultados = Resultado.objects.select_related('avaliacao', 'avaliacao__professor').all()
+    else:
+        resultados = Resultado.objects.filter(
+            avaliacao__professor=request.user
+        ).select_related('avaliacao')
 
     filtro_avaliacao = request.GET.get('avaliacao')
     filtro_turma = request.GET.get('turma', '').strip()
@@ -553,11 +575,16 @@ def lista_resultados(request):
     page = request.GET.get('page', 1)
     resultados_page = paginator.get_page(page)
 
+    avaliacoes_filtro = (
+        Avaliacao.objects.all() if _é_admin(request.user)
+        else Avaliacao.objects.filter(professor=request.user)
+    )
     return render(request, 'resultados/lista.html', {
         'resultados': resultados_page,
         'filtro_avaliacao': filtro_avaliacao,
         'filtro_turma': filtro_turma,
-        'avaliacoes': Avaliacao.objects.filter(professor=request.user),
+        'avaliacoes': avaliacoes_filtro,
+        'é_admin': _é_admin(request.user),
     })
 
 
@@ -567,11 +594,14 @@ def lista_resultados(request):
 
 @login_required
 def dashboard(request):
-    avaliacoes = Avaliacao.objects.filter(
-        professor=request.user
-    ).prefetch_related('resultados')
-
-    resultados_qs = Resultado.objects.filter(avaliacao__professor=request.user)
+    if _é_admin(request.user):
+        avaliacoes = Avaliacao.objects.prefetch_related('resultados').all()
+        resultados_qs = Resultado.objects.all()
+    else:
+        avaliacoes = Avaliacao.objects.filter(
+            professor=request.user
+        ).prefetch_related('resultados')
+        resultados_qs = Resultado.objects.filter(avaliacao__professor=request.user)
 
     total_avaliacoes = avaliacoes.count()
     total_correcoes = resultados_qs.count()
@@ -614,15 +644,21 @@ def dashboard(request):
 
 @login_required
 def exportar_view(request):
-    avaliacoes = Avaliacao.objects.filter(professor=request.user)
+    avaliacoes = (
+        Avaliacao.objects.all() if _é_admin(request.user)
+        else Avaliacao.objects.filter(professor=request.user)
+    )
     return render(request, 'core/exportar.html', {'avaliacoes': avaliacoes})
 
 
 @login_required
 def exportar_excel(request):
-    resultados = Resultado.objects.filter(
-        avaliacao__professor=request.user
-    ).select_related('avaliacao')
+    if _é_admin(request.user):
+        resultados = Resultado.objects.select_related('avaliacao').all()
+    else:
+        resultados = Resultado.objects.filter(
+            avaliacao__professor=request.user
+        ).select_related('avaliacao')
 
     filtro_avaliacao = request.GET.get('avaliacao')
     filtro_turma = request.GET.get('turma', '').strip()

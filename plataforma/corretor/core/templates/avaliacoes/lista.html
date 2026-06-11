@@ -6,7 +6,8 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold">
-            <i class="fas fa-file-alt"></i> Minhas Avaliações
+            <i class="fas fa-file-alt"></i>
+            {% if é_admin %}Todas as Avaliações{% else %}Minhas Avaliações{% endif %}
         </h2>
         <a href="{% url 'criar_avaliacao' %}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Nova Avaliação
@@ -46,6 +47,7 @@
                     <thead>
                         <tr>
                             <th>Título</th>
+                            {% if é_admin %}<th>Professor</th>{% endif %}
                             <th>Instituição</th>
                             <th>Disciplina</th>
                             <th>Série/Turma</th>
@@ -68,6 +70,7 @@
                                 <span class="badge bg-success ms-1" style="font-size: 0.7rem;">Online</span>
                                 {% endif %}
                             </td>
+                            {% if é_admin %}<td class="text-muted small">{{ avaliacao.professor.get_full_name|default:avaliacao.professor.username }}</td>{% endif %}
                             <td>{{ avaliacao.instituicao }}</td>
                             <td>{{ avaliacao.disciplina }}</td>
                             <td>{{ avaliacao.serie }}º {{ avaliacao.turma }}</td>
