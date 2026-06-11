@@ -59,7 +59,7 @@ router.get('/resultados', async (req, res) => {
 router.get('/avaliacoes', async (req, res) => {
   try {
     const { email, nome, perfil } = req.usuario;
-    const isAdmin = perfil === 'ita_admin' || perfil === 'coordenador';
+    const isAdmin = perfil === 'ita_admin' || perfil === 'coordenador' || perfil === 'admin';
 
     let resultados = [];
 
