@@ -26,7 +26,11 @@ logger = logging.getLogger(__name__)
 
 def _é_admin(user):
     """Retorna True se o usuário tem acesso global (ita_admin ou superuser)."""
-    return user.is_superuser or user.groups.filter(name='ita_admin').exists()
+    return (
+        user.is_superuser
+        or user.groups.filter(name='ita_admin').exists()
+        or getattr(user, 'type_user', '') == 'admin'
+    )
 
 
 # ---------------------------------------------------------------------------
