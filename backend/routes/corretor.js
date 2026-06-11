@@ -83,13 +83,12 @@ router.get('/avaliacoes', async (req, res) => {
         professor: r.professor || '',
       }));
     } else {
-      // Professor vê só os seus resultados via scraping HTML
-      const cookie = await getCorretorSession(email, nome);
-      const resultRes = await fetch(`${CORRETOR_BASE}/resultados/`, {
-        headers: { Cookie: cookie, 'User-Agent': 'ITA-CEITEC/1.0' }
+      // Professor vê só os seus resultados via API JSON (inclui questoes_detalhe)
+      const resp = await fetch(`${CORRETOR_BASE}/api/resultados-professor/?email=${encodeURIComponent(email)}&chave=${CHAVE}`, {
+        signal: AbortSignal.timeout(10000)
       });
-      const resultHtml = await resultRes.text();
-      resultados = parseHtml(resultHtml);
+      if (!resp.ok) throw new Error('Erro ao buscar resultados do professor');
+      resultados = await resp.json();
     }
 
     // Agrupa por avaliação
