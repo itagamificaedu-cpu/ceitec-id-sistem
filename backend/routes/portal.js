@@ -61,7 +61,7 @@ router.get('/:codigo', async (req, res) => {
 
     const eid = aluno.escola_id;
 
-    const [xp, historico_xp, notas, presencas, ocorrencias, missoes, entregas, recados, repositorio, provas, loja, resgates, avaliacoes_turma, quizzes_escola, startup_equipe] = await Promise.all([
+    const [xp, historico_xp, notas, presencas, ocorrencias, missoes, entregas, recados, repositorio, provas, loja, resgates, avaliacoes_turma, quizzes_escola, startup_equipe, cabo_guerra_ativa] = await Promise.all([
       db.get('SELECT * FROM itagame_pontos WHERE aluno_id = ?', [aluno.id]),
       db.all('SELECT * FROM itagame_historico WHERE aluno_id = ? ORDER BY criado_em DESC LIMIT 30', [aluno.id]),
       db.all(`SELECT n.*, av.titulo AS avaliacao_titulo, av.tipo AS avaliacao_tipo, av.disciplina, av.data_aplicacao FROM notas n JOIN avaliacoes av ON n.avaliacao_id = av.id WHERE n.aluno_id = ? ORDER BY av.data_aplicacao DESC`, [aluno.id]),
@@ -145,6 +145,11 @@ router.get('/:codigo', async (req, res) => {
         }
         return null; // aluno não está em nenhuma equipe
       })(),
+      // Busca partida de Cabo de Guerra em andamento para a escola do aluno
+      db.get(
+        `SELECT id, titulo, nome1, nome2, disciplina FROM cabo_guerra_partidas WHERE escola_id = ? AND status = 'em_andamento' ORDER BY iniciado_em DESC LIMIT 1`,
+        [eid]
+      ).catch(() => null),
     ]);
 
     const entregasMap = {};
@@ -334,6 +339,7 @@ router.get('/:codigo', async (req, res) => {
       avaliacoes: avaliacoes_turma.map(av => ({ ...av, ja_respondeu: parseInt(av.ja_respondeu) > 0 })),
       quizzes: quizzes_escola.map(q => ({ ...q, total_questoes: parseInt(q.total_questoes) || 0, ja_jogou: parseInt(q.ja_jogou) > 0 })),
       startup: startup_equipe,
+      cabo_guerra_ativa: cabo_guerra_ativa || null,
     });
   } catch (err) {
     res.status(500).json({ erro: err.message });
