@@ -12,7 +12,6 @@ const TABS = [
   { id: 'missoes',     label: 'MISSÕES',     emoji: '🎯' },
   { id: 'loja',        label: 'LOJA',        emoji: '💰' },
   { id: 'avaliacoes',  label: 'AVALIAÇÕES',  emoji: '🧪' },
-  { id: 'corretor',    label: 'PROVAS',      emoji: '📋' },
   { id: 'startup',     label: 'STARTUP',     emoji: '💼' },
   { id: 'notas',       label: 'NOTAS',       emoji: '📝' },
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
