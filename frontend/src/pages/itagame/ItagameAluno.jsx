@@ -1412,101 +1412,37 @@ function AbaRepositorio({ repositorio }) {
    ABA JOGOS — Cabo de Guerra, Batalha de Calculadoras, Batalha Online
 ══════════════════════════════════════════ */
 function AbaJogos({ codigoAluno, escolaId, caboGuerraAtiva }) {
-  const temPartida = caboGuerraAtiva && caboGuerraAtiva.id
-
-  const jogosExternos = [
-    {
-      titulo:    'Batalha de Calculadoras',
-      descricao: 'Duelo de matemática em tempo real. Seja mais rápido que o adversário!',
-      emoji:     '🧮',
-      cor:       N.azul,
-      href:      '/cabo-de-guerra.html',
-    },
-    {
-      titulo:    'Batalha Online 🔥',
-      descricao: 'Enfrente colegas de outras turmas em desafios online ao vivo.',
-      emoji:     '⚔️',
-      cor:       N.rosa,
-      href:      '/cabo-de-guerra-online.html',
-    },
-  ]
-
   return (
     <div>
       <div style={{ fontWeight: 900, fontSize: 17, color: N.amarelo, marginBottom: 6, letterSpacing: 1, textShadow: `0 0 12px ${N.amarelo}` }}>
-        🎮 JOGOS AO VIVO
+        🎮 JOGOS
       </div>
       <p style={{ color: N.cinza, fontSize: 13, marginBottom: 22 }}>
-        Atividades competitivas criadas pelo professor. Entre quando ele iniciar a sessão.
+        Jogue online e desafie colegas de outras turmas!
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-        {/* Cabo de Guerra — mostra status da partida */}
-        <NeonCard cor={temPartida ? N.verde : N.cinza}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <NeonCard cor={N.rosa} style={{ cursor: 'pointer' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => window.open('/cabo-de-guerra-online.html', '_blank')}>
             <div style={{
               fontSize: 42, width: 64, height: 64, borderRadius: 16,
-              background: `${temPartida ? N.verde : N.cinza}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, border: `1px solid ${temPartida ? N.verde : N.cinza}44`,
+              background: `${N.rosa}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, border: `1px solid ${N.rosa}44`,
             }}>
-              🪢
+              ⚔️
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 900, fontSize: 16, color: temPartida ? N.verde : N.cinza, marginBottom: 4, letterSpacing: 0.5, textShadow: temPartida ? `0 0 10px ${N.verde}88` : 'none' }}>
-                Cabo de Guerra
+              <div style={{ fontWeight: 900, fontSize: 16, color: N.rosa, marginBottom: 4, letterSpacing: 0.5, textShadow: `0 0 10px ${N.rosa}88` }}>
+                Batalha Online 🔥
               </div>
-              {temPartida ? (
-                <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
-                  {caboGuerraAtiva.titulo} — {caboGuerraAtiva.nome1} vs {caboGuerraAtiva.nome2}
-                </div>
-              ) : (
-                <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
-                  Aguardando o professor iniciar a partida...
-                </div>
-              )}
+              <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
+                Enfrente colegas de outras turmas em desafios online ao vivo.
+              </div>
             </div>
-            {temPartida ? (
-              <a
-                href={`/aluno/cabo-guerra/${caboGuerraAtiva.id}`}
-                style={{
-                  background: N.verde, color: '#000', fontWeight: 900, fontSize: 13,
-                  padding: '10px 16px', borderRadius: 12, textDecoration: 'none',
-                  whiteSpace: 'nowrap', boxShadow: `0 0 16px ${N.verde}66`,
-                }}
-              >
-                ▶ ENTRAR
-              </a>
-            ) : (
-              <div style={{ color: N.cinza, fontSize: 22, paddingLeft: 8, opacity: 0.4 }}>⏳</div>
-            )}
+            <div style={{ color: N.rosa, fontSize: 22, fontWeight: 900, paddingLeft: 8, textShadow: `0 0 10px ${N.rosa}` }}>
+              ▶
+            </div>
           </div>
         </NeonCard>
-
-        {/* Jogos externos */}
-        {jogosExternos.map((jogo, i) => (
-          <NeonCard key={i} cor={jogo.cor} style={{ cursor: 'pointer' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => window.open(jogo.href, '_blank')}>
-              <div style={{
-                fontSize: 42, width: 64, height: 64, borderRadius: 16,
-                background: `${jogo.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, border: `1px solid ${jogo.cor}44`,
-              }}>
-                {jogo.emoji}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 900, fontSize: 16, color: jogo.cor, marginBottom: 4, letterSpacing: 0.5, textShadow: `0 0 10px ${jogo.cor}88` }}>
-                  {jogo.titulo}
-                </div>
-                <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
-                  {jogo.descricao}
-                </div>
-              </div>
-              <div style={{ color: jogo.cor, fontSize: 22, fontWeight: 900, paddingLeft: 8, textShadow: `0 0 10px ${jogo.cor}` }}>
-                ▶
-              </div>
-            </div>
-          </NeonCard>
-        ))}
       </div>
     </div>
   )
