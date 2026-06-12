@@ -286,19 +286,21 @@ router.post('/sync', async (req, res) => {
       console.log('[SYNC] Erro PythonAnywhere:', erroSync);
     } else {
       const dados = await rankRes.json();
-      const alunosPY = dados.alunos || [];
+      // API retorna { ranking: [...] } com campos nome/xp/nivel/turma
+      const alunosPY = dados.ranking || dados.alunos || [];
       console.log('[SYNC] Alunos recebidos do PythonAnywhere:', alunosPY.length);
 
-      // Mapa codigo → XP/nivel
+      // Mapa nome (uppercase) → XP/nivel
       const mapaXP = {};
       for (const a of alunosPY) {
-        mapaXP[a.codigo] = { xp: a.xp || 0, nivel: a.nivel || 1 };
+        const chave = (a.nome || '').trim().toUpperCase();
+        if (chave) mapaXP[chave] = { xp: a.xp || 0, nivel: a.nivel || 1 };
       }
 
       // Log de alunos com XP > 0 no PythonAnywhere
       const comXpPY = alunosPY.filter(a => a.xp > 0);
       console.log('[SYNC] Alunos com XP>0 no PythonAnywhere:', comXpPY.length);
-      comXpPY.forEach(a => console.log(`  PY: ${a.codigo} → ${a.xp} XP`));
+      comXpPY.forEach(a => console.log(`  PY: ${a.nome} → ${a.xp} XP`));
 
       // UPSERT em lote: INSERT ... ON CONFLICT DO UPDATE (1 query só)
       if (alunos.length > 0) {
@@ -307,7 +309,7 @@ router.post('/sync', async (req, res) => {
         const params = [];
         let idx = 1;
         for (const aluno of alunos) {
-          const pyDado = mapaXP[aluno.codigo];
+          const pyDado = mapaXP[(aluno.nome || '').trim().toUpperCase()];
           const xpReal = pyDado ? pyDado.xp : 0;
           const nivelReal = pyDado ? pyDado.nivel : 1;
           valores.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, '[]')`);
