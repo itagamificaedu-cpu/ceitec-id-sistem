@@ -766,6 +766,10 @@ def responder_prova_online(request, pk):
 
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
 
+    # Bloqueia submissão se prova não estiver liberada
+    if not avaliacao.liberada:
+        return JsonResponse({'sucesso': False, 'erro': 'Esta prova não está liberada pelo professor.'})
+
     try:
         data = json.loads(request.body)
         aluno_nome = data.get('aluno_nome', '').strip()
@@ -833,6 +837,11 @@ def responder_prova_online(request, pk):
 
 def prova_online(request, pk):
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
+
+    # Bloqueia acesso se prova não estiver liberada pelo professor
+    if not avaliacao.liberada:
+        return render(request, 'avaliacoes/prova_bloqueada.html', {'avaliacao': avaliacao})
+
     _all_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
     alunos = [a for a in _all_ita if turmas_compativeis(a.turma, avaliacao.turma)] or _all_ita
 

@@ -51,7 +51,8 @@ class Avaliacao(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='rascunho')
     is_manual = models.BooleanField(default=False, help_text="Se a prova foi criada manualmente no sistema")
     is_online = models.BooleanField(default=False, help_text="Se a prova pode ser respondida online pelos alunos")
-    
+    liberada = models.BooleanField(default=False, help_text="Se a prova está liberada para acesso dos alunos no momento")
+
     class Meta:
         verbose_name = 'Avaliação'
         verbose_name_plural = 'Avaliações'
