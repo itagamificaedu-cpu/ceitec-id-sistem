@@ -11,6 +11,7 @@ export default function CorretorResultados() {
   const [erro, setErro] = useState('')
   const [avaliacaoSel, setAvaliacaoSel] = useState(null)
   const [alunoSel, setAlunoSel] = useState(null)
+  const [turmaSel, setTurmaSel] = useState('')
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
   const isAdmin = usuario.perfil === 'ita_admin' || usuario.perfil === 'coordenador'
 
@@ -55,7 +56,8 @@ export default function CorretorResultados() {
   )
 
   const av = avaliacaoSel !== null ? avaliacoes[avaliacaoSel] : null
-  const resultados = av?.resultados || []
+  const turmasDisp = av ? [...new Set(av.resultados.map(r => r.turma).filter(Boolean))].sort() : []
+  const resultados = (av?.resultados || []).filter(r => !turmaSel || r.turma === turmaSel)
   const notasValidas = resultados.filter(r => r.nota != null)
   const mediaGeral = notasValidas.length > 0
     ? (notasValidas.reduce((s, r) => s + r.nota, 0) / notasValidas.length).toFixed(1)
@@ -89,7 +91,7 @@ export default function CorretorResultados() {
                   {avaliacoes.map((a, i) => (
                     <button
                       key={i}
-                      onClick={() => { setAvaliacaoSel(i); setAlunoSel(null) }}
+                      onClick={() => { setAvaliacaoSel(i); setAlunoSel(null); setTurmaSel('') }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${avaliacaoSel === i ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'}`}
                     >
                       {a.titulo}
@@ -136,9 +138,21 @@ export default function CorretorResultados() {
 
                   {/* Tabela */}
                   <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div className="p-5 border-b flex items-center justify-between">
+                    <div className="p-5 border-b flex items-center justify-between flex-wrap gap-3">
                       <h3 className="font-semibold text-textMain">Resultados por Aluno</h3>
-                      <p className="text-xs text-gray-400">Clique em um aluno para ver questão por questão</p>
+                      <div className="flex items-center gap-3">
+                        {turmasDisp.length > 1 && (
+                          <select
+                            className="input-field w-auto text-sm"
+                            value={turmaSel}
+                            onChange={e => setTurmaSel(e.target.value)}
+                          >
+                            <option value="">Todas as turmas</option>
+                            {turmasDisp.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        )}
+                        <p className="text-xs text-gray-400">Clique em um aluno para ver questão por questão</p>
+                      </div>
                     </div>
 
                     <table className="w-full text-sm">
