@@ -8,6 +8,7 @@ const STORAGE_KEY = 'portal_aluno'
 
 const TABS = [
   { id: 'inicio',      label: 'INÍCIO',      emoji: '🏠' },
+  { id: 'jogos',       label: 'JOGOS',       emoji: '🎮' },
   { id: 'album',       label: 'ÁLBUM',       emoji: '🃏' },
   { id: 'missoes',     label: 'MISSÕES',     emoji: '🎯' },
   { id: 'loja',        label: 'LOJA',        emoji: '💰' },
@@ -17,7 +18,6 @@ const TABS = [
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
   { id: 'ocorrencias', label: 'OCORRÊNCIAS', emoji: '⚠️' },
   { id: 'repositorio', label: 'MATERIAIS',   emoji: '📚' },
-  { id: 'jogos',       label: 'JOGOS',       emoji: '🎮' },
 ]
 
 /* Paleta neon */
@@ -198,7 +198,7 @@ function TelaLogin({ codigo, setCodigo, erro, carregando, onSubmit }) {
    PORTAL PRINCIPAL
 ══════════════════════════════════════════ */
 function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScanner = false }) {
-  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [], startup = null } = dados
+  const { aluno, itagame, notas, presencas, ocorrencias, repositorio, avaliacoes, quizzes = [], startup = null, cabo_guerra_ativa = null } = dados
   const nivel = itagame.nivel
   const presentes = presencas.filter(p => p.status === 'presente').length
   const pctPresenca = presencas.length > 0 ? Math.round((presentes / presencas.length) * 100) : null
@@ -275,7 +275,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScan
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
         {aba === 'repositorio' && <AbaRepositorio repositorio={repositorio} />}
-        {aba === 'jogos'       && <AbaJogos codigoAluno={aluno.codigo} escolaId={aluno.escola_id} />}
+        {aba === 'jogos'       && <AbaJogos codigoAluno={aluno.codigo} escolaId={aluno.escola_id} caboGuerraAtiva={cabo_guerra_ativa} />}
       </div>
     </div>
   )
@@ -1411,22 +1411,15 @@ function AbaRepositorio({ repositorio }) {
 /* ══════════════════════════════════════════
    ABA JOGOS — Cabo de Guerra, Batalha de Calculadoras, Batalha Online
 ══════════════════════════════════════════ */
-function AbaJogos({ codigoAluno, escolaId }) {
-  const jogos = [
-    {
-      titulo:    'Cabo de Guerra',
-      descricao: 'Batalha em equipes respondendo perguntas ao vivo. Entre na sala criada pelo professor.',
-      emoji:     '🪢',
-      cor:       N.verde,
-      tipo:      'interno',
-      path:      '/cabo-de-guerra',
-    },
+function AbaJogos({ codigoAluno, escolaId, caboGuerraAtiva }) {
+  const temPartida = caboGuerraAtiva && caboGuerraAtiva.id
+
+  const jogosExternos = [
     {
       titulo:    'Batalha de Calculadoras',
       descricao: 'Duelo de matemática em tempo real. Seja mais rápido que o adversário!',
       emoji:     '🧮',
       cor:       N.azul,
-      tipo:      'externo',
       href:      '/cabo-de-guerra.html',
     },
     {
@@ -1434,18 +1427,9 @@ function AbaJogos({ codigoAluno, escolaId }) {
       descricao: 'Enfrente colegas de outras turmas em desafios online ao vivo.',
       emoji:     '⚔️',
       cor:       N.rosa,
-      tipo:      'externo',
       href:      '/cabo-de-guerra-online.html',
     },
   ]
-
-  function abrirJogo(jogo) {
-    if (jogo.tipo === 'externo') {
-      window.open(jogo.href, '_blank')
-    } else {
-      window.location.href = jogo.path
-    }
-  }
 
   return (
     <div>
@@ -1456,9 +1440,52 @@ function AbaJogos({ codigoAluno, escolaId }) {
         Atividades competitivas criadas pelo professor. Entre quando ele iniciar a sessão.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {jogos.map((jogo, i) => (
-          <NeonCard key={i} cor={jogo.cor} style={{ cursor: 'pointer' }} >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => abrirJogo(jogo)}>
+
+        {/* Cabo de Guerra — mostra status da partida */}
+        <NeonCard cor={temPartida ? N.verde : N.cinza}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{
+              fontSize: 42, width: 64, height: 64, borderRadius: 16,
+              background: `${temPartida ? N.verde : N.cinza}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, border: `1px solid ${temPartida ? N.verde : N.cinza}44`,
+            }}>
+              🪢
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 900, fontSize: 16, color: temPartida ? N.verde : N.cinza, marginBottom: 4, letterSpacing: 0.5, textShadow: temPartida ? `0 0 10px ${N.verde}88` : 'none' }}>
+                Cabo de Guerra
+              </div>
+              {temPartida ? (
+                <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
+                  {caboGuerraAtiva.titulo} — {caboGuerraAtiva.nome1} vs {caboGuerraAtiva.nome2}
+                </div>
+              ) : (
+                <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
+                  Aguardando o professor iniciar a partida...
+                </div>
+              )}
+            </div>
+            {temPartida ? (
+              <a
+                href={`/aluno/cabo-guerra/${caboGuerraAtiva.id}`}
+                style={{
+                  background: N.verde, color: '#000', fontWeight: 900, fontSize: 13,
+                  padding: '10px 16px', borderRadius: 12, textDecoration: 'none',
+                  whiteSpace: 'nowrap', boxShadow: `0 0 16px ${N.verde}66`,
+                }}
+              >
+                ▶ ENTRAR
+              </a>
+            ) : (
+              <div style={{ color: N.cinza, fontSize: 22, paddingLeft: 8, opacity: 0.4 }}>⏳</div>
+            )}
+          </div>
+        </NeonCard>
+
+        {/* Jogos externos */}
+        {jogosExternos.map((jogo, i) => (
+          <NeonCard key={i} cor={jogo.cor} style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => window.open(jogo.href, '_blank')}>
               <div style={{
                 fontSize: 42, width: 64, height: 64, borderRadius: 16,
                 background: `${jogo.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1474,10 +1501,7 @@ function AbaJogos({ codigoAluno, escolaId }) {
                   {jogo.descricao}
                 </div>
               </div>
-              <div style={{
-                color: jogo.cor, fontSize: 22, fontWeight: 900, paddingLeft: 8,
-                textShadow: `0 0 10px ${jogo.cor}`,
-              }}>
+              <div style={{ color: jogo.cor, fontSize: 22, fontWeight: 900, paddingLeft: 8, textShadow: `0 0 10px ${jogo.cor}` }}>
                 ▶
               </div>
             </div>
