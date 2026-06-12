@@ -368,7 +368,7 @@ export default function Desempenho() {
               )}
 
               {/* Tabela de provas (só aba Corretor) */}
-              {aba === 'corretor' && <TabelaAvaliacoes avaliacoes={dadosCorretor?.avaliacoes} />}
+              {aba === 'corretor' && <TabelaAvaliacoes avaliacoes={dadosCorretorFiltrado?.avaliacoes} />}
 
               {/* Alunos em risco */}
               {dados.alunos_risco?.length > 0 && (
