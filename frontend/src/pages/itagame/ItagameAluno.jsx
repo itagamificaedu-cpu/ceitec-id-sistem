@@ -17,6 +17,7 @@ const TABS = [
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
   { id: 'ocorrencias', label: 'OCORRÊNCIAS', emoji: '⚠️' },
   { id: 'repositorio', label: 'MATERIAIS',   emoji: '📚' },
+  { id: 'jogos',       label: 'JOGOS',       emoji: '🎮' },
 ]
 
 /* Paleta neon */
@@ -274,6 +275,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScan
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
         {aba === 'repositorio' && <AbaRepositorio repositorio={repositorio} />}
+        {aba === 'jogos'       && <AbaJogos codigoAluno={aluno.codigo} escolaId={aluno.escola_id} />}
       </div>
     </div>
   )
@@ -1402,6 +1404,86 @@ function AbaRepositorio({ repositorio }) {
           </a>
         )
       })}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   ABA JOGOS — Cabo de Guerra, Batalha de Calculadoras, Batalha Online
+══════════════════════════════════════════ */
+function AbaJogos({ codigoAluno, escolaId }) {
+  const jogos = [
+    {
+      titulo:    'Cabo de Guerra',
+      descricao: 'Batalha em equipes respondendo perguntas ao vivo. Entre na sala criada pelo professor.',
+      emoji:     '🪢',
+      cor:       N.verde,
+      tipo:      'interno',
+      path:      '/cabo-de-guerra',
+    },
+    {
+      titulo:    'Batalha de Calculadoras',
+      descricao: 'Duelo de matemática em tempo real. Seja mais rápido que o adversário!',
+      emoji:     '🧮',
+      cor:       N.azul,
+      tipo:      'externo',
+      href:      '/cabo-de-guerra.html',
+    },
+    {
+      titulo:    'Batalha Online 🔥',
+      descricao: 'Enfrente colegas de outras turmas em desafios online ao vivo.',
+      emoji:     '⚔️',
+      cor:       N.rosa,
+      tipo:      'externo',
+      href:      '/cabo-de-guerra-online.html',
+    },
+  ]
+
+  function abrirJogo(jogo) {
+    if (jogo.tipo === 'externo') {
+      window.open(jogo.href, '_blank')
+    } else {
+      window.location.href = jogo.path
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ fontWeight: 900, fontSize: 17, color: N.amarelo, marginBottom: 6, letterSpacing: 1, textShadow: `0 0 12px ${N.amarelo}` }}>
+        🎮 JOGOS AO VIVO
+      </div>
+      <p style={{ color: N.cinza, fontSize: 13, marginBottom: 22 }}>
+        Atividades competitivas criadas pelo professor. Entre quando ele iniciar a sessão.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {jogos.map((jogo, i) => (
+          <NeonCard key={i} cor={jogo.cor} style={{ cursor: 'pointer' }} >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} onClick={() => abrirJogo(jogo)}>
+              <div style={{
+                fontSize: 42, width: 64, height: 64, borderRadius: 16,
+                background: `${jogo.cor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, border: `1px solid ${jogo.cor}44`,
+              }}>
+                {jogo.emoji}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 900, fontSize: 16, color: jogo.cor, marginBottom: 4, letterSpacing: 0.5, textShadow: `0 0 10px ${jogo.cor}88` }}>
+                  {jogo.titulo}
+                </div>
+                <div style={{ color: N.cinza, fontSize: 13, lineHeight: 1.5 }}>
+                  {jogo.descricao}
+                </div>
+              </div>
+              <div style={{
+                color: jogo.cor, fontSize: 22, fontWeight: 900, paddingLeft: 8,
+                textShadow: `0 0 10px ${jogo.cor}`,
+              }}>
+                ▶
+              </div>
+            </div>
+          </NeonCard>
+        ))}
+      </div>
     </div>
   )
 }
