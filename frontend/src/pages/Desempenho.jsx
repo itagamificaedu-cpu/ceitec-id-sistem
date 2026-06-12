@@ -120,6 +120,7 @@ export default function Desempenho() {
   const [aba, setAba]             = useState('corretor')   // 'corretor' | 'notas'
   const [turmas, setTurmas]       = useState([])
   const [turmaSel, setTurmaSel]   = useState('')
+  const [turmaCorretorSel, setTurmaCorretorSel] = useState('')
 
   // dados para cada aba
   const [dadosCorretor, setDadosCorretor] = useState(null)
@@ -138,13 +139,11 @@ export default function Desempenho() {
     setErro(null)
 
     if (aba === 'corretor') {
-      // Resultados da Prova Online (Corretor Django)
       api.get('/desempenho/corretor')
         .then(({ data }) => setDadosCorretor(data))
         .catch(e => setErro('Erro ao buscar dados do Corretor: ' + e.message))
         .finally(() => setCarregando(false))
     } else {
-      // Notas manuais (Node.js SQLite)
       const url = turmaSel ? `/desempenho/turma/${turmaSel}` : '/desempenho/geral'
       api.get(url)
         .then(({ data }) => setDadosNotas(data))
@@ -153,7 +152,48 @@ export default function Desempenho() {
     }
   }, [aba, turmaSel])
 
-  const dados = aba === 'corretor' ? dadosCorretor : dadosNotas
+  // Turmas disponíveis extraídas dos resultados do Corretor (client-side)
+  const turmasCorretor = dadosCorretor?.avaliacoes
+    ? [...new Set(
+        dadosCorretor.avaliacoes.flatMap(av => av.resultados.map(r => r.turma)).filter(Boolean)
+      )].sort()
+    : []
+
+  // Filtra dados do Corretor pela turma selecionada (sem alterar resultados)
+  const dadosCorretorFiltrado = (() => {
+    if (!dadosCorretor || !turmaCorretorSel) return dadosCorretor
+    const avaliacoesFiltradas = dadosCorretor.avaliacoes
+      .map(av => ({
+        ...av,
+        resultados: av.resultados.filter(r => r.turma === turmaCorretorSel),
+      }))
+      .filter(av => av.resultados.length > 0)
+
+    if (!avaliacoesFiltradas.length) return { ...dadosCorretor, avaliacoes: [], total_alunos: 0, por_turma: [], por_disciplina: [], alunos_risco: [] }
+
+    const todasNotas = avaliacoesFiltradas.flatMap(av => av.resultados.map(r => Number(r.nota) || 0))
+    const media = ns => ns.length ? Math.round((ns.reduce((s, v) => s + v, 0) / ns.length) * 10) / 10 : null
+    const discMap = {}
+    avaliacoesFiltradas.forEach(av => {
+      av.resultados.forEach(r => {
+        const d = av.disciplina || 'Sem disciplina'
+        if (!discMap[d]) discMap[d] = []
+        discMap[d].push(Number(r.nota) || 0)
+      })
+    })
+    return {
+      ...dadosCorretor,
+      avaliacoes: avaliacoesFiltradas,
+      total_alunos: avaliacoesFiltradas.reduce((s, av) => s + av.resultados.length, 0),
+      media_geral: media(todasNotas),
+      aprovados: todasNotas.filter(n => n >= 7).length,
+      em_risco: todasNotas.filter(n => n < 5).length,
+      por_turma: [{ turma: turmaCorretorSel, media: media(todasNotas) }],
+      por_disciplina: Object.entries(discMap).map(([disciplina, ns]) => ({ disciplina, media: media(ns) })),
+    }
+  })()
+
+  const dados = aba === 'corretor' ? dadosCorretorFiltrado : dadosNotas
 
   // ── Exportar CSV dos resultados do Corretor ───────────────────────────────
   function exportarCSVCorretor() {
@@ -233,7 +273,19 @@ export default function Desempenho() {
               📝 Notas Manuais
             </button>
 
-            {/* Filtro de turma (só aba notas manuais) */}
+            {/* Filtro de turma — Corretor */}
+            {aba === 'corretor' && turmasCorretor.length > 0 && (
+              <select
+                className="ml-auto input-field w-auto text-sm"
+                value={turmaCorretorSel}
+                onChange={e => setTurmaCorretorSel(e.target.value)}
+              >
+                <option value="">Todas as turmas</option>
+                {turmasCorretor.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            )}
+
+            {/* Filtro de turma — Notas Manuais */}
             {aba === 'notas' && (
               <select
                 className="ml-auto input-field w-auto text-sm"
