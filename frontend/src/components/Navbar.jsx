@@ -47,6 +47,7 @@ const secoes = [
     titulo: 'ITAGAME',
     itens: [
       { path: '/itagame', label: 'ItagGame Dashboard', icon: '🎮' },
+      { href: '/bolao/', label: 'Bolão da Copa 2026', icon: '🏆' },
     ]
   },
   {
