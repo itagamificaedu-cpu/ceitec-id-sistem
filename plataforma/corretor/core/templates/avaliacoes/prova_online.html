@@ -214,8 +214,7 @@
         }
     </style>
 </head>
-{# data-prova-id lido pelo monitoramento_foco.js para identificar a prova #}
-<body data-prova-id="{{ avaliacao.id }}">
+<body>
 
     <div class="page-container">
         <!-- Lado 1: A PROVA (PDF) -->
@@ -317,9 +316,6 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Monitoramento de foco — carregado APENAS nesta página de avaliação -->
-    <script src="{% static 'monitoramento/js/monitoramento_foco.js' %}"></script>
     
     <script>
         $(document).ready(function() {

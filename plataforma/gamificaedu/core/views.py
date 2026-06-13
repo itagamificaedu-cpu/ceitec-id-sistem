@@ -40,11 +40,11 @@ def assinar_plano(request, tipo_plano):
     sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
 
     if tipo_plano == 'educador':
-        titulo = "Plano Professor - GamificaEdu"
-        preco = 59.00
+        titulo = "Plano Educador - GamificaEdu"
+        preco = 0.10
     elif tipo_plano == 'colaborador':
-        titulo = "Plano Colaborador Premium - GamificaEdu"
-        preco = 79.00
+        titulo = "Plano Colaborador - GamificaEdu"
+        preco = 39.00
     else:
         return redirect('/')
 

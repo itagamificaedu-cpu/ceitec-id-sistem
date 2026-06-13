@@ -66,23 +66,6 @@ services:
     ports:
       - "3000:80"
 
-  # ── Mestre da Escola (Next.js) ────────────────────────────
-  # ATENÇÃO: clone o repositório mestre_escola_v2 na pasta pai do CEITEC ID SYSTEM
-  # com exatamente este nome: mestre_escola_v2
-  # Exemplo no VPS: cd /home/genez && git clone https://github.com/itagenezio/mestre_escola_v2.git
-  mestre:
-    build:
-      context: ./mestre_escola_v2
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_PATH: /mestre
-        MESTRE_API_URL: http://node:3001
-    restart: unless-stopped
-    depends_on:
-      - node
-    ports:
-      - "3002:3002"
-
   # ── Nginx (Proxy Reverso) ──────────────────────────────────────
   nginx:
     image: nginx:alpine
@@ -99,7 +82,6 @@ services:
       - django_static:/var/www/static:ro
       - django_media:/var/www/media:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./quiz-copa:/var/www/quiz-copa:ro
 
 volumes:
   postgres_data:

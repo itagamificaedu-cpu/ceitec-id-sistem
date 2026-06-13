@@ -17,8 +17,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://itatecnologiaeducacional.tech',
 ]
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,12 +36,6 @@ INSTALLED_APPS = [
     'gamificaedu.gamification',
     'gamificaedu.quiz.apps.QuizConfig',
     'corretor.core',
-    # Sistema de monitoramento de foco (anti-cheat)
-    'monitoramento.apps.MonitoramentoConfig',
-    # Sistema de inscrições — Curso de Férias Maker
-    'inscricoes.apps.InscricoesConfig',
-    # Dia do Desafio — Evento esportivo CEITEC
-    'desafio.apps.DesafioConfig',
 ]
 
 MIDDLEWARE = [
@@ -73,9 +65,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
-            'builtins': [
-                'inscricoes.templatetags.inscricoes_tags',
             ],
         },
     },
@@ -178,11 +167,6 @@ SSO_COOKIE_DOMAIN = os.getenv('SSO_COOKIE_DOMAIN', '')
 
 # --- MASTER ---
 MASTER_PASSWORD = os.getenv('MASTER_PASSWORD', '')
-
-# --- PAGSEGURO (Inscrições Curso de Férias) ---
-PAGSEGURO_TOKEN = os.getenv('PAGSEGURO_TOKEN', '')
-PAGSEGURO_SANDBOX = os.getenv('PAGSEGURO_SANDBOX', 'True') == 'True'
-BASE_URL = os.getenv('BASE_URL', 'https://itatecnologiaeducacional.tech')
 
 # --- PLANOS ---
 PLANOS = {
