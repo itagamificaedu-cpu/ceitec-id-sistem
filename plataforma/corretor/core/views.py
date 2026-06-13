@@ -24,15 +24,6 @@ from .utils.helpers import normalizar_turma, turmas_compativeis
 logger = logging.getLogger(__name__)
 
 
-def _é_admin(user):
-    """Retorna True se o usuário tem acesso global (ita_admin ou superuser)."""
-    return (
-        user.is_superuser
-        or user.groups.filter(name='ita_admin').exists()
-        or getattr(user, 'type_user', '') == 'admin'
-    )
-
-
 # ---------------------------------------------------------------------------
 # Importação de Alunos
 # ---------------------------------------------------------------------------
@@ -116,12 +107,8 @@ def registro_view(request):
 
 @login_required
 def home(request):
-    if _é_admin(request.user):
-        avaliacoes_qs = Avaliacao.objects.all()
-        correcoes_qs = Resultado.objects.all()
-    else:
-        avaliacoes_qs = Avaliacao.objects.filter(professor=request.user)
-        correcoes_qs = Resultado.objects.filter(avaliacao__professor=request.user)
+    avaliacoes_qs = Avaliacao.objects.filter(professor=request.user)
+    correcoes_qs = Resultado.objects.filter(avaliacao__professor=request.user)
 
     context = {
         'total_avaliacoes': avaliacoes_qs.count(),
@@ -138,10 +125,7 @@ def home(request):
 
 @login_required
 def lista_avaliacoes(request):
-    if _é_admin(request.user):
-        avaliacoes = Avaliacao.objects.select_related('professor').all()
-    else:
-        avaliacoes = Avaliacao.objects.filter(professor=request.user)
+    avaliacoes = Avaliacao.objects.filter(professor=request.user)
 
     filtro_status = request.GET.get('status')
     filtro_disciplina = request.GET.get('disciplina')
@@ -159,7 +143,6 @@ def lista_avaliacoes(request):
         'avaliacoes': avaliacoes_page,
         'filtro_status': filtro_status,
         'filtro_disciplina': filtro_disciplina,
-        'é_admin': _é_admin(request.user),
     })
 
 
@@ -411,10 +394,7 @@ def correcao(request):
     else:
         form = CorrecaoForm()
 
-    avaliacoes = (
-        Avaliacao.objects.order_by('-data_criacao').all() if _é_admin(request.user)
-        else Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
-    )
+    avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
     turmas_sugeridas = AlunoITA.objects.filter(ativo=1).values_list('turma', flat=True).distinct()
     alunos_sugeridos = AlunoITA.objects.filter(ativo=1).order_by('nome')[:50]
 
@@ -428,10 +408,7 @@ def correcao(request):
 
 @login_required
 def correcao_lote(request):
-    avaliacoes = (
-        Avaliacao.objects.order_by('-data_criacao').all() if _é_admin(request.user)
-        else Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
-    )
+    avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
     return render(request, 'correcao/lote.html', {'avaliacoes': avaliacoes})
 
 
@@ -560,12 +537,9 @@ def api_get_alunos_turma(request, avaliacao_id):
 
 @login_required
 def lista_resultados(request):
-    if _é_admin(request.user):
-        resultados = Resultado.objects.select_related('avaliacao', 'avaliacao__professor').all()
-    else:
-        resultados = Resultado.objects.filter(
-            avaliacao__professor=request.user
-        ).select_related('avaliacao')
+    resultados = Resultado.objects.filter(
+        avaliacao__professor=request.user
+    ).select_related('avaliacao')
 
     filtro_avaliacao = request.GET.get('avaliacao')
     filtro_turma = request.GET.get('turma', '').strip()
@@ -579,16 +553,11 @@ def lista_resultados(request):
     page = request.GET.get('page', 1)
     resultados_page = paginator.get_page(page)
 
-    avaliacoes_filtro = (
-        Avaliacao.objects.all() if _é_admin(request.user)
-        else Avaliacao.objects.filter(professor=request.user)
-    )
     return render(request, 'resultados/lista.html', {
         'resultados': resultados_page,
         'filtro_avaliacao': filtro_avaliacao,
         'filtro_turma': filtro_turma,
-        'avaliacoes': avaliacoes_filtro,
-        'é_admin': _é_admin(request.user),
+        'avaliacoes': Avaliacao.objects.filter(professor=request.user),
     })
 
 
@@ -598,14 +567,11 @@ def lista_resultados(request):
 
 @login_required
 def dashboard(request):
-    if _é_admin(request.user):
-        avaliacoes = Avaliacao.objects.prefetch_related('resultados').all()
-        resultados_qs = Resultado.objects.all()
-    else:
-        avaliacoes = Avaliacao.objects.filter(
-            professor=request.user
-        ).prefetch_related('resultados')
-        resultados_qs = Resultado.objects.filter(avaliacao__professor=request.user)
+    avaliacoes = Avaliacao.objects.filter(
+        professor=request.user
+    ).prefetch_related('resultados')
+
+    resultados_qs = Resultado.objects.filter(avaliacao__professor=request.user)
 
     total_avaliacoes = avaliacoes.count()
     total_correcoes = resultados_qs.count()
@@ -648,21 +614,15 @@ def dashboard(request):
 
 @login_required
 def exportar_view(request):
-    avaliacoes = (
-        Avaliacao.objects.all() if _é_admin(request.user)
-        else Avaliacao.objects.filter(professor=request.user)
-    )
+    avaliacoes = Avaliacao.objects.filter(professor=request.user)
     return render(request, 'core/exportar.html', {'avaliacoes': avaliacoes})
 
 
 @login_required
 def exportar_excel(request):
-    if _é_admin(request.user):
-        resultados = Resultado.objects.select_related('avaliacao').all()
-    else:
-        resultados = Resultado.objects.filter(
-            avaliacao__professor=request.user
-        ).select_related('avaliacao')
+    resultados = Resultado.objects.filter(
+        avaliacao__professor=request.user
+    ).select_related('avaliacao')
 
     filtro_avaliacao = request.GET.get('avaliacao')
     filtro_turma = request.GET.get('turma', '').strip()
@@ -766,10 +726,6 @@ def responder_prova_online(request, pk):
 
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
 
-    # Bloqueia submissão se prova não estiver liberada
-    if not avaliacao.liberada:
-        return JsonResponse({'sucesso': False, 'erro': 'Esta prova não está liberada pelo professor.'})
-
     try:
         data = json.loads(request.body)
         aluno_nome = data.get('aluno_nome', '').strip()
@@ -837,11 +793,6 @@ def responder_prova_online(request, pk):
 
 def prova_online(request, pk):
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
-
-    # Bloqueia acesso se prova não estiver liberada pelo professor
-    if not avaliacao.liberada:
-        return render(request, 'avaliacoes/prova_bloqueada.html', {'avaliacao': avaliacao})
-
     _all_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
     alunos = [a for a in _all_ita if turmas_compativeis(a.turma, avaliacao.turma)] or _all_ita
 
@@ -1323,47 +1274,3 @@ def api_resultados_json(request):
         })
 
     return cors(JsonResponse(data, safe=False))
-
-
-@csrf_exempt
-def api_sync_alunos(request):
-    """Recebe alunos do sistema ITA e salva localmente para uso no corretor."""
-    if request.method != 'POST':
-        return JsonResponse({'erro': 'Metodo nao permitido'}, status=405)
-    try:
-        data = json.loads(request.body)
-        if data.get('chave') != 'gamificaedu_secreto_2026':
-            return JsonResponse({'erro': 'Chave invalida'}, status=403)
-        criados = 0
-        for a in data.get('alunos', []):
-            nome = a.get('nome', '').strip()
-            turma = a.get('turma', '').strip()
-            if nome and turma:
-                AlunoITA.objects.get_or_create(
-                    nome=nome, turma=turma,
-                    defaults={'codigo': a.get('codigo', ''), 'ativo': 1}
-                )
-                criados += 1
-        return JsonResponse({'ok': True, 'sincronizados': criados})
-    except Exception as e:
-        return JsonResponse({'erro': str(e)}, status=500)
-
-
-@csrf_exempt
-def api_reset_resultados(request):
-    """Apaga todos os resultados do corretor. Protegido por chave secreta."""
-    if request.method != 'POST':
-        return JsonResponse({'erro': 'Metodo nao permitido'}, status=405)
-    try:
-        data = json.loads(request.body)
-        if data.get('chave') != 'gamificaedu_secreto_2026':
-            return JsonResponse({'erro': 'Chave invalida'}, status=403)
-        from .models import Resultado, Estatisticas, Tentativa, TokenQR
-        total = Resultado.objects.count()
-        Resultado.objects.all().delete()
-        Estatisticas.objects.all().delete()
-        Tentativa.objects.all().delete()
-        TokenQR.objects.all().delete()
-        return JsonResponse({'ok': True, 'resultados_apagados': total})
-    except Exception as e:
-        return JsonResponse({'erro': str(e)}, status=500)

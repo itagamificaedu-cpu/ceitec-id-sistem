@@ -3,7 +3,10 @@
     "allow": [
       "Bash(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@srv1644397.hstgr.cloud \"find / -name 'docker-compose.yml' 2>/dev/null | grep -v proc | head -5\")",
       "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"cd /app && git pull origin main\")",
-      "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"docker compose -f /app/docker-compose.yml cp django:/app/gamificaedu/quiz/migrations/0001_initial.py /app/plataforma/gamificaedu/quiz/migrations/0001_initial.py && echo ok\")"
+      "Bash(ssh -o StrictHostKeyChecking=no root@srv1644397.hstgr.cloud \"docker compose -f /app/docker-compose.yml cp django:/app/gamificaedu/quiz/migrations/0001_initial.py /app/plataforma/gamificaedu/quiz/migrations/0001_initial.py && echo ok\")",
+      "Bash(ssh root@2.24.73.137 \"docker exec app-node-1 cat /app/server.js\" > /tmp/server_node.js *)",
+      "Bash(sed -i \"s|app.use\\('/api/quiz',         require\\('./routes/quiz'\\)\\);    // quiz público — sem check de licença|app.use\\('/api/ceitecgame', require\\('./routes/ceitecgame'\\)\\); // CEITECGAME PWA — magic link SSO\\\\napp.use\\('/api/quiz',         require\\('./routes/quiz'\\)\\);    // quiz público — sem check de licença|\" /tmp/server_node.js)",
+      "Read(//tmp/**)"
     ]
   }
 }

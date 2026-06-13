@@ -333,6 +333,13 @@
     <a href="/corretor/" class="nav-item {% if '/corretor/' in request.path %}ativo{% endif %}">
       <span class="nav-icon">📝</span> Corretor de Provas
     </a>
+    <a href="/ferramentas/" class="nav-item {% if '/ferramentas/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">📁</span> Repositório
+    </a>
+    <a href="/quiz/" class="nav-item {% if '/quiz/' in request.path %}ativo{% endif %}">
+      <span class="nav-icon">🎯</span> Quiz
+      <span class="nav-badge novo">Novo</span>
+    </a>
     <a href="/pedagogico/" class="nav-item {% if '/pedagogico/' in request.path %}ativo{% endif %}">
       <span class="nav-icon">📚</span> Área Pedagógica
     </a>
@@ -340,33 +347,8 @@
       <span class="nav-icon">📊</span> Relatórios
     </a>
 
-    {% if usuario and usuario.type_user == 'admin' %}
-    <div class="nav-section-label">ITA Admin</div>
-    <a href="/ita/dashboard/" class="nav-item {% if '/ita/dashboard/' in request.path %}ativo{% endif %}">
-      <span class="nav-icon">🛡️</span> Painel Admin
-    </a>
-    <a href="/ita/usuarios/" class="nav-item {% if '/ita/usuarios/' in request.path %}ativo{% endif %}">
-      <span class="nav-icon">👥</span> Usuários
-    </a>
-    <a href="/master/dashboard/" class="nav-item {% if '/master/dashboard/' in request.path %}ativo{% endif %}">
-      <span class="nav-icon">🏫</span> Escolas
-    </a>
-    {# Agenda & Avisos — comunicados para toda a escola #}
-    <a href="/agenda" class="nav-item">
-      <span class="nav-icon">📋</span> Agenda & Avisos
-    </a>
-    {# Dia do Desafio — evento esportivo CEITEC #}
-    <a href="/desafio/admin/" class="nav-item {% if '/desafio/' in request.path %}ativo{% endif %}">
-      <span class="nav-icon">🏆</span> Dia do Desafio
-      <span class="nav-badge novo">NOVO</span>
-    </a>
-    {% endif %}
-
-    {% if usuario and usuario.type_user == 'school' %}
-    <div class="nav-section-label">Gestão Escolar</div>
-    <a href="/escola/dashboard/" class="nav-item {% if '/escola/dashboard/' in request.path %}ativo{% endif %}">
-      <span class="nav-icon">🏫</span> Minha Escola
-    </a>
+    {% if usuario and usuario.is_staff or usuario and usuario.is_superuser %}
+    <div class="nav-section-label">Gestão</div>
     <a href="/gestao-professores/" class="nav-item {% if '/gestao-professores/' in request.path %}ativo{% endif %}">
       <span class="nav-icon">👥</span> Professores
     </a>

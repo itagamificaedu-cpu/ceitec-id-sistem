@@ -59,36 +59,6 @@
     </div>
     {% endif %}
 
-    {% if avaliacao.is_online %}
-    <!-- Painel de Liberação da Prova Online -->
-    <div class="card shadow-sm border-0 mb-4" id="painelLiberacao">
-        <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold"><i class="fas fa-shield-alt text-primary"></i> Controle de Acesso — Prova Online</h6>
-        </div>
-        <div class="card-body d-flex align-items-center gap-3 flex-wrap">
-            <div id="statusLiberacao">
-                {% if avaliacao.liberada %}
-                <span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-unlock"></i> Prova LIBERADA</span>
-                {% else %}
-                <span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-lock"></i> Prova BLOQUEADA</span>
-                {% endif %}
-            </div>
-            <button id="btnLiberarProva" class="btn {% if avaliacao.liberada %}btn-danger{% else %}btn-success{% endif %} px-4"
-                    onclick="toggleLiberacao('{% if avaliacao.liberada %}bloquear{% else %}liberar{% endif %}')">
-                <i class="fas {% if avaliacao.liberada %}fa-lock{% else %}fa-unlock{% endif %}"></i>
-                {% if avaliacao.liberada %}Bloquear Prova{% else %}Liberar Prova{% endif %}
-            </button>
-            <small class="text-muted">
-                {% if avaliacao.liberada %}
-                Alunos podem acessar e responder a prova agora.
-                {% else %}
-                Alunos verão "Prova não disponível" ao tentarem acessar.
-                {% endif %}
-            </small>
-        </div>
-    </div>
-    {% endif %}
-
     <div class="row g-4">
         <!-- Infos -->
         <div class="col-md-4">
@@ -148,49 +118,4 @@
         </div>
     </div>
 </div>
-
-{% if avaliacao.is_online %}
-<script>
-function toggleLiberacao(acao) {
-    const btn = document.getElementById('btnLiberarProva');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aguarde...';
-
-    fetch('/api/liberar-prova/{{ avaliacao.id }}/', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
-        body: JSON.stringify({acao: acao})
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.sucesso) {
-            const statusDiv = document.getElementById('statusLiberacao');
-            if (data.liberada) {
-                statusDiv.innerHTML = '<span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-unlock"></i> Prova LIBERADA</span>';
-                btn.className = 'btn btn-danger px-4';
-                btn.innerHTML = '<i class="fas fa-lock"></i> Bloquear Prova';
-                btn.onclick = () => toggleLiberacao('bloquear');
-            } else {
-                statusDiv.innerHTML = '<span class="badge bg-danger fs-6 px-3 py-2"><i class="fas fa-lock"></i> Prova BLOQUEADA</span>';
-                btn.className = 'btn btn-success px-4';
-                btn.innerHTML = '<i class="fas fa-unlock"></i> Liberar Prova';
-                btn.onclick = () => toggleLiberacao('liberar');
-            }
-            btn.disabled = false;
-            alert(data.mensagem);
-        } else {
-            alert('Erro: ' + data.erro);
-            btn.disabled = false;
-            location.reload();
-        }
-    })
-    .catch(() => { alert('Erro de conexão. Tente novamente.'); btn.disabled = false; location.reload(); });
-}
-
-function getCookie(name) {
-    const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-    return v ? v[2] : null;
-}
-</script>
-{% endif %}
 {% endblock %}
