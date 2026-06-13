@@ -18,6 +18,7 @@ const TABS = [
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
   { id: 'ocorrencias', label: 'OCORRÊNCIAS', emoji: '⚠️' },
   { id: 'repositorio', label: 'MATERIAIS',   emoji: '📚' },
+  { id: 'bolao',       label: 'BOLÃO',       emoji: '⚽' },
 ]
 
 /* Paleta neon */
@@ -275,6 +276,7 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScan
         {aba === 'presenca'    && <AbaPresenca presencas={presencas} presentes={presentes} pctPresenca={pctPresenca} />}
         {aba === 'ocorrencias' && <AbaOcorrencias ocorrencias={ocorrencias} />}
         {aba === 'repositorio' && <AbaRepositorio repositorio={repositorio} />}
+        {aba === 'bolao'       && <AbaBolao />}
         {aba === 'jogos'       && <AbaJogos codigoAluno={aluno.codigo} escolaId={aluno.escola_id} caboGuerraAtiva={cabo_guerra_ativa} />}
       </div>
     </div>
@@ -1654,6 +1656,42 @@ function AbaAlbum({ codigoAluno }) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function AbaBolao() {
+  const N2 = { amarelo: '#FFE600', verde: '#00FF88', fundo: '#0A0A1A', card: 'rgba(255,255,255,0.05)', borda: 'rgba(255,255,255,0.1)' }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, padding: '32px 16px' }}>
+      <div style={{ fontSize: 64 }}>⚽</div>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ color: N2.amarelo, fontWeight: 900, fontSize: 22, letterSpacing: 2, marginBottom: 8 }}>
+          BOLÃO DA COPA 2026
+        </div>
+        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, marginBottom: 24 }}>
+          Faça seus palpites e concorra com a turma!
+        </div>
+      </div>
+      <a
+        href="https://itatecnologiaeducacional.tech/bolao/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'inline-block',
+          background: `linear-gradient(135deg, ${N2.amarelo}, #FFA500)`,
+          color: '#000',
+          fontWeight: 900,
+          fontSize: 16,
+          padding: '14px 36px',
+          borderRadius: 12,
+          textDecoration: 'none',
+          letterSpacing: 1,
+          boxShadow: `0 0 24px ${N2.amarelo}55`,
+        }}
+      >
+        🏆 ENTRAR NO BOLÃO
+      </a>
     </div>
   )
 }
