@@ -246,15 +246,15 @@ function Portal({ dados, aba, setAba, onSair, onItagame, onCopaSaber, origemScan
       </div>
 
       {/* Tabs */}
-      <div style={{ background: '#0E0E16', borderBottom: `1px solid ${N.borda}`, overflowX: 'auto' }}>
-        <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex' }}>
+      <div style={{ background: '#0E0E16', borderBottom: `1px solid ${N.borda}` }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexWrap: 'wrap' }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setAba(t.id)} style={{
-              flex: '0 0 auto', padding: '14px 18px', background: 'none', border: 'none',
+              flex: '0 0 auto', padding: '11px 14px', background: 'none', border: 'none',
               borderBottom: aba === t.id ? `3px solid ${N.amarelo}` : '3px solid transparent',
               color: aba === t.id ? N.amarelo : N.cinza,
               fontWeight: aba === t.id ? 900 : 600,
-              fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: 0.5,
+              fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: 0.5,
               textShadow: aba === t.id ? `0 0 12px ${N.amarelo}` : 'none',
             }}>
               {t.emoji} {t.label}
