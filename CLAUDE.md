@@ -11,13 +11,29 @@ Email: itagamificaedu@gmail.com
 
 ---
 
+## ⚠️ STACK REAL — NÃO É DJANGO
+
+**A plataforma ITA (itatecnologiaeducacional.tech) NÃO é Django.**
+Django existe APENAS no Corretor de Provas (projeto separado no mesmo VPS).
+
+| Camada | Tecnologia |
+|--------|------------|
+| Frontend | React + Vite (SPA) |
+| Backend principal | Node.js (Express) — container `app-node-1` no VPS |
+| Corretor de Provas | Django (projeto SEPARADO) |
+| Bolão da Copa | Python `http.server` puro — `/home/genez/bolao/app.py` |
+| Banco de dados | PostgreSQL (Neon DB) |
+| Servidor web | Nginx + Docker (compose) |
+| Deploy | git push → SSH no VPS → `docker compose up` |
+
+**NUNCA assumir que um módulo é Django sem verificar o código-fonte primeiro.**
+
 ## Infraestrutura / Hospedagem
 
-- **Servidor:** VPS Hostinger (Linux Ubuntu)
-- **Backend:** Django + Python 3.11
-- **Banco de dados:** PostgreSQL
-- **Servidor web:** Nginx + Gunicorn
-- **Deploy:** direto no VPS via SSH
+- **Servidor:** VPS Hostinger — IP `2.24.73.137`, Ubuntu 22.04
+- **Domínio:** itatecnologiaeducacional.tech
+- **Servidor web:** Nginx + Docker Compose
+- **Deploy:** direto no VPS via SSH + git pull
 - **Variáveis de ambiente:** arquivo `.env` na raiz do projeto
 
 ---
