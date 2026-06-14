@@ -1,614 +1,1224 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Dia 1 — Mundo Maker & Eletrônica Básica</title>
-  <style>
-    :root {
-      --verde: #16a34a;
-      --verde-claro: #dcfce7;
-      --laranja: #f59e0b;
-      --roxo: #8b5cf6;
-      --bg: #f0fdf4;
-      --card: #ffffff;
-      --texto: #1e293b;
-      --muted: #64748b;
-      --borda: #e2e8f0;
-      --shadow: 0 2px 12px rgba(0,0,0,0.07);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--texto);
-      font-size: 16px;
-      line-height: 1.6;
-      padding-bottom: 48px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dia 1 — Mundo Maker & Eletrônica Básica</title>
+<style>
+  :root {
+    --roxo: #7C3AED;
+    --roxo-escuro: #5B21B6;
+    --roxo-claro: #C4B5FD;
+    --roxo-bg: #EDE9FE;
+    --preto: #1C1C2E;
+    --cinza: #F5F3FF;
+    --verde: #10B981;
+    --amarelo: #F59E0B;
+    --branco: #FFFFFF;
+    --texto: #1E1B4B;
+  }
 
-    /* HEADER */
-    .header {
-      background: linear-gradient(135deg, #15803d, #166534);
-      color: white;
-      padding: 18px 16px 14px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
-    }
-    .header-top {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .dia-badge {
-      background: rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 3px 12px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-    }
-    .header h1 {
-      font-size: 17px;
-      font-weight: 800;
-      line-height: 1.25;
-      flex: 1;
-    }
-    .header-contador {
-      font-size: 12px;
-      opacity: 0.85;
-      font-weight: 600;
-      background: rgba(255,255,255,0.15);
-      border-radius: 10px;
-      padding: 3px 10px;
-      white-space: nowrap;
-    }
-    .prog-label { font-size: 10px; opacity: 0.75; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .prog-bar { background: rgba(255,255,255,0.25); border-radius: 10px; height: 7px; overflow: hidden; }
-    .prog-fill { background: white; height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* CONTENT */
-    .content { padding: 14px 14px 0; max-width: 580px; margin: 0 auto; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #F0EDFF;
+    color: var(--texto);
+    line-height: 1.6;
+  }
 
-    /* SECTION */
-    .sec-titulo {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 1.8px;
-      text-transform: uppercase;
-      color: var(--verde);
-      margin: 20px 0 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+  /* ========== CAPA ========== */
+  .capa {
+    position: relative;
+    min-height: 100vh;
+    background: var(--preto);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
 
-    /* CARD */
-    .card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 10px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--borda);
-    }
-    .card.verde { border-left: 4px solid var(--verde); background: linear-gradient(135deg, #f0fdf4, #fff); }
-    .card.laranja { border-left: 4px solid var(--laranja); background: linear-gradient(135deg, #fffbeb, #fff); }
-    .card.roxo { border: 2px solid var(--roxo); background: linear-gradient(135deg, #f5f3ff, #fff); }
-    .card-titulo { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
-    .card p { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
-    .card p + p { margin-top: 8px; }
-    strong { color: var(--texto); }
+  .capa-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1C1C2E 0%, #2D1B69 50%, #1C1C2E 100%);
+  }
 
-    /* BOAS VINDAS */
-    .bv { text-align: center; padding: 22px 12px; margin-top: 14px; }
-    .bv .emoji { font-size: 42px; display: block; margin-bottom: 10px; }
-    .bv h2 { font-size: 18px; font-weight: 800; color: #15803d; margin-bottom: 6px; }
-    .bv p { font-size: 13px; color: var(--muted); }
+  /* Círculos decorativos — estilo PDF */
+  .circulo-solido {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: var(--roxo);
+    top: -60px;
+    left: -80px;
+    opacity: 0.85;
+  }
 
-    /* OBJETIVOS */
-    .obj-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid var(--borda); font-size: 14px;
-    }
-    .obj-item:last-child { border-bottom: none; }
-    .obj-icon { font-size: 22px; flex-shrink: 0; }
+  .circulo-outline {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    border: 18px solid var(--roxo);
+    top: -40px;
+    right: -100px;
+    opacity: 0.5;
+  }
 
-    /* MATERIAIS */
-    .mat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .mat-item {
-      background: var(--bg); border-radius: 12px; padding: 13px 10px;
-      text-align: center; border: 1px solid var(--borda);
-    }
-    .mat-emoji { font-size: 28px; display: block; margin-bottom: 5px; }
-    .mat-nome { font-size: 12px; font-weight: 700; color: var(--texto); }
-    .mat-qtd { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .circulo-pequeno {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--roxo-claro);
+    bottom: 140px;
+    right: 30px;
+    opacity: 0.12;
+  }
 
-    /* COMPONENTES */
-    .comp-card {
-      background: white; border-radius: 12px; padding: 13px;
-      margin-bottom: 10px; border: 1px solid var(--borda);
-      display: flex; gap: 12px; align-items: flex-start;
-    }
-    .comp-emoji { font-size: 30px; flex-shrink: 0; }
-    .comp-nome { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
-    .comp-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
-    .comp-dica { font-size: 11.5px; color: var(--verde); font-weight: 600; margin-top: 5px; }
+  .logo-badge {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--preto);
+    border: 3px solid var(--roxo-claro);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 0 0 6px rgba(124,58,237,0.25);
+  }
 
-    /* ANALOGIA */
-    .analogia {
-      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-      border-radius: 11px; padding: 13px; margin: 10px 0;
-      border: 1px solid #bbf7d0;
-    }
-    .analogia-titulo { font-size: 10px; font-weight: 800; color: var(--verde); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-    .analogia-linha { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
-    .seta { color: var(--verde); font-weight: 700; }
+  .logo-badge .logo-icone { font-size: 26px; margin-bottom: 2px; }
+  .logo-badge span {
+    font-size: 10px;
+    color: var(--roxo-claro);
+    text-align: center;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    padding: 0 4px;
+  }
 
-    /* PASSOS */
-    .passo {
-      display: flex; gap: 13px; align-items: flex-start;
-      padding: 13px 0; border-bottom: 1px solid var(--borda);
-      cursor: pointer; transition: opacity 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .passo:last-child { border-bottom: none; }
-    .passo.ok { opacity: 0.55; }
-    .passo-check {
-      width: 30px; height: 30px; border-radius: 50%;
-      border: 2.5px solid var(--borda); flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: var(--muted);
-      transition: all 0.3s; background: white; margin-top: 1px;
-    }
-    .passo.ok .passo-check {
-      background: var(--verde); border-color: var(--verde);
-      color: white; font-size: 15px;
-    }
-    .passo-titulo { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-    .passo-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
-    .alerta {
-      background: #fffbeb; border-radius: 8px; padding: 8px 10px;
-      font-size: 12px; color: #92400e; margin-top: 8px;
-      display: flex; align-items: flex-start; gap: 5px;
-    }
-    .pare {
-      background: #fef2f2; border-radius: 8px; padding: 8px 10px;
-      font-size: 12px; color: #991b1b; margin-top: 8px; font-weight: 600;
-    }
+  .capa-conteudo {
+    position: relative;
+    z-index: 5;
+    padding: 20px 24px 0;
+    margin-top: auto;
+  }
 
-    /* REFLEXÃO */
-    .ref-label { font-size: 13px; font-weight: 600; margin-bottom: 7px; display: block; }
-    textarea {
-      width: 100%; border: 2px solid var(--borda); border-radius: 10px;
-      padding: 11px 12px; font-size: 13.5px; font-family: inherit;
-      color: var(--texto); resize: none; margin-bottom: 14px;
-      outline: none; transition: border-color 0.2s;
-    }
-    textarea:focus { border-color: var(--verde); }
+  .dia-badge {
+    display: inline-block;
+    background: var(--roxo);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
 
-    /* BOTÕES */
-    .btn {
-      width: 100%; padding: 14px; border-radius: 12px; border: none;
-      font-size: 15px; font-weight: 700; cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s; font-family: inherit;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-verde { background: linear-gradient(135deg, #16a34a, #15803d); color: white; box-shadow: 0 4px 14px rgba(22,163,74,0.3); }
-    .btn-roxo  { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; box-shadow: 0 4px 14px rgba(139,92,246,0.3); }
-    .btn:disabled { opacity: 0.6; cursor: default; }
+  .capa-titulo {
+    font-size: 38px;
+    font-weight: 900;
+    color: white;
+    line-height: 1.05;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.6);
+  }
 
-    /* CONGRATS */
-    .congrats { text-align: center; padding: 22px 12px; }
-    .congrats .big { font-size: 46px; display: block; margin-bottom: 10px; }
-    .congrats h2 { font-size: 21px; font-weight: 800; color: var(--verde); margin-bottom: 8px; }
-    .congrats p { font-size: 14px; color: var(--muted); line-height: 1.6; }
-    .tags { margin-top: 14px; }
-    .tag {
-      display: inline-block; background: var(--verde-claro); color: var(--verde);
-      border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700;
-      margin: 3px;
-    }
+  .capa-titulo span { color: var(--roxo-claro); }
 
-    /* TOAST */
-    .toast {
-      position: fixed; bottom: 20px; left: 50%;
-      transform: translateX(-50%) translateY(90px);
-      background: #1e293b; color: white; padding: 11px 22px;
-      border-radius: 24px; font-size: 14px; font-weight: 600;
-      z-index: 999; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-      white-space: nowrap; pointer-events: none;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+  .capa-subtitulo {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 28px;
+  }
 
-    .hidden { display: none; }
+  .capa-emojis {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
 
-    /* CIRCUITO SVG */
-    .circuito-wrap {
-      background: #0f172a; border-radius: 12px; padding: 12px;
-      margin: 10px 0;
-    }
-    .circuito-legenda { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; }
-  </style>
+  .emoji-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 12px 14px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    flex: 1;
+  }
+
+  .emoji-card .emoji { font-size: 26px; display: block; margin-bottom: 4px; }
+  .emoji-card .label { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 600; }
+
+  .capa-objetivo {
+    background: var(--roxo);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 24px 32px;
+    color: white;
+  }
+
+  .capa-objetivo h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  .capa-objetivo p {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  /* ========== BARRA PROGRESSO ========== */
+  .progresso-barra {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--preto);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  .prog-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .prog-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--roxo), var(--roxo-claro));
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .prog-pct {
+    font-size: 12px;
+    color: var(--roxo-claro);
+    font-weight: 700;
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* ========== SEÇÃO HEADER ========== */
+  .sec-header {
+    background: var(--roxo-escuro);
+    padding: 26px 24px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sec-header::before {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 22px solid rgba(255,255,255,0.06);
+    top: -70px;
+    right: -60px;
+  }
+
+  .sec-header::after {
+    content: '';
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    bottom: -40px;
+    left: 50px;
+  }
+
+  .sec-numero {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--roxo-claro);
+    font-weight: 700;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sec-titulo {
+    font-size: 24px;
+    font-weight: 900;
+    color: white;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ========== CONTEÚDO ========== */
+  .sec-body {
+    background: white;
+    padding: 24px;
+  }
+
+  /* ========== TEORIA CARD ========== */
+  .teoria-card {
+    background: var(--cinza);
+    border-left: 5px solid var(--roxo);
+    border-radius: 0 16px 16px 0;
+    padding: 18px 18px 18px 20px;
+    margin-bottom: 18px;
+  }
+
+  .teoria-card h4 {
+    color: var(--roxo-escuro);
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .teoria-card p {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.7;
+  }
+
+  /* ========== DICA CARD ========== */
+  .dica-card {
+    background: #FFFBEB;
+    border: 2px solid #FCD34D;
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .dica-icone { font-size: 26px; flex-shrink: 0; margin-top: 1px; }
+  .dica-card p { font-size: 13px; line-height: 1.6; color: #92400E; }
+  .dica-card strong { color: #78350F; }
+
+  /* ========== MATERIAIS ========== */
+  .materiais-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .material-item {
+    background: white;
+    border: 2px solid var(--roxo-bg);
+    border-radius: 16px;
+    padding: 16px 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(124,58,237,0.07);
+  }
+
+  .material-emoji { font-size: 34px; display: block; margin-bottom: 6px; }
+  .material-nome { font-size: 12px; font-weight: 800; color: var(--roxo-escuro); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .material-qtd { font-size: 11px; color: #9CA3AF; }
+
+  /* ========== COMPONENTES ========== */
+  .componentes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .comp-card {
+    border-radius: 18px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .comp-card.c-roxo { background: var(--roxo-bg); border: 2px solid var(--roxo-claro); }
+  .comp-card.c-verde { background: #D1FAE5; border: 2px solid #6EE7B7; }
+  .comp-card.c-amarelo { background: #FEF3C7; border: 2px solid #FCD34D; }
+  .comp-card.c-azul { background: #DBEAFE; border: 2px solid #93C5FD; }
+
+  .comp-emoji { font-size: 32px; display: block; margin-bottom: 6px; }
+  .comp-nome { font-size: 12px; font-weight: 800; color: var(--texto); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .comp-desc { font-size: 11px; color: #6B7280; line-height: 1.4; }
+
+  /* ========== ANALOGIA ========== */
+  .analogia {
+    background: linear-gradient(135deg, var(--roxo-escuro), var(--roxo));
+    border-radius: 20px;
+    padding: 22px;
+    color: white;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .analogia::before {
+    content: '';
+    position: absolute;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    border: 22px solid rgba(255,255,255,0.08);
+    top: -55px; right: -45px;
+  }
+
+  .analogia h4 { font-size: 17px; font-weight: 800; margin-bottom: 10px; }
+  .analogia p { font-size: 13px; opacity: 0.88; line-height: 1.7; position: relative; z-index: 1; }
+
+  .analogia-comparacao {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ana-item {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .ana-item strong { display: block; font-size: 20px; margin-bottom: 4px; }
+
+  /* ========== CIRCUITO ========== */
+  .circuito-box {
+    background: #0A0A1A;
+    border-radius: 20px;
+    padding: 18px 16px;
+    margin-bottom: 18px;
+  }
+
+  .circuito-titulo {
+    color: var(--roxo-claro);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .circuito-box svg { width: 100%; height: auto; display: block; }
+
+  /* ========== CÓDIGO ========== */
+  .codigo-box {
+    background: #1E1B4B;
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+  }
+
+  .codigo-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .codigo-label .codigo-nome { font-size: 11px; color: var(--roxo-claro); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+  .codigo-dots { display: flex; gap: 5px; margin-left: auto; }
+  .codigo-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .codigo-dot:nth-child(1) { background: #FF5F57; }
+  .codigo-dot:nth-child(2) { background: #FEBC2E; }
+  .codigo-dot:nth-child(3) { background: #28C840; }
+
+  pre {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #E2E8F0;
+    line-height: 1.9;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .kw { color: #C4B5FD; font-weight: bold; }
+  .fn { color: #7DD3FC; }
+  .num { color: #FCD34D; }
+  .cmt { color: #6B7280; font-style: italic; }
+
+  /* ========== PASSOS ========== */
+  .passos-lista { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+
+  .passo-item {
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: all 0.22s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+
+  .passo-item.concluido { background: #F0FDF4; border-color: var(--verde); }
+  .passo-item:active { transform: scale(0.98); }
+
+  .passo-num {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--roxo);
+    color: white;
+    font-size: 18px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.22s;
+  }
+
+  .passo-item.concluido .passo-num { background: var(--verde); }
+
+  .passo-corpo { flex: 1; }
+  .passo-titulo { font-size: 15px; font-weight: 800; color: var(--texto); margin-bottom: 5px; }
+  .passo-desc { font-size: 13px; color: #4B5563; line-height: 1.6; }
+
+  .passo-check {
+    width: 26px; height: 26px;
+    border: 3px solid #D1D5DB;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: transparent;
+    margin-top: 2px;
+    transition: all 0.22s;
+  }
+
+  .passo-item.concluido .passo-check {
+    background: var(--verde);
+    border-color: var(--verde);
+    color: white;
+  }
+
+  /* ========== DESAFIO ========== */
+  .desafio-card {
+    background: linear-gradient(135deg, #1C1C2E, #2D1B69);
+    border-radius: 24px;
+    padding: 26px 22px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .desafio-card::before {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 26px solid rgba(124,58,237,0.3);
+    bottom: -70px; right: -60px;
+  }
+
+  .desafio-titulo {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--roxo-claro);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .desafio-texto {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.3;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .desafio-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--roxo);
+    color: white;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    transition: all 0.22s;
+  }
+
+  .desafio-btn:active { transform: scale(0.96); }
+
+  /* ========== REFLEXÃO ========== */
+  .reflexao-item {
+    background: var(--cinza);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+
+  .reflexao-item label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--roxo-escuro);
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .reflexao-item textarea {
+    width: 100%;
+    background: white;
+    border: 2px solid var(--roxo-bg);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--texto);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .reflexao-item textarea:focus { border-color: var(--roxo); }
+
+  /* ========== FINALIZAR ========== */
+  .btn-finalizar {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--roxo-escuro), var(--roxo));
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+    transition: all 0.22s;
+    box-shadow: 0 6px 24px rgba(124,58,237,0.4);
+  }
+
+  .btn-finalizar:active { transform: scale(0.98); }
+
+  /* ========== PARABÉNS ========== */
+  .parabens {
+    display: none;
+    background: linear-gradient(135deg, var(--roxo-escuro), #1C1C2E);
+    border-radius: 24px;
+    padding: 30px 22px;
+    text-align: center;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .parabens::before {
+    content: '';
+    position: absolute;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: var(--roxo);
+    opacity: 0.12;
+    top: -80px; left: -60px;
+  }
+
+  .parabens-emoji { font-size: 58px; display: block; margin-bottom: 14px; }
+  .parabens h2 { color: white; font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+  .parabens p { color: var(--roxo-claro); font-size: 15px; line-height: 1.5; }
+
+  /* ========== TOAST ========== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--roxo-escuro);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    white-space: nowrap;
+  }
+
+  .toast.visivel { transform: translateX(-50%) translateY(0); }
+
+  /* ========== SEPARADOR ========== */
+  .sep { height: 10px; background: #F0EDFF; }
+
+  /* ========== FOOTER ========== */
+  footer {
+    background: var(--preto);
+    padding: 30px 24px;
+    text-align: center;
+  }
+
+  footer p { color: rgba(255,255,255,0.35); font-size: 12px; line-height: 1.9; }
+  footer strong { color: var(--roxo-claro); }
+
+  .destaque { color: var(--roxo); font-weight: 700; }
+  code { background: #E5E7EB; padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+</style>
 </head>
 <body>
 
-<!-- HEADER FIXO -->
-<div class="header">
-  <div class="header-top">
-    <div class="dia-badge">📅 Dia 1 / 5</div>
-    <h1>Mundo Maker &amp;<br>Eletrônica Básica ⚡</h1>
-    <div class="header-contador" id="contador">0 / 7</div>
-  </div>
-  <div class="prog-label">Seu progresso de hoje</div>
-  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+<!-- BARRA DE PROGRESSO STICKY -->
+<div class="progresso-barra">
+  <span class="prog-label">DIA 1</span>
+  <div class="prog-track"><div class="prog-fill" id="progBar"></div></div>
+  <span class="prog-pct" id="progPct">0%</span>
 </div>
 
-<div class="content">
+<!-- ==================== CAPA ==================== -->
+<section class="capa">
+  <div class="capa-bg"></div>
+  <div class="circulo-solido"></div>
+  <div class="circulo-outline"></div>
+  <div class="circulo-pequeno"></div>
 
-  <!-- BOAS VINDAS -->
-  <div class="card verde bv">
-    <span class="emoji">🤖</span>
-    <h2>Bem-vindo ao Curso Maker!</h2>
-    <p>Em 5 dias você vai construir um robô controlado pelo celular.<br>Hoje começa tudo. <strong>Vamos lá!</strong> 🚀</p>
+  <div class="logo-badge">
+    <span class="logo-icone">⚡</span>
+    <span>CEITEC<br>MAKER</span>
   </div>
 
-  <!-- OBJETIVOS -->
-  <div class="sec-titulo">🎯 O que você vai aprender hoje</div>
-  <div class="card">
-    <div class="obj-item"><div class="obj-icon">⚡</div><div>Entender como a eletricidade funciona</div></div>
-    <div class="obj-item"><div class="obj-icon">🔩</div><div>Conhecer os componentes eletrônicos básicos</div></div>
-    <div class="obj-item"><div class="obj-icon">🧩</div><div>Montar seu primeiro circuito na protoboard</div></div>
-    <div class="obj-item"><div class="obj-icon">💡</div><div>Fazer um LED acender com suas próprias mãos</div></div>
+  <div class="capa-conteudo">
+    <div class="dia-badge">DIA 1 DE 5</div>
+    <h1 class="capa-titulo">Mundo Maker<br><span>&amp; Eletrônica</span><br>Básica</h1>
+    <p class="capa-subtitulo">Sua primeira aventura — do zero ao circuito funcionando!</p>
+
+    <div class="capa-emojis">
+      <div class="emoji-card">
+        <span class="emoji">💡</span>
+        <span class="label">LEDs</span>
+      </div>
+      <div class="emoji-card">
+        <span class="emoji">🔌</span>
+        <span class="label">Circuito</span>
+      </div>
+      <div class="emoji-card">
+        <span class="emoji">🤖</span>
+        <span class="label">Arduino</span>
+      </div>
+    </div>
+
+    <div class="capa-objetivo">
+      <h3>🎯 O que você vai construir hoje</h3>
+      <p>Um LED piscando controlado pelo Arduino — seu primeiro circuito eletrônico real!</p>
+    </div>
   </div>
+</section>
 
-  <!-- MATERIAIS -->
-  <div class="sec-titulo">🎒 O que você vai usar hoje</div>
-  <div class="mat-grid">
-    <div class="mat-item"><span class="mat-emoji">💡</span><div class="mat-nome">LED</div><div class="mat-qtd">2 unidades</div></div>
-    <div class="mat-item"><span class="mat-emoji">〰️</span><div class="mat-nome">Resistor 220Ω</div><div class="mat-qtd">2 unidades</div></div>
-    <div class="mat-item"><span class="mat-emoji">🧩</span><div class="mat-nome">Protoboard</div><div class="mat-qtd">1 unidade</div></div>
-    <div class="mat-item"><span class="mat-emoji">🔌</span><div class="mat-nome">Fios Jumper</div><div class="mat-qtd">5 fios</div></div>
-    <div class="mat-item" style="grid-column:1/-1"><span class="mat-emoji">🤖</span><div class="mat-nome">Arduino Uno</div><div class="mat-qtd">1 unidade — hoje é só a fonte de energia</div></div>
+<div class="sep"></div>
+
+<!-- ==================== SEÇÃO 1: MAKER ==================== -->
+<section>
+  <div class="sec-header">
+    <div class="sec-numero">SEÇÃO 01</div>
+    <div class="sec-titulo">O Que é ser Maker? 🔨</div>
   </div>
+  <div class="sec-body">
 
-  <!-- TEORIA -->
-  <div class="sec-titulo">⚡ Teoria rápida (prometo que é curta!)</div>
+    <div class="teoria-card">
+      <h4>A Cultura Maker</h4>
+      <p><span class="destaque">Maker</span> vem do inglês "fazer". É uma cultura onde as pessoas aprendem criando com as próprias mãos. Em vez de só usar tecnologia, você a <strong>constrói</strong>. Robôs, circuitos, apps, impressões 3D — tudo isso é maker!</p>
+    </div>
 
-  <div class="card">
-    <div class="card-titulo">🌍 O que é o Movimento Maker?</div>
-    <p><strong>Maker</strong> significa <em>"fazedor"</em>. É um movimento mundial de pessoas que aprendem criando com as próprias mãos — não só consumindo tecnologia, mas <strong>inventando ela</strong>.</p>
-    <p>Makers usam eletrônica, robótica, impressão 3D e código para resolver problemas reais. <strong>Você é um maker agora.</strong> 🔧</p>
-  </div>
-
-  <div class="card">
-    <div class="card-titulo">⚡ O que é eletricidade?</div>
-    <p>Eletricidade é o movimento de partículas chamadas <strong>elétrons</strong>. Para entender, usa a analogia do encanamento:</p>
     <div class="analogia">
-      <div class="analogia-titulo">💧 Circuito elétrico = Encanamento</div>
-      <div class="analogia-linha"><span>🔋 Bateria / Arduino</span><span class="seta">→</span><span>Bomba d'água</span></div>
-      <div class="analogia-linha"><span>🔴 Fio elétrico</span><span class="seta">→</span><span>Cano</span></div>
-      <div class="analogia-linha"><span>💡 LED</span><span class="seta">→</span><span>Torneira / lâmpada</span></div>
-      <div class="analogia-linha"><span>〰️ Resistor</span><span class="seta">→</span><span>Registro (controla o fluxo)</span></div>
+      <h4>⚡ Eletricidade é como água</h4>
+      <p>Pensa assim: eletricidade funciona exatamente como água num cano. Fica muito mais fácil entender!</p>
+      <div class="analogia-comparacao">
+        <div class="ana-item">
+          <strong>💧 Água</strong>
+          Flui pelo cano com pressão
+        </div>
+        <div class="ana-item">
+          <strong>⚡ Elétrons</strong>
+          Fluem pelo fio com voltagem
+        </div>
+      </div>
     </div>
-    <p>Sem resistor, a corrente seria forte demais e <strong>queimaria o LED</strong>. O resistor protege!</p>
-  </div>
 
-  <!-- COMPONENTES -->
-  <div class="sec-titulo">🔩 Seus componentes de hoje</div>
-
-  <div class="comp-card">
-    <div class="comp-emoji">💡</div>
-    <div>
-      <div class="comp-nome">LED — Light Emitting Diode</div>
-      <div class="comp-desc">Transforma eletricidade em luz. Tem duas pernas: a <strong>perna maior é o positivo (+)</strong> e a <strong>perna menor é o negativo (–)</strong>.</div>
-      <div class="comp-dica">⚠️ Não pode ligar ao contrário — não acende e pode queimar!</div>
+    <div class="componentes-grid">
+      <div class="comp-card c-roxo">
+        <span class="comp-emoji">💡</span>
+        <div class="comp-nome">LED</div>
+        <div class="comp-desc">Acende quando a corrente passa</div>
+      </div>
+      <div class="comp-card c-verde">
+        <span class="comp-emoji">🟫</span>
+        <div class="comp-nome">Resistor</div>
+        <div class="comp-desc">Controla a corrente para não queimar</div>
+      </div>
+      <div class="comp-card c-amarelo">
+        <span class="comp-emoji">🧩</span>
+        <div class="comp-nome">Protoboard</div>
+        <div class="comp-desc">Placa de testes sem precisar soldar</div>
+      </div>
+      <div class="comp-card c-azul">
+        <span class="comp-emoji">🤖</span>
+        <div class="comp-nome">Arduino</div>
+        <div class="comp-desc">Microcontrolador que programamos</div>
+      </div>
     </div>
-  </div>
 
-  <div class="comp-card">
-    <div class="comp-emoji">〰️</div>
-    <div>
-      <div class="comp-nome">Resistor 220Ω</div>
-      <div class="comp-desc">Controla a quantidade de corrente elétrica. As listras coloridas indicam o valor. <strong>Pode ligar nos dois sentidos</strong> — não tem positivo nem negativo.</div>
-      <div class="comp-dica">🛡️ Protege o LED de queimar com excesso de corrente</div>
+    <div class="dica-card">
+      <span class="dica-icone">⚠️</span>
+      <p><strong>Cuidado com o LED!</strong> Ele tem polaridade — perna longa (+) vai no positivo. Se colocar ao contrário, não acende. Sem resistor, QUEIMA. Sempre use o resistor!</p>
     </div>
-  </div>
 
-  <div class="comp-card">
-    <div class="comp-emoji">🧩</div>
-    <div>
-      <div class="comp-nome">Protoboard</div>
-      <div class="comp-desc">Placa com furinhos conectados por dentro. Você encaixa os componentes <strong>sem precisar de solda</strong>. Os furos da mesma fileira horizontal estão conectados entre si.</div>
-      <div class="comp-dica">🔗 A régua que une tudo sem solda</div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ==================== SEÇÃO 2: MATERIAIS ==================== -->
+<section>
+  <div class="sec-header">
+    <div class="sec-numero">SEÇÃO 02</div>
+    <div class="sec-titulo">Materiais do Dia 📦</div>
+  </div>
+  <div class="sec-body">
+
+    <p style="margin-bottom:16px; color:#6B7280; font-size:14px;">Pegue tudo na bancada antes de começar!</p>
+
+    <div class="materiais-grid">
+      <div class="material-item">
+        <span class="material-emoji">🤖</span>
+        <div class="material-nome">Arduino Uno</div>
+        <div class="material-qtd">1 unidade</div>
+      </div>
+      <div class="material-item">
+        <span class="material-emoji">🔌</span>
+        <div class="material-nome">Cabo USB</div>
+        <div class="material-qtd">1 unidade</div>
+      </div>
+      <div class="material-item">
+        <span class="material-emoji">🧩</span>
+        <div class="material-nome">Protoboard</div>
+        <div class="material-qtd">1 unidade</div>
+      </div>
+      <div class="material-item">
+        <span class="material-emoji">💡</span>
+        <div class="material-nome">LED</div>
+        <div class="material-qtd">3 unidades</div>
+      </div>
+      <div class="material-item">
+        <span class="material-emoji">🟫</span>
+        <div class="material-nome">Resistor 220Ω</div>
+        <div class="material-qtd">3 unidades</div>
+      </div>
+      <div class="material-item">
+        <span class="material-emoji">🔴</span>
+        <div class="material-nome">Jumpers</div>
+        <div class="material-qtd">10 unidades</div>
+      </div>
     </div>
-  </div>
 
-  <div class="comp-card">
-    <div class="comp-emoji">🤖</div>
-    <div>
-      <div class="comp-nome">Arduino Uno</div>
-      <div class="comp-desc">Uma plaquinha com microcontrolador. Hoje vamos usar só como <strong>fonte de energia</strong> (pinos 5V e GND). No Dia 2, você vai programar ele de verdade!</div>
-      <div class="comp-dica">🧠 O cérebro do seu robô — hoje ele só dá energia</div>
+    <div class="dica-card">
+      <span class="dica-icone">💡</span>
+      <p><strong>Fio vermelho</strong> = positivo (+). <strong>Fio preto</strong> = negativo (GND). Padrão mundial — memorize!</p>
     </div>
+
   </div>
+</section>
 
-  <!-- PROJETO -->
-  <div class="sec-titulo">🔨 Mão na massa — Acenda seu LED!</div>
+<div class="sep"></div>
 
-  <div class="card laranja">
-    <div style="font-size:13px; color:#92400e; font-weight:500">⚠️ <strong>Regra de ouro:</strong> Monte o circuito com o Arduino <strong>desligado</strong>. Só conecte o USB no computador no último passo!</div>
+<!-- ==================== SEÇÃO 3: MONTAGEM ==================== -->
+<section>
+  <div class="sec-header">
+    <div class="sec-numero">SEÇÃO 03</div>
+    <div class="sec-titulo">Passo a Passo — Montagem 🛠️</div>
   </div>
+  <div class="sec-body">
 
-  <!-- Diagrama SVG -->
-  <div class="card">
-    <div class="card-titulo">📐 Como vai ficar (circuito)</div>
-    <div class="circuito-wrap">
-      <svg viewBox="0 0 340 210" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <p style="margin-bottom:18px; color:#6B7280; font-size:14px;">Toque em cada passo quando concluir ✓</p>
+
+    <!-- DIAGRAMA DO CIRCUITO -->
+    <div class="circuito-box">
+      <div class="circuito-titulo">📐 Diagrama do Circuito</div>
+      <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg">
+        <rect width="340" height="210" fill="#0A0A1A"/>
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1A1A30" stroke-width="0.8"/>
+          </pattern>
+        </defs>
+        <rect width="340" height="210" fill="url(#grid)"/>
+
         <!-- Arduino -->
-        <rect x="8" y="55" width="85" height="110" rx="7" fill="#1d4ed8" stroke="#3b82f6" stroke-width="1.5"/>
-        <text x="50" y="102" text-anchor="middle" fill="white" font-size="10" font-weight="bold">ARDUINO</text>
-        <text x="50" y="116" text-anchor="middle" fill="#93c5fd" font-size="9">UNO</text>
-        <!-- pinos -->
-        <rect x="91" y="72" width="8" height="8" rx="2" fill="#fbbf24"/>
-        <text x="101" y="81" fill="#fbbf24" font-size="8" font-weight="bold">5V</text>
-        <rect x="91" y="90" width="8" height="8" rx="2" fill="#94a3b8"/>
-        <text x="101" y="99" fill="#94a3b8" font-size="8" font-weight="bold">GND</text>
+        <rect x="10" y="65" width="80" height="80" rx="6" fill="#1E3A8A" stroke="#3B82F6" stroke-width="1.5"/>
+        <text x="50" y="100" text-anchor="middle" fill="white" font-size="8" font-weight="bold">ARDUINO</text>
+        <text x="50" y="113" text-anchor="middle" fill="#93C5FD" font-size="7">UNO</text>
 
-        <!-- Protoboard -->
-        <rect x="155" y="45" width="175" height="145" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
-        <text x="242" y="63" text-anchor="middle" fill="#94a3b8" font-size="8" font-weight="bold">PROTOBOARD</text>
-        <!-- furos decorativos -->
-        <g fill="#cbd5e1">
-          <circle cx="175" cy="80" r="2.5"/><circle cx="195" cy="80" r="2.5"/><circle cx="215" cy="80" r="2.5"/>
-          <circle cx="235" cy="80" r="2.5"/><circle cx="255" cy="80" r="2.5"/><circle cx="275" cy="80" r="2.5"/>
-          <circle cx="175" cy="100" r="2.5"/><circle cx="195" cy="100" r="2.5"/><circle cx="215" cy="100" r="2.5"/>
-          <circle cx="235" cy="100" r="2.5"/><circle cx="255" cy="100" r="2.5"/><circle cx="275" cy="100" r="2.5"/>
-          <circle cx="175" cy="120" r="2.5"/><circle cx="195" cy="120" r="2.5"/><circle cx="215" cy="120" r="2.5"/>
-          <circle cx="235" cy="120" r="2.5"/><circle cx="255" cy="120" r="2.5"/><circle cx="275" cy="120" r="2.5"/>
-          <circle cx="175" cy="140" r="2.5"/><circle cx="195" cy="140" r="2.5"/><circle cx="215" cy="140" r="2.5"/>
-          <circle cx="235" cy="140" r="2.5"/><circle cx="255" cy="140" r="2.5"/><circle cx="275" cy="140" r="2.5"/>
-          <circle cx="175" cy="160" r="2.5"/><circle cx="195" cy="160" r="2.5"/><circle cx="215" cy="160" r="2.5"/>
-          <circle cx="235" cy="160" r="2.5"/><circle cx="255" cy="160" r="2.5"/><circle cx="275" cy="160" r="2.5"/>
-        </g>
+        <!-- Pino 13 -->
+        <circle cx="90" cy="82" r="4" fill="#FCD34D"/>
+        <text x="96" y="86" fill="#FCD34D" font-size="7" font-weight="bold">13</text>
 
-        <!-- Fio vermelho: 5V → resistor (linha horizontal topo) -->
-        <path d="M 99 76 L 135 76 L 135 80 L 195 80" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Label 5V fio -->
-        <rect x="108" y="68" width="22" height="12" rx="4" fill="#ef4444"/>
-        <text x="119" y="78" text-anchor="middle" fill="white" font-size="7" font-weight="bold">5V</text>
+        <!-- Pino GND -->
+        <circle cx="90" cy="102" r="4" fill="#6B7280"/>
+        <text x="96" y="106" fill="#9CA3AF" font-size="7">GND</text>
 
-        <!-- Resistor: furo 195,80 → furo 195,120 (vertical) -->
-        <line x1="195" y1="80" x2="195" y2="100" stroke="#f59e0b" stroke-width="2.5"/>
-        <rect x="187" y="100" width="16" height="26" rx="4" fill="#d97706"/>
-        <text x="195" y="113" text-anchor="middle" fill="white" font-size="7" font-weight="bold">220Ω</text>
-        <text x="195" y="122" text-anchor="middle" fill="#fef9c3" font-size="6">RES.</text>
-        <line x1="195" y1="126" x2="195" y2="140" stroke="#f59e0b" stroke-width="2.5"/>
+        <!-- Fio vermelho: 13 → resistor -->
+        <line x1="90" y1="82" x2="155" y2="82" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
 
-        <!-- Fio jumper entre resistor e LED (fileira 140 horizontal) -->
-        <line x1="195" y1="140" x2="235" y2="140" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/>
+        <!-- Resistor -->
+        <rect x="155" y="75" width="36" height="14" rx="5" fill="#D97706" stroke="#FCD34D" stroke-width="1.5"/>
+        <text x="173" y="85" text-anchor="middle" fill="white" font-size="7" font-weight="bold">220Ω</text>
 
-        <!-- LED: perna + em furo 235,140 → perna - em furo 235,160 -->
-        <line x1="235" y1="140" x2="235" y2="152" stroke="#22c55e" stroke-width="2.5"/>
-        <!-- LED símbolo -->
-        <polygon points="228,152 242,152 235,162" fill="#4ade80"/>
-        <line x1="228" y1="162" x2="242" y2="162" stroke="#22c55e" stroke-width="2"/>
-        <line x1="235" y1="162" x2="235" y2="168" stroke="#22c55e" stroke-width="2.5"/>
-        <!-- glow -->
-        <circle cx="235" cy="152" r="12" fill="#22c55e" opacity="0.12"/>
-        <!-- raios luminosos -->
-        <line x1="248" y1="143" x2="254" y2="138" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="250" y1="150" x2="257" y2="148" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- labels LED -->
-        <text x="245" y="148" fill="#86efac" font-size="7" font-weight="bold">LED+</text>
-        <text x="245" y="166" fill="#94a3b8" font-size="7">LED–</text>
+        <!-- Fio vermelho: resistor → LED -->
+        <line x1="191" y1="82" x2="218" y2="82" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
 
-        <!-- Fio preto: GND → negativo LED (furo 235,160) -->
-        <path d="M 99 94 L 130 94 L 130 175 L 235 175 L 235 168" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Label GND -->
-        <rect x="108" y="85" width="28" height="12" rx="4" fill="#6b7280"/>
-        <text x="122" y="95" text-anchor="middle" fill="white" font-size="7" font-weight="bold">GND</text>
+        <!-- LED corpo -->
+        <ellipse cx="232" cy="82" rx="14" ry="14" fill="rgba(167,243,208,0.15)" stroke="#A7F3D0" stroke-width="2"/>
+        <polygon points="222,74 222,90 236,82" fill="#A7F3D0" opacity="0.8"/>
+        <line x1="236" y1="74" x2="236" y2="90" stroke="#A7F3D0" stroke-width="2.5"/>
+        <!-- raio de luz -->
+        <line x1="245" y1="70" x2="255" y2="62" stroke="#FCD34D" stroke-width="1.5" opacity="0.8" stroke-linecap="round"/>
+        <line x1="248" y1="76" x2="260" y2="70" stroke="#FCD34D" stroke-width="1.5" opacity="0.8" stroke-linecap="round"/>
+        <line x1="248" y1="84" x2="260" y2="84" stroke="#FCD34D" stroke-width="1.5" opacity="0.6" stroke-linecap="round"/>
 
-        <!-- Label brilho -->
-        <text x="235" y="28" text-anchor="middle" fill="#4ade80" font-size="9" font-weight="bold">✨ LED ACESO!</text>
+        <!-- Fio preto: LED → GND (retorno) -->
+        <polyline points="232,96 232,135 50,135 50,145" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="50,145 10,145 10,105 90,105" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Labels -->
+        <text x="122" y="72" text-anchor="middle" fill="#FCA5A5" font-size="8">+ vermelho</text>
+        <text x="155" y="155" text-anchor="middle" fill="#9CA3AF" font-size="8">— preto (GND)</text>
+        <text x="232" y="58" text-anchor="middle" fill="#A7F3D0" font-size="8">LED</text>
+
+        <!-- Legenda rodapé -->
+        <rect x="8" y="165" width="324" height="38" rx="8" fill="rgba(30,27,75,0.7)"/>
+        <circle cx="26" cy="184" r="5" fill="#EF4444"/>
+        <text x="36" y="188" fill="#FCA5A5" font-size="9">Positivo</text>
+        <circle cx="90" cy="184" r="5" fill="#6B7280"/>
+        <text x="100" y="188" fill="#9CA3AF" font-size="9">GND</text>
+        <rect x="155" y="179" width="12" height="10" rx="3" fill="#D97706"/>
+        <text x="173" y="188" fill="#FCD34D" font-size="9">Resistor 220Ω</text>
+        <circle cx="250" cy="184" r="6" fill="none" stroke="#A7F3D0" stroke-width="2"/>
+        <text x="261" y="188" fill="#A7F3D0" font-size="9">LED</text>
       </svg>
     </div>
-    <div class="circuito-legenda">🔴 Fio vermelho = positivo (+) &nbsp;|&nbsp; ⚫ Fio preto = negativo (–)</div>
+
+    <!-- PASSOS -->
+    <div class="passos-lista" id="passos">
+
+      <div class="passo-item" onclick="marcarPasso(this,0)">
+        <div class="passo-num">1</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Conecte o Arduino ao computador</div>
+          <div class="passo-desc">Cabo USB no Arduino → porta USB do PC. O LED verde acende — Arduino ligado!</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+      <div class="passo-item" onclick="marcarPasso(this,1)">
+        <div class="passo-num">2</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Encaixe o LED na protoboard</div>
+          <div class="passo-desc">Perna <strong>longa (+)</strong> à direita, perna <strong>curta (–)</strong> à esquerda. Deixe um furo entre elas.</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+      <div class="passo-item" onclick="marcarPasso(this,2)">
+        <div class="passo-num">3</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Encaixe o resistor (220Ω)</div>
+          <div class="passo-desc">Um lado na mesma fileira da perna longa do LED. O outro lado numa coluna livre. Resistor não tem polaridade.</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+      <div class="passo-item" onclick="marcarPasso(this,3)">
+        <div class="passo-num">4</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Fio vermelho: resistor → pino 13</div>
+          <div class="passo-desc">Uma ponta no outro lado do resistor. A outra ponta no pino <strong>13</strong> do Arduino.</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+      <div class="passo-item" onclick="marcarPasso(this,4)">
+        <div class="passo-num">5</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Fio preto: perna curta → GND</div>
+          <div class="passo-desc">Uma ponta na perna curta do LED. A outra ponta no pino <strong>GND</strong> do Arduino.</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+      <div class="passo-item" onclick="marcarPasso(this,5)">
+        <div class="passo-num">6</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Abra o Arduino IDE e configure</div>
+          <div class="passo-desc">Ferramentas → Placa → <strong>Arduino Uno</strong>. Depois Ferramentas → Porta → selecione a COM que aparecer.</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+      <div class="passo-item" onclick="marcarPasso(this,6)">
+        <div class="passo-num">7</div>
+        <div class="passo-corpo">
+          <div class="passo-titulo">Digite o código e envie</div>
+          <div class="passo-desc">Copie o código abaixo, apague o que tiver na tela e clique na seta (→) para enviar ao Arduino.</div>
+        </div>
+        <div class="passo-check">✓</div>
+      </div>
+
+    </div>
+
+    <!-- CÓDIGO -->
+    <div class="codigo-box">
+      <div class="codigo-label">
+        <span class="codigo-nome">💻 Código Arduino</span>
+        <div class="codigo-dots">
+          <div class="codigo-dot"></div>
+          <div class="codigo-dot"></div>
+          <div class="codigo-dot"></div>
+        </div>
+      </div>
+      <pre><span class="cmt">// Blink — LED piscando</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  pinMode(<span class="num">13</span>, OUTPUT); <span class="cmt">// Pino 13 = saída</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  digitalWrite(<span class="num">13</span>, HIGH); <span class="cmt">// Liga LED</span>
+  delay(<span class="num">500</span>);             <span class="cmt">// Espera 0,5s</span>
+  digitalWrite(<span class="num">13</span>, LOW);  <span class="cmt">// Desliga LED</span>
+  delay(<span class="num">500</span>);             <span class="cmt">// Espera 0,5s</span>
+}</pre>
+    </div>
+
+    <div class="dica-card">
+      <span class="dica-icone">🎉</span>
+      <p><strong>Funcionou?</strong> O LED pisca uma vez por segundo! Tente mudar <code>500</code> para <code>100</code> e veja o que acontece!</p>
+    </div>
+
   </div>
+</section>
 
-  <!-- PASSOS INTERATIVOS -->
-  <div class="card">
-    <div class="card-titulo" style="margin-bottom:10px">📋 Passo a passo — toque para marcar ✓</div>
+<div class="sep"></div>
 
-    <div class="passo" onclick="togglePasso(this,0)" id="p0">
-      <div class="passo-check">1</div>
-      <div>
-        <div class="passo-titulo">Identifique as pernas do LED</div>
-        <div class="passo-desc">Olhe as duas pernas. A <strong>perna maior = positivo (+)</strong>, a <strong>perna menor = negativo (–)</strong>. Anote mentalmente qual é qual antes de encaixar.</div>
-        <div class="alerta">💡 Dica: dobre levemente a perna maior para não confundir depois</div>
-      </div>
-    </div>
-
-    <div class="passo" onclick="togglePasso(this,1)" id="p1">
-      <div class="passo-check">2</div>
-      <div>
-        <div class="passo-titulo">Encaixe o LED na protoboard</div>
-        <div class="passo-desc">Coloque o LED na protoboard com as duas pernas em <strong>fileiras diferentes</strong> — uma de cada lado do espaço central da protoboard.</div>
-      </div>
-    </div>
-
-    <div class="passo" onclick="togglePasso(this,2)" id="p2">
-      <div class="passo-check">3</div>
-      <div>
-        <div class="passo-titulo">Encaixe o resistor em série</div>
-        <div class="passo-desc">Coloque o resistor 220Ω com uma perna na mesma <strong>fileira do positivo do LED</strong>. A outra perna vai ficar em outra fileira vazia.</div>
-        <div class="alerta">ℹ️ Resistor não tem lado certo — pode colocar em qualquer sentido</div>
-      </div>
-    </div>
-
-    <div class="passo" onclick="togglePasso(this,3)" id="p3">
-      <div class="passo-check">4</div>
-      <div>
-        <div class="passo-titulo">Conecte o fio vermelho ao 5V</div>
-        <div class="passo-desc">Pegue um fio jumper <strong>vermelho</strong>. Uma ponta vai no pino <strong>5V do Arduino</strong> e a outra ponta vai na mesma fileira do resistor (do lado que não está ligado ao LED).</div>
-      </div>
-    </div>
-
-    <div class="passo" onclick="togglePasso(this,4)" id="p4">
-      <div class="passo-check">5</div>
-      <div>
-        <div class="passo-titulo">Conecte o fio preto ao GND</div>
-        <div class="passo-desc">Pegue um fio jumper <strong>preto</strong>. Uma ponta vai no pino <strong>GND do Arduino</strong> e a outra ponta vai na mesma fileira do <strong>negativo do LED</strong>.</div>
-      </div>
-    </div>
-
-    <div class="passo" onclick="togglePasso(this,5)" id="p5">
-      <div class="passo-check">6</div>
-      <div>
-        <div class="passo-titulo">Confira tudo antes de ligar</div>
-        <div class="passo-desc">Compare com o diagrama acima. Fio vermelho no positivo (via resistor)? Fio preto no negativo? Tudo firme nos furinhos?</div>
-        <div class="pare">🛑 PARE AQUI — Chame o professor para conferir antes de continuar!</div>
-      </div>
-    </div>
-
-    <div class="passo" onclick="togglePasso(this,6)" id="p6">
-      <div class="passo-check">7</div>
-      <div>
-        <div class="passo-titulo">Conecte o Arduino — veja a mágica! ✨</div>
-        <div class="passo-desc">Conecte o cabo USB do Arduino no computador. O LED deve <strong>acender na hora</strong>! Se não acender, verifique se as pernas do LED estão no lugar certo.</div>
-        <div class="alerta">🎉 Acendeu? Você criou seu primeiro circuito elétrico! Você é um maker!</div>
-      </div>
-    </div>
+<!-- ==================== SEÇÃO 4: COMO FUNCIONA ==================== -->
+<section>
+  <div class="sec-header">
+    <div class="sec-numero">SEÇÃO 04</div>
+    <div class="sec-titulo">Como Funciona? 🧠</div>
   </div>
+  <div class="sec-body">
 
-  <!-- DESAFIO EXTRA -->
-  <div class="sec-titulo">🏆 Desafio extra — para quem terminou!</div>
-  <div class="card roxo">
-    <div class="card-titulo">⚡ Desafio: 2 LEDs no mesmo circuito</div>
-    <p>Tente fazer <strong>dois LEDs de cores diferentes</strong> acenderem com o mesmo circuito. Conecte um depois do outro. Eles vão ficar menos brilhantes — você consegue explicar por quê? 🤔</p>
-    <p style="margin-top:10px">💡 <strong>Dica:</strong> tente também ligar os dois em paralelo (lado a lado). O brilho muda?</p>
-    <button class="btn btn-roxo" id="btn-desafio" onclick="marcarDesafio()" style="margin-top:14px">
-      🏆 Completei o desafio!
-    </button>
-  </div>
-
-  <!-- REFLEXÃO -->
-  <div class="sec-titulo">✍️ O que aprendi hoje</div>
-  <div class="card">
-    <p style="font-size:13px; color:var(--muted); margin-bottom:14px">Suas respostas ficam salvas no celular. Escreva com suas próprias palavras — não tem resposta certa!</p>
-
-    <label class="ref-label">1. O que é um circuito elétrico? Explique com as suas palavras:</label>
-    <textarea id="r1" rows="3" placeholder="Escreva aqui..." oninput="salvar()"></textarea>
-
-    <label class="ref-label">2. Por que o resistor é importante? O que acontece se esquecer dele?</label>
-    <textarea id="r2" rows="3" placeholder="Escreva aqui..." oninput="salvar()"></textarea>
-
-    <label class="ref-label">3. O que foi mais difícil? O que mais te surpreendeu?</label>
-    <textarea id="r3" rows="3" placeholder="Escreva aqui..." oninput="salvar()"></textarea>
-
-    <button class="btn btn-verde" onclick="finalizar()">✅ Finalizei o Dia 1!</button>
-  </div>
-
-  <!-- CONGRATULAÇÕES (oculto) -->
-  <div class="card hidden" id="congrats">
-    <div class="congrats">
-      <span class="big">🎉</span>
-      <h2>Dia 1 Concluído!</h2>
-      <p>Você montou seu primeiro circuito elétrico e fez um LED acender. Amanhã você vai programar o Arduino para controlar esse LED com código. Até amanhã, maker! 🤖⚡</p>
-      <div class="tags">
-        <span class="tag">⚡ Eletricidade</span>
-        <span class="tag">💡 LED</span>
-        <span class="tag">🧩 Protoboard</span>
-        <span class="tag">〰️ Resistor</span>
-        <span class="tag">🏆 Maker</span>
-      </div>
+    <div class="teoria-card">
+      <h4>📌 O que o código faz</h4>
+      <p>O Arduino executa em dois momentos:<br><br>
+      <span class="destaque">setup()</span> — roda <strong>uma vez</strong> quando liga. Define o pino 13 como saída (OUTPUT).<br><br>
+      <span class="destaque">loop()</span> — roda <strong>para sempre</strong>. Liga → espera → desliga → espera → recomeça... infinito!</p>
     </div>
+
+    <div class="analogia">
+      <h4>🤔 Por que o resistor?</h4>
+      <p>O LED aguenta no máximo 20mA. O Arduino manda muito mais. Sem resistor, é como abrir uma torneira numa xícara — transborda e queima. O resistor mantém a corrente no nível certo.</p>
+    </div>
+
+    <div class="teoria-card">
+      <h4>⚡ Os 3 fundamentos</h4>
+      <p>
+      <span class="destaque">Voltagem (V)</span> = "pressão" da corrente (Arduino = 5V)<br>
+      <span class="destaque">Corrente (A)</span> = quantidade de elétrons que passam<br>
+      <span class="destaque">Resistência (Ω)</span> = "freio" que controla a corrente<br><br>
+      <strong>Lei de Ohm: V = R × I</strong>
+      </p>
+    </div>
+
   </div>
+</section>
 
-</div>
+<div class="sep"></div>
 
-<!-- Toast -->
+<!-- ==================== SEÇÃO 5: DESAFIO ==================== -->
+<section>
+  <div class="sec-header">
+    <div class="sec-numero">SEÇÃO 05</div>
+    <div class="sec-titulo">Desafio Extra 🏆</div>
+  </div>
+  <div class="sec-body">
+
+    <div class="desafio-card" onclick="marcarDesafio(this)">
+      <div class="desafio-titulo">⭐ DESAFIO EXTRA</div>
+      <div class="desafio-texto" id="desafioTexto">Faça 3 LEDs piscarem em sequência, como um semáforo!</div>
+      <button class="desafio-btn" id="desafioBtn">🔴 Aceitar Desafio</button>
+    </div>
+
+    <div class="teoria-card">
+      <h4>💡 Dica do Desafio</h4>
+      <p>Use 3 LEDs, 3 resistores e os pinos <strong>11, 12 e 13</strong>. No <code>setup()</code> declare os 3 pinos como OUTPUT. No <code>loop()</code> use <code>delay()</code> entre cada LED para criar a sequência!</p>
+    </div>
+
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ==================== SEÇÃO 6: REFLEXÃO ==================== -->
+<section>
+  <div class="sec-header">
+    <div class="sec-numero">SEÇÃO 06</div>
+    <div class="sec-titulo">Reflexão do Dia ✍️</div>
+  </div>
+  <div class="sec-body">
+
+    <div class="reflexao-item">
+      <label>🤔 O que foi mais difícil hoje?</label>
+      <textarea id="r1" placeholder="Escreva aqui..."></textarea>
+    </div>
+
+    <div class="reflexao-item">
+      <label>💡 O que você aprendeu que não sabia antes?</label>
+      <textarea id="r2" placeholder="Escreva aqui..."></textarea>
+    </div>
+
+    <div class="reflexao-item">
+      <label>🚀 O que você gostaria de construir com o Arduino?</label>
+      <textarea id="r3" placeholder="Escreva aqui..."></textarea>
+    </div>
+
+    <div class="parabens" id="parabens">
+      <span class="parabens-emoji">🎉</span>
+      <h2>Parabéns, Maker!</h2>
+      <p>Você concluiu o Dia 1!<br>Amanhã: <strong>Arduino na Prática</strong> com sensores reais.</p>
+    </div>
+
+    <button class="btn-finalizar" onclick="finalizar()">✅ Finalizar Dia 1</button>
+
+  </div>
+</section>
+
+<footer>
+  <p><strong>Curso de Férias Maker</strong><br>
+  CEITEC — Itapipoca, CE<br>
+  Aprenda • Crie • Inove</p>
+</footer>
+
 <div class="toast" id="toast"></div>
 
 <script>
   const TOTAL = 7;
-  const marcados = new Set();
+  let concluidos = new Set();
 
-  function init() {
-    // passos
-    const saved = JSON.parse(localStorage.getItem('d1_passos') || '[]');
-    saved.forEach(i => { marcados.add(i); aplicarCheck(i, true); });
-    // reflexões
+  window.onload = () => {
+    const s = localStorage.getItem('d1_passos');
+    if (s) {
+      concluidos = new Set(JSON.parse(s));
+      document.querySelectorAll('.passo-item').forEach((el, i) => {
+        if (concluidos.has(i)) {
+          el.classList.add('concluido');
+          el.querySelector('.passo-num').textContent = '✓';
+        }
+      });
+    }
     ['r1','r2','r3'].forEach(id => {
       const v = localStorage.getItem('d1_' + id);
       if (v) document.getElementById(id).value = v;
     });
-    // desafio
     if (localStorage.getItem('d1_desafio') === '1') aplicarDesafio();
-    // finalizado
-    if (localStorage.getItem('d1_fim') === '1') document.getElementById('congrats').classList.remove('hidden');
-    atualizarProg();
-  }
-
-  function togglePasso(el, i) {
-    if (marcados.has(i)) { marcados.delete(i); aplicarCheck(i, false); }
-    else {
-      marcados.add(i);
-      aplicarCheck(i, true);
-      if (i === 6) toast('🎉 Parabéns! Você acendeu seu primeiro LED!');
+    if (localStorage.getItem('d1_concluido') === '1') {
+      document.getElementById('parabens').style.display = 'block';
     }
-    localStorage.setItem('d1_passos', JSON.stringify([...marcados]));
     atualizarProg();
-  }
+  };
 
-  function aplicarCheck(i, ok) {
-    const el = document.getElementById('p' + i);
-    const ck = el.querySelector('.passo-check');
-    if (ok) { el.classList.add('ok'); ck.textContent = '✓'; ck.style.cssText = 'background:#16a34a;border-color:#16a34a;color:white;font-size:16px'; }
-    else    { el.classList.remove('ok'); ck.textContent = (i+1); ck.style.cssText = ''; }
+  function marcarPasso(el, i) {
+    if (concluidos.has(i)) {
+      concluidos.delete(i);
+      el.classList.remove('concluido');
+      el.querySelector('.passo-num').textContent = i + 1;
+      toast('Passo desmarcado');
+    } else {
+      concluidos.add(i);
+      el.classList.add('concluido');
+      el.querySelector('.passo-num').textContent = '✓';
+      toast('Passo ' + (i+1) + ' concluído! 🎉');
+    }
+    localStorage.setItem('d1_passos', JSON.stringify([...concluidos]));
+    atualizarProg();
   }
 
   function atualizarProg() {
-    const pct = Math.round((marcados.size / TOTAL) * 100);
-    document.getElementById('prog-fill').style.width = pct + '%';
-    document.getElementById('contador').textContent = marcados.size + ' / ' + TOTAL;
+    const p = Math.round((concluidos.size / TOTAL) * 100);
+    document.getElementById('progBar').style.width = p + '%';
+    document.getElementById('progPct').textContent = p + '%';
   }
 
-  function salvar() {
-    ['r1','r2','r3'].forEach(id => localStorage.setItem('d1_' + id, document.getElementById(id).value));
-  }
-
-  function marcarDesafio() {
-    localStorage.setItem('d1_desafio', '1');
+  function marcarDesafio(el) {
     aplicarDesafio();
-    toast('🏆 Incrível! Desafio extra concluído!');
+    localStorage.setItem('d1_desafio', '1');
+    toast('Desafio aceito! Você é demais! 🏆');
   }
 
   function aplicarDesafio() {
-    const btn = document.getElementById('btn-desafio');
-    btn.textContent = '✅ Desafio concluído!';
-    btn.disabled = true;
+    document.getElementById('desafioBtn').textContent = '✅ Desafio Aceito!';
+    document.getElementById('desafioBtn').style.background = '#10B981';
+    document.getElementById('desafioTexto').style.color = '#A7F3D0';
   }
 
+  ['r1','r2','r3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => localStorage.setItem('d1_' + id, el.value));
+  });
+
   function finalizar() {
-    localStorage.setItem('d1_fim', '1');
-    const c = document.getElementById('congrats');
-    c.classList.remove('hidden');
-    c.scrollIntoView({ behavior: 'smooth' });
-    toast('🎉 Dia 1 finalizado! Até amanhã, maker!');
+    const p = document.getElementById('parabens');
+    p.style.display = 'block';
+    p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    localStorage.setItem('d1_concluido', '1');
+    toast('🎉 Dia 1 finalizado!');
   }
 
   function toast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
+    t.textContent = msg;
+    t.classList.add('visivel');
+    setTimeout(() => t.classList.remove('visivel'), 2500);
   }
-
-  init();
 </script>
 </body>
 </html>
