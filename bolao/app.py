@@ -607,7 +607,7 @@ def pagina_admin(usuario):
       <section id="admin-dashboard" class="admin-layout"></section>
     </main>
     """
-    scripts = '<script src="/static/bolao/admin.js"></script>'
+    scripts = '<script src="/static/bolao/admin.js?v=2"></script>'
     return pagina_base("Admin Bolão", usuario, conteudo, scripts)
 
 
