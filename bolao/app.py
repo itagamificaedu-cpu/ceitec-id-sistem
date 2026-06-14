@@ -276,8 +276,12 @@ def atualizar_status_automatico():
     jogos = consultar("SELECT * FROM bolao_jogos WHERE status != 'encerrado'")
     for jogo in jogos:
         inicio = data_inicio(jogo)
+        # Aguardando → Em andamento quando o jogo começa
         if jogo["status"] == "aguardando" and inicio <= agora:
             executar("UPDATE bolao_jogos SET status = 'em_andamento' WHERE id = ?", (jogo["id"],))
+        # Em andamento → Encerrado após 2h do início (jogo certamente acabou)
+        if jogo["status"] == "em_andamento" and agora >= inicio + timedelta(hours=2):
+            executar("UPDATE bolao_jogos SET status = 'encerrado' WHERE id = ?", (jogo["id"],))
             registrar_notificacao(
                 None,
                 f"AO VIVO: {jogo['time_casa']} x {jogo['time_fora']} começou!",
