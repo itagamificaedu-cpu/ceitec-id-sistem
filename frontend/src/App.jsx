@@ -27,6 +27,7 @@ import CorretorProvas from './pages/ia/CorretorProvas'
 import DiagnosticoAluno from './pages/ia/DiagnosticoAluno'
 import CriadorConteudo from './pages/ia/CriadorConteudo'
 import Planos from './pages/Planos'
+import Album from './pages/album/Album'
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem('token')
@@ -85,6 +86,9 @@ export default function App() {
         <Route path="/ia/corretor" element={<P><CorretorProvas /></P>} />
         <Route path="/diagnostico" element={<P><DiagnosticoAluno /></P>} />
         <Route path="/ia/conteudo" element={<P><CriadorConteudo /></P>} />
+
+        {/* Álbum dos Craques */}
+        <Route path="/album" element={<P><Album /></P>} />
 
         {/* Planos de Assinatura */}
         <Route path="/planos" element={<P><Planos /></P>} />
