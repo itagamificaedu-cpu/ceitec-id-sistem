@@ -655,7 +655,7 @@ async function carregarAlunos() {
   }
 
   try {
-    const resp = await fetch(API_BASE + '/api/alunos', {
+    const resp = await fetch(API_BASE + '/node-api/alunos', {
       headers: { Authorization: 'Bearer ' + token },
     });
     if (!resp.ok) throw new Error('Erro ' + resp.status);
@@ -810,7 +810,7 @@ async function darXP() {
   document.getElementById('xp-resultado').textContent = '⏳ Enviando XP...';
 
   try {
-    const resp = await fetch(API_BASE + '/api/cabo-guerra/dar-xp', {
+    const resp = await fetch(API_BASE + '/node-api/cabo-guerra/dar-xp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
