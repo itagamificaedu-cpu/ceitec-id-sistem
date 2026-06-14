@@ -331,6 +331,7 @@ export default function Navbar() {
           itens: [
             { onClick: abrirMestre,   label: 'Horário do Dia',   icon: '📅' },
             { onClick: abrirCorretor, label: 'Corretor de Provas', icon: '✅' },
+            { href: '/bolao/',        label: 'Bolão da Copa 2026', icon: '🏆' },
           ]
         }
       ]
