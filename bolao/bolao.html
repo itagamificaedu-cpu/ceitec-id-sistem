@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bolão da Copa 2026</title>
+  <link rel="stylesheet" href="static/bolao/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="bolao.html"><span class="brand-mark">GEGE</span><span>Bolão da Copa 2026</span></a>
+    <nav class="nav"><span>Demonstração local</span></nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">CEITEC Itapipoca</span>
+        <h1>Bolão da Copa do Mundo 2026</h1>
+        <p>Aposte no placar de cada jogo uma única vez antes da partida começar. Se acertar o placar exato, você concorre a um brinde.</p>
+      </div>
+      <button class="secondary" type="button" id="limpar">Limpar demo</button>
+    </section>
+
+    <section class="notice">
+      <strong>Como retirar o brinde:</strong> compareça ao CEITEC Itapipoca no dia seguinte ao jogo com seu nome.
+      <span>Após confirmar seu palpite, não é possível alterar.</span>
+    </section>
+
+    <section id="jogos" class="games"></section>
+  </main>
+
+  <script>
+    const jogos = [
+      { id: 1, fase: "Fase de Grupos - Grupo B", time_casa: "Qatar", time_fora: "Suíça", bandeira_casa: "🇶🇦", bandeira_fora: "🇨🇭", data_hora_inicio: "2026-06-13T16:00:00-03:00", status: "aguardando", total_palpites: 142 },
+      { id: 2, fase: "Fase de Grupos - Grupo C", time_casa: "Brasil", time_fora: "Marrocos", bandeira_casa: "🇧🇷", bandeira_fora: "🇲🇦", data_hora_inicio: "2026-06-13T19:00:00-03:00", status: "aguardando", total_palpites: 247 },
+      { id: 3, fase: "Fase de Grupos - Grupo C", time_casa: "Haiti", time_fora: "Escócia", bandeira_casa: "🇭🇹", bandeira_fora: "🏴", data_hora_inicio: "2026-06-13T22:00:00-03:00", status: "aguardando", total_palpites: 89 },
+      { id: 4, fase: "Fase de Grupos - Grupo D", time_casa: "Austrália", time_fora: "Turquia", bandeira_casa: "🇦🇺", bandeira_fora: "🇹🇷", data_hora_inicio: "2026-06-14T01:00:00-03:00", status: "aguardando", total_palpites: 64 }
+    ];
+
+    const palpites = JSON.parse(localStorage.getItem("bolao-demo-palpites") || "{}");
+
+    function brData(iso) {
+      return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Fortaleza" }).format(new Date(iso));
+    }
+
+    function tempoRestante(iso) {
+      const diff = new Date(iso).getTime() - Date.now();
+      if (diff <= 0) return "iniciado";
+      const totalMin = Math.floor(diff / 60000);
+      const horas = Math.floor((totalMin % 1440) / 60);
+      const minutos = totalMin % 60;
+      const dias = Math.floor(totalMin / 1440);
+      return dias > 0 ? `${dias}d ${horas}h ${minutos}min` : `${horas}h ${minutos}min`;
+    }
+
+    function render() {
+      document.querySelector("#jogos").innerHTML = jogos.map((jogo) => {
+        const palpite = palpites[jogo.id];
+        return `
+          <article class="game-card" data-inicio="${jogo.data_hora_inicio}">
+            <div class="game-top">
+              <div class="team"><span>${jogo.bandeira_casa}</span><span>${jogo.time_casa}</span></div>
+              <div class="versus">x</div>
+              <div class="team"><span>${jogo.time_fora}</span><span>${jogo.bandeira_fora}</span></div>
+            </div>
+            <div class="game-meta">
+              <span class="pill">Aberto para palpites</span>
+              <span class="pill">${jogo.fase}</span>
+              <span class="pill">${brData(jogo.data_hora_inicio)}</span>
+              <span class="pill countdown">começa em ${tempoRestante(jogo.data_hora_inicio)}</span>
+              <span class="pill">${jogo.total_palpites + (palpite ? 1 : 0)} palpites enviados</span>
+            </div>
+            ${palpite ? `<div class="saved">Palpite salvo: ${palpite.casa}x${palpite.fora}. Palpite fechado.</div>` : `
+              <form class="palpite-form" data-id="${jogo.id}">
+                <span>Seu palpite</span>
+                <label>${jogo.time_casa}<input name="casa" type="number" min="0" max="20" value="0" required></label>
+                <strong>x</strong>
+                <label>${jogo.time_fora}<input name="fora" type="number" min="0" max="20" value="0" required></label>
+                <span></span>
+                <button class="palpite-action" type="submit">Confirmar palpite - não poderá mudar depois</button>
+              </form>
+            `}
+          </article>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".palpite-form").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const dados = Object.fromEntries(new FormData(form).entries());
+          palpites[form.dataset.id] = { casa: Number(dados.casa), fora: Number(dados.fora) };
+          localStorage.setItem("bolao-demo-palpites", JSON.stringify(palpites));
+          render();
+        });
+      });
+    }
+
+    document.querySelector("#limpar").addEventListener("click", () => {
+      localStorage.removeItem("bolao-demo-palpites");
+      location.reload();
+    });
+
+    render();
+    setInterval(() => {
+      document.querySelectorAll(".game-card").forEach((card) => {
+        card.querySelector(".countdown").textContent = `começa em ${tempoRestante(card.dataset.inicio)}`;
+      });
+    }, 30000);
+  </script>
+</body>
+</html>

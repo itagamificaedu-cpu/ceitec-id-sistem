@@ -1,0 +1,563 @@
+:root {
+  --bg:          #0a1a0a;
+  --surface:     #0f2010;
+  --surface2:    #152a16;
+  --primary:     #22c55e;
+  --accent:      #fbbf24;
+  --accent2:     #86efac;
+  --text:        #f0fdf4;
+  --muted:       #6b9e74;
+  --line:        #1e4020;
+  --live-color:  #fbbf24;
+  --live-bg:     rgba(251,191,36,.08);
+  --done-color:  #64748b;
+  --done-bg:     rgba(100,116,139,.06);
+  --win-color:   #22c55e;
+  --win-bg:      rgba(34,197,94,.1);
+  --danger:      #ef4444;
+  --danger-bg:   rgba(239,68,68,.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  color: var(--text);
+  background: radial-gradient(ellipse at top, #0d2b0d 0%, #060e06 60%);
+  min-height: 100dvh;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+a { color: var(--primary); text-decoration: none; }
+
+button, input { font: inherit; }
+
+button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, #166534, #22c55e);
+  cursor: pointer;
+  font-weight: 700;
+  transition: opacity .15s;
+}
+button:hover { opacity: .88; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+.secondary {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 0 18px;
+}
+.secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ── Top bar ─────────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 42px);
+  background: rgba(6,14,6,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #166534, #22c55e);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.nav a { color: var(--primary); }
+
+/* ── Layout ──────────────────────────────────────────────────── */
+.page, .login-wrap {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+
+/* ── Hero ────────────────────────────────────────────────────── */
+.hero, .admin-head, .welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 32px 28px;
+  background: linear-gradient(135deg, #0f2010 0%, #0a1a0a 100%);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "🏆";
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 6rem;
+  opacity: .08;
+  pointer-events: none;
+}
+
+.hero h1, .admin-head h1, .welcome h1 {
+  margin: 6px 0 10px;
+  font-size: 2.2rem;
+  line-height: 1.05;
+  background: linear-gradient(135deg, #86efac 20%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p, .welcome p {
+  max-width: 640px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* ── Notice ──────────────────────────────────────────────────── */
+.notice {
+  display: grid;
+  gap: 5px;
+  margin: 16px 0;
+  padding: 14px 18px;
+  background: var(--surface);
+  border-left: 4px solid var(--primary);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: .9rem;
+}
+.notice strong { color: var(--text); }
+
+/* ── Game grid ───────────────────────────────────────────────── */
+.games, .admin-layout, .login-grid {
+  display: grid;
+  gap: 14px;
+}
+
+/* ── Game card ───────────────────────────────────────────────── */
+.game-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  transition: border-color .2s;
+  position: relative;
+  overflow: hidden;
+}
+.game-card:hover { border-color: #2d5e30; }
+
+.game-card[data-status="em_andamento"] {
+  border-color: rgba(251,191,36,.5);
+  box-shadow: 0 0 24px rgba(251,191,36,.1);
+}
+.game-card[data-status="encerrado"] {
+  opacity: .72;
+}
+
+.game-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  min-width: 0;
+}
+.team > span:first-child { font-size: 2rem; line-height: 1; }
+.team:last-child { justify-content: flex-end; text-align: right; }
+
+.versus {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  height: 48px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 900;
+  font-size: 1.1rem;
+  background: var(--surface2);
+}
+
+/* ── Divider / score ─────────────────────────────────────────── */
+.placar-real {
+  display: grid;
+  place-items: center;
+  min-width: 64px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--done-bg);
+  color: var(--done-color);
+  font-weight: 900;
+  font-size: 1.3rem;
+  letter-spacing: .04em;
+}
+
+/* ── Meta pills ──────────────────────────────────────────────── */
+.game-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 16px 0 0;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 3px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+.pill.live {
+  color: var(--live-color);
+  background: var(--live-bg);
+  border-color: rgba(251,191,36,.3);
+  animation: pulse-live 1.8s ease-in-out infinite;
+}
+@keyframes pulse-live {
+  50% { box-shadow: 0 0 8px rgba(251,191,36,.4); }
+}
+
+.pill.done {
+  color: var(--done-color);
+  background: var(--done-bg);
+  border-color: transparent;
+}
+
+/* ── Palpite form ────────────────────────────────────────────── */
+.palpite-form, .result-row {
+  display: grid;
+  grid-template-columns: 1fr 72px 20px 72px 1fr;
+  align-items: end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.palpite-form label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: .83rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.palpite-form input,
+.result-row input {
+  width: 72px;
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 900;
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.palpite-action {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #166534, #22c55e);
+  border-radius: 10px;
+  font-size: .95rem;
+  letter-spacing: .01em;
+}
+
+/* ── Resultado do palpite ────────────────────────────────────── */
+.saved {
+  margin-top: 14px;
+  padding: 14px 16px;
+  color: var(--accent2);
+  background: var(--win-bg);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: .92rem;
+}
+
+.lost {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: rgba(239,68,68,.2);
+}
+
+.winner {
+  color: var(--accent);
+  background: rgba(251,191,36,.1);
+  border-color: rgba(251,191,36,.3);
+  animation: pulse-win 1.2s ease-in-out infinite;
+}
+@keyframes pulse-win {
+  50% { box-shadow: 0 0 16px rgba(251,191,36,.3); }
+}
+
+/* ── Admin ───────────────────────────────────────────────────── */
+.panel, .login-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, .8fr);
+  gap: 14px;
+}
+
+.admin-game {
+  display: grid;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.admin-game:first-child { border-top: 0; }
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-actions input {
+  width: 68px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 800;
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.ranking {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ranking th,
+.ranking td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: .9rem;
+}
+.ranking th { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: .75rem; letter-spacing: .07em; }
+
+/* ── Login ───────────────────────────────────────────────────── */
+.login-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-top: 16px;
+}
+
+.login-card {
+  display: grid;
+  gap: 8px;
+}
+.login-card span,
+.login-card small { color: var(--muted); font-size: .88rem; }
+.login-card button { margin-top: 8px; }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 14px 18px;
+  color: #fff;
+  background: #166534;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  z-index: 40;
+  font-weight: 600;
+}
+
+/* ── Abas ────────────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0 14px;
+}
+
+.tab-btn {
+  min-height: 40px;
+  padding: 0 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.tab-btn:hover { border-color: var(--primary); color: var(--primary); }
+.tab-btn.active {
+  background: linear-gradient(135deg, #166534, #22c55e);
+  border-color: transparent;
+  color: #fff;
+  opacity: 1;
+}
+
+/* ── Resultados ──────────────────────────────────────────────── */
+.resultado-placar {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--accent);
+  background: rgba(251,191,36,.1);
+  border: 1px solid rgba(251,191,36,.3);
+  min-width: 84px;
+  height: 52px;
+}
+
+.tabela-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.linha-acerto td {
+  color: var(--win-color);
+  font-weight: 700;
+}
+
+.cell-placar {
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.pill-acerto {
+  color: var(--win-color);
+  background: var(--win-bg);
+  border-color: rgba(34,197,94,.3);
+}
+
+/* ── Responsivo ──────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .topbar, .hero, .admin-head { align-items: flex-start; flex-direction: column; }
+  .nav { flex-wrap: wrap; }
+
+  .game-top { grid-template-columns: 1fr; gap: 10px; }
+  .team:last-child { justify-content: flex-start; text-align: left; }
+  .versus { width: 42px; }
+
+  .palpite-form, .result-row {
+    grid-template-columns: 1fr 72px 20px 72px;
+  }
+  .palpite-form > span:last-child,
+  .result-row > span:last-child { display: none; }
+
+  .admin-grid { grid-template-columns: 1fr; }
+
+  .hero::before { display: none; }
+}
+
+/* ── Admin — palpites por jogo ───────────────────────────────── */
+.palpites-preview {
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: .88rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.pill-nome {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: .82rem;
+  color: var(--text);
+}
+
+.aviso-empate {
+  background: rgba(251,191,36,.12);
+  border: 1px solid rgba(251,191,36,.4);
+  color: var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: .9rem;
+}
+
+.tabela-palpites {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+}
+.tabela-palpites th,
+.tabela-palpites td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.tabela-palpites th {
+  color: var(--muted);
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.sem-palpites {
+  color: var(--muted);
+  font-size: .88rem;
+  font-style: italic;
+}
