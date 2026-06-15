@@ -206,7 +206,21 @@ async function mostrarModalLogin(payload) {
         return;
       }
 
+      const loginData = await loginRes.json();
       modal.remove();
+
+      // Atualizar header imediatamente sem reload
+      const navEl = document.querySelector('.nav');
+      if (navEl) {
+        const perfil = loginData.perfil || 'aluno';
+        const isAdmin = perfil === 'ita_admin' || perfil === 'coordenador';
+        navEl.innerHTML = `
+          <span>${loginData.nome} · ${perfil}</span>
+          ${isAdmin ? "<a href='/bolao/admin/'>Admin</a>" : ""}
+          <a href='/logout/'>Sair</a>
+        `;
+      }
+
       // Reenviar o palpite agora autenticado
       const palpiteRes = await fetch("/bolao/palpites/", {
         method: "POST",
@@ -219,7 +233,6 @@ async function mostrarModalLogin(payload) {
       if (palpiteRes.ok) {
         pendingPayload = null;
         carregarJogos();
-        setTimeout(() => window.location.reload(), 1200);
       }
     });
   });
