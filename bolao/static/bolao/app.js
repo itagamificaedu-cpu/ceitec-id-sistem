@@ -127,7 +127,7 @@ function cardResultado(jogo) {
 async function carregarJogos() {
   const res = await fetch("/bolao/jogos/");
   if (!res.ok) {
-    jogosEl.innerHTML = "<article class='game-card'>Faça login pelo CEITEC ID para participar.</article>";
+    jogosEl.innerHTML = "<article class='game-card'>Erro ao carregar jogos. Tente novamente.</article>";
     return;
   }
   const dados = await res.json();
@@ -158,15 +158,90 @@ async function carregarResultados() {
   resultadosEl.innerHTML = dados.jogos.map(cardResultado).join("");
 }
 
+// ── Modal de identificação ────────────────────────────────────────────────────
+let pendingPayload = null;
+
+async function mostrarModalLogin(payload) {
+  pendingPayload = payload;
+
+  const res = await fetch("/bolao/usuarios/");
+  const dados = await res.json();
+
+  const cards = dados.usuarios.map(u => `
+    <button class="login-card-inline" data-id="${u.id}">${u.nome}</button>
+  `).join("");
+
+  const modal = document.createElement("div");
+  modal.id = "modal-login";
+  modal.innerHTML = `
+    <div class="modal-box">
+      <h2>Quem é você?</h2>
+      <p>Selecione seu nome para confirmar o palpite</p>
+      <div class="modal-nomes">${cards}</div>
+      <button class="modal-cancelar">Cancelar</button>
+    </div>
+  `;
+  modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px";
+  document.body.appendChild(modal);
+
+  modal.querySelector(".modal-cancelar").addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+
+  modal.querySelectorAll(".login-card-inline").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const usuarioId = btn.dataset.id;
+      btn.disabled = true;
+      btn.textContent = "Entrando...";
+
+      const loginRes = await fetch("/bolao/login-ajax/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario_id: parseInt(usuarioId) }),
+        credentials: "include",
+      });
+
+      if (!loginRes.ok) {
+        mostrarToast("Erro ao identificar usuário. Tente novamente.");
+        modal.remove();
+        return;
+      }
+
+      modal.remove();
+      // Reenviar o palpite agora autenticado
+      const palpiteRes = await fetch("/bolao/palpites/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pendingPayload),
+        credentials: "include",
+      });
+      const dadosPalpite = await palpiteRes.json();
+      mostrarToast(dadosPalpite.mensagem || dadosPalpite.erro);
+      if (palpiteRes.ok) {
+        pendingPayload = null;
+        carregarJogos();
+        setTimeout(() => window.location.reload(), 1200);
+      }
+    });
+  });
+}
+
 async function enviarPalpite(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const payload = Object.fromEntries(new FormData(form).entries());
+
   const res = await fetch("/bolao/palpites/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
+
+  if (res.status === 401) {
+    mostrarModalLogin(payload);
+    return;
+  }
+
   const dados = await res.json();
   mostrarToast(dados.mensagem || dados.erro);
   if (res.ok) carregarJogos();
