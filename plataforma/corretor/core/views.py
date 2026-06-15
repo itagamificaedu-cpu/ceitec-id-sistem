@@ -412,6 +412,10 @@ def criar_avaliacao(request):
             except ValueError:
                 data_aplicacao_obj = timezone.now().date()
 
+        if is_online and status == 'publicada' and not gabarito:
+            messages.error(request, 'Não é possível publicar uma prova online sem gabarito. Preencha o gabarito antes de publicar.')
+            return redirect('criar_avaliacao')
+
         avaliacao = Avaliacao.objects.create(
             titulo=titulo,
             instituicao=instituicao,
@@ -492,6 +496,10 @@ def editar_avaliacao(request, pk):
         arquivo_prova = request.FILES.get('arquivo_prova')
         if arquivo_prova:
             avaliacao.arquivo_prova = arquivo_prova
+
+        if avaliacao.is_online and avaliacao.status == 'publicada' and not avaliacao.gabarito:
+            messages.error(request, 'Não é possível salvar uma prova online publicada sem gabarito. Preencha o gabarito antes de publicar.')
+            return redirect('editar_avaliacao', pk=pk)
 
         avaliacao.save()
         messages.success(request, 'Avaliação atualizada com sucesso!')
@@ -1581,6 +1589,8 @@ def api_liberar_prova(request, pk):
         return JsonResponse({'sucesso': False, 'erro': 'JSON inválido'}, status=400)
 
     if acao == 'liberar':
+        if avaliacao.is_online and not avaliacao.gabarito:
+            return JsonResponse({'sucesso': False, 'erro': 'Impossível liberar: esta prova online não tem gabarito configurado. Adicione o gabarito antes de liberar.'}, status=400)
         avaliacao.liberada = True
         avaliacao.save(update_fields=['liberada'])
         return JsonResponse({'sucesso': True, 'liberada': True, 'mensagem': 'Prova liberada para os alunos!'})
