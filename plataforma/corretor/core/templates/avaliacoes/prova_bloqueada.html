@@ -28,6 +28,20 @@
                     <button onclick="window.location.reload()" class="btn btn-outline-primary mt-2">
                         <i class="fas fa-sync-alt"></i> Atualizar página
                     </button>
+                    {% if request.user.is_authenticated %}
+                    {% if request.user.is_superuser or request.user.groups.filter(name='ita_admin').exists %}
+                    {% if avaliacao %}
+                    <div class="mt-4 p-3 border border-warning rounded bg-warning bg-opacity-10">
+                        <p class="fw-bold text-warning mb-2"><i class="fas fa-shield-alt"></i> Painel Admin</p>
+                        <a href="{% url 'liberar_prova_admin' avaliacao.id %}"
+                           class="btn btn-warning btn-sm"
+                           onclick="return confirm('Liberar esta prova para os alunos?')">
+                            <i class="fas fa-unlock"></i> Liberar agora
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>

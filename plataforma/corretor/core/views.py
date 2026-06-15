@@ -793,6 +793,11 @@ def responder_prova_online(request, pk):
 
 def prova_online(request, pk):
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
+
+    # Bloqueia acesso se prova não estiver publicada
+    if avaliacao.status != 'publicada':
+        return render(request, 'avaliacoes/prova_bloqueada.html', {'avaliacao': avaliacao})
+
     _all_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
     alunos = [a for a in _all_ita if turmas_compativeis(a.turma, avaliacao.turma)] or _all_ita
 
@@ -805,6 +810,18 @@ def prova_online(request, pk):
         'range_questoes': range_questoes,
         'alternativas': alternativas,
     })
+
+
+@login_required
+def liberar_prova_admin(request, pk):
+    if not (request.user.is_superuser or request.user.groups.filter(name='ita_admin').exists()):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+    avaliacao = get_object_or_404(Avaliacao, id=pk)
+    avaliacao.status = 'publicada'
+    avaliacao.save()
+    messages.success(request, f'Prova "{avaliacao.titulo}" liberada com sucesso!')
+    return redirect('prova_online', pk=pk)
 
 
 # ---------------------------------------------------------------------------
