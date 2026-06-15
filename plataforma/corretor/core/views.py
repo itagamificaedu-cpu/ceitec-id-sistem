@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import models as db_models
 from django.db.models import Avg, Count, Max, Min
 from django.db.models import Prefetch
 from django.core.paginator import Paginator
@@ -13,10 +14,9 @@ from django.utils import timezone
 from datetime import datetime
 from openpyxl import Workbook
 import csv
-from django.contrib.auth import get_user_model
-from .models import Avaliacao, Resultado, Estatisticas, Aluno, AlunoITA
-from .forms import AvaliacaoForm, CorrecaoForm
-Usuario = get_user_model()
+from .models import Usuario, Avaliacao, Resultado, Estatisticas, Aluno, Escola, LogAcessoNegado
+from .mixins import require_perfil
+from .forms import AvaliacaoForm, CorrecaoForm, UsuarioCreationForm
 from .utils.leitor_gabarito import processar_upload
 from .utils.gerador_pdf import gerar_gabarito_pdf
 from .utils.helpers import normalizar_turma, turmas_compativeis
@@ -30,15 +30,75 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def importar_alunos_view(request):
-    # Importacao via CSV desativada - alunos vem diretamente do sistema ITA
     if request.method == 'POST':
-        messages.info(request, 'Os alunos sao gerenciados pelo sistema ITA. Cadastre-os la.')
+        arquivo = request.FILES.get('arquivo')
+        if not arquivo:
+            messages.error(request, 'Selecione um arquivo .csv')
+            return redirect('importar_alunos')
+
+        # Validação básica de tamanho e tipo
+        if arquivo.size > 5 * 1024 * 1024:
+            messages.error(request, 'Arquivo muito grande. Máximo 5MB.')
+            return redirect('importar_alunos')
+
+        nome_lower = arquivo.name.lower()
+        if not (nome_lower.endswith('.csv') or nome_lower.endswith('.txt')):
+            messages.error(request, 'Apenas arquivos .csv são permitidos.')
+            return redirect('importar_alunos')
+
+        try:
+            conteudo = arquivo.read()
+            decoded_file = None
+
+            for encoding in ['utf-8-sig', 'iso-8859-1', 'cp1252', 'latin-1']:
+                try:
+                    decoded_file = conteudo.decode(encoding).splitlines()
+                    break
+                except UnicodeDecodeError:
+                    continue
+
+            if not decoded_file:
+                messages.error(request, 'Não foi possível ler o arquivo. Tente salvar como CSV UTF-8.')
+                return redirect('importar_alunos')
+
+            primeira_linha = decoded_file[0]
+            delimitador = ';' if ';' in primeira_linha else (',' if ',' in primeira_linha else '\t')
+
+            reader = csv.DictReader(decoded_file, delimiter=delimitador)
+            contador = 0
+
+            for row in reader:
+                dados = {
+                    str(k).strip().lower().replace('\ufeff', ''): str(v).strip()
+                    for k, v in row.items() if k
+                }
+                nome = dados.get('nome') or dados.get('aluno') or dados.get('student')
+                turma = dados.get('turma') or dados.get('classe') or dados.get('class')
+
+                if nome and turma:
+                    Aluno.objects.get_or_create(
+                        nome=nome,
+                        turma=turma,
+                        professor=request.user
+                    )
+                    contador += 1
+
+            if contador > 0:
+                messages.success(request, f'{contador} alunos importados com sucesso!')
+            else:
+                messages.warning(request, 'Nenhum aluno encontrado. Verifique se as colunas são "Nome" e "Turma".')
+
+        except Exception as e:
+            logger.error(f"Erro ao importar alunos: {e}", exc_info=True)
+            messages.error(request, f'Erro ao processar arquivo.')
+
         return redirect('importar_alunos')
 
-    alunos = AlunoITA.objects.filter(ativo=1)
+    alunos = Aluno.objects.filter(professor=request.user)
 
     q_nome = request.GET.get('q_nome', '')
     q_turma = request.GET.get('q_turma', '')
+
     if q_nome:
         alunos = alunos.filter(nome__icontains=q_nome)
     if q_turma:
@@ -52,7 +112,6 @@ def importar_alunos_view(request):
         'alunos': alunos_page,
         'q_nome': q_nome,
         'q_turma': q_turma,
-        'sincronizado_ita': True,
     })
 
 
@@ -60,9 +119,21 @@ def importar_alunos_view(request):
 # Autenticação
 # ---------------------------------------------------------------------------
 
+def _redirecionar_por_perfil(usuario):
+    """Retorna o redirect correto baseado no perfil do usuário."""
+    perfil = getattr(usuario, 'perfil', 'sem_grupo')
+    if perfil == 'ita_admin':
+        return redirect('dashboard_ita_admin')
+    if perfil == 'coordenador':
+        return redirect('dashboard_coordenador')
+    if perfil == 'professor':
+        return redirect('home')
+    return redirect('sem_acesso')
+
+
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('home')
+        return _redirecionar_por_perfil(request.user)
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -70,7 +141,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('home')
+            return _redirecionar_por_perfil(user)
         else:
             messages.error(request, 'Usuário ou senha inválidos.')
 
@@ -82,12 +153,156 @@ def logout_view(request):
     return redirect('login')
 
 
+EMAILS_ADMIN_ITA = {'itagamificaedu@gmail.com', 'itaceitec@gmail.com'}
+
+def login_magico(request):
+    """SSO automático via chave compartilhada — integração com plataforma ITA."""
+    chave    = request.GET.get('chave', '')
+    email    = request.GET.get('email', '')
+    nome     = request.GET.get('nome', email.split('@')[0] if email else '')
+    next_url = request.GET.get('next', '')
+
+    if chave != 'gamificaedu_secreto_2026' or not email:
+        return redirect('login')
+
+    eh_admin = email.strip().lower() in EMAILS_ADMIN_ITA
+
+    try:
+        usuario = Usuario.objects.get(email=email)
+    except Usuario.DoesNotExist:
+        partes = nome.strip().split(' ', 1)
+        username_base = email.split('@')[0]
+        username = username_base
+        contador = 1
+        while Usuario.objects.filter(username=username).exists():
+            username = f"{username_base}{contador}"
+            contador += 1
+        perfil_inicial = 'ita_admin' if eh_admin else 'professor'
+        usuario = Usuario(
+            username=username,
+            email=email,
+            first_name=partes[0],
+            last_name=partes[1] if len(partes) > 1 else '',
+            tipo_usuario=perfil_inicial,
+            perfil=perfil_inicial,
+        )
+        usuario.set_unusable_password()
+        if eh_admin:
+            usuario.is_superuser = True
+            usuario.is_staff = True
+        usuario.save()
+
+    # Garantir que admin sempre tenha superuser (mesmo se já existia como professor)
+    if eh_admin and (not usuario.is_superuser or usuario.perfil != 'ita_admin'):
+        usuario.is_superuser = True
+        usuario.is_staff = True
+        usuario.perfil = 'ita_admin'
+        usuario.tipo_usuario = 'ita_admin'
+        usuario.save(update_fields=['is_superuser', 'is_staff', 'perfil', 'tipo_usuario'])
+
+    if not usuario.is_active:
+        usuario.is_active = True
+        usuario.save(update_fields=['is_active'])
+
+    login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+    # next_url tem prioridade (ex: link direto para prova); senão vai ao dashboard
+    if next_url:
+        return redirect(next_url)
+    return _redirecionar_por_perfil(usuario)
+
+
+@csrf_exempt
+def api_sync_alunos(request):
+    """Recebe lista de alunos do sistema CEITEC e cadastra no corretor vinculados ao professor."""
+    if request.method == 'OPTIONS':
+        resp = HttpResponse()
+        resp['Access-Control-Allow-Origin'] = '*'
+        resp['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        resp['Access-Control-Allow-Headers'] = 'Content-Type'
+        return resp
+
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Método não permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+
+    chave  = data.get('chave', '')
+    email  = data.get('email', '')
+    alunos = data.get('alunos', [])
+
+    if chave != 'gamificaedu_secreto_2026' or not email:
+        resp = JsonResponse({'erro': 'Não autorizado'}, status=403)
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
+
+    try:
+        professor = Usuario.objects.get(email=email)
+    except Usuario.DoesNotExist:
+        resp = JsonResponse({'erro': 'Professor não encontrado'}, status=404)
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
+
+    criados = 0
+    for a in alunos:
+        nome   = str(a.get('nome', '')).strip()
+        turma  = str(a.get('turma', '')).strip()
+        codigo = str(a.get('codigo', '')).strip()
+        if nome and turma:
+            obj, created = Aluno.objects.get_or_create(
+                nome=nome, turma=turma, professor=professor
+            )
+            # Atualiza o código sempre que mudar
+            if codigo and obj.codigo != codigo:
+                obj.codigo = codigo
+                obj.save(update_fields=['codigo'])
+            if created:
+                criados += 1
+
+    resp = JsonResponse({'ok': True, 'criados': criados, 'total': len(alunos)})
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
+
+
+
+@csrf_exempt
+def api_verificar_codigo_aluno(request, pk):
+    """Verifica código do aluno no token geral e retorna o nome se válido."""
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'erro': 'Método inválido'})
+
+    avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
+
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'ok': False, 'erro': 'JSON inválido'})
+
+    codigo = str(data.get('codigo', '')).strip()
+    if not codigo:
+        return JsonResponse({'ok': False, 'erro': 'Informe seu código de matrícula.'})
+
+    # Busca apenas na turma desta avaliação — sem fallback para outras turmas
+    aluno = Aluno.objects.filter(
+        codigo__iexact=codigo,
+        turma=avaliacao.turma,
+    ).first()
+
+    if not aluno:
+        return JsonResponse({'ok': False, 'erro': 'Código não encontrado nesta turma. Verifique com seu professor.'})
+
+    resp = JsonResponse({'ok': True, 'nome': aluno.nome, 'aluno_id': str(aluno.id), 'turma': aluno.turma or ''})
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
+
+
 def registro_view(request):
     if request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
-        from gamificaedu.accounts.forms import CadastroForm as UsuarioCreationForm
         form = UsuarioCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -95,7 +310,6 @@ def registro_view(request):
             messages.success(request, 'Conta criada com sucesso!')
             return redirect('home')
     else:
-        from gamificaedu.accounts.forms import CadastroForm as UsuarioCreationForm
         form = UsuarioCreationForm()
 
     return render(request, 'registration/registro.html', {'form': form})
@@ -107,6 +321,15 @@ def registro_view(request):
 
 @login_required
 def home(request):
+    # Redireciona perfis especiais para seus dashboards
+    perfil = getattr(request.user, 'perfil', 'professor')
+    if perfil == 'ita_admin':
+        return redirect('dashboard_ita_admin')
+    if perfil == 'coordenador':
+        return redirect('dashboard_coordenador')
+    if perfil == 'sem_grupo':
+        return redirect('sem_acesso')
+
     avaliacoes_qs = Avaliacao.objects.filter(professor=request.user)
     correcoes_qs = Resultado.objects.filter(avaliacao__professor=request.user)
 
@@ -125,7 +348,11 @@ def home(request):
 
 @login_required
 def lista_avaliacoes(request):
-    avaliacoes = Avaliacao.objects.filter(professor=request.user)
+    # ita_admin ve todas as avaliacoes; professor ve so as suas
+    if getattr(request.user, 'perfil', '') == 'ita_admin':
+        avaliacoes = Avaliacao.objects.all()
+    else:
+        avaliacoes = Avaliacao.objects.filter(professor=request.user)
 
     filtro_status = request.GET.get('status')
     filtro_disciplina = request.GET.get('disciplina')
@@ -206,7 +433,7 @@ def criar_avaliacao(request):
         return redirect('lista_avaliacoes')
 
     turmas_existentes = (
-        AlunoITA.objects.filter(ativo=1)
+        Aluno.objects.filter(professor=request.user)
         .values_list('turma', flat=True)
         .distinct()
         .order_by('turma')
@@ -216,7 +443,15 @@ def criar_avaliacao(request):
 
 @login_required
 def editar_avaliacao(request, pk):
-    avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
+    is_admin = (
+        request.user.is_superuser
+        or getattr(request.user, 'perfil', '') == 'ita_admin'
+        or request.user.email in EMAILS_ADMIN_ITA
+    )
+    if is_admin:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk)
+    else:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
 
     if request.method == 'POST':
         avaliacao.titulo = request.POST.get('titulo', '').strip()
@@ -262,8 +497,10 @@ def editar_avaliacao(request, pk):
         messages.success(request, 'Avaliação atualizada com sucesso!')
         return redirect('lista_avaliacoes')
 
+    # ita_admin usa as turmas do professor da prova; professor usa as suas
+    prof_turmas = avaliacao.professor if getattr(request.user, 'perfil', '') == 'ita_admin' else request.user
     turmas_existentes = (
-        AlunoITA.objects.filter(ativo=1)
+        Aluno.objects.filter(professor=prof_turmas)
         .values_list('turma', flat=True)
         .distinct()
         .order_by('turma')
@@ -276,9 +513,14 @@ def editar_avaliacao(request, pk):
 
 @login_required
 def detalhar_avaliacao(request, pk):
-    avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
-    _alunos_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
-    alunos = [a for a in _alunos_ita if turmas_compativeis(a.turma, avaliacao.turma)]
+    # ita_admin ve qualquer avaliacao; professor ve apenas as suas
+    if getattr(request.user, 'perfil', '') == 'ita_admin' or request.user.is_superuser:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk)
+    else:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
+    # alunos: usa o professor da avaliacao para ita_admin
+    prof_ref = avaliacao.professor if (getattr(request.user, 'perfil', '') == 'ita_admin' or request.user.is_superuser) else request.user
+    alunos = Aluno.objects.filter(professor=prof_ref, turma=avaliacao.turma).order_by('nome')
     resultados = avaliacao.resultados.all()
 
     stats = resultados.aggregate(
@@ -300,8 +542,18 @@ def detalhar_avaliacao(request, pk):
 
 
 @login_required
+@login_required
 def excluir_avaliacao(request, pk):
-    avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
+    # admin pode excluir qualquer avaliacao; professor apenas as suas
+    is_admin = (
+        request.user.is_superuser
+        or getattr(request.user, 'perfil', '') == 'ita_admin'
+        or request.user.email in EMAILS_ADMIN_ITA
+    )
+    if is_admin:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk)
+    else:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
 
     if request.method == 'POST':
         avaliacao.delete()
@@ -324,10 +576,10 @@ def gerar_pdf(request, pk):
 
     alunos = None
     if aluno_id:
-        alunos = list(AlunoITA.objects.filter(id=aluno_id))
+        alunos = Aluno.objects.filter(id=aluno_id, professor=request.user)
     elif nominal:
         todos_alunos = list(
-            AlunoITA.objects.filter(ativo=1).order_by('nome')
+            Aluno.objects.filter(professor=request.user).order_by('nome')
         )
         alunos = [a for a in todos_alunos if turmas_compativeis(a.turma, avaliacao.turma)]
 
@@ -394,9 +646,12 @@ def correcao(request):
     else:
         form = CorrecaoForm()
 
-    avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
-    turmas_sugeridas = AlunoITA.objects.filter(ativo=1).values_list('turma', flat=True).distinct()
-    alunos_sugeridos = AlunoITA.objects.filter(ativo=1).order_by('nome')[:50]
+    if getattr(request.user, 'perfil', '') == 'ita_admin':
+        avaliacoes = Avaliacao.objects.all().order_by('-data_criacao')
+    else:
+        avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
+    turmas_sugeridas = Aluno.objects.filter(professor=request.user).values_list('turma', flat=True).distinct()
+    alunos_sugeridos = Aluno.objects.filter(professor=request.user).order_by('nome')[:50]
 
     return render(request, 'correcao/corrigir.html', {
         'form': form,
@@ -408,7 +663,10 @@ def correcao(request):
 
 @login_required
 def correcao_lote(request):
-    avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
+    if getattr(request.user, 'perfil', '') == 'ita_admin':
+        avaliacoes = Avaliacao.objects.all().order_by('-data_criacao')
+    else:
+        avaliacoes = Avaliacao.objects.filter(professor=request.user).order_by('-data_criacao')
     return render(request, 'correcao/lote.html', {'avaliacoes': avaliacoes})
 
 
@@ -431,20 +689,24 @@ def api_corrigir_lote(request):
         if not avaliacao_id or not imagem_b64:
             return JsonResponse({'sucesso': False, 'erro': 'Dados ausentes (avaliacao_id e imagem obrigatórios)'})
 
-        avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id, professor=request.user)
+        # ita_admin pode ver qualquer avaliacao
+        if getattr(request.user, 'perfil', '') == 'ita_admin':
+            avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id)
+        else:
+            avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id, professor=request.user)
 
         # Resolver aluno pelo ID ou por fallback nominal
         aluno_obj = None
         if aluno_id:
             try:
-                aluno_obj = AlunoITA.objects.filter(id=aluno_id).first()
+                aluno_obj = Aluno.objects.filter(id=aluno_id).first()
 
                 if not aluno_obj:
                     numeric_id = ''.join(filter(str.isdigit, str(aluno_id)))
                     if numeric_id:
                         idx = int(numeric_id) - 1
                         alunos_turma = [
-                            a for a in AlunoITA.objects.filter(ativo=1).order_by('nome')
+                            a for a in Aluno.objects.filter(professor=request.user).order_by('nome')
                             if turmas_compativeis(a.turma, avaliacao.turma)
                         ]
                         if 0 <= idx < len(alunos_turma):
@@ -510,10 +772,16 @@ def api_corrigir_lote(request):
 
 @login_required
 def api_get_alunos_turma(request, avaliacao_id):
-    avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id, professor=request.user)
+    # ita_admin pode editar qualquer avaliacao
+    if getattr(request.user, 'perfil', '') == 'ita_admin':
+        avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id)
+    else:
+        avaliacao = get_object_or_404(Avaliacao, id=avaliacao_id, professor=request.user)
 
-    todos_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
-    alunos = [a for a in todos_ita if turmas_compativeis(a.turma, avaliacao.turma)]
+    alunos = Aluno.objects.filter(
+        professor=request.user,
+        turma=avaliacao.turma
+    ).order_by('nome')
 
     resultado_alunos = set(
         Resultado.objects.filter(avaliacao=avaliacao).values_list('aluno_nome', flat=True)
@@ -537,9 +805,15 @@ def api_get_alunos_turma(request, avaliacao_id):
 
 @login_required
 def lista_resultados(request):
-    resultados = Resultado.objects.filter(
-        avaliacao__professor=request.user
-    ).select_related('avaliacao')
+    is_admin = (getattr(request.user, 'perfil', '') in ('ita_admin', 'admin')
+                or request.user.is_superuser
+                or request.user.email in EMAILS_ADMIN_ITA)
+    if is_admin:
+        resultados = Resultado.objects.all().select_related('avaliacao', 'avaliacao__professor')
+    else:
+        resultados = Resultado.objects.filter(
+            avaliacao__professor=request.user
+        ).select_related('avaliacao')
 
     filtro_avaliacao = request.GET.get('avaliacao')
     filtro_turma = request.GET.get('turma', '').strip()
@@ -553,11 +827,27 @@ def lista_resultados(request):
     page = request.GET.get('page', 1)
     resultados_page = paginator.get_page(page)
 
+    if is_admin:
+        avaliacoes = Avaliacao.objects.all()
+        turmas_disponiveis = (
+            Resultado.objects.exclude(turma='').exclude(turma__isnull=True)
+            .values_list('turma', flat=True).distinct().order_by('turma')
+        )
+    else:
+        avaliacoes = Avaliacao.objects.filter(professor=request.user)
+        turmas_disponiveis = (
+            Resultado.objects.filter(avaliacao__professor=request.user)
+            .exclude(turma='').exclude(turma__isnull=True)
+            .values_list('turma', flat=True).distinct().order_by('turma')
+        )
+
     return render(request, 'resultados/lista.html', {
         'resultados': resultados_page,
         'filtro_avaliacao': filtro_avaliacao,
         'filtro_turma': filtro_turma,
-        'avaliacoes': Avaliacao.objects.filter(professor=request.user),
+        'avaliacoes': avaliacoes,
+        'turmas_disponiveis': turmas_disponiveis,
+        'is_admin': is_admin,
     })
 
 
@@ -567,11 +857,21 @@ def lista_resultados(request):
 
 @login_required
 def dashboard(request):
-    avaliacoes = Avaliacao.objects.filter(
-        professor=request.user
-    ).prefetch_related('resultados')
+    # admin ve todos os dados; professor ve apenas os seus
+    is_admin = (
+        request.user.is_superuser
+        or getattr(request.user, 'perfil', '') == 'ita_admin'
+        or request.user.email in EMAILS_ADMIN_ITA
+    )
 
-    resultados_qs = Resultado.objects.filter(avaliacao__professor=request.user)
+    if is_admin:
+        avaliacoes = Avaliacao.objects.all().prefetch_related('resultados')
+        resultados_qs = Resultado.objects.all()
+    else:
+        avaliacoes = Avaliacao.objects.filter(
+            professor=request.user
+        ).prefetch_related('resultados')
+        resultados_qs = Resultado.objects.filter(avaliacao__professor=request.user)
 
     total_avaliacoes = avaliacoes.count()
     total_correcoes = resultados_qs.count()
@@ -614,7 +914,13 @@ def dashboard(request):
 
 @login_required
 def exportar_view(request):
-    avaliacoes = Avaliacao.objects.filter(professor=request.user)
+    is_admin = (getattr(request.user, 'perfil', '') in ('ita_admin', 'admin')
+                or request.user.is_superuser
+                or request.user.email in EMAILS_ADMIN_ITA)
+    if is_admin:
+        avaliacoes = Avaliacao.objects.all()
+    else:
+        avaliacoes = Avaliacao.objects.filter(professor=request.user)
     return render(request, 'core/exportar.html', {'avaliacoes': avaliacoes})
 
 
@@ -726,6 +1032,12 @@ def responder_prova_online(request, pk):
 
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
 
+    if not avaliacao.liberada:
+        return JsonResponse({'sucesso': False, 'erro': 'Esta prova não está liberada pelo professor.'})
+
+    if not avaliacao.gabarito:
+        return JsonResponse({'sucesso': False, 'erro': 'Esta prova ainda não tem gabarito configurado. Avise o professor ou coordenador.'})
+
     try:
         data = json.loads(request.body)
         aluno_nome = data.get('aluno_nome', '').strip()
@@ -736,11 +1048,31 @@ def responder_prova_online(request, pk):
         if not aluno_nome:
             return JsonResponse({'sucesso': False, 'erro': 'Nome do aluno é obrigatório.'})
 
-        if Resultado.objects.filter(avaliacao=avaliacao, aluno_nome=aluno_nome).exists():
-            return JsonResponse({
-                'sucesso': False,
-                'erro': 'Você já realizou esta prova! A nota já foi salva no sistema.',
-            })
+        # Valida se o nome pertence à turma desta avaliação
+        # (só quando não há aluno_id — token individual já é seguro)
+        if not aluno_id:
+            alunos_turma = Aluno.objects.filter(
+                turma=avaliacao.turma,
+                professor=avaliacao.professor
+            )
+            if alunos_turma.exists():
+                nomes_turma = [a.nome.strip().lower() for a in alunos_turma]
+                if aluno_nome.strip().lower() not in nomes_turma:
+                    return JsonResponse({
+                        'sucesso': False,
+                        'erro': 'Seu nome não foi encontrado na lista da turma. Selecione seu nome corretamente.',
+                    })
+
+        resultado_existente = Resultado.objects.filter(avaliacao=avaliacao, aluno_nome=aluno_nome).first()
+        if resultado_existente:
+            if resultado_existente.nota is not None:
+                return JsonResponse({
+                    'sucesso': False,
+                    'erro': 'Você já realizou esta prova! A nota já foi salva no sistema.',
+                })
+            else:
+                # Resultado fantasma (nota None = submissão vazia) — apaga e permite nova tentativa
+                resultado_existente.delete()
 
         resultado = Resultado(
             avaliacao=avaliacao,
@@ -766,7 +1098,7 @@ def responder_prova_online(request, pk):
             from .models import Tentativa
             aluno_obj = None
             if aluno_id:
-                aluno_obj = AlunoITA.objects.filter(id=aluno_id).first()
+                aluno_obj = Aluno.objects.filter(id=aluno_id, professor=avaliacao.professor).first()
 
             Tentativa.objects.create(
                 avaliacao=avaliacao,
@@ -792,36 +1124,34 @@ def responder_prova_online(request, pk):
 
 
 def prova_online(request, pk):
+    """Acesso direto: aluno digita o código de matrícula para se identificar."""
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
 
-    # Bloqueia acesso se prova não estiver publicada
-    if avaliacao.status != 'publicada':
+    # Bloqueia acesso se prova não estiver liberada pelo professor
+    if not avaliacao.liberada:
         return render(request, 'avaliacoes/prova_bloqueada.html', {'avaliacao': avaliacao})
 
-    _all_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
-    alunos = [a for a in _all_ita if turmas_compativeis(a.turma, avaliacao.turma)] or _all_ita
+    # Se vier com token na URL, redireciona para a view de token
+    token = request.GET.get('token')
+    if token:
+        from django.shortcuts import redirect as _redirect
+        return _redirect(f'/publica/prova/{pk}/qr/?token={token}')
 
+    # Sem token: mostra campo de código — alunos da turma podem entrar
     alternativas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'][:avaliacao.alternativas_por_questao]
     range_questoes = range(1, avaliacao.numero_questoes + 1)
 
     return render(request, 'avaliacoes/prova_online.html', {
         'avaliacao': avaliacao,
-        'alunos': alunos,
+        'alunos': [],
         'range_questoes': range_questoes,
         'alternativas': alternativas,
+        'token_valido': True,        # trata como acesso geral — código valida a identidade
+        'token_obj': None,
+        'aluno_pre_selecionado': None,
+        'erro_token': None,
+        'acesso_direto': True,       # flag para distinguir do token QR se necessário
     })
-
-
-@login_required
-def liberar_prova_admin(request, pk):
-    if not (request.user.is_superuser or request.user.groups.filter(name='ita_admin').exists()):
-        from django.http import HttpResponseForbidden
-        return HttpResponseForbidden()
-    avaliacao = get_object_or_404(Avaliacao, id=pk)
-    avaliacao.status = 'publicada'
-    avaliacao.save()
-    messages.success(request, f'Prova "{avaliacao.titulo}" liberada com sucesso!')
-    return redirect('prova_online', pk=pk)
 
 
 # ---------------------------------------------------------------------------
@@ -830,7 +1160,11 @@ def liberar_prova_admin(request, pk):
 
 @login_required
 def editar_resultado(request, pk):
-    resultado = get_object_or_404(Resultado, id=pk, avaliacao__professor=request.user)
+    is_admin = request.user.email in EMAILS_ADMIN_ITA or getattr(getattr(request.user, 'perfil', None), 'perfil', None) == 'ita_admin'
+    if is_admin:
+        resultado = get_object_or_404(Resultado, id=pk)
+    else:
+        resultado = get_object_or_404(Resultado, id=pk, avaliacao__professor=request.user)
 
     if request.method == 'POST':
         resultado.aluno_nome = request.POST.get('aluno_nome', '').strip()
@@ -852,7 +1186,11 @@ def editar_resultado(request, pk):
 
 @login_required
 def excluir_resultado(request, pk):
-    resultado = get_object_or_404(Resultado, id=pk, avaliacao__professor=request.user)
+    is_admin = request.user.email in EMAILS_ADMIN_ITA or getattr(getattr(request.user, 'perfil', None), 'perfil', None) == 'ita_admin'
+    if is_admin:
+        resultado = get_object_or_404(Resultado, id=pk)
+    else:
+        resultado = get_object_or_404(Resultado, id=pk, avaliacao__professor=request.user)
 
     if request.method == 'POST':
         resultado.delete()
@@ -933,8 +1271,7 @@ def gerar_qr_prova(request, pk):
             'qr_base64': qr_base64,
         })
 
-    _alunos_ita = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
-    alunos = [a for a in _alunos_ita if turmas_compativeis(a.turma, avaliacao.turma)]
+    alunos = Aluno.objects.filter(professor=request.user, turma=avaliacao.turma).order_by('nome')
     tokens_existentes = TokenQR.objects.filter(avaliacao=avaliacao).order_by('-criado_em')[:20]
 
     return render(request, 'avaliacoes/gerar_qr.html', {
@@ -950,6 +1287,10 @@ def prova_online_qr(request, pk):
     from .utils.token_utils import validar_token
 
     avaliacao = get_object_or_404(Avaliacao, id=pk, is_online=True)
+
+    # Bloqueia acesso se prova não estiver liberada pelo professor
+    if not avaliacao.liberada:
+        return render(request, 'avaliacoes/prova_bloqueada.html', {'avaliacao': avaliacao})
 
     token_str = request.GET.get('token')
     aluno_id_param = request.GET.get('aluno_id')
@@ -967,21 +1308,30 @@ def prova_online_qr(request, pk):
             if token_obj.aluno:
                 aluno_pre_selecionado = token_obj.aluno
             elif aluno_id_param:
-                aluno_pre_selecionado = AlunoITA.objects.filter(
+                aluno_pre_selecionado = Aluno.objects.filter(
                     id=aluno_id_param, professor=avaliacao.professor
                 ).first()
         else:
             erro_token = erro
 
-    _all_ita2 = list(AlunoITA.objects.filter(ativo=1).order_by('nome'))
-    alunos = [a for a in _all_ita2 if turmas_compativeis(a.turma, avaliacao.turma)] or _all_ita2
-
     alternativas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'][:avaliacao.alternativas_por_questao]
     range_questoes = range(1, avaliacao.numero_questoes + 1)
 
+    # Se o token identifica o aluno individualmente, NÃO passa lista de nomes
+    if aluno_pre_selecionado:
+        alunos_ctx = []
+    else:
+        # Token geral: mostra APENAS os alunos da turma desta avaliação
+        alunos_ctx = list(
+            Aluno.objects.filter(
+                turma=avaliacao.turma,
+                professor=avaliacao.professor
+            ).order_by('nome').values('id', 'nome')
+        )
+
     return render(request, 'avaliacoes/prova_online.html', {
         'avaliacao': avaliacao,
-        'alunos': alunos,
+        'alunos': alunos_ctx,
         'range_questoes': range_questoes,
         'alternativas': alternativas,
         'token_valido': token_obj is not None,
@@ -1050,7 +1400,7 @@ def api_aluno_tentativa(request, pk):
 
             aluno_obj = None
             if aluno_id:
-                aluno_obj = AlunoITA.objects.filter(id=aluno_id).first()
+                aluno_obj = Aluno.objects.filter(id=aluno_id, professor=avaliacao.professor).first()
 
             token_obj = None
             if token_id:
@@ -1134,7 +1484,7 @@ def api_modo_sala(request, pk):
             aluno_id = data.get('aluno_id')
             token_id = data.get('token_id')
 
-            aluno_obj = AlunoITA.objects.filter(id=aluno_id).first() if aluno_id else None
+            aluno_obj = Aluno.objects.filter(id=aluno_id, professor=avaliacao.professor).first() if aluno_id else None
             token_obj = TokenQR.objects.filter(id=token_id).first() if token_id else None
 
             tentativa = Tentativa.objects.create(
@@ -1203,91 +1553,347 @@ def erro_500(request):
     return render(request, 'erros/500.html', status=500)
 
 
-# ---------------------------------------------------------------------------
-# API JSON para o Dashboard CEITEC — sem proxy VPS
-# ---------------------------------------------------------------------------
 
-CHAVE_MAGICA = 'gamificaedu_secreto_2026'
+# ===========================================================================
+# LIBERAR / BLOQUEAR PROVA ONLINE
+# ===========================================================================
 
 @csrf_exempt
-def api_resultados_json(request):
-    """Retorna resultados do professor como JSON para o Dashboard CEITEC.
-    Chamado direto do browser (CORS). Auth via chave mágica + email."""
+@login_required
+def api_liberar_prova(request, pk):
+    """Professor ou admin libera/bloqueia o acesso dos alunos à prova online."""
+    if request.method != 'POST':
+        return JsonResponse({'sucesso': False, 'erro': 'Método não permitido'}, status=405)
 
-    def cors(response):
-        response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        return response
+    is_admin = request.user.email in EMAILS_ADMIN_ITA or getattr(
+        getattr(request.user, 'perfil', None), 'perfil', None
+    ) == 'ita_admin'
 
-    if request.method == 'OPTIONS':
-        return cors(HttpResponse())
-
-    chave = request.GET.get('chave', '')
-    email = request.GET.get('email', '').strip()
-
-    if chave != CHAVE_MAGICA:
-        return cors(JsonResponse({'erro': 'Chave inválida'}, status=403))
+    if is_admin:
+        avaliacao = get_object_or_404(Avaliacao, id=pk)
+    else:
+        avaliacao = get_object_or_404(Avaliacao, id=pk, professor=request.user)
 
     try:
-        professor = Usuario.objects.get(email=email)
-    except Usuario.DoesNotExist:
-        return cors(JsonResponse({'erro': 'Professor não encontrado'}, status=404))
+        data = json.loads(request.body)
+        acao = data.get('acao')  # 'liberar' ou 'bloquear'
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'sucesso': False, 'erro': 'JSON inválido'}, status=400)
 
-    resultados_qs = (
-        Resultado.objects
-        .filter(avaliacao__professor=professor)
-        .select_related('avaliacao')
-        .order_by('avaliacao__data_criacao', 'aluno_nome')
-    )
+    if acao == 'liberar':
+        avaliacao.liberada = True
+        avaliacao.save(update_fields=['liberada'])
+        return JsonResponse({'sucesso': True, 'liberada': True, 'mensagem': 'Prova liberada para os alunos!'})
+    elif acao == 'bloquear':
+        avaliacao.liberada = False
+        avaliacao.save(update_fields=['liberada'])
+        return JsonResponse({'sucesso': True, 'liberada': False, 'mensagem': 'Prova bloqueada. Alunos não podem mais acessar.'})
+    else:
+        return JsonResponse({'sucesso': False, 'erro': 'Ação inválida. Use "liberar" ou "bloquear".'}, status=400)
 
-    avaliacoes_map = {}
-    for r in resultados_qs:
-        av_id = str(r.avaliacao.id)
-        if av_id not in avaliacoes_map:
-            avaliacoes_map[av_id] = {
-                'titulo': r.avaliacao.titulo,
-                'disciplina': r.avaliacao.disciplina,
-                'turma': r.avaliacao.turma,
-                'numero_questoes': r.avaliacao.numero_questoes,
-                'gabarito': r.avaliacao.gabarito,
-                'resultados': [],
-            }
+
+# ===========================================================================
+# PERFIS DE ACESSO — ITA Admin / Coordenador / Sem Acesso / Impersonação
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Sem Acesso
+# ---------------------------------------------------------------------------
+
+@login_required
+def sem_acesso(request):
+    return render(request, 'acesso/sem_acesso.html', {
+        'perfil': getattr(request.user, 'perfil', 'sem_grupo'),
+    })
+
+
+# ---------------------------------------------------------------------------
+# Dashboard ITA Admin
+# ---------------------------------------------------------------------------
+
+@require_perfil('ita_admin')
+def dashboard_ita_admin(request):
+    total_escolas = Escola.objects.filter(ativa=True).count()
+    total_usuarios = Usuario.objects.filter(is_active=True).count()
+    total_avaliacoes = Avaliacao.objects.count()
+    total_correcoes = Resultado.objects.count()
+
+    professores = Usuario.objects.filter(perfil='professor').select_related('escola').order_by('escola__nome', 'first_name')[:50]
+    escolas = Escola.objects.filter(ativa=True).annotate(
+        qtd_usuarios=Count('usuarios'),
+    ).order_by('nome')[:20]
+
+    logs_recentes = LogAcessoNegado.objects.select_related('usuario').order_by('-data')[:10]
+
+    context = {
+        'total_escolas': total_escolas,
+        'total_usuarios': total_usuarios,
+        'total_avaliacoes': total_avaliacoes,
+        'total_correcoes': total_correcoes,
+        'professores': professores,
+        'escolas': escolas,
+        'logs_recentes': logs_recentes,
+        'impersonando': request.session.get('impersonar_nome', ''),
+    }
+    return render(request, 'acesso/dashboard_ita_admin.html', context)
+
+
+# ---------------------------------------------------------------------------
+# Dashboard Coordenador
+# ---------------------------------------------------------------------------
+
+@require_perfil('coordenador')
+def dashboard_coordenador(request):
+    escola = request.user.escola
+    if not escola:
+        messages.warning(request, 'Sua conta não está vinculada a nenhuma escola. Contate o ITA Admin.')
+        return redirect('sem_acesso')
+
+    professores = Usuario.objects.filter(escola=escola, perfil='professor')
+    total_avaliacoes = Avaliacao.objects.filter(professor__escola=escola).count()
+    total_correcoes = Resultado.objects.filter(avaliacao__professor__escola=escola).count()
+    total_alunos = Aluno.objects.filter(professor__escola=escola).count()
+
+    avaliacoes_recentes = Avaliacao.objects.filter(
+        professor__escola=escola
+    ).select_related('professor').order_by('-data_criacao')[:10]
+
+    context = {
+        'escola': escola,
+        'total_professores': professores.count(),
+        'total_avaliacoes': total_avaliacoes,
+        'total_correcoes': total_correcoes,
+        'total_alunos': total_alunos,
+        'professores': professores[:20],
+        'avaliacoes_recentes': avaliacoes_recentes,
+    }
+    return render(request, 'acesso/dashboard_coordenador.html', context)
+
+
+# ---------------------------------------------------------------------------
+# Gerenciar Usuários (ITA Admin)
+# ---------------------------------------------------------------------------
+
+@require_perfil('ita_admin')
+def ita_usuarios(request):
+    usuarios = Usuario.objects.select_related('escola').order_by('perfil', 'first_name')
+    escolas = Escola.objects.filter(ativa=True).order_by('nome')
+
+    if request.method == 'POST':
+        acao = request.POST.get('acao')
+        usuario_id = request.POST.get('usuario_id')
+
+        if acao == 'alterar_perfil' and usuario_id:
+            novo_perfil = request.POST.get('perfil')
+            nova_escola_id = request.POST.get('escola_id') or None
+            if novo_perfil in ('ita_admin', 'coordenador', 'professor', 'sem_grupo'):
+                u = get_object_or_404(Usuario, pk=usuario_id)
+                u.perfil = novo_perfil
+                u.escola_id = nova_escola_id
+                u.save(update_fields=['perfil', 'escola_id'])
+                messages.success(request, f'Perfil de {u.get_full_name() or u.username} atualizado.')
+            return redirect('ita_usuarios')
+
+        if acao == 'criar_escola':
+            nome_escola = request.POST.get('nome_escola', '').strip()
+            if nome_escola:
+                Escola.objects.get_or_create(nome=nome_escola, defaults={'codigo': nome_escola[:50]})
+                messages.success(request, f'Escola "{nome_escola}" criada.')
+            return redirect('ita_usuarios')
+
+    return render(request, 'acesso/ita_usuarios.html', {
+        'usuarios': usuarios,
+        'escolas': escolas,
+        'perfis': [('ita_admin', 'ITA Admin'), ('coordenador', 'Coordenador'),
+                   ('professor', 'Professor'), ('sem_grupo', 'Sem Grupo')],
+    })
+
+
+# ---------------------------------------------------------------------------
+# Impersonação — ITA Admin visualiza como outro usuário
+# ---------------------------------------------------------------------------
+
+@require_perfil('ita_admin')
+def impersonar(request, usuario_id):
+    """ITA Admin assume a sessão de outro usuário para diagnóstico."""
+    alvo = get_object_or_404(Usuario, pk=usuario_id)
+    if alvo.perfil == 'ita_admin':
+        messages.error(request, 'Não é possível impersonar outro ITA Admin.')
+        return redirect('ita_usuarios')
+
+    # Guarda o admin original na sessão
+    request.session['impersonar_admin_id'] = request.user.pk
+    request.session['impersonar_nome'] = alvo.get_full_name() or alvo.username
+
+    login(request, alvo, backend='django.contrib.auth.backends.ModelBackend')
+    messages.info(request, f'Você está visualizando o sistema como "{request.session["impersonar_nome"]}".')
+    return _redirecionar_por_perfil(alvo)
+
+
+def parar_impersonar(request):
+    """Encerra a impersonação e volta ao ITA Admin original."""
+    admin_id = request.session.pop('impersonar_admin_id', None)
+    request.session.pop('impersonar_nome', None)
+
+    if admin_id:
+        try:
+            admin = Usuario.objects.get(pk=admin_id, perfil='ita_admin')
+            login(request, admin, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request, 'Impersonação encerrada. Você está de volta como ITA Admin.')
+            return redirect('ita_usuarios')
+        except Usuario.DoesNotExist:
+            pass
+    return redirect('login')
+
+# ---------------------------------------------------------------------------
+# API: Todos os resultados (para ita_admin na plataforma ITA)
+# ---------------------------------------------------------------------------
+
+def api_resultados_todos(request):
+    """
+    Retorna todos os resultados de todos os professores em JSON.
+    Inclui o campo 'id' (UUID) para buscar detalhe por questao.
+    Protegido pela chave secreta — não requer login de sessão.
+    """
+    CHAVE_SECRETA = 'gamificaedu_secreto_2026'
+    chave = request.GET.get('chave', '')
+    if chave != CHAVE_SECRETA:
+        from django.http import JsonResponse
+        return JsonResponse({'erro': 'Chave inválida'}, status=403)
+
+    from django.http import JsonResponse
+    resultados = Resultado.objects.select_related('avaliacao', 'avaliacao__professor').order_by('-data_correcao')
+
+    dados = []
+    for r in resultados:
         gabarito = r.avaliacao.gabarito or {}
+        respostas_aluno = r.respostas or {}
         questoes_detalhe = []
-        for q in sorted(gabarito.keys(), key=lambda x: int(x)):
-            gabarito_resp = gabarito[q]
-            aluno_resp = (r.respostas or {}).get(str(q), '')
+        for chave_q in sorted(gabarito.keys(), key=lambda x: int(x) if str(x).isdigit() else 0):
+            resp = respostas_aluno.get(str(chave_q), None)
+            gab = gabarito[chave_q]
             questoes_detalhe.append({
-                'numero': int(q),
-                'gabarito': gabarito_resp,
-                'resposta_aluno': aluno_resp,
-                'acertou': aluno_resp.upper() == gabarito_resp.upper() if aluno_resp else False,
+                'numero':        int(chave_q) if str(chave_q).isdigit() else chave_q,
+                'resposta_aluno': resp if resp else '—',
+                'gabarito':      gab,
+                'acertou':       str(resp).upper() == str(gab).upper() if resp else False,
             })
-
-        avaliacoes_map[av_id]['resultados'].append({
-            'aluno': r.aluno_nome,
-            'turma': r.turma,
-            'nota': round(r.nota, 1) if r.nota is not None else 0,
-            'acertos': r.acertos,
-            'erros': r.erros,
-            'data': r.data_correcao.strftime('%d/%m/%Y'),
+        dados.append({
+            'id':              str(r.id),
+            'aluno':           r.aluno_nome,
+            'turma':           r.turma,
+            'avaliacao':       r.avaliacao.titulo,
+            'disciplina':      r.avaliacao.disciplina if hasattr(r.avaliacao, 'disciplina') else '',
+            'nota':            r.nota,
+            'acertos':         r.acertos,
+            'erros':           r.erros,
+            'professor':       r.avaliacao.professor.email if r.avaliacao.professor else '',
+            'data':            r.data_correcao.strftime('%d/%m/%Y') if r.data_correcao else '',
             'questoes_detalhe': questoes_detalhe,
         })
 
-    data = []
-    for av in avaliacoes_map.values():
-        ress = av['resultados']
-        media = round(sum(r['nota'] for r in ress) / len(ress), 1) if ress else 0
-        turmas = ', '.join(sorted({r['turma'] for r in ress if r['turma']}))
-        data.append({
-            'titulo': av['titulo'],
-            'disciplina': av['disciplina'],
-            'turmas': turmas or av['turma'],
-            'numero_questoes': av['numero_questoes'],
-            'total_alunos': len(ress),
-            'media': str(media),
-            'resultados': ress,
+    return JsonResponse(dados, safe=False)
+
+
+# ---------------------------------------------------------------------------
+# API: Resultados do professor logado (para plataforma ITA — perfil professor)
+# ---------------------------------------------------------------------------
+
+def api_resultados_professor(request):
+    """
+    Retorna resultados de um professor específico em JSON, incluindo questoes_detalhe.
+    Autenticado via email + chave secreta.
+    """
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    CHAVE_SECRETA = 'gamificaedu_secreto_2026'
+    chave = request.GET.get('chave', '')
+    email = request.GET.get('email', '')
+    if chave != CHAVE_SECRETA:
+        return JsonResponse({'erro': 'Chave inválida'}, status=403)
+    if not email:
+        return JsonResponse({'erro': 'Email obrigatório'}, status=400)
+    try:
+        professor = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({'erro': 'Professor não encontrado'}, status=404)
+
+    resultados = Resultado.objects.filter(avaliacao__professor=professor).select_related('avaliacao').order_by('-data_correcao')
+
+    dados = []
+    for r in resultados:
+        gabarito = r.avaliacao.gabarito or {}
+        respostas_aluno = r.respostas or {}
+        questoes_detalhe = []
+        for chave_q in sorted(gabarito.keys(), key=lambda x: int(x) if str(x).isdigit() else 0):
+            resp = respostas_aluno.get(str(chave_q), None)
+            gab = gabarito[chave_q]
+            questoes_detalhe.append({
+                'numero':        int(chave_q) if str(chave_q).isdigit() else chave_q,
+                'resposta_aluno': resp if resp else '—',
+                'gabarito':      gab,
+                'acertou':       str(resp).upper() == str(gab).upper() if resp else False,
+            })
+        dados.append({
+            'id':              str(r.id),
+            'aluno':           r.aluno_nome,
+            'turma':           r.turma,
+            'avaliacao':       r.avaliacao.titulo,
+            'disciplina':      r.avaliacao.disciplina if hasattr(r.avaliacao, 'disciplina') else '',
+            'nota':            r.nota,
+            'acertos':         r.acertos,
+            'erros':           r.erros,
+            'professor':       r.avaliacao.professor.email if r.avaliacao.professor else '',
+            'data':            r.data_correcao.strftime('%d/%m/%Y') if r.data_correcao else '',
+            'questoes_detalhe': questoes_detalhe,
         })
 
-    return cors(JsonResponse(data, safe=False))
+    return JsonResponse(dados, safe=False)
+
+
+def api_resultado_detalhe(request, pk):
+    """
+    Retorna o detalhe questao por questao de um resultado especifico.
+    Cruza respostas do aluno com gabarito da avaliacao.
+    Protegido pela chave secreta.
+    """
+    CHAVE_SECRETA = 'gamificaedu_secreto_2026'
+    chave = request.GET.get('chave', '')
+    if chave != CHAVE_SECRETA:
+        from django.http import JsonResponse
+        return JsonResponse({'erro': 'Chave inválida'}, status=403)
+
+    from django.http import JsonResponse
+    try:
+        resultado = Resultado.objects.select_related('avaliacao').get(pk=pk)
+    except Resultado.DoesNotExist:
+        return JsonResponse({'erro': 'Resultado não encontrado'}, status=404)
+
+    gabarito = resultado.avaliacao.gabarito or {}
+    respostas_aluno = resultado.respostas or {}
+
+    questoes = []
+    chaves_ordenadas = sorted(gabarito.keys(), key=lambda x: int(x) if str(x).isdigit() else 0)
+    for chave_q in chaves_ordenadas:
+        resp_aluno = respostas_aluno.get(str(chave_q), None)
+        gab = gabarito[chave_q]
+        questoes.append({
+            'numero':         int(chave_q) if str(chave_q).isdigit() else chave_q,
+            'resposta_aluno': resp_aluno,
+            'gabarito':       gab,
+            'acertou':        resp_aluno == gab if resp_aluno is not None else None,
+        })
+
+    dados = {
+        'id':         str(resultado.id),
+        'aluno':      resultado.aluno_nome,
+        'turma':      resultado.turma,
+        'avaliacao':  resultado.avaliacao.titulo,
+        'disciplina': resultado.avaliacao.disciplina if hasattr(resultado.avaliacao, 'disciplina') else '',
+        'nota':       resultado.nota,
+        'acertos':    resultado.acertos,
+        'erros':      resultado.erros,
+        'questoes':   questoes,
+    }
+    return JsonResponse(dados)
+
