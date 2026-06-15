@@ -766,7 +766,7 @@ class App(BaseHTTPRequestHandler):
                 if not u:
                     return self.json(400, {"erro": "Usuário inválido."})
                 token = criar_sessao(usuario_id)
-                self.enviar(200, json.dumps({"ok": True}, ensure_ascii=False),
+                self.enviar(200, json.dumps({"ok": True, "nome": u["nome"], "perfil": u["perfil"]}, ensure_ascii=False),
                             "application/json; charset=utf-8",
                             {"Set-Cookie": f"ceitec_session={token}; Path=/; HttpOnly; SameSite=Lax; Secure"})
                 return
