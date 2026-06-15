@@ -687,8 +687,8 @@ class App(BaseHTTPRequestHandler):
         if caminho == "/logout/":
             return self.redirecionar("/login/", "ceitec_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax")
         if caminho == "/bolao/":
-            usuario = self.exigir_login()
-            return None if not usuario else self.enviar(200, pagina_bolao(usuario))
+            usuario = self.usuario()
+            return self.enviar(200, pagina_bolao(usuario))
         if caminho == "/bolao/admin/":
             usuario = self.exigir_login()
             if not usuario:
@@ -696,10 +696,11 @@ class App(BaseHTTPRequestHandler):
             if usuario["perfil"] not in ("ita_admin", "coordenador"):
                 return self.enviar(403, pagina_base("Acesso negado", usuario, "<main class='page'><h1>Acesso restrito.</h1></main>"))
             return self.enviar(200, pagina_admin(usuario))
+        if caminho == "/bolao/usuarios/":
+            usuarios = consultar("SELECT id, nome FROM usuarios ORDER BY nome")
+            return self.json(200, {"usuarios": usuarios})
         if caminho == "/bolao/jogos/":
             usuario = self.usuario()
-            if not usuario:
-                return self.json(401, {"erro": "Autenticação CEITEC ID obrigatória."})
             return self.json(200, {"jogos": listar_jogos(usuario)})
         if caminho == "/bolao/meus-palpites/":
             usuario = self.usuario()
@@ -721,8 +722,6 @@ class App(BaseHTTPRequestHandler):
             return None if not usuario else self.json(200, dashboard_admin())
         if caminho == "/bolao/resultados/":
             usuario = self.usuario()
-            if not usuario:
-                return self.json(401, {"erro": "Autenticação CEITEC ID obrigatória."})
             jogos = consultar(
                 """
                 SELECT j.*,
@@ -760,7 +759,17 @@ class App(BaseHTTPRequestHandler):
                     return self.enviar(400, "Usuário inválido.")
                 token = criar_sessao(usuario_id)
                 next_url = payload.get("next", "/bolao/")
-                return self.redirecionar(next_url, f"ceitec_session={token}; Path=/; HttpOnly; SameSite=Lax")
+                return self.redirecionar(next_url, f"ceitec_session={token}; Path=/; HttpOnly; SameSite=Lax; Secure")
+            if caminho == "/bolao/login-ajax/":
+                usuario_id = int(payload.get("usuario_id", 0))
+                u = consultar_um("SELECT * FROM usuarios WHERE id = ?", (usuario_id,))
+                if not u:
+                    return self.json(400, {"erro": "Usuário inválido."})
+                token = criar_sessao(usuario_id)
+                self.enviar(200, json.dumps({"ok": True}, ensure_ascii=False),
+                            "application/json; charset=utf-8",
+                            {"Set-Cookie": f"ceitec_session={token}; Path=/; HttpOnly; SameSite=Lax; Secure"})
+                return
             if caminho == "/bolao/palpites/":
                 usuario = self.usuario()
                 if not usuario:
