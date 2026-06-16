@@ -82,14 +82,6 @@ function ModalVerAvaliacao({ av, onFechar }) {
                 </div>
               ))}
 
-              {(dados?.questoes || []).some(q => !q.tipo_questao || q.tipo_questao === 'multipla') && (
-                <div className="gabarito-box">
-                  <h2>GABARITO</h2>
-                  {(dados?.questoes || []).map((q, i) => (q.tipo_questao === 'multipla' || !q.tipo_questao) && (
-                    <span key={q.id} className="gabarito-linha text-sm">{i + 1}. {q.gabarito}</span>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
