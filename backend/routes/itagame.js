@@ -320,8 +320,8 @@ router.post('/sync', async (req, res) => {
           INSERT INTO itagame_pontos (aluno_id, turma_id, xp_total, nivel, badges_json)
           VALUES ${valores.join(', ')}
           ON CONFLICT (aluno_id) DO UPDATE
-            SET xp_total = EXCLUDED.xp_total,
-                nivel    = EXCLUDED.nivel
+            SET xp_total = CASE WHEN EXCLUDED.xp_total > 0 THEN EXCLUDED.xp_total ELSE itagame_pontos.xp_total END,
+                nivel    = CASE WHEN EXCLUDED.xp_total > 0 THEN EXCLUDED.nivel    ELSE itagame_pontos.nivel    END
         `;
         await db.pool.query(upsertSQL, params);
         xpSincronizados = alunos.length;
