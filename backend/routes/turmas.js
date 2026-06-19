@@ -79,6 +79,19 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.patch('/:id/nome-corretor', async (req, res) => {
+  try {
+    const { nome_corretor } = req.body;
+    await db.run(
+      'UPDATE turmas SET nome_corretor=? WHERE id=? AND escola_id=?',
+      [nome_corretor || null, req.params.id, req.usuario.escola_id]
+    );
+    res.json(await db.get('SELECT * FROM turmas WHERE id = ?', [req.params.id]));
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 router.put('/:id', async (req, res) => {
   try {
     const { nome, curso, ano_letivo, turno, professor_id, max_alunos } = req.body;

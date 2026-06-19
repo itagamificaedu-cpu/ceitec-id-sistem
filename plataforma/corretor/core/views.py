@@ -1221,7 +1221,11 @@ def gerar_qr_prova(request, pk):
     import base64
     from django.conf import settings
 
-    avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
+    eh_admin = getattr(request.user, 'is_superuser', False) or getattr(request.user, 'perfil', '') == 'ita_admin'
+    if eh_admin:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk)
+    else:
+        avaliacao = get_object_or_404(Avaliacao, pk=pk, professor=request.user)
 
     if request.method == 'POST':
         tipo = request.POST.get('tipo', 'prova')

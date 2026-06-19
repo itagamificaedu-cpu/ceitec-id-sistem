@@ -28,6 +28,13 @@ async function sincronizarComCorretor(alunos, emailProfessor) {
   }
 }
 
+// Retorna o nome da turma para o Corretor: usa nome_corretor se configurado, senão nome padrão
+async function nomeCorretorDaTurma(turma_id, nome_fallback) {
+  if (!turma_id) return nome_fallback || '';
+  const t = await db.get('SELECT nome_corretor, nome FROM turmas WHERE id = ?', [turma_id]);
+  return (t && t.nome_corretor) ? t.nome_corretor : (nome_fallback || (t && t.nome) || '');
+}
+
 async function gerarCodigo(escola_id) {
   const ultimo = await db.get('SELECT codigo FROM alunos WHERE escola_id = ? ORDER BY id DESC LIMIT 1', [escola_id]);
   if (!ultimo) return `ESC${escola_id}-0001`;
@@ -55,8 +62,9 @@ router.post('/', async (req, res) => {
     const aluno = await db.get('SELECT * FROM alunos WHERE id = ?', [result.lastInsertRowid]);
 
     // Sync com Corretor de Provas (fire-and-forget)
+    const turmaCorr = await nomeCorretorDaTurma(aluno.turma_id, aluno.turma);
     sincronizarComCorretor(
-      [{ nome: aluno.nome, turma: aluno.turma, codigo: aluno.codigo }],
+      [{ nome: aluno.nome, turma: turmaCorr, codigo: aluno.codigo }],
       req.usuario.email
     );
 
