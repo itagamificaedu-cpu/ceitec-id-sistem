@@ -49,5 +49,5 @@ urlpatterns = [
     path('resultados/<uuid:pk>/excluir/', views.excluir_resultado, name='excluir_resultado'),
 
     # API JSON para Dashboard CEITEC
-    path('api/resultados-json/', views.api_resultados_json, name='api_resultados_json'),
+    path('api/resultados-json/', views.api_resultados_todos, name='api_resultados_json'),
 ]
