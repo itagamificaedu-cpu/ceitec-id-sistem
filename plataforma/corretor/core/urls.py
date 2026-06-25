@@ -30,7 +30,7 @@ urlpatterns = [
     
     # Prova Online (V71)
     path('publica/prova/<uuid:pk>/', views.prova_online, name='prova_online'),
-    path('avaliacoes/<uuid:pk>/liberar/', views.liberar_prova_admin, name='liberar_prova_admin'),
+    path('avaliacoes/<uuid:pk>/liberar/', views.api_liberar_prova, name='liberar_prova_admin'),
     path('publica/prova/<uuid:pk>/qr/', views.prova_online_qr, name='prova_online_qr'),
     path('api/responder-prova-online/<uuid:pk>/', views.responder_prova_online, name='responder_prova_online'),
     path('api/aluno-tentativa/<uuid:pk>/', views.api_aluno_tentativa, name='api_aluno_tentativa'),

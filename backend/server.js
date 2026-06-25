@@ -60,6 +60,7 @@ app.use('/api/agenda',        require('./routes/agenda'));           // Agenda e
 app.use('/api/album',         require('./routes/album'));            // Álbum dos Craques do Conhecimento
 app.use('/api/cubo',          require('./routes/cuboMagico'));       // Campeonato Cubo Mágico
 app.use('/api/webhooks/manychat', require('./routes/manychat'));    // Webhook ManyChat → CeitecGame (público, segredo via header)
+app.use('/api/inscricao',        require('./routes/inscricao'));     // Inscrições Curso de Férias Maker (público + admin)
 
 app.get('/api/status', (req, res) => {
   res.json({ ok: true, versao: '2.0.0', sistema: 'ITA Tecnologia Educacional' });
