@@ -4,7 +4,34 @@ from django.conf import settings
 from django.utils import timezone
 
 
-# Usuario removido — sistema unificado usa accounts.Professor como AUTH_USER_MODEL
+class Escola(models.Model):
+    nome = models.CharField(max_length=200, unique=True)
+    codigo = models.CharField(max_length=50, blank=True)
+    ativa = models.BooleanField(default=True)
+    criada_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Escola'
+        verbose_name_plural = 'Escolas'
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
+
+
+class LogAcessoNegado(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    data = models.DateTimeField(auto_now_add=True)
+    url = models.CharField(max_length=500, blank=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Log de Acesso Negado'
+        verbose_name_plural = 'Logs de Acesso Negado'
+        ordering = ['-data']
+
+    def __str__(self):
+        return f"{self.usuario} — {self.data}"
 
 
 class AlunoITA(models.Model):
