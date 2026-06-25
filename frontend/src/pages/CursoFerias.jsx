@@ -7,7 +7,7 @@ const WA_LINK = `https://wa.me/${WA_NUMERO}?text=${WA_MSG}`
 const CHAVE = 'gamificaedu_secreto_2026'
 
 const URL_LANDING = window.location.origin + '/curso-ferias.html'
-const URL_INSCRICAO = window.location.origin + '/inscricao/formulario/'
+const URL_INSCRICAO = '/curso-ferias/formulario'
 
 const DIAS_INFO = [
   { dia: 1, icon: '🔬', titulo: 'Mundo Maker & Eletrônica Básica' },
@@ -388,7 +388,7 @@ export default function CursoFerias() {
               <button onClick={copiarLink} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                 {copiado ? '✅ Copiado!' : '🔗 Copiar Link'}
               </button>
-              <a href={URL_INSCRICAO} target="_blank" rel="noreferrer"
+              <a href={URL_INSCRICAO}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors">
                 🚀 Página de Inscrição
               </a>
