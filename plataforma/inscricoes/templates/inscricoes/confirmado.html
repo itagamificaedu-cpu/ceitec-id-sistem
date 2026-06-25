@@ -1,4 +1,5 @@
 {% extends 'inscricoes/base.html' %}
+{% load inscricoes_tags %}
 {% block title %}
   {% if inscricao.status == 'pago' or inscricao.status == 'certificado_emitido' %}Inscrição Confirmada{% else %}Aguardando Pagamento{% endif %} — {{ inscricao.nome_completo }}
 {% endblock %}
