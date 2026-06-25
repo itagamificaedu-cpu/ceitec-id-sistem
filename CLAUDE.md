@@ -1,5 +1,20 @@
 # CEITEC ID SYSTEM — Contexto do Projeto
 
+---
+
+## ⛔ ÁREAS PROTEGIDAS — NUNCA MODIFICAR SEM AUTORIZAÇÃO EXPLÍCITA
+
+> **REGRA:** Antes de criar qualquer coisa nova, SEMPRE verificar se já existe. Se existir, consertar — nunca substituir ou recriar.
+
+| App / Arquivo | O que é | O que NÃO fazer |
+|---------------|---------|-----------------|
+| `plataforma/inscricoes/` | Inscrições do Curso de Férias com Mercado Pago, email de confirmação, certificado, presença | NÃO recriar em React ou Node. NÃO substituir. Só corrigir bugs. |
+| `plataforma/corretor/` | Corretor de provas online completo | NÃO mexer em views, models ou forms. Só `urls.py` se necessário. |
+
+**Por que essa regra existe:** Em jun/2026 o app `inscricoes` já estava 100% pronto. Em vez de corrigir o erro real (502 Django), foi recriado do zero em React+Node, desperdiçando horas de trabalho e frustrando o usuário.
+
+---
+
 ## O que é este projeto
 Central de identidade e autenticação unificada do ecossistema CEITEC.
 Responsável pelo SSO (Single Sign-On) entre todas as plataformas educacionais,
