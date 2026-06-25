@@ -14,9 +14,12 @@ from django.utils import timezone
 from datetime import datetime
 from openpyxl import Workbook
 import csv
-from .models import Usuario, Avaliacao, Resultado, Estatisticas, Aluno, Escola, LogAcessoNegado
+from django.contrib.auth import get_user_model
+from .models import Avaliacao, Resultado, Estatisticas, Aluno, Escola, LogAcessoNegado
 from .mixins import require_perfil
 from .forms import AvaliacaoForm, CorrecaoForm, UsuarioCreationForm
+
+Usuario = get_user_model()
 from .utils.leitor_gabarito import processar_upload
 from .utils.gerador_pdf import gerar_gabarito_pdf
 from .utils.helpers import normalizar_turma, turmas_compativeis

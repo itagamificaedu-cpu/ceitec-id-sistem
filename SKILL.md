@@ -15,6 +15,18 @@ Qualquer implementação que contradiga este documento está ERRADA.
 
 ---
 
+## ⚠️ REGRA NÚMERO 0 — ONDE IMPLEMENTAR CADA COISA
+
+**TUDO novo vai na Plataforma ITA (Node.js/React).**
+
+Existem APENAS DUAS exceções que usam Django:
+1. **ItagGame** — Django no PythonAnywhere (`projetoitagame.pythonanywhere.com`). Projeto SEPARADO, fora do VPS.
+2. **Corretor de Provas** — Django no VPS, container `app-django-1` (porta 8000). Rota `/api/` no Nginx.
+
+**NUNCA criar um novo módulo Django no VPS. Qualquer funcionalidade nova vai em Node.js (backend) ou React (frontend).**
+
+---
+
 ## ⚠️ REGRA NÚMERO 1 — NUNCA MISTURAR
 
 O VPS hospeda **DOIS sistemas completamente independentes**:
