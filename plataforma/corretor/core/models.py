@@ -2,9 +2,39 @@ import uuid
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 
-# Usuario removido — sistema unificado usa accounts.Professor como AUTH_USER_MODEL
+# Alias para compatibilidade: views importam Usuario mas o modelo real é accounts.Professor
+Usuario = get_user_model()
+
+
+class Escola(models.Model):
+    nome    = models.CharField(max_length=200)
+    codigo  = models.CharField(max_length=50, blank=True)
+    ativa   = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Escola'
+        verbose_name_plural = 'Escolas'
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
+
+
+class LogAcessoNegado(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    rota    = models.CharField(max_length=500, blank=True)
+    data    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Log Acesso Negado'
+        verbose_name_plural = 'Logs Acesso Negado'
+        ordering = ['-data']
+
+    def __str__(self):
+        return f'{self.usuario} — {self.rota}'
 
 
 class AlunoITA(models.Model):
