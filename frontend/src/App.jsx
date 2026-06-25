@@ -51,7 +51,7 @@ import SalaMaker from './pages/salaMaker'
 import ProfessorGame from './pages/ProfessorGame'
 import CursoFerias from './pages/CursoFerias'
 import ScannerCursoFerias from './pages/ScannerCursoFerias'
-import FormularioInscricao from './pages/FormularioInscricao'
+const FormularioInscricao = () => { window.location.replace('/inscricao/formulario/'); return null; }
 import MobileTracker from './pages/MobileTracker'
 import SaidaSala from './pages/SaidaSala'
 import PainelSaidaSala from './pages/PainelSaidaSala'
