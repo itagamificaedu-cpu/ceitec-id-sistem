@@ -10,8 +10,9 @@
 |---------------|---------|-----------------|
 | `plataforma/inscricoes/` | Inscrições do Curso de Férias com Mercado Pago, email de confirmação, certificado, presença | NÃO recriar em React ou Node. NÃO substituir. Só corrigir bugs. |
 | `plataforma/corretor/` | Corretor de provas online completo | NÃO mexer em views, models ou forms. Só `urls.py` se necessário. |
+| `frontend/src/pages/CorretorResultados.jsx` | Aba "Resultados Corretor de Provas" na Navbar — exibe resultados do Django via `/api/corretor/avaliacoes` | ⛔ NÃO modificar sem pedido explícito do Genezio. NÃO alterar lógica de exibição de notas/acertos/erros. NÃO recriar. Chave do corretor: `gamificaedu_secreto_2026` (VPS: `/app/backend/routes/corretor.js`). |
 
-**Por que essa regra existe:** Em jun/2026 o app `inscricoes` já estava 100% pronto. Em vez de corrigir o erro real (502 Django), foi recriado do zero em React+Node, desperdiçando horas de trabalho e frustrando o usuário.
+**Por que essa regra existe:** Em jun/2026 o app `inscricoes` já estava 100% pronto. Em vez de corrigir o erro real (502 Django), foi recriado do zero em React+Node, desperdiçando horas de trabalho e frustrando o usuário. A aba de Resultados do Corretor também sofreu erro por chave errada no backend — corrigida em jun/2026 sem necessidade de recriar nada.
 
 ---
 
