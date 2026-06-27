@@ -1,5 +1,6 @@
 import json
 import csv
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -53,6 +54,7 @@ def formulario_inscricao(request):
         if form.is_valid():
             inscricao = form.save(commit=False)
             inscricao.status = 'aguardando_pagamento'
+            inscricao.valor_pago = Decimal('99.90')
             inscricao.save()
             return redirect('inscricoes:pagamento', codigo=inscricao.codigo_inscricao)
     else:
