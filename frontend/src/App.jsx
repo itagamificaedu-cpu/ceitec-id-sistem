@@ -51,7 +51,6 @@ import SalaMaker from './pages/salaMaker'
 import ProfessorGame from './pages/ProfessorGame'
 import CursoFerias from './pages/CursoFerias'
 import ScannerCursoFerias from './pages/ScannerCursoFerias'
-import LeadsGamificaEdu from './pages/LeadsGamificaEdu'
 const FormularioInscricao = () => { window.location.replace('/inscricao/formulario/'); return null; }
 import MobileTracker from './pages/MobileTracker'
 import SaidaSala from './pages/SaidaSala'
@@ -263,7 +262,6 @@ export default function App() {
         {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
         <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />
         <Route path="/curso-ferias/scanner" element={<ItaAdmin><ScannerCursoFerias /></ItaAdmin>} />
-        <Route path="/leads-gamificaedu" element={<ItaAdmin><LeadsGamificaEdu /></ItaAdmin>} />
         <Route path="/curso-ferias/formulario" element={<FormularioInscricao />} />
 
         {/* Mobile Tracker — GPS de alunos */}
