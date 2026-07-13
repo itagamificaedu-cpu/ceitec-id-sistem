@@ -101,6 +101,7 @@ const SECOES_ESTATICAS = [
       { path: '/empreendedorismo-digital', label: 'Empreendedorismo Digital',  icon: '💼' },
       { path: '/curso-ferias',             label: 'Curso de Férias Maker',     icon: '🚀', itaAdmin: true },
       { path: '/curso-ferias/scanner', label: 'Scanner Curso de Férias', icon: '📷', itaAdmin: true },
+      { path: '/leads-gamificaedu', label: 'Leads GamificaEdu', icon: '🎯', itaAdmin: true },
       { path: '/mobile-tracker', label: 'Rastreador de Celular', icon: '📍' },
     ]
   },
