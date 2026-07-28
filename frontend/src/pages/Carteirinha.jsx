@@ -215,8 +215,11 @@ export default function Carteirinha() {
       const imgData = canvas.toDataURL('image/png')
       const larguraMM = 54
       const alturaMM = (canvas.height / canvas.width) * larguraMM
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [larguraMM, alturaMM] })
-      pdf.addImage(imgData, 'PNG', 0, 0, larguraMM, alturaMM)
+      // margem de segurança: sem isso a imagem encosta exatamente na borda da
+      // página e alguns mecanismos de impressão (Windows) cortam uma fatia fina
+      const margemMM = 1.5
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [larguraMM + margemMM * 2, alturaMM + margemMM * 2] })
+      pdf.addImage(imgData, 'PNG', margemMM, margemMM, larguraMM, alturaMM)
       pdf.save(`carteirinha_${aluno.codigo}.pdf`)
     } catch (err) {
       alert('Erro ao gerar PDF: ' + err.message)
