@@ -65,7 +65,7 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
             flexShrink: 0,
           }}>
             {aluno.foto_path
-              ? <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
+              ? <img src={aluno.foto_path} alt={aluno.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} crossOrigin="anonymous" />
               : <span style={{ fontSize: '30px' }}>👤</span>}
           </div>
         </div>
