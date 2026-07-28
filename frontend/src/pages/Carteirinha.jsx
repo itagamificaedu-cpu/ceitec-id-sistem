@@ -291,18 +291,18 @@ export default function Carteirinha() {
                 </a>
               </div>
               <div className="col-span-2 text-xs text-gray-400">
-                Ao clicar em Imprimir, serão impressas as carteirinhas de todos os {turmaAlunos.length} alunos da turma {aluno.turma}, 6 por folha A4 (3 colunas × 2 linhas), todas do mesmo tamanho.
+                Ao clicar em Imprimir, serão impressas as carteirinhas de todos os {turmaAlunos.length} alunos da turma {aluno.turma}, 9 por folha A4 (3 colunas × 3 linhas), todas do mesmo tamanho.
               </div>
             </div>
           </div>
         </main>
       </div>
 
-      {/* Grade de impressão — 6 por folha A4 (3 colunas × 2 linhas), tamanho idêntico */}
+      {/* Grade de impressão — 9 por folha A4 (3 colunas × 3 linhas), tamanho idêntico */}
       <div className="print-grid">
-        {/* Agrupa em páginas de 6 */}
-        {Array.from({ length: Math.ceil(turmaAlunos.length / 6) }, (_, pi) =>
-          turmaAlunos.slice(pi * 6, pi * 6 + 6)
+        {/* Agrupa em páginas de 9 */}
+        {Array.from({ length: Math.ceil(turmaAlunos.length / 9) }, (_, pi) =>
+          turmaAlunos.slice(pi * 9, pi * 9 + 9)
         ).map((pagina, pi) => (
           <div key={pi} className="print-page">
             {pagina.map(a => (
@@ -345,19 +345,19 @@ export default function Carteirinha() {
           }
 
           /*
-           * Cada página: 3 colunas × 2 linhas
-           * Card: 204px ≈ 54mm × mínimo 380px ≈ 100mm
+           * Cada página: 3 colunas × 3 linhas
+           * Card: 204px ≈ 54mm × ~349px ≈ 92mm (sem rodapé)
            * A4 útil (5mm margem): 200mm × 287mm
            * 3×54mm + 2×5mm gap = 172mm < 200mm ✓
-           * 2×100mm + 1×5mm gap = 205mm < 287mm ✓
+           * 3×92mm + 2×3mm gap = 282mm < 287mm ✓
            */
           .print-page {
             display: grid !important;
             grid-template-columns: repeat(3, auto) !important;
-            grid-template-rows: repeat(2, auto) !important;
+            grid-template-rows: repeat(3, auto) !important;
             justify-content: center !important;
             align-items: start !important;
-            gap: 5mm !important;
+            gap: 3mm 5mm !important;
             width: 200mm !important;
             margin: 0 auto !important;
             padding: 0 !important;
