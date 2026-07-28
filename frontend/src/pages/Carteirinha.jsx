@@ -228,8 +228,10 @@ export default function Carteirinha() {
         backgroundColor: null,
       })
       const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [54, 86] })
-      pdf.addImage(imgData, 'PNG', 0, 0, 54, 86)
+      const larguraMM = 54
+      const alturaMM = (canvas.height / canvas.width) * larguraMM
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [larguraMM, alturaMM] })
+      pdf.addImage(imgData, 'PNG', 0, 0, larguraMM, alturaMM)
       pdf.save(`carteirinha_${aluno.codigo}.pdf`)
     } catch (err) {
       alert('Erro ao gerar PDF: ' + err.message)
