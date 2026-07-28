@@ -19,7 +19,6 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
   return (
     <div style={{
       width: '204px',
-      minHeight: '380px',       /* altura mínima generosa — conteúdo nunca estoura */
       background: '#ffffff',
       borderRadius: '12px',
       border: '2px solid #1e3a5f',
@@ -374,12 +373,8 @@ export default function Carteirinha() {
             page-break-inside: avoid !important;
           }
 
-          /* ─── CARD: APÓS ─────────────────────────────────────
-           * ANTES: height:322px  + overflow:hidden  → conteúdo cortado
-           * DEPOIS: min-height:380px + overflow:visible → tudo visível
-           * ─────────────────────────────────────────────────── */
+          /* Card imprime na altura natural do conteúdo — sem sobra em branco */
           .print-card-slot > div {
-            min-height: 380px !important;   /* altura mínima suficiente */
             overflow: visible !important;   /* NUNCA cortar conteúdo */
           }
         }
