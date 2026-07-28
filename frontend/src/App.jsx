@@ -19,6 +19,7 @@ import ComunicacaoPais from './pages/ComunicacaoPais'
 import CalendarioEscolar from './pages/CalendarioEscolar'
 import ListaTurmas from './pages/turmas/ListaTurmas'
 import DetalheTurma from './pages/turmas/DetalheTurma'
+import EstacaoFotos from './pages/turmas/EstacaoFotos'
 import PerfilAluno from './pages/turmas/PerfilAluno'
 import ListaProfessores from './pages/professores/ListaProfessores'
 import CadastroProfessor from './pages/professores/CadastroProfessor'
@@ -172,6 +173,7 @@ export default function App() {
         {/* Turmas */}
         <Route path="/turmas" element={<Admin><ListaTurmas /></Admin>} />
         <Route path="/turmas/:id" element={<P><DetalheTurma /></P>} />
+        <Route path="/turmas/:id/fotos" element={<P><EstacaoFotos /></P>} />
 
         {/* Professores */}
         <Route path="/professores" element={<Admin><ListaProfessores /></Admin>} />

@@ -138,6 +138,9 @@ export default function DetalheTurma() {
                     + Novo Aluno
                   </Link>
                 )}
+                <Link to={`/turmas/${id}/fotos`} className="btn-secondary text-sm whitespace-nowrap">
+                  📸 Tirar Fotos
+                </Link>
                 <button onClick={() => exportarCSV(turma.alunos, 'alunos')} className="btn-secondary text-sm">
                   📥 CSV
                 </button>
