@@ -136,20 +136,6 @@ function CardCarteirinha({ aluno, qrcode, equipe }) {
             {ITAGAME_BASE}?codigo={aluno.codigo}
           </div>
         </div>
-
-        {/* Rodapé */}
-        <div style={{
-          marginTop: 'auto',
-          paddingTop: '5px',
-          borderTop: '1px solid #d0dcea',
-          textAlign: 'center',
-          color: '#000000',
-          fontSize: '5.5px',
-          letterSpacing: '0.8px',
-          fontWeight: '800',
-        }}>
-          DOCUMENTO DE IDENTIFICAÇÃO ESTUDANTIL • NÃO TRANSFERÍVEL
-        </div>
       </div>
     </div>
   )
