@@ -156,7 +156,7 @@ def logout_view(request):
     return redirect('login')
 
 
-EMAILS_ADMIN_ITA = {'itagamificaedu@gmail.com', 'itaceitec@gmail.com'}
+EMAILS_ADMIN_ITA = {'itagamificaedu@gmail.com'}
 
 def login_magico(request):
     """SSO automático via chave compartilhada — integração com plataforma ITA."""
