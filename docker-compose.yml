@@ -82,6 +82,7 @@ services:
       - django_static:/var/www/static:ro
       - django_media:/var/www/media:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
 
 volumes:
   postgres_data:
