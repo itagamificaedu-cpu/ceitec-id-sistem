@@ -1,4 +1,5 @@
 const MODELOS_GEMINI = [
+  'gemini-3.6-flash',
   'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
 ];
@@ -17,7 +18,8 @@ async function chamarGemini(prompt) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
         });
-        if (res.status === 429 || res.status === 503) continue;
+        // Modelo indisponível/sobrecarregado/não encontrado — tenta o próximo da lista
+        if (res.status === 429 || res.status === 503 || res.status === 404) continue;
         if (!res.ok) {
           const err = await res.text();
           throw new Error(`Gemini error ${res.status}: ${err.slice(0, 200)}`);
@@ -26,6 +28,7 @@ async function chamarGemini(prompt) {
         return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       } catch (e) {
         if (e.message.startsWith('Gemini error')) throw e;
+        // Erro de rede/parsing — tenta o próximo modelo
       }
     }
   }
