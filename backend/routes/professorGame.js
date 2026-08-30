@@ -166,6 +166,43 @@ router.get('/meu-perfil', async (req, res) => {
   }
 });
 
+// ── Gamificação de um professor específico, pra admin ver no perfil dele ──
+// (prof_gamificacao é ligado a usuarios.id, não a professores.id — o vínculo
+// é pelo e-mail, que é único nas duas tabelas)
+router.get('/professor/:professorId', async (req, res) => {
+  try {
+    const eid = req.usuario.escola_id;
+    const prof = await db.get('SELECT id, email FROM professores WHERE id = ? AND escola_id = ?', [req.params.professorId, eid]);
+    if (!prof) return res.status(404).json({ erro: 'Professor não encontrado' });
+
+    const usuario = await db.get('SELECT id FROM usuarios WHERE email = ? AND escola_id = ?', [prof.email, eid]);
+    if (!usuario) return res.json({ tem_acesso: false, xp_total: 0, nivel: 1, streak: 0, nome_nivel: nomeDNivel(1), historico: [] });
+
+    const perfil = await db.get('SELECT * FROM prof_gamificacao WHERE usuario_id = ?', [usuario.id]);
+    if (!perfil) return res.json({ tem_acesso: true, xp_total: 0, nivel: 1, streak: 0, nome_nivel: nomeDNivel(1), historico: [] });
+
+    const historico = await db.all(
+      `SELECT tipo, descricao, xp_ganho, criado_em FROM prof_xp_historico WHERE usuario_id = ? ORDER BY criado_em DESC LIMIT 10`,
+      [usuario.id]
+    );
+    const ranking = await db.get(
+      `SELECT COUNT(*) + 1 as posicao FROM prof_gamificacao WHERE escola_id = ? AND xp_total > ?`,
+      [eid, perfil.xp_total]
+    );
+
+    res.json({
+      tem_acesso: true,
+      ...perfil,
+      nome_nivel: nomeDNivel(perfil.nivel),
+      xp_proximo_nivel: (perfil.nivel * 200) - perfil.xp_total,
+      posicao_ranking: ranking?.posicao || 1,
+      historico,
+    });
+  } catch (e) {
+    res.status(500).json({ erro: e.message });
+  }
+});
+
 // ── Ranking da escola ──────────────────────────────────────────────────────
 router.get('/ranking', async (req, res) => {
   try {

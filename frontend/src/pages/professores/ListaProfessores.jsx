@@ -81,15 +81,15 @@ export default function ListaProfessores() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {professores.map(p => (
                 <div key={p.id} className="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center gap-4 mb-3">
+                  <Link to={`/professores/${p.id}/perfil`} className="flex items-center gap-4 mb-3">
                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {p.foto_path ? <img src={p.foto_path} alt={p.nome} className="w-full h-full object-cover" /> : <span className="text-2xl">👨‍🏫</span>}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-textMain truncate">{p.nome}</p>
-                      <p className="text-xs text-secondary font-mono">{p.codigo}</p>
+                      <p className="font-semibold text-textMain truncate hover:text-primary">{p.nome}</p>
+                      <p className="text-xs text-secondary">Ver perfil →</p>
                     </div>
-                  </div>
+                  </Link>
                   <div className="space-y-1 text-sm mb-3">
                     <p className="text-gray-500 truncate">📚 {p.especialidade || '—'}</p>
                     <p className="text-gray-500 truncate">✉️ {p.email}</p>

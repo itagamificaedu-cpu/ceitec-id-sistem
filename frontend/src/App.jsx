@@ -23,6 +23,7 @@ import EstacaoFotos from './pages/turmas/EstacaoFotos'
 import PerfilAluno from './pages/turmas/PerfilAluno'
 import ListaProfessores from './pages/professores/ListaProfessores'
 import CadastroProfessor from './pages/professores/CadastroProfessor'
+import PerfilProfessor from './pages/professores/PerfilProfessor'
 import ListaAvaliacoes from './pages/avaliacoes/ListaAvaliacoes'
 import CriadorAvaliacao from './pages/avaliacoes/CriadorAvaliacao'
 import ResultadosAvaliacao from './pages/avaliacoes/ResultadosAvaliacao'
@@ -179,6 +180,7 @@ export default function App() {
         <Route path="/professores" element={<Admin><ListaProfessores /></Admin>} />
         <Route path="/professores/novo" element={<Admin><CadastroProfessor /></Admin>} />
         <Route path="/professores/:id/editar" element={<Admin><CadastroProfessor /></Admin>} />
+        <Route path="/professores/:id/perfil" element={<Admin><PerfilProfessor /></Admin>} />
 
         {/* Avaliações — professor pode criar e editar as suas */}
         <Route path="/avaliacoes" element={<P><ListaAvaliacoes /></P>} />
