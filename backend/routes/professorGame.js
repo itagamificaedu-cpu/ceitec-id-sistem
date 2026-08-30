@@ -176,10 +176,10 @@ router.get('/professor/:professorId', async (req, res) => {
     if (!prof) return res.status(404).json({ erro: 'Professor não encontrado' });
 
     const usuario = await db.get('SELECT id FROM usuarios WHERE email = ? AND escola_id = ?', [prof.email, eid]);
-    if (!usuario) return res.json({ tem_acesso: false, xp_total: 0, nivel: 1, streak: 0, nome_nivel: nomeDNivel(1), historico: [] });
+    if (!usuario) return res.json({ tem_acesso: false, xp_total: 0, nivel: 1, streak: 0, nome_nivel: nomeDNivel(1), xp_proximo_nivel: 200, posicao_ranking: null, historico: [] });
 
     const perfil = await db.get('SELECT * FROM prof_gamificacao WHERE usuario_id = ?', [usuario.id]);
-    if (!perfil) return res.json({ tem_acesso: true, xp_total: 0, nivel: 1, streak: 0, nome_nivel: nomeDNivel(1), historico: [] });
+    if (!perfil) return res.json({ tem_acesso: true, xp_total: 0, nivel: 1, streak: 0, nome_nivel: nomeDNivel(1), xp_proximo_nivel: 200, posicao_ranking: null, historico: [] });
 
     const historico = await db.all(
       `SELECT tipo, descricao, xp_ganho, criado_em FROM prof_xp_historico WHERE usuario_id = ? ORDER BY criado_em DESC LIMIT 10`,

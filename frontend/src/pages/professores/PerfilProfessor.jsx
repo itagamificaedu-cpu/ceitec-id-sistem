@@ -137,7 +137,7 @@ export default function PerfilProfessor() {
                   </div>
                   <p className="text-xs text-gray-400">{Math.max(0, game.xp_proximo_nivel)} XP para o próximo nível</p>
                   {game.streak > 0 && <p className="text-xs text-orange-600 mt-2">🔥 {game.streak} dia(s) seguidos de login</p>}
-                  <p className="text-xs text-gray-400 mt-1">#{game.posicao_ranking} no ranking da escola</p>
+                  {game.posicao_ranking != null && <p className="text-xs text-gray-400 mt-1">#{game.posicao_ranking} no ranking da escola</p>}
                 </>
               )}
             </div>
