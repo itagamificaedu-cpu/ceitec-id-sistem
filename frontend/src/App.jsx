@@ -240,11 +240,11 @@ export default function App() {
         {/* Agenda e Avisos — todos os usuários autenticados */}
         <Route path="/agenda" element={<P><Agenda /></P>} />
 
-        {/* Álbum dos Craques do Conhecimento — CEITEC GAME */}
-        <Route path="/album" element={<P><Album /></P>} />
+        {/* Álbum dos Craques do Conhecimento — desativado (fora do menu) */}
+        <Route path="/album" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Desafio Liga Jovem 2026 — visível só para ita_admin */}
-        <Route path="/liga-jovem" element={<ItaAdmin><LigaJovem /></ItaAdmin>} />
+        {/* Desafio Liga Jovem 2026 — desativado (fora do menu) */}
+        <Route path="/liga-jovem" element={<Navigate to="/dashboard" replace />} />
 
         {/* Campeonato de Cubo Mágico — visível para todos */}
         <Route path="/cubo-magico" element={<P><CuboMagico /></P>} />
@@ -263,10 +263,10 @@ export default function App() {
         {/* Projetor — público (sem login) */}
         <Route path="/cabo-de-guerra/:id/projetar" element={<ProjetorCaboGuerra />} />
 
-        {/* Curso de Férias — exclusivo do dono da plataforma ITA (não visível a coordenadores) */}
-        <Route path="/curso-ferias" element={<ItaAdmin><CursoFerias /></ItaAdmin>} />
-        <Route path="/curso-ferias/scanner" element={<ItaAdmin><ScannerCursoFerias /></ItaAdmin>} />
-        <Route path="/curso-ferias/formulario" element={<FormularioInscricao />} />
+        {/* Curso de Férias Maker — desativado, não vende mais vagas (fora do menu) */}
+        <Route path="/curso-ferias" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/curso-ferias/scanner" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/curso-ferias/formulario" element={<Navigate to="/dashboard" replace />} />
 
         {/* Mobile Tracker — GPS de alunos */}
         <Route path="/mobile-tracker" element={<Admin><MobileTracker /></Admin>} />

@@ -18,7 +18,6 @@ const TABS = [
   { id: 'presenca',    label: 'PRESENÇA',    emoji: '📅' },
   { id: 'ocorrencias', label: 'OCORRÊNCIAS', emoji: '⚠️' },
   { id: 'repositorio', label: 'MATERIAIS',   emoji: '📚' },
-  { id: 'bolao',       label: 'BOLÃO',       emoji: '⚽' },
 ]
 
 /* Paleta neon */

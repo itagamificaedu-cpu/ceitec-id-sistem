@@ -82,15 +82,8 @@ const SECOES_ESTATICAS = [
     ]
   },
   {
-    titulo: 'GAMIFICAÇÃO',
-    itens: [
-      { path: '/album',       label: 'Álbum dos Craques 🃏',    icon: '🏆' },
-    ]
-  },
-  {
     titulo: '⚽ LIGA JOVEM 2026',
     itens: [
-      { path: '/liga-jovem',  label: 'Desafio Liga Jovem 2026', icon: '🏅', itaAdmin: true },
       { path: '/cubo-magico', label: 'Campeonato Cubo Mágico',  icon: '🧩' },
     ]
   },
@@ -99,8 +92,6 @@ const SECOES_ESTATICAS = [
     itens: [
       { path: '/sala-maker',               label: 'Sala Maker',                icon: '🔧' },
       { path: '/empreendedorismo-digital', label: 'Empreendedorismo Digital',  icon: '💼' },
-      { path: '/curso-ferias',             label: 'Curso de Férias Maker',     icon: '🚀', itaAdmin: true },
-      { path: '/curso-ferias/scanner', label: 'Scanner Curso de Férias', icon: '📷', itaAdmin: true },
       { path: '/mobile-tracker', label: 'Rastreador de Celular', icon: '📍' },
     ]
   },
@@ -262,7 +253,6 @@ export default function Navbar() {
         {
           titulo: 'CEITEC GAME',
           itens: [
-            { path: '/album',        label: 'Álbum dos Craques',       icon: '🏆' },
             { path: '/itagame',      label: 'ItagGame — Painel',       icon: '🎮' },
             { path: '/cubo-magico',  label: 'Campeonato Cubo Mágico',  icon: '🧩' },
           ]
@@ -307,7 +297,6 @@ export default function Navbar() {
           titulo: 'GAMIFICAÇÃO',
           itens: [
             { path: '/itagame',      label: 'ItagGame — Painel',       icon: '🎮' },
-            { path: '/album',        label: 'Álbum dos Craques',       icon: '🃏' },
             { href: '/quiz-copa/',   label: 'Copa do Saber',           icon: '⚽' },
             { path: '/cubo-magico',  label: 'Campeonato Cubo Mágico',  icon: '🧩' },
             { path: '/divisao-equipes', label: 'Divisão de Equipes',   icon: '🎲' },
@@ -346,10 +335,8 @@ export default function Navbar() {
           itens: [
             { onClick: () => abrirUrl('/mestre?code=ADMIN-MASTER'), label: 'Horário do Dia', icon: '📅' },
             { path: '/itagame',         label: 'ItagGame — Painel',  icon: '🎮' },
-            { path: '/album',           label: 'Álbum dos Craques',  icon: '🃏' },
             { onClick: abrirCorretor,   label: 'Corretor de Provas', icon: '📋' },
             { path: '/divisao-equipes', label: 'Divisão de Equipes', icon: '🎲' },
-            { href: '/bolao/',          label: 'Bolão da Copa 2026', icon: '🏆' },
           ]
         },
       ]
