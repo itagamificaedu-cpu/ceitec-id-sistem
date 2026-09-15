@@ -447,8 +447,8 @@ export default function Login() {
             {/* CEITECGAME + tagline */}
             <div className="lg-ceitec-wrap">
               <div className="lg-ceitec">
-                <span className="lg-c-gold">CEITEC</span>
-                <span className="lg-c-green">GAME</span>
+                <span className="lg-c-gold">Ita</span>
+                <span className="lg-c-green">GamificaEdu</span>
               </div>
               <div className="lg-tagline">
                 <span className="lg-tg-gold">Gamificando o Ensino</span><br />
