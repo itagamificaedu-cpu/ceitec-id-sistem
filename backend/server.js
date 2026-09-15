@@ -59,7 +59,8 @@ app.use('/api/mestre',        require('./routes/mestre'));          // Mestre da
 app.use('/api/agenda',        require('./routes/agenda'));           // Agenda e Avisos (rota /publico não exige auth)
 app.use('/api/album',         require('./routes/album'));            // Álbum dos Craques do Conhecimento
 app.use('/api/cubo',          require('./routes/cuboMagico'));       // Campeonato Cubo Mágico
-app.use('/api/webhooks/manychat', require('./routes/manychat'));    // Webhook ManyChat → CeitecGame (público, segredo via header)
+app.use('/api/whatsapp',        require('./routes/whatsapp'));         // WhatsApp Business Cloud API (Meta)
+app.use('/api/webhooks/manychat', require('./routes/manychat'));    // Webhook ManyChat → CeitecGame
 app.use('/api/inscricao',        require('./routes/inscricao'));     // Inscrições Curso de Férias Maker (público + admin)
 
 app.get('/api/status', (req, res) => {

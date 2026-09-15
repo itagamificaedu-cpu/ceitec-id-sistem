@@ -81,6 +81,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - django_static:/var/www/static:ro
       - django_media:/var/www/media:ro
+      - /var/www/jogos:/var/www/jogos:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
 
