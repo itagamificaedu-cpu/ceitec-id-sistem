@@ -1,0 +1,32 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}Formação em IA — Vagas Esgotadas{% endblock %}
+{% block nav_title %}ITA TECNOLOGIA EDUCACIONAL{% endblock %}
+{% block nav_subtitle %}Formação em IA Aplicada à Educação{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+  <div style="text-align:center;padding:60px 0 40px">
+    <div style="width:80px;height:80px;border-radius:50%;background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.25);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px">
+      ❌
+    </div>
+    <h1 class="page-title" style="margin-bottom:12px">
+      VAGAS<br><span style="color:#ef4444">ESGOTADAS</span>
+    </h1>
+    <p class="page-sub" style="max-width:420px;margin:0 auto">
+      {% if curso %}Todas as {{ curso.vagas_total }} vagas da turma {{ curso.edicao }} já foram preenchidas.{% else %}Todas as vagas desta turma já foram preenchidas.{% endif %}
+      Deixe seu contato pelo WhatsApp para ser avisado(a) quando abrir uma nova turma.
+    </p>
+  </div>
+
+  <div style="text-align:center">
+    <a href="https://wa.me/5588988411890?text=Ol%C3%A1!%20As%20vagas%20da%20Forma%C3%A7%C3%A3o%20em%20IA%20esgotaram.%20Quero%20ser%20avisado(a)%20da%20pr%C3%B3xima%20turma."
+       target="_blank"
+       style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;font-size:15px;font-weight:700;padding:13px 28px;border-radius:var(--r);text-decoration:none">
+      📱 Avisem-me pelo WhatsApp
+    </a>
+    <p style="font-size:12px;color:var(--muted);margin-top:20px">
+      ITA Tecnologia Educacional · itatecnologiaeducacional.tech
+    </p>
+  </div>
+</div>
+{% endblock %}

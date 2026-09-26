@@ -1,6 +1,6 @@
 from django import forms
 from datetime import date
-from .models import Inscricao
+from .models import Inscricao, MatriculaFormacaoIA
 
 
 def _validar_cpf(cpf_str):
@@ -94,4 +94,57 @@ class InscricaoForm(forms.ModelForm):
         nome = self.cleaned_data.get('nome_responsavel', '').strip()
         if len(nome.split()) < 2:
             raise forms.ValidationError('Informe o nome completo do responsável.')
+        return nome.title()
+
+
+class MatriculaFormacaoIAForm(forms.ModelForm):
+    aceita_termos = forms.BooleanField(
+        required=True,
+        label='Li e aceito os termos de participação',
+        error_messages={'required': 'Você precisa aceitar os termos para continuar.'}
+    )
+    declara_atuacao_docente = forms.BooleanField(
+        required=True,
+        label='Declaro que atuo (ou já atuei) na docência da Educação Básica',
+        error_messages={'required': 'É necessário declarar atuação na docência para se inscrever.'}
+    )
+
+    class Meta:
+        model = MatriculaFormacaoIA
+        fields = [
+            'nome_completo', 'cpf', 'email', 'telefone',
+            'instituicao_ensino', 'area_disciplina', 'tempo_docencia',
+            'declara_atuacao_docente', 'autoriza_imagem', 'aceita_termos',
+        ]
+        widgets = {
+            'tempo_docencia': forms.RadioSelect(),
+        }
+        labels = {
+            'nome_completo': 'Nome completo',
+            'cpf': 'CPF',
+            'email': 'E-mail',
+            'telefone': 'Telefone / WhatsApp',
+            'instituicao_ensino': 'Instituição onde leciona',
+            'area_disciplina': 'Área / disciplina que leciona',
+            'tempo_docencia': 'Tempo de docência',
+            'autoriza_imagem': 'Autorizo o uso da minha imagem em redes sociais do CEITEC',
+        }
+
+    def clean_cpf(self):
+        cpf = self.cleaned_data.get('cpf', '')
+        if not _validar_cpf(cpf):
+            raise forms.ValidationError('CPF inválido. Verifique os dígitos.')
+        digitos = ''.join(c for c in cpf if c.isdigit())
+        return f'{digitos[:3]}.{digitos[3:6]}.{digitos[6:9]}-{digitos[9:11]}'
+
+    def clean_telefone(self):
+        tel = ''.join(c for c in self.cleaned_data.get('telefone', '') if c.isdigit())
+        if len(tel) < 10 or len(tel) > 11:
+            raise forms.ValidationError('Telefone inválido. Use (XX) XXXXX-XXXX.')
+        return tel
+
+    def clean_nome_completo(self):
+        nome = self.cleaned_data.get('nome_completo', '').strip()
+        if len(nome.split()) < 2:
+            raise forms.ValidationError('Informe o nome completo (nome e sobrenome).')
         return nome.title()

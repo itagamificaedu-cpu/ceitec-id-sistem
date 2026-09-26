@@ -1,0 +1,116 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}Inscrição — {{ curso.nome }}{% endblock %}
+{% block nav_title %}ITA TECNOLOGIA EDUCACIONAL{% endblock %}
+{% block nav_subtitle %}Formação em IA Aplicada à Educação{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+  <div class="badge" style="margin-bottom:20px">
+    <span class="badge-dot"></span>
+    Etapa 1 de 2 · Dados da inscrição
+  </div>
+  <h1 class="page-title">INSCREVA-SE NA<br><span style="color:var(--orange)">FORMAÇÃO EM IA</span></h1>
+  <p class="page-sub">{{ curso.nome }} — {{ curso.edicao }}. {{ vagas_disponiveis }} vagas disponíveis.</p>
+
+  {% if form.errors %}
+  <div class="alert alert-red" style="margin-bottom:20px">
+    ⚠️ Verifique os campos destacados abaixo.
+  </div>
+  {% endif %}
+
+  <form method="post" class="card">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label">Nome completo <span class="req">*</span></label>
+      <input type="text" name="{{ form.nome_completo.html_name }}" class="form-input{% if form.nome_completo.errors %} erro{% endif %}"
+             value="{{ form.nome_completo.value|default:'' }}" required>
+      {% if form.nome_completo.errors %}<div class="form-error visivel">{{ form.nome_completo.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">CPF <span class="req">*</span></label>
+        <input type="text" name="{{ form.cpf.html_name }}" class="form-input{% if form.cpf.errors %} erro{% endif %}"
+               value="{{ form.cpf.value|default:'' }}" placeholder="000.000.000-00" required>
+        {% if form.cpf.errors %}<div class="form-error visivel">{{ form.cpf.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone / WhatsApp <span class="req">*</span></label>
+        <input type="text" name="{{ form.telefone.html_name }}" class="form-input{% if form.telefone.errors %} erro{% endif %}"
+               value="{{ form.telefone.value|default:'' }}" placeholder="(88) 90000-0000" required>
+        {% if form.telefone.errors %}<div class="form-error visivel">{{ form.telefone.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">E-mail <span class="req">*</span></label>
+      <input type="email" name="{{ form.email.html_name }}" class="form-input{% if form.email.errors %} erro{% endif %}"
+             value="{{ form.email.value|default:'' }}" required>
+      {% if form.email.errors %}<div class="form-error visivel">{{ form.email.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="grid2">
+      <div class="form-group">
+        <label class="form-label">Instituição onde leciona <span class="req">*</span></label>
+        <input type="text" name="{{ form.instituicao_ensino.html_name }}" class="form-input{% if form.instituicao_ensino.errors %} erro{% endif %}"
+               value="{{ form.instituicao_ensino.value|default:'' }}" required>
+        {% if form.instituicao_ensino.errors %}<div class="form-error visivel">{{ form.instituicao_ensino.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Área / disciplina <span class="req">*</span></label>
+        <input type="text" name="{{ form.area_disciplina.html_name }}" class="form-input{% if form.area_disciplina.errors %} erro{% endif %}"
+               value="{{ form.area_disciplina.value|default:'' }}" placeholder="Ex.: Matemática, Anos Iniciais..." required>
+        {% if form.area_disciplina.errors %}<div class="form-error visivel">{{ form.area_disciplina.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tempo de docência <span class="req">*</span></label>
+      <div class="radio-grid cols2">
+        {% for radio in form.tempo_docencia %}
+        <label class="radio-card">
+          {{ radio.tag }}
+          <div class="radio-card-inner">
+            <span class="radio-card-label">{{ radio.choice_label }}</span>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+      {% if form.tempo_docencia.errors %}<div class="form-error visivel">{{ form.tempo_docencia.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="form-group">
+      <label class="checkbox-wrap">
+        <input type="checkbox" name="{{ form.declara_atuacao_docente.html_name }}"
+               {% if form.declara_atuacao_docente.value %}checked{% endif %}>
+        <span class="checkbox-label">{{ form.declara_atuacao_docente.label }}</span>
+      </label>
+      {% if form.declara_atuacao_docente.errors %}<div class="form-error visivel">{{ form.declara_atuacao_docente.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-wrap">
+        <input type="checkbox" name="{{ form.autoriza_imagem.html_name }}"
+               {% if form.autoriza_imagem.value %}checked{% endif %}>
+        <span class="checkbox-label">{{ form.autoriza_imagem.label }}</span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-wrap">
+        <input type="checkbox" name="{{ form.aceita_termos.html_name }}"
+               {% if form.aceita_termos.value %}checked{% endif %}>
+        <span class="checkbox-label">{{ form.aceita_termos.label }} da Formação em IA Aplicada à Educação — ITA Tecnologia Educacional.</span>
+      </label>
+      {% if form.aceita_termos.errors %}<div class="form-error visivel">{{ form.aceita_termos.errors.0 }}</div>{% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg btn-full" style="margin-top:8px">
+      Continuar para o pagamento →
+    </button>
+  </form>
+</div>
+{% endblock %}

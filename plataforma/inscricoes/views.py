@@ -8,11 +8,23 @@ from django.views.decorators.http import require_POST
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 
-from .models import Inscricao, PresencaCursoFerias
-from .forms import InscricaoForm
-from .utils.pagamento import criar_pedido_pagseguro, webhook_pagseguro_handler
-from .utils.certificado import gerar_certificado_pdf, gerar_certificado_svg
-from .utils.email_utils import enviar_email_confirmacao, enviar_certificado_email
+from .models import (
+    Inscricao, PresencaCursoFerias,
+    FormacaoIA, MatriculaFormacaoIA,
+)
+from .forms import InscricaoForm, MatriculaFormacaoIAForm
+from .utils.pagamento import (
+    criar_pedido_pagseguro, webhook_pagseguro_handler,
+    criar_pedido_mercadopago_formacao_ia, webhook_formacao_ia_handler,
+)
+from .utils.certificado import (
+    gerar_certificado_pdf, gerar_certificado_svg,
+    gerar_certificado_pdf_formacao_ia, gerar_certificado_svg_formacao_ia,
+)
+from .utils.email_utils import (
+    enviar_email_confirmacao, enviar_certificado_email,
+    enviar_email_confirmacao_formacao_ia, enviar_certificado_email_formacao_ia,
+)
 
 VAGAS_TOTAL = 30
 CHAVE_API_INTERNA = 'gamificaedu_secreto_2026'
@@ -678,3 +690,163 @@ def marcar_como_pago(request, codigo):
         except Exception:
             pass
     return JsonResponse({'status': 'ok'})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Formação em IA Aplicada à Educação (120h) — views próprias, paralelas às do
+# Curso de Férias acima. Gestão de presença/nota/emissão de certificado fica
+# no Django admin (ver admin.py); aqui só o fluxo público do professor.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _curso_ia_ativo():
+    return FormacaoIA.objects.filter(ativa=True).order_by('-criado_em').first()
+
+
+def landing_formacao_ia(request):
+    curso = _curso_ia_ativo()
+    if not curso:
+        return render(request, 'inscricoes/formacao_ia/indisponivel.html', {})
+
+    modulos = curso.modulos.prefetch_related('sessoes').all()
+    return render(request, 'inscricoes/formacao_ia/landing.html', {
+        'curso': curso,
+        'modulos': modulos,
+        'vagas_disponiveis': curso.vagas_disponiveis(),
+    })
+
+
+def formulario_formacao_ia(request):
+    curso = _curso_ia_ativo()
+    if not curso:
+        return render(request, 'inscricoes/formacao_ia/indisponivel.html', {})
+
+    if curso.vagas_disponiveis() <= 0:
+        return render(request, 'inscricoes/formacao_ia/lotado.html', {'curso': curso})
+
+    if request.method == 'POST':
+        form = MatriculaFormacaoIAForm(request.POST)
+        if form.is_valid():
+            matricula = form.save(commit=False)
+            matricula.curso = curso
+            matricula.status = 'aguardando_pagamento'
+            matricula.valor_pago = curso.valor_inscricao
+            matricula.save()
+            return redirect('inscricoes:formacao_ia_pagamento', codigo=matricula.codigo_matricula)
+    else:
+        form = MatriculaFormacaoIAForm()
+
+    return render(request, 'inscricoes/formacao_ia/formulario.html', {
+        'form': form,
+        'curso': curso,
+        'vagas_disponiveis': curso.vagas_disponiveis(),
+    })
+
+
+def pagamento_formacao_ia(request, codigo):
+    matricula = get_object_or_404(MatriculaFormacaoIA, codigo_matricula=codigo)
+
+    if matricula.status in ('pago', 'certificado_emitido'):
+        return redirect('inscricoes:formacao_ia_confirmado', codigo=codigo)
+
+    link_pagamento = None
+    erro = None
+
+    try:
+        resultado = criar_pedido_mercadopago_formacao_ia(matricula)
+        matricula.id_transacao_pag = resultado['id_pedido']
+        matricula.save(update_fields=['id_transacao_pag'])
+        link_pagamento = resultado['link_pagamento']
+    except Exception as e:
+        erro = str(e)
+
+    return render(request, 'inscricoes/formacao_ia/pagamento.html', {
+        'matricula': matricula,
+        'link_pagamento': link_pagamento,
+        'erro': erro,
+    })
+
+
+@csrf_exempt
+def webhook_formacao_ia(request):
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'método inválido'}, status=405)
+    return webhook_formacao_ia_handler(request)
+
+
+def pagamento_confirmado_formacao_ia(request, codigo):
+    matricula = get_object_or_404(MatriculaFormacaoIA, codigo_matricula=codigo)
+
+    if matricula.status == 'aguardando_pagamento' and matricula.id_transacao_pag:
+        from .utils.pagamento import verificar_status_pedido
+        status_api = verificar_status_pedido(matricula.id_transacao_pag)
+        if status_api == 'PAID':
+            matricula.status = 'pago'
+            matricula.data_pagamento = timezone.now()
+            matricula.save()
+            try:
+                enviar_email_confirmacao_formacao_ia(matricula)
+            except Exception:
+                pass
+
+    return render(request, 'inscricoes/formacao_ia/confirmado.html', {'matricula': matricula})
+
+
+def gerar_certificado_formacao_ia(request, codigo):
+    matricula = get_object_or_404(MatriculaFormacaoIA, codigo_matricula=codigo)
+
+    if matricula.status not in ('pago', 'certificado_emitido'):
+        return render(request, 'inscricoes/formacao_ia/confirmado.html', {
+            'matricula': matricula,
+            'erro_cert': 'Inscrição ainda não confirmada como paga.',
+        })
+
+    if not matricula.apto_certificado():
+        return render(request, 'inscricoes/formacao_ia/confirmado.html', {
+            'matricula': matricula,
+            'erro_cert': 'Frequência e/ou nota final ainda não foram lançadas pela coordenação.',
+        })
+
+    if not matricula.certificado_gerado:
+        matricula.certificado_gerado = True
+        matricula.status = 'certificado_emitido'
+        matricula.data_certificado = timezone.now()
+        matricula.save()
+
+    try:
+        pdf_bytes = gerar_certificado_pdf_formacao_ia(matricula)
+    except Exception as e:
+        return HttpResponse(f'Erro ao gerar certificado: {e}', status=500)
+
+    nome_arquivo = (
+        f"certificado_formacao_ia_{matricula.nome_completo.replace(' ', '_').lower()}.pdf"
+    )
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{nome_arquivo}"'
+    return response
+
+
+def visualizar_certificado_formacao_ia(request, codigo):
+    matricula = get_object_or_404(MatriculaFormacaoIA, codigo_matricula=codigo)
+    svg_content = gerar_certificado_svg_formacao_ia(matricula)
+    return render(request, 'inscricoes/formacao_ia/certificado.html', {
+        'matricula': matricula,
+        'svg': svg_content,
+    })
+
+
+def verificar_certificado_formacao_ia(request, codigo=None):
+    resultado = None
+    codigo_busca = codigo or request.GET.get('codigo', '').strip()
+
+    if codigo_busca:
+        todas = MatriculaFormacaoIA.objects.filter(certificado_gerado=True)
+        encontrada = next(
+            (m for m in todas if str(m.codigo_matricula).upper().startswith(codigo_busca.upper())),
+            None
+        )
+        resultado = {'valido': True, 'matricula': encontrada} if encontrada else {'valido': False}
+
+    return render(request, 'inscricoes/formacao_ia/verificar.html', {
+        'resultado': resultado,
+        'codigo_busca': codigo_busca,
+    })

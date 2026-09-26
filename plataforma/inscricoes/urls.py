@@ -30,4 +30,27 @@ urlpatterns = [
     path('painel/exportar-csv/', views.exportar_csv, name='exportar_csv'),
     path('painel/certificado/<uuid:codigo>/emitir/', views.emitir_certificado_admin, name='emitir_cert'),
     path('painel/inscricao/<uuid:codigo>/pago/', views.marcar_como_pago, name='marcar_pago'),
+
+    # ─── Formação em IA Aplicada à Educação (120h) ─────────────────────────
+    path('formacao-ia/', views.landing_formacao_ia, name='formacao_ia_landing'),
+    path('formacao-ia/formulario/', views.formulario_formacao_ia, name='formacao_ia_formulario'),
+    path('formacao-ia/pagamento/<uuid:codigo>/', views.pagamento_formacao_ia, name='formacao_ia_pagamento'),
+    path('formacao-ia/pagamento/notificacao/', views.webhook_formacao_ia, name='formacao_ia_webhook'),
+    path(
+        'formacao-ia/pagamento/confirmado/<uuid:codigo>/',
+        views.pagamento_confirmado_formacao_ia, name='formacao_ia_confirmado'
+    ),
+    path(
+        'formacao-ia/certificado/<uuid:codigo>/',
+        views.gerar_certificado_formacao_ia, name='formacao_ia_certificado'
+    ),
+    path(
+        'formacao-ia/certificado/<uuid:codigo>/visualizar/',
+        views.visualizar_certificado_formacao_ia, name='formacao_ia_visualizar'
+    ),
+    path('formacao-ia/verificar/', views.verificar_certificado_formacao_ia, name='formacao_ia_verificar'),
+    path(
+        'formacao-ia/verificar/<str:codigo>/',
+        views.verificar_certificado_formacao_ia, name='formacao_ia_verificar_codigo'
+    ),
 ]

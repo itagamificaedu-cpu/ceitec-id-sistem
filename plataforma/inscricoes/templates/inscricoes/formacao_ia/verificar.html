@@ -1,0 +1,107 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}Verificar Certificado — Formação em IA{% endblock %}
+{% block nav_title %}ITA TECNOLOGIA EDUCACIONAL{% endblock %}
+{% block nav_subtitle %}Formação em IA Aplicada à Educação{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+  <div style="text-align:center;margin-bottom:40px">
+    <div class="badge" style="margin-bottom:16px;display:inline-flex">
+      <span class="badge-dot"></span> Verificação Pública · ITA Tecnologia Educacional
+    </div>
+    <h1 class="page-title">VERIFICAR<br><span style="color:var(--orange)">CERTIFICADO</span></h1>
+    <p class="page-sub" style="max-width:420px;margin:0 auto">
+      Digite o código de 8 caracteres que aparece no certificado para verificar sua autenticidade.
+    </p>
+  </div>
+
+  <div class="card card-orange" style="margin-bottom:28px">
+    <form method="get" action="{% url 'inscricoes:formacao_ia_verificar' %}">
+      <div class="form-group">
+        <label class="form-label">Código do Certificado</label>
+        <input type="text" name="codigo" class="form-input"
+               placeholder="Ex: A1B2C3D4" maxlength="8"
+               value="{{ codigo_busca|default:'' }}"
+               style="font-family:monospace;font-size:18px;letter-spacing:3px;text-transform:uppercase"
+               autocomplete="off">
+        <div class="form-hint">Encontre o código no rodapé do certificado impresso ou PDF.</div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg btn-full">
+        🔍 Verificar Autenticidade
+      </button>
+    </form>
+  </div>
+
+  {% if resultado %}
+    {% if resultado.valido %}
+    <div class="card" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">✅</div>
+        <div>
+          <div style="font-size:22px;font-weight:800;color:#22c55e;letter-spacing:.5px">CERTIFICADO VÁLIDO</div>
+          <div style="font-size:13px;color:var(--muted)">Documento autêntico emitido pela ITA Tecnologia Educacional</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        {% with m=resultado.matricula %}
+        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Nome</div>
+          <div style="font-size:14px;font-weight:600">{{ m.nome_completo }}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Curso</div>
+          <div style="font-size:14px;font-weight:600">{{ m.curso.nome }}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Carga Horária</div>
+          <div style="font-size:14px;font-weight:600">{{ m.curso.carga_horaria_total }} horas</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Data de Emissão</div>
+          <div style="font-size:14px;font-weight:600">
+            {% if m.data_certificado %}{{ m.data_certificado|date:"d/m/Y" }}{% else %}—{% endif %}
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Instituição</div>
+          <div style="font-size:14px;font-weight:600">ITA Tecnologia Educacional</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Código</div>
+          <div style="font-size:14px;font-weight:600;font-family:monospace;color:var(--orange);letter-spacing:2px">{{ m.codigo_curto }}</div>
+        </div>
+        {% endwith %}
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="{% url 'inscricoes:formacao_ia_visualizar' resultado.matricula.codigo_matricula %}" class="btn btn-primary">
+          👁️ Ver Certificado
+        </a>
+        <a href="{% url 'inscricoes:formacao_ia_certificado' resultado.matricula.codigo_matricula %}" class="btn btn-ghost">
+          ⬇️ Baixar PDF
+        </a>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="card" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04);text-align:center;padding:40px 28px">
+      <div style="font-size:48px;margin-bottom:16px">❌</div>
+      <div style="font-size:22px;font-weight:800;color:#ef4444;margin-bottom:8px">CERTIFICADO NÃO ENCONTRADO</div>
+      <p style="font-size:14px;color:var(--text2);max-width:380px;margin:0 auto 20px">
+        Nenhum certificado válido encontrado com o código <strong style="font-family:monospace;color:var(--orange)">{{ codigo_busca|upper }}</strong>.
+        Verifique se digitou corretamente ou entre em contato com a ITA Tecnologia Educacional.
+      </p>
+      <a href="https://wa.me/5588988411890" target="_blank" class="btn btn-primary" style="background:#25D366">
+        📱 Entrar em Contato
+      </a>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  <div style="margin-top:32px;text-align:center;font-size:13px;color:var(--muted)">
+    <p>Certificados emitidos pela <strong style="color:var(--text2)">ITA Tecnologia Educacional</strong></p>
+    <p style="margin-top:4px">Itapipoca, Ceará · itatecnologiaeducacional.tech</p>
+  </div>
+</div>
+{% endblock %}

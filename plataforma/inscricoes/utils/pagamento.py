@@ -155,3 +155,135 @@ def webhook_pagseguro_handler(request):
             inscricao.save()
 
     return JsonResponse({"status": "ok"})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Formação em IA Aplicada à Educação — mesma integração Mercado Pago (_sdk,
+# verificar_status_pedido são genéricos e já reaproveitados acima), só com
+# item/back_urls/notification_url próprios da matrícula em vez da inscrição
+# do Curso de Férias. Handler de webhook separado, pra não arriscar tocar no
+# fluxo já em produção do Curso de Férias.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def criar_pedido_mercadopago_formacao_ia(matricula):
+    """
+    Cria uma preferência de pagamento no Mercado Pago para uma matrícula da
+    Formação em IA. Mesma mecânica de criar_pedido_mercadopago, com o item e
+    as URLs de retorno apontando pro namespace /inscricao/formacao-ia/.
+    """
+    base_url = getattr(settings, 'BASE_URL', 'https://itatecnologiaeducacional.tech')
+
+    nome_partes = matricula.nome_completo.split()
+    primeiro_nome = nome_partes[0] if nome_partes else matricula.nome_completo
+    sobrenome = ' '.join(nome_partes[1:]) if len(nome_partes) > 1 else ''
+
+    preference_data = {
+        "items": [{
+            "id": "FORMACAO-IA-EDUCACAO",
+            "title": f"{matricula.curso.nome} — {matricula.curso.edicao}",
+            "description": (
+                f"Formação híbrida de {matricula.curso.carga_horaria_total}h "
+                "para professores da Educação Básica · CEITEC"
+            ),
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": float(matricula.valor_pago),
+        }],
+        "payer": {
+            "name": primeiro_nome,
+            "surname": sobrenome,
+            "email": matricula.email,
+        },
+        "back_urls": {
+            "success": f"{base_url}/inscricao/formacao-ia/pagamento/confirmado/{matricula.codigo_matricula}/",
+            "failure": f"{base_url}/inscricao/formacao-ia/pagamento/{matricula.codigo_matricula}/",
+            "pending": f"{base_url}/inscricao/formacao-ia/pagamento/confirmado/{matricula.codigo_matricula}/",
+        },
+        "auto_return": "approved",
+        "notification_url": f"{base_url}/inscricao/formacao-ia/pagamento/notificacao/",
+        "external_reference": str(matricula.codigo_matricula),
+        "statement_descriptor": "CEITEC FORMACAO IA",
+        "payment_methods": {
+            "installments": 3,
+            "default_installments": 1,
+        },
+    }
+
+    sdk = _sdk()
+    result = sdk.preference().create(preference_data)
+    response = result.get("response", {})
+    status = result.get("status")
+
+    if status not in (200, 201):
+        erro = response.get("message") or str(response)
+        raise Exception(f"Mercado Pago: erro {status} — {erro}")
+
+    link = response.get("init_point") or response.get("sandbox_init_point")
+
+    return {
+        "id_pedido": response.get("id", ""),
+        "link_pagamento": link,
+        "status": "criado",
+    }
+
+
+def webhook_formacao_ia_handler(request):
+    """
+    Processa notificações IPN/Webhook do Mercado Pago para matrículas da
+    Formação em IA. Espelha webhook_pagseguro_handler, mas resolve a
+    referência contra MatriculaFormacaoIA em vez de Inscricao.
+    """
+    import json
+    from django.http import JsonResponse
+    from django.utils import timezone
+    from inscricoes.models import MatriculaFormacaoIA
+    from inscricoes.utils.email_utils import enviar_email_confirmacao_formacao_ia
+
+    payment_id = None
+    try:
+        body = json.loads(request.body or b'{}')
+        if body.get("type") == "payment":
+            payment_id = str(body.get("data", {}).get("id", ""))
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    if not payment_id:
+        payment_id = request.GET.get("data.id") or request.POST.get("data_id", "")
+
+    if not payment_id:
+        return JsonResponse({"status": "sem_payment_id"})
+
+    try:
+        sdk = _sdk()
+        result = sdk.payment().get(payment_id)
+        pagamento = result.get("response", {})
+    except Exception:
+        return JsonResponse({"status": "erro_consulta"})
+
+    status_mp = pagamento.get("status", "")
+    referencia = str(pagamento.get("external_reference", ""))
+
+    if not referencia:
+        return JsonResponse({"status": "sem_referencia"})
+
+    try:
+        matricula = MatriculaFormacaoIA.objects.get(codigo_matricula=referencia)
+    except (MatriculaFormacaoIA.DoesNotExist, Exception):
+        return JsonResponse({"status": "referencia_desconhecida"})
+
+    if status_mp == "approved" and matricula.status not in ("pago", "certificado_emitido"):
+        matricula.status = "pago"
+        matricula.data_pagamento = timezone.now()
+        matricula.id_transacao_pag = payment_id
+        matricula.save()
+        try:
+            enviar_email_confirmacao_formacao_ia(matricula)
+        except Exception:
+            pass
+
+    elif status_mp in ("cancelled", "rejected"):
+        if matricula.status not in ("pago", "certificado_emitido"):
+            matricula.status = "cancelado"
+            matricula.save()
+
+    return JsonResponse({"status": "ok"})

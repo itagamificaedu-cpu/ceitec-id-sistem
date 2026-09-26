@@ -1,0 +1,159 @@
+{% extends 'inscricoes/base.html' %}
+{% block title %}
+  {% if matricula.status == 'pago' or matricula.status == 'certificado_emitido' %}Inscrição Confirmada{% else %}Aguardando Pagamento{% endif %} — {{ matricula.nome_completo }}
+{% endblock %}
+{% block nav_title %}ITA TECNOLOGIA EDUCACIONAL{% endblock %}
+{% block nav_subtitle %}Formação em IA Aplicada à Educação{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-check{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
+.hero-check.pago{background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.3)}
+.hero-check.aguardando{background:rgba(245,166,35,.12);border:2px solid var(--orange-b)}
+.steps-list{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.step-item{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:var(--r)}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--orange);color:#0A0E1A;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-txt{font-size:14px;color:var(--text2);line-height:1.6}
+.step-txt strong{color:var(--text)}
+.spinner{width:32px;height:32px;border:3px solid rgba(245,166,35,.2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap-sm">
+  {% if matricula.status == 'pago' or matricula.status == 'certificado_emitido' %}
+
+  <div style="text-align:center;margin-bottom:40px">
+    <div class="hero-check pago">✅</div>
+    <h1 class="page-title" style="margin-bottom:8px">
+      INSCRIÇÃO<br><span style="color:var(--green)">CONFIRMADA!</span>
+    </h1>
+    <p class="page-sub" style="max-width:420px;margin:0 auto">
+      Pagamento recebido. {{ matricula.nome_completo.split.0 }} está matriculado(a) na {{ matricula.curso.nome }}!
+    </p>
+  </div>
+
+  {% if erro_cert %}
+  <div class="alert alert-orange" style="margin-bottom:20px">⚠️ {{ erro_cert }}</div>
+  {% endif %}
+
+  <div class="card card-orange" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Código da Matrícula</div>
+        <div style="font-family:monospace;font-size:24px;color:var(--orange);letter-spacing:3px;font-weight:700">{{ matricula.codigo_curto }}</div>
+      </div>
+      <span class="pill pill-pago">✅ Pago</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Professor(a)</div>
+        <div style="font-size:14px;font-weight:500">{{ matricula.nome_completo }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Instituição</div>
+        <div style="font-size:14px;font-weight:500">{{ matricula.instituicao_ensino }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Curso</div>
+        <div style="font-size:14px;font-weight:500">{{ matricula.curso.nome }}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Edição</div>
+        <div style="font-size:14px;font-weight:500">{{ matricula.curso.edicao }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-size:18px;font-weight:800;letter-spacing:.3px;margin-bottom:16px">📋 PRÓXIMOS PASSOS</div>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-txt"><strong>E-mail de confirmação enviado</strong><br>Verifique a caixa de entrada e spam de {{ matricula.email }}</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-txt"><strong>Acompanhe pelo WhatsApp</strong><br>Nossa equipe enviará em {{ matricula.telefone_formatado }} o acesso à trilha online e os detalhes da imersão presencial.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-txt"><strong>Etapa presencial em dezembro</strong><br>{{ matricula.curso.local_presencial }} — presença obrigatória mínima de {{ matricula.curso.frequencia_minima_pct }}%.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-txt"><strong>Após a conclusão: certificado disponível</strong><br>Assim que a coordenação lançar sua frequência e nota final, o certificado aparece nesta página.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    {% if matricula.certificado_gerado %}
+    <a href="{% url 'inscricoes:formacao_ia_certificado' matricula.codigo_matricula %}" class="btn btn-primary btn-lg" style="flex:1">
+      🏆 Baixar Certificado PDF
+    </a>
+    <a href="{% url 'inscricoes:formacao_ia_visualizar' matricula.codigo_matricula %}" class="btn btn-ghost" style="flex:1">
+      👁️ Visualizar Certificado
+    </a>
+    {% else %}
+    <a href="https://wa.me/5588988411890?text=Ol%C3%A1%21%20Minha%20matr%C3%ADcula%20na%20Forma%C3%A7%C3%A3o%20em%20IA%20foi%20confirmada%21%20C%C3%B3digo%3A%20{{ matricula.codigo_curto }}"
+       target="_blank" class="btn btn-primary btn-lg" style="flex:1;background:#25D366">
+      📱 Falar pelo WhatsApp
+    </a>
+    <a href="{% url 'inscricoes:formacao_ia_landing' %}" class="btn btn-ghost" style="flex:1">← Voltar ao Início</a>
+    {% endif %}
+  </div>
+
+  {% elif matricula.status == 'aguardando_pagamento' %}
+
+  <div style="text-align:center;margin-bottom:40px">
+    <div class="hero-check aguardando">⏳</div>
+    <h1 class="page-title" style="margin-bottom:8px">AGUARDANDO<br><span style="color:var(--orange)">PAGAMENTO</span></h1>
+    <p class="page-sub" style="max-width:420px;margin:0 auto">
+      Seu pagamento ainda está sendo processado. Isso pode levar alguns minutos.
+    </p>
+  </div>
+
+  <div class="card card-orange" style="text-align:center;margin-bottom:20px;padding:40px 28px">
+    <div class="spinner" style="margin-bottom:20px"></div>
+    <div style="font-size:15px;color:var(--text2);margin-bottom:8px">Verificando status do pagamento...</div>
+    <div style="font-size:13px;color:var(--muted)">Esta página atualiza automaticamente a cada 10 segundos.</div>
+    <div style="margin-top:16px;font-family:monospace;font-size:18px;color:var(--orange);letter-spacing:2px">{{ matricula.codigo_curto }}</div>
+  </div>
+
+  <div class="alert alert-orange">
+    💡 Se pagou via PIX, a confirmação é instantânea. Se pagou no boleto, pode levar até 2 dias úteis.
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
+    <a href="{% url 'inscricoes:formacao_ia_pagamento' matricula.codigo_matricula %}" class="btn btn-ghost" style="flex:1">
+      ↩ Voltar ao pagamento
+    </a>
+    <a href="https://wa.me/5588988411890?text=Paguei%20mas%20n%C3%A3o%20confirmou.%20C%C3%B3digo%3A%20{{ matricula.codigo_curto }}"
+       target="_blank" class="btn btn-primary" style="flex:1;background:#25D366">
+      📱 Paguei mas não confirmou
+    </a>
+  </div>
+
+  {% else %}
+
+  <div style="text-align:center;margin-bottom:32px">
+    <div class="hero-check" style="background:rgba(239,68,68,.12);border:2px solid rgba(239,68,68,.3)">❌</div>
+    <h1 class="page-title">INSCRIÇÃO<br><span style="color:#ef4444">CANCELADA</span></h1>
+    <p class="page-sub">Esta inscrição foi cancelada ou expirou.</p>
+  </div>
+  <div style="text-align:center">
+    <a href="{% url 'inscricoes:formacao_ia_formulario' %}" class="btn btn-primary btn-lg">🔄 Fazer Nova Inscrição</a>
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if matricula.status == 'aguardando_pagamento' %}
+<script>setTimeout(() => location.reload(), 10000);</script>
+{% endif %}
+{% endblock %}
